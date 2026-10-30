@@ -681,3 +681,36 @@ textarea:focus-visible, [tabindex]:focus-visible {
 .md-preview-content .md-hr { color: #bbb; }
 .md-preview-content .md-table { color: #00838f; }
 .md-preview-content .md-fn { color: #e65100; font-weight: 700; }
+
+/* Export dropdown */
+.export-dropdown { position: relative; display: inline-flex; }
+.dropdown-toggle { display: inline-flex; align-items: center; gap: 3px; }
+.dropdown-toggle .caret { font-size: 10px; opacity: .7; }
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 30;
+  min-width: 150px;
+  padding: 4px;
+  background: #fff;
+  border: 1px solid #c5d0d8;
+  border-radius: 4px;
+  box-shadow: 0 6px 18px rgba(24,50,67,.16);
+}
+.dropdown-menu[hidden] { display: none; }
+.dropdown-menu button {
+  display: block;
+  width: 100%;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: #294354;
+  text-align: left;
+  padding: 6px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.dropdown-menu button:hover { background: #eaf2f8; }
+.dropdown-separator { height: 1px; background: #e0e6ea; margin: 3px 0; }

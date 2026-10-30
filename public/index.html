@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8" />
@@ -67,10 +67,16 @@
         <button id="saveButton" type="button" class="primary-action" title="保存当前文档 (Ctrl+S)">保存</button>
         <button id="saveAsButton" type="button" title="将当前文档另存为新文件">另存为</button>
         <button id="downloadButton" type="button" title="下载当前文档">下载</button>
-        <button id="previewHtmlButton" type="button" title="预览 Map 导出为 HTML 后的效果">预览 HTML</button>
-        <button id="exportHtmlButton" type="button" title="将当前 Map 导出为单文件 HTML（含目录和修订标记）">导出 HTML</button>
-        <button id="previewMdButton" type="button" title="预览 Map 导出为 Markdown 后的效果">预览 MD</button>
-        <button id="exportMdButton" type="button" title="将当前 Map 导出为 Markdown 文件">导出 MD</button>
+        <div class="export-dropdown">
+          <button id="exportMenuButton" type="button" class="dropdown-toggle" title="导出或预览 Map 文档" aria-haspopup="true" aria-expanded="false">导出 <span class="caret" aria-hidden="true">▾</span></button>
+          <div id="exportMenu" class="dropdown-menu" hidden>
+            <button id="previewHtmlButton" type="button" title="预览 Map 导出为 HTML 后的效果">预览 HTML</button>
+            <button id="exportHtmlButton" type="button" title="将当前 Map 导出为单文件 HTML（含目录和修订标记）">导出 HTML</button>
+            <div class="dropdown-separator" role="separator"></div>
+            <button id="previewMdButton" type="button" title="预览 Map 导出为 Markdown 后的效果">预览 MD</button>
+            <button id="exportMdButton" type="button" title="将当前 Map 导出为 Markdown 文件">导出 MD</button>
+          </div>
+        </div>
         <button id="reviewButton" type="button" title="审阅文档变更（接受/拒绝修订）">审阅</button>
       </div>
     </div>
@@ -177,6 +183,7 @@
   </footer>
 
   <script src="/app-core.js"></script>
+<script src="/export.js"></script>
   <script src="/app.js"></script>
 </body>
 </html>

@@ -1,5 +1,7 @@
 'use strict';
 (() => {
+  window.DitaApp = window.DitaApp || {};
+  const A = window.DitaApp;
 ﻿
 const ditaCore = window.DitaVisualCore;
 const createVisualApiFromCore = ditaCore.createVisualApi;
@@ -109,6 +111,8 @@ const dom = {
   inspector: document.querySelector('#inspector'),
   inspectorTitle: document.querySelector('#inspectorTitle'),
   menuPopup: document.querySelector('#menuPopup'),
+  exportMenuButton: document.querySelector('#exportMenuButton'),
+  exportMenu: document.querySelector('#exportMenu'),
   viewTabs: Array.from(document.querySelectorAll('.view-tab')),
   mapView: document.querySelector('#mapView'),
   outlineView: document.querySelector('#outlineView'),
@@ -126,6 +130,7 @@ function setStatus(message, isError = false) {
   dom.status.style.color = isError ? '#a52a36' : '#526a78';
   if (isError) console.error(message);
 }
+Object.assign(A, { state, dom, ditaCore, setStatus });
 
 function setActiveView(view) {
   state.activeView = view;
@@ -484,6 +489,7 @@ async function reloadWorkspace(result) {
   state.selectedMap = (branchMap ? branchMap.path : null) || state.maps.find(map => /http_httpsdevelopmentusermanual_en\.ditamap$/i.test(map.path))?.path || state.maps[0]?.path || '';
   state.selectedMapSourcePath = '';
   state.filesMap.clear();
+  A.clearTopicCache();
   state.activePath = '';
   state.historyTargetPath = '';
   state.reviewGroups.clear();
@@ -2058,6 +2064,7 @@ async function saveFile() {
         topic.gitStatus = 'modified';
         topic.lastValidation = validation.message;
       }
+      A.clearTopicCache();
       renderTabs();
       updateHistoryButtons();
       setStatus(`Map Author：已保存 ${topicFiles.length} 个 topic`);
@@ -2076,6 +2083,7 @@ async function saveFile() {
     file.dirty = false;
     file.gitStatus = 'modified';
     refreshFileViews(file);
+    A.clearTopicCache();
     setStatus(`${validation.message}\uFF0C\u5DF2\u4FDD\u5B58`);
     return true;
   } catch (error) {
@@ -2088,138 +2096,7 @@ function fileNameFromPath(filePath) {
   return String(filePath || '').split('/').pop() || 'document.dita';
 }
 
-async function loadTopicFiles(map) {
-  const entries = ditaCore.collectPreviewPaths(map.children || []);
-  const files = new Map();
-  const failures = [];
-  await Promise.all(entries.map(async entry => {
-    try {
-      const resp = await fetch('/api/file?path=' + encodeURIComponent(entry.path));
-      if (!resp.ok) throw new Error(await resp.text());
-      files.set(entry.path, { path: entry.path, current: await resp.text() });
-    } catch (error) {
-      failures.push({ path: entry.path, error: error.message });
-    }
-  }));
-  return { files, failures };
-}
-async function browserLoadImageBytes(path) {
-  const resp = await fetch('/api/asset?path=' + encodeURIComponent(path));
-  if (!resp.ok) return null;
-  const blob = await resp.blob();
-  return await new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
-}
-async function previewMapHtml() {
-  const file = state.filesMap.get(state.activePath);
-  if (!file) return;
-  if (!/\.ditamap$/i.test(file.path)) {
-    setStatus('HTML 预览仅支持 Map 文件', true);
-    return;
-  }
-  const map = state.maps.find(m => m.path === file.path);
-  if (!map) {
-    setStatus('无法找到 Map 对象', true);
-    return;
-  }
-  try {
-    const { files, failures } = await loadTopicFiles(map);
-    if (failures.length) setStatus(failures.length + ' 个 topic 加载失败', true);
-    const html = await ditaCore.exportMapToHtml({ map, files, title: map.title || map.name, loadImageBytes: browserLoadImageBytes });
-    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    dom.htmlPreviewFrame.src = url;
-    dom.mdPreviewPane?.classList.remove('active');
-    dom.visualPane.classList.remove('active');
-    dom.htmlPreviewPane.classList.add('active');
-  } catch (error) {
-    setStatus('HTML 预览失败：' + error.message, true);
-  }
-}
-async function exportMapToHtmlFile() {
-  const file = state.filesMap.get(state.activePath);
-  if (!file) return;
-  if (!/\.ditamap$/i.test(file.path)) {
-    setStatus('导出 HTML 仅支持 Map 文件', true);
-    return;
-  }
-  const map = state.maps.find(m => m.path === file.path);
-  if (!map) {
-    setStatus('无法找到 Map 对象', true);
-    return;
-  }
-  try {
-    const { files, failures } = await loadTopicFiles(map);
-    if (failures.length) setStatus(failures.length + ' 个 topic 加载失败', true);
-    const html = await ditaCore.exportMapToHtml({ map, files, title: map.title || map.name });
-    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = file.path.replace(/\.ditamap$/i, '.html');
-    link.click();
-    URL.revokeObjectURL(url);
-    setStatus('HTML 导出成功');
-  } catch (error) {
-    setStatus('HTML 导出失败：' + error.message, true);
-  }
-}
-async function previewMapMd() {
-  const file = state.filesMap.get(state.activePath);
-  if (!file) return;
-  if (!/\.ditamap$/i.test(file.path)) {
-    setStatus('Markdown 预览仅支持 Map 文件', true);
-    return;
-  }
-  const map = state.maps.find(m => m.path === file.path);
-  if (!map) {
-    setStatus('无法找到 Map 对象', true);
-    return;
-  }
-  try {
-    const { files, failures } = await loadTopicFiles(map);
-    if (failures.length) setStatus(failures.length + ' 个 topic 加载失败', true);
-    const md = await ditaCore.exportMapToMarkdown({ map, files, title: map.title || map.name });
-    dom.mdPreviewContent.innerHTML = ditaCore.highlightMarkdown(md);
-    dom.htmlPreviewPane?.classList.remove('active');
-    dom.visualPane.classList.remove('active');
-    dom.mdPreviewPane.classList.add('active');
-  } catch (error) {
-    setStatus('Markdown 预览失败：' + error.message, true);
-  }
-}
-async function exportMapToMarkdownFile() {
-  const file = state.filesMap.get(state.activePath);
-  if (!file) return;
-  if (!/\.ditamap$/i.test(file.path)) {
-    setStatus('导出 Markdown 仅支持 Map 文件', true);
-    return;
-  }
-  const map = state.maps.find(m => m.path === file.path);
-  if (!map) {
-    setStatus('无法找到 Map 对象', true);
-    return;
-  }
-  try {
-    const { files, failures } = await loadTopicFiles(map);
-    if (failures.length) setStatus(failures.length + ' 个 topic 加载失败', true);
-    const md = await ditaCore.exportMapToMarkdown({ map, files, title: map.title || map.name, loadImageBytes: browserLoadImageBytes });
-    const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = file.path.replace(/\.ditamap$/i, '.md');
-    link.click();
-    URL.revokeObjectURL(url);
-    setStatus('Markdown 导出成功');
-  } catch (error) {
-    setStatus('Markdown 导出失败：' + error.message, true);
-  }
-}
+
 function downloadFile() {
   const file = state.filesMap.get(state.activePath);
   if (!file) return;
@@ -2451,6 +2328,7 @@ for (const button of document.querySelectorAll('.main-menu [data-menu]')) {
 }
 document.addEventListener('click', event => {
   if (!event.target.closest('.main-menu') && !event.target.closest('.menu-popup')) closeMenu();
+  if (!event.target.closest('.export-dropdown')) A.closeExportMenu();
 });
 for (const button of dom.contextToolbar?.querySelectorAll('[data-context-action]') || []) {
   button.addEventListener('click', () => applyContextAction(button.dataset.contextAction));
@@ -2471,11 +2349,13 @@ dom.validateButton.addEventListener('click', () => {
 dom.saveButton.addEventListener('click', saveFile);
 dom.saveAsButton?.addEventListener('click', saveAsFile);
 dom.downloadButton?.addEventListener('click', downloadFile);
-dom.previewHtmlButton?.addEventListener('click', previewMapHtml);
-dom.exportHtmlButton?.addEventListener('click', exportMapToHtmlFile);
+dom.previewHtmlButton?.addEventListener('click', () => A.previewMapHtml());
+dom.exportHtmlButton?.addEventListener('click', () => A.exportMapToHtmlFile());
 dom.closeHtmlPreviewButton?.addEventListener('click', () => { dom.htmlPreviewPane.classList.remove('active'); dom.htmlPreviewFrame.src = ''; dom.visualPane.classList.add('active'); });
-dom.previewMdButton?.addEventListener('click', previewMapMd);
-dom.exportMdButton?.addEventListener('click', exportMapToMarkdownFile);
+dom.previewMdButton?.addEventListener('click', () => A.previewMapMd());
+dom.exportMdButton?.addEventListener('click', () => A.exportMapToMarkdownFile());
+dom.exportMenuButton?.addEventListener('click', (e) => { e.stopPropagation(); A.toggleExportMenu(); });
+[dom.previewHtmlButton, dom.exportHtmlButton, dom.previewMdButton, dom.exportMdButton].forEach(btn => btn?.addEventListener('click', () => A.closeExportMenu()));
 dom.closeMdPreviewButton?.addEventListener('click', () => { dom.mdPreviewPane.classList.remove('active'); dom.mdPreviewContent.innerHTML = ''; dom.visualPane.classList.add('active'); });
 dom.branchSelect.addEventListener('change', selectBranch);
 dom.undoButton?.addEventListener('click', undoFile);
