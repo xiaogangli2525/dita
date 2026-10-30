@@ -191,3 +191,13 @@ test('P0-1: GBK file round-trip preserves Chinese text', async () => {
   // Cleanup
   await fs.rm(root, { recursive: true, force: true });
 });
+test('writeXmlFile UTF-8 round-trip preserves content', async () => {
+  const root = 'tests/temp-utf8-write';
+  await fs.mkdir(root, { recursive: true });
+  const filePath = path.join(root, 'utf8_test.xml');
+  const content = '<?xml version="1.0" encoding="UTF-8"?>\n<root><title>\u6982\u8FF0</title></root>';
+  await core.writeXmlFile(filePath, content);
+  const readBack = await core.readXmlFile(filePath);
+  assert.ok(readBack.includes('\u6982\u8FF0'), 'UTF-8 Chinese text preserved');
+  await fs.rm(root, { recursive: true, force: true });
+});

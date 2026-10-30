@@ -226,7 +226,7 @@ async function writeXmlFile(file, content) {
   if (encoding && encoding !== 'utf-8') {
     await fs.writeFile(file, iconv.encode(content, encoding));
   } else {
-    await writeXmlFile(file, content);
+    await fs.writeFile(file, content, 'utf8');
   }
 }
 
@@ -754,12 +754,10 @@ async function buildWorkspace() {
 
 async function handleApi(req, res, pathname, searchParams) {
   const origin = req.headers.origin;
-  if (origin) {
-    const allowed = ['http://127.0.0.1:' + PORT, 'http://localhost:' + PORT];
-    if (!allowed.includes(origin)) {
-      sendJson(res, 403, { error: 'Forbidden origin' });
-      return;
-    }
+  const allowed = ['http://127.0.0.1:' + PORT, 'http://localhost:' + PORT];
+  if (!origin || !allowed.includes(origin)) {
+    sendJson(res, 403, { error: 'Forbidden origin' });
+    return;
   }
   if (req.method === 'GET' && pathname === '/api/repos') {
     const repositories = await listRepositories();
