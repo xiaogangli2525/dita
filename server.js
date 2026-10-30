@@ -759,7 +759,9 @@ async function buildWorkspace() {
 async function handleApi(req, res, pathname, searchParams) {
   const origin = req.headers.origin;
   const allowed = ['http://127.0.0.1:' + PORT, 'http://localhost:' + PORT];
-  if (!origin || !allowed.includes(origin)) {
+  // Same-origin browser requests (especially GET) often omit the Origin header.
+  // Reject only when Origin IS present but does not match (cross-origin CSRF).
+  if (origin && !allowed.includes(origin)) {
     sendJson(res, 403, { error: 'Forbidden origin' });
     return;
   }
