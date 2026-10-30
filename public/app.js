@@ -112,6 +112,7 @@ const dom = {
   inspectorTitle: document.querySelector('#inspectorTitle'),
   menuPopup: document.querySelector('#menuPopup'),
   exportMenuButton: document.querySelector('#exportMenuButton'),
+  inspectorToggleButton: document.querySelector('#inspectorToggleButton'),
   exportMenu: document.querySelector('#exportMenu'),
   viewTabs: Array.from(document.querySelectorAll('.view-tab')),
   mapView: document.querySelector('#mapView'),
@@ -127,10 +128,22 @@ const dom = {
 
 function setStatus(message, isError = false) {
   dom.status.textContent = message;
-  dom.status.style.color = isError ? '#a52a36' : '#526a78';
+  dom.status.classList.toggle('status-error', isError);
   if (isError) console.error(message);
 }
-Object.assign(A, { state, dom, ditaCore, setStatus });
+
+let toastTimer;
+function toast(message, level) {
+  const el = document.getElementById('toast');
+  if (!el) return;
+  el.textContent = message;
+  el.className = 'toast show toast-' + (level || 'info');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.className = 'toast'; }, 3000);
+}
+Object.assign(A, { state, dom, ditaCore, setStatus, toast,
+  showLoading: function() { document.getElementById('loadingOverlay')?.classList.add('active'); },
+  hideLoading: function() { document.getElementById('loadingOverlay')?.classList.remove('active'); } });
 
 function setActiveView(view) {
   state.activeView = view;

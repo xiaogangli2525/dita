@@ -61,6 +61,7 @@
   };
 
   A.previewMapHtml = async function () {
+    A.showLoading?.();
     const { state, dom, ditaCore, setStatus, loadTopicFiles, browserLoadImageBytes } = A;
     const file = state.filesMap.get(state.activePath);
     if (!file) return;
@@ -79,10 +80,12 @@
       dom.htmlPreviewPane.classList.add('active');
     } catch (error) {
       setStatus('HTML 预览失败：' + error.message, true);
-    }
+      A.toast?.(error.message, 'error');
+    } finally { A.hideLoading?.(); }
   };
 
   A.exportMapToHtmlFile = async function () {
+    A.showLoading?.();
     const { state, ditaCore, setStatus, loadTopicFiles } = A;
     const file = state.filesMap.get(state.activePath);
     if (!file) return;
@@ -100,13 +103,14 @@
       link.download = file.path.replace(/\.ditamap$/i, '.html');
       link.click();
       URL.revokeObjectURL(url);
-      setStatus('HTML 导出成功');
+      setStatus('HTML 导出成功'); A.toast?.('HTML 导出成功', 'info');
     } catch (error) {
-      setStatus('HTML 导出失败：' + error.message, true);
-    }
+      setStatus('HTML 导出失败：' + error.message, true); A.toast?.(error.message, 'error');
+    } finally { A.hideLoading?.(); }
   };
 
   A.previewMapMd = async function () {
+    A.showLoading?.();
     const { state, dom, ditaCore, setStatus, loadTopicFiles } = A;
     const file = state.filesMap.get(state.activePath);
     if (!file) return;
@@ -122,11 +126,12 @@
       dom.visualPane.classList.remove('active');
       dom.mdPreviewPane.classList.add('active');
     } catch (error) {
-      setStatus('Markdown 预览失败：' + error.message, true);
-    }
+      setStatus('Markdown 预览失败：' + error.message, true); A.toast?.(error.message, 'error');
+    } finally { A.hideLoading?.(); }
   };
 
   A.exportMapToMarkdownFile = async function () {
+    A.showLoading?.();
     const { state, ditaCore, setStatus, loadTopicFiles, browserLoadImageBytes } = A;
     const file = state.filesMap.get(state.activePath);
     if (!file) return;
@@ -144,9 +149,9 @@
       link.download = file.path.replace(/\.ditamap$/i, '.md');
       link.click();
       URL.revokeObjectURL(url);
-      setStatus('Markdown 导出成功');
+      setStatus('Markdown 导出成功'); A.toast?.('Markdown 导出成功', 'info');
     } catch (error) {
-      setStatus('Markdown 导出失败：' + error.message, true);
-    }
+      setStatus('Markdown 导出失败：' + error.message, true); A.toast?.(error.message, 'error');
+    } finally { A.hideLoading?.(); }
   };
 })();

@@ -78,6 +78,7 @@
           </div>
         </div>
         <button id="reviewButton" type="button" title="审阅文档变更（接受/拒绝修订）">审阅</button>
+        <button id="inspectorToggleButton" type="button" class="inspector-toggle" title="切换属性面板" hidden>属性</button>
       </div>
     </div>
   </header>
@@ -182,6 +183,8 @@
     <span class="statusbar-hint">Ctrl/Cmd+S 保存 · Ctrl/Cmd+F 查找</span>
   </footer>
 
+  <div id="loadingOverlay" class="loading-overlay" aria-hidden="true"></div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <script src="/app-core.js"></script>
 <script src="/export.js"></script>
   <script src="/app.js"></script>

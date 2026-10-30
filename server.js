@@ -834,7 +834,7 @@ async function handleApi(req, res, pathname, searchParams) {
                 m[1].split(/\s+/).forEach(v => { if (v.trim()) attrValues.get(attr).add(v.trim()); });
               }
             }
-          } catch {}
+          } catch (e) { console.warn('api error:', e.message); }
         }
         if (node.children) await collectAttrs(node.children);
       }

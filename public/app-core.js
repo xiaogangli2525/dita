@@ -9,11 +9,12 @@ const VISUAL_TO_DITA = new Map(Object.entries({
 }));
 
 let _ctx = { topicPath: '', imageDataCache: new Map(), fnCounter: 0, mdFnCounter: 0, mdFootnotes: [] };
-function resolveAssetPath(href) {
+function resolveAssetPath(href, ctx) {
+  ctx = ctx || _ctx;
   if (!href) return '';
   let raw = decodeURIComponent(href.split('?')[0].split('#')[0]);
   if (/^(https?:|data:|\/)/i.test(raw)) return raw;
-  const topicDir = _ctx.topicPath ? _ctx.topicPath.replace(/[^\/]+$/, '') : '';
+  const topicDir = ctx.topicPath ? ctx.topicPath.replace(/[^\/]+$/, '') : '';
   const combined = topicDir + raw;
   const parts = combined.split('/');
   const result = [];
@@ -1022,7 +1023,8 @@ const DITA_INLINE_TAGS = new Set([
   'menucascade', 'uicontrol', 'wintitle', 'fn', 'abbreviated-form'
 ]);
 
-function ditaToHtml(node) {
+function ditaToHtml(node, ctx) {
+  ctx = ctx || _ctx;
   if (node.nodeType === 3) return node.data.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   if (node.nodeType === 7) return '';
   if (node.nodeType === 8) return '<!--' + node.data + '-->';
@@ -1030,7 +1032,7 @@ function ditaToHtml(node) {
   const tag = node.localName;
   if (tag === 'oxy_options') return '';
   if (tag === 'ins' && (node.getAttribute('class') || '').includes('oxy-insert')) {
-    return '<ins class="oxy-insert">' + Array.from(node.childNodes).map(ditaToHtml).join('') + '</ins>';
+    return '<ins class="oxy-insert">' + Array.from(node.childNodes).map(function(n) { return ditaToHtml(n, ctx); }).join('') + '</ins>';
   }
   if (tag === 'del' && (node.getAttribute('class') || '').includes('oxy-delete')) {
     return '<del class="oxy-delete">' + escapeHtmlAttr(node.textContent) + '</del>';
@@ -1039,7 +1041,7 @@ function ditaToHtml(node) {
     const comment = node.getAttribute('data-comment') || '';
     const author = node.getAttribute('data-author') || '';
     const title = author ? author + ': ' + comment : comment;
-    return '<span class="oxy-comment" title="' + escapeHtmlAttr(title) + '">' + Array.from(node.childNodes).map(ditaToHtml).join('') + '</span>';
+    return '<span class="oxy-comment" title="' + escapeHtmlAttr(title) + '">' + Array.from(node.childNodes).map(function(n) { return ditaToHtml(n, ctx); }).join('') + '</span>';
   }
   if (tag === 'fn') {
     const text = node.textContent.trim();
@@ -1048,13 +1050,13 @@ function ditaToHtml(node) {
   if (tag === 'image') {
     const href = node.getAttribute('href') || '';
     const alt = node.getAttribute('alt') || '';
-    const resolved = resolveAssetPath(href);
-    const src = _ctx.imageDataCache.has(resolved) ? _ctx.imageDataCache.get(resolved) : '/api/asset?path=' + encodeURIComponent(resolved);
+    const resolved = resolveAssetPath(href, ctx);
+    const src = ctx.imageDataCache.has(resolved) ? ctx.imageDataCache.get(resolved) : '/api/asset?path=' + encodeURIComponent(resolved);
     return '<img src="' + escapeHtmlAttr(src) + '" alt="' + escapeHtmlAttr(alt) + '" style="max-width:100%;"/>';
   }
   if (tag === 'xref') {
     const href = node.getAttribute('href') || '';
-    return '<a href="' + escapeHtmlAttr(href) + '">' + Array.from(node.childNodes).map(ditaToHtml).join('') + '</a>';
+    return '<a href="' + escapeHtmlAttr(href) + '">' + Array.from(node.childNodes).map(function(n) { return ditaToHtml(n, ctx); }).join('') + '</a>';
   }
   const htmlTag = DITA_HTML_MAP[tag] || 'div';
   const attrs = [];
@@ -1063,20 +1065,21 @@ function ditaToHtml(node) {
     if (lang) attrs.push('data-lang="' + escapeHtmlAttr(lang) + '"');
   }
   const attrStr = attrs.length ? ' ' + attrs.join(' ') : '';
-  const children = Array.from(node.childNodes).map(ditaToHtml).join('');
+  const children = Array.from(node.childNodes).map(function(n) { return ditaToHtml(n, ctx); }).join('');
   if (!DITA_INLINE_TAGS.has(tag) && !children.trim()) return '';
   return '<' + htmlTag + attrStr + '>' + children + '</' + htmlTag + '>';
 }
 
-function serializeOxyNode(node) {
-  return ditaToHtml(node);
+function serializeOxyNode(node, ctx) {
+  return ditaToHtml(node, ctx);
 }
 
 async function exportMapToHtml({ map, files, title, loadImageBytes }) {
+  const ctx = { topicPath: '', imageDataCache: new Map(), fnCounter: 0, mdFnCounter: 0, mdFootnotes: [] };
   const entries = collectPreviewPaths(map.children || []);
   const sections = [];
   const failures = [];
-  _ctx.imageDataCache.clear();
+  ctx.imageDataCache = new Map();
   if (loadImageBytes) {
     const imagePaths = new Set();
     for (const entry of entries) {
@@ -1084,9 +1087,9 @@ async function exportMapToHtml({ map, files, title, loadImageBytes }) {
         const cached = files.get(entry.path);
         if (!cached) throw new Error('not loaded');
         const preDoc = parseXml(cached.current);
-        _ctx.topicPath = entry.path;
+        ctx.topicPath = entry.path;
         for (const img of preDoc.querySelectorAll('image')) {
-          const r2 = resolveAssetPath(img.getAttribute('href') || '');
+          const r2 = resolveAssetPath(img.getAttribute('href') || '', ctx);
           if (r2 && !/^(https?:|data:|\x2f)/i.test(r2)) imagePaths.add(r2);
         }
       } catch (e) { console.warn('image pre-fetch parse error:', e.message); }
@@ -1094,7 +1097,7 @@ async function exportMapToHtml({ map, files, title, loadImageBytes }) {
     await Promise.all(Array.from(imagePaths).map(async (p) => {
       try {
         const dataUri = await loadImageBytes(p);
-        if (dataUri) _ctx.imageDataCache.set(p, dataUri);
+        if (dataUri) ctx.imageDataCache.set(p, dataUri);
       } catch (e) { console.warn('image fetch failed:', p, e.message); }
     }));
   }
@@ -1102,7 +1105,7 @@ async function exportMapToHtml({ map, files, title, loadImageBytes }) {
     try {
       const cached = files.get(entry.path);
       if (!cached) throw new Error('not loaded');
-      _ctx.topicPath = entry.path;
+      ctx.topicPath = entry.path;
       const doc = parseXml(cached.current);
       normalizeOxyPIs(doc);
       const topic = doc.documentElement;
@@ -1110,7 +1113,7 @@ async function exportMapToHtml({ map, files, title, loadImageBytes }) {
       let inner = '';
       for (const child of topic?.childNodes || []) {
         if (child === topicTitle) continue;
-        inner += serializeOxyNode(child);
+        inner += serializeOxyNode(child, ctx);
       }
       let fnNum = 0;
       inner = inner.replace(/\[fn\]/g, () => "[" + (++fnNum) + "]");
@@ -1198,11 +1201,12 @@ function mdEscape(text) {
   return String(text || '').replace(/([\\`*{}\[\]()#+\-.!])/g, '\\$1');
 }
 
-function mdInline(node) {
+function mdInline(node, ctx) {
+  ctx = ctx || _ctx;
   if (node.nodeType === 3) return node.data;
   if (node.nodeType !== 1) return '';
   const tag = node.localName;
-  const inner = () => Array.from(node.childNodes).map(mdInline).join('');
+  const inner = () => Array.from(node.childNodes).map(function(n) { return mdInline(n, ctx); }).join('');
   if (tag === 'b') return '**' + inner() + '**';
   if (tag === 'i') return '*' + inner() + '*';
   if (tag === 'u') return inner();
@@ -1210,8 +1214,8 @@ function mdInline(node) {
   if (tag === 'sub') return '<sub>' + inner() + '</sub>';
   if (['codeph', 'filepath', 'varname', 'parmname', 'msgph'].includes(tag)) return '`' + node.textContent + '`';
   if (tag === 'xref') { const h = node.getAttribute('href') || ''; return '[' + inner() + '](' + h + ')'; }
-  if (tag === 'image') { const resolved = resolveAssetPath(node.getAttribute('href') || ''); const a = node.getAttribute('alt') || ''; const src = _ctx.imageDataCache.has(resolved) ? _ctx.imageDataCache.get(resolved) : resolved; return '![' + a + '](' + src + ')'; }
-  if (tag === 'fn') return '[^' + (++_ctx.mdFnCounter) + ']';
+  if (tag === 'image') { const resolved = resolveAssetPath(node.getAttribute('href') || '', ctx); const a = node.getAttribute('alt') || ''; const src = ctx.imageDataCache.has(resolved) ? ctx.imageDataCache.get(resolved) : resolved; return '![' + a + '](' + src + ')'; }
+  if (tag === 'fn') return '[^' + (++ctx.mdFnCounter) + ']';
   if (tag === 'ins' && (node.getAttribute('class') || '').includes('oxy-insert')) return '**' + inner() + '**';
   if (tag === 'del' && (node.getAttribute('class') || '').includes('oxy-delete')) return '~~' + node.textContent + '~~';
   if (tag === 'span' && (node.getAttribute('class') || '').includes('oxy-comment')) { const c = node.getAttribute('data-comment') || ''; return '<!-- ' + c + ' -->'; }
@@ -1221,17 +1225,18 @@ function mdInline(node) {
 
 
 
-function ditaToMarkdown(node) {
+function ditaToMarkdown(node, ctx) {
+  ctx = ctx || _ctx;
   if (node.nodeType === 3) { const t = node.data.replace(/\s+/g, ' '); return t; }
   if (node.nodeType === 7 || node.nodeType === 8) return '';
   if (node.nodeType !== 1) return '';
   const tag = node.localName;
   if (tag === 'oxy_options') return '';
-  const children = () => Array.from(node.childNodes).map(ditaToMarkdown).join('');
+  const children = () => Array.from(node.childNodes).map(function(n) { return ditaToMarkdown(n, ctx); }).join('');
 
   if (tag === 'title') return '\n## ' + node.textContent.trim() + '\n\n';
-  if (tag === 'p') { const t = Array.from(node.childNodes).map(mdInline).join('').trim(); return t ? t + '\n\n' : ''; }
-  if (tag === 'shortdesc') { const t = Array.from(node.childNodes).map(mdInline).join('').trim(); return t ? '> ' + t + '\n\n' : ''; }
+  if (tag === 'p') { const t = Array.from(node.childNodes).map(function(n) { return mdInline(n, ctx); }).join('').trim(); return t ? t + '\n\n' : ''; }
+  if (tag === 'shortdesc') { const t = Array.from(node.childNodes).map(function(n) { return mdInline(n, ctx); }).join('').trim(); return t ? '> ' + t + '\n\n' : ''; }
 
   if (tag === 'ul' || tag === 'sl') return mdList(node, false);
   if (tag === 'ol') return mdList(node, true);
@@ -1245,26 +1250,26 @@ function ditaToMarkdown(node) {
   if (tag === 'note') {
     const type = node.getAttribute('type') || 'note';
     const label = type.charAt(0).toUpperCase() + type.slice(1);
-    const body = Array.from(node.childNodes).map(mdInline).join('').trim();
+    const body = Array.from(node.childNodes).map(function(n) { return mdInline(n, ctx); }).join('').trim();
     return '> **' + label + ':** ' + body + '\n\n';
   }
 
   if (tag === 'image') {
     const href = node.getAttribute('href') || '';
     const a = node.getAttribute('alt') || '';
-    const resolved = resolveAssetPath(href);
-    const src = _ctx.imageDataCache.has(resolved) ? _ctx.imageDataCache.get(resolved) : resolved;
+    const resolved = resolveAssetPath(href, ctx);
+    const src = ctx.imageDataCache.has(resolved) ? ctx.imageDataCache.get(resolved) : resolved;
     return '![' + a + '](' + src + ')\n\n';
   }
 
-  if (tag === 'xref') { const h = node.getAttribute('href') || ''; return '[' + Array.from(node.childNodes).map(mdInline).join('') + '](' + h + ')'; }
+  if (tag === 'xref') { const h = node.getAttribute('href') || ''; return '[' + Array.from(node.childNodes).map(function(n) { return mdInline(n, ctx); }).join('') + '](' + h + ')'; }
 
   if (tag === 'fig') {
     let r = '\n';
     for (const c of node.childNodes) {
       if (c.nodeType !== 1) continue;
       if (c.localName === 'title' || c.localName === 'figtitle') r += '*' + c.textContent.trim() + '*\n\n';
-      else r += ditaToMarkdown(c);
+      else r += ditaToMarkdown(c, ctx);
     }
     return r;
   }
@@ -1272,7 +1277,7 @@ function ditaToMarkdown(node) {
   if (tag === 'table') return mdTable(node);
   if (tag === 'dl') return mdDl(node);
 
-  if (tag === 'fn') { const t = node.textContent.trim(); _ctx.mdFootnotes.push((_ctx.mdFootnotes.length + 1) + ': ' + t); return '[^' + (++_ctx.mdFnCounter) + ']'; }
+  if (tag === 'fn') { const t = node.textContent.trim(); ctx.mdFootnotes.push((ctx.mdFootnotes.length + 1) + ': ' + t); return '[^' + (++ctx.mdFnCounter) + ']'; }
 
   if (tag === 'section' || tag === 'example') {
     const tEl = Array.from(node.childNodes).find(n => n.localName === 'title');
@@ -1280,19 +1285,20 @@ function ditaToMarkdown(node) {
   }
 
   if (['body', 'conbody', 'refbody', 'taskbody', 'topic', 'concept', 'reference', 'task'].includes(tag)) return children();
-  if (['figgroup', 'ph', 'keyword', 'term', 'cite', 'q', 'boolean', 'state', 'menucascade', 'uicontrol', 'wintitle', 'abbreviated-form'].includes(tag)) return Array.from(node.childNodes).map(mdInline).join('');
+  if (['figgroup', 'ph', 'keyword', 'term', 'cite', 'q', 'boolean', 'state', 'menucascade', 'uicontrol', 'wintitle', 'abbreviated-form'].includes(tag)) return Array.from(node.childNodes).map(function(n) { return mdInline(n, ctx); }).join('');
   return children();
 }
 
 
 
-function mdList(node, ordered) {
+function mdList(node, ordered, ctx) {
+  ctx = ctx || _ctx;
   const items = Array.from(node.childNodes).filter(n => n.localName === 'li' || n.localName === 'sli');
   if (!items.length) return '';
   let r = '';
   items.forEach((li, i) => {
     const prefix = ordered ? (i + 1) + '. ' : '- ';
-    const text = Array.from(li.childNodes).map(mdInline).join('').trim();
+    const text = Array.from(li.childNodes).map(function(n) { return mdInline(n, ctx); }).join('').trim();
     r += prefix + text + '\n';
     // nested lists
     for (const c of li.childNodes) {
@@ -1303,7 +1309,8 @@ function mdList(node, ordered) {
   return r + '\n';
 }
 
-function mdTable(node) {
+function mdTable(node, ctx) {
+  ctx = ctx || _ctx;
   const tgroup = Array.from(node.childNodes).find(n => n.localName === 'tgroup') || node;
   const thead = Array.from(tgroup.childNodes).find(n => n.localName === 'thead');
   const tbody = Array.from(tgroup.childNodes).find(n => n.localName === 'tbody') || tgroup;
@@ -1311,7 +1318,7 @@ function mdTable(node) {
   const bodyRows = Array.from(tbody.childNodes).filter(n => n.localName === 'row');
   const allRows = [...headRows, ...bodyRows];
   if (!allRows.length) return '';
-  const matrix = allRows.map(row => Array.from(row.childNodes).filter(n => n.localName === 'entry').map(e => Array.from(e.childNodes).map(mdInline).join('').trim().replace(/\|/g, '\\\|')));
+  const matrix = allRows.map(row => Array.from(row.childNodes).filter(n => n.localName === 'entry').map(e => Array.from(e.childNodes).map(function(n) { return mdInline(n, ctx); }).join('').trim().replace(/\|/g, '\\\|')));
   const cols = Math.max(...matrix.map(r => r.length));
   let r = '\n';
   matrix.forEach((row, i) => {
@@ -1322,7 +1329,8 @@ function mdTable(node) {
   return r + '\n';
 }
 
-function mdDl(node) {
+function mdDl(node, ctx) {
+  ctx = ctx || _ctx;
   const entries = Array.from(node.childNodes).filter(n => n.localName === 'dlentry');
   if (!entries.length) return '';
   let r = '\n';
@@ -1330,28 +1338,28 @@ function mdDl(node) {
     const dt = Array.from(entry.childNodes).find(n => n.localName === 'dt');
     const dd = Array.from(entry.childNodes).find(n => n.localName === 'dd');
     if (dt) r += '**' + dt.textContent.trim() + '**\n';
-    if (dd) r += ': ' + Array.from(dd.childNodes).map(mdInline).join('').trim() + '\n\n';
+    if (dd) r += ': ' + Array.from(dd.childNodes).map(function(n) { return mdInline(n, ctx); }).join('').trim() + '\n\n';
   }
   return r;
 }
 
 async function exportMapToMarkdown({ map, files, title, loadImageBytes }) {
-  _ctx.mdFnCounter = 0;
-  _ctx.mdFootnotes.length = 0;
+  const ctx = { topicPath: '', imageDataCache: new Map(), fnCounter: 0, mdFnCounter: 0, mdFootnotes: [] };
+  ctx.mdFnCounter = 0;
+  ctx.mdFootnotes = [];
   const entries = collectPreviewPaths(map.children || []);
   const sections = [];
   const failures = [];
-  _ctx.imageDataCache.clear();
-  if (loadImageBytes) {
+    if (loadImageBytes) {
     const imagePaths = new Set();
     for (const entry of entries) {
       try {
         const cached = files.get(entry.path);
         if (!cached) throw new Error('not loaded');
         const preDoc = parseXml(cached.current);
-        _ctx.topicPath = entry.path;
+        ctx.topicPath = entry.path;
         for (const img of preDoc.querySelectorAll('image')) {
-          const r = resolveAssetPath(img.getAttribute('href') || '');
+          const r = resolveAssetPath(img.getAttribute('href') || '', ctx);
           if (r && !/^(https?:|data:|\x2f)/i.test(r)) imagePaths.add(r);
         }
       } catch (e) { console.warn('warn:', e.message); }
@@ -1359,7 +1367,7 @@ async function exportMapToMarkdown({ map, files, title, loadImageBytes }) {
     await Promise.all(Array.from(imagePaths).map(async (p) => {
       try {
         const dataUri = await loadImageBytes(p);
-        if (dataUri) _ctx.imageDataCache.set(p, dataUri);
+        if (dataUri) ctx.imageDataCache.set(p, dataUri);
       } catch (e) { console.warn('warn:', e.message); }
     }));
   }
@@ -1367,7 +1375,7 @@ async function exportMapToMarkdown({ map, files, title, loadImageBytes }) {
     try {
       const cached = files.get(entry.path);
       if (!cached) throw new Error('not loaded');
-      _ctx.topicPath = entry.path;
+      ctx.topicPath = entry.path;
       const doc = parseXml(cached.current);
       normalizeOxyPIs(doc);
       const topic = doc.documentElement;
@@ -1375,7 +1383,7 @@ async function exportMapToMarkdown({ map, files, title, loadImageBytes }) {
       let body = '';
       for (const child of topic?.childNodes || []) {
         if (child === topicTitle) continue;
-        body += ditaToMarkdown(child);
+        body += ditaToMarkdown(child, ctx);
       }
       sections.push({ path: entry.path, title: topicTitle?.textContent?.trim() || entry.title || entry.path, body });
     } catch (error) {
@@ -1387,9 +1395,9 @@ async function exportMapToMarkdown({ map, files, title, loadImageBytes }) {
   sections.forEach((sec, i) => { md += (i + 1) + '. [' + sec.title + '](#' + sec.title.toLowerCase().replace(/[^a-z0-9\u4e00-\u9fff]+/g, '-') + ')\n'; });
   md += '\n---\n\n';
   sections.forEach(sec => { md += '## ' + sec.title + '\n\n' + sec.body + '\n'; });
-  if (_ctx.mdFootnotes.length) {
+  if (ctx.mdFootnotes.length) {
     md += '\n---\n\n**脚注**\n\n';
-    _ctx.mdFootnotes.forEach(f => { md += f + '\n'; });
+    ctx.mdFootnotes.forEach(f => { md += f + '\n'; });
   }
   if (failures.length) md += '\n> 以下 topic 加载失败：' + failures.join(', ') + '\n';
   return md;
