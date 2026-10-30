@@ -4,3 +4,4 @@ web/
 .git-output-*.tmp
 .tmp_*
 *.cjs
+.codex/
