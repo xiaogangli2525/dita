@@ -4,6 +4,10 @@
   const A = window.DitaApp;
 ﻿
 const ditaCore = window.DitaVisualCore;
+const workspaceClient = window.DitaWorkspaceClient;
+const fetch = workspaceClient.request;
+const responseError = workspaceClient.error;
+const documentStore = window.DitaDocumentStore;
 const createVisualApiFromCore = ditaCore.createVisualApi;
 const { lineDiff, groupDiffRows, applyDiffGroups, inlineDiff } = ditaCore;
 
@@ -126,6 +130,23 @@ const dom = {
   contextToolbar: document.querySelector('#contextToolbar')
 };
 
+function updateDocumentChrome() {
+  const file = state.filesMap.get(state.activePath);
+  const title = document.getElementById('documentTitle');
+  const location = document.getElementById('documentLocation');
+  const badge = document.getElementById('documentSaveState');
+  const empty = document.getElementById('welcomePanel');
+  if (title) title.textContent = file ? fileNameFromPath(file.path) : '你的文档工作台';
+  if (location) location.textContent = file ? file.path : '选择一个文档，开始专注写作';
+  if (badge) {
+    const dirty = Array.from(state.filesMap.values()).filter(item => item.dirty).length;
+    badge.textContent = saveInProgress ? '正在保存…' : dirty ? `${dirty} 个文档待保存` : file ? '已保存到磁盘' : '本地工作区';
+    badge.dataset.state = saveInProgress ? 'saving' : dirty ? 'dirty' : 'saved';
+  }
+  if (empty) empty.hidden = Boolean(file);
+  document.title = file ? `${fileNameFromPath(file.path)} · DITA Lite` : 'DITA Lite · 文档工作台';
+}
+
 function setStatus(message, isError = false) {
   dom.status.textContent = message;
   dom.status.classList.toggle('status-error', isError);
@@ -141,9 +162,12 @@ function toast(message, level) {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => { el.className = 'toast'; }, 3000);
 }
-Object.assign(A, { state, dom, ditaCore, setStatus, toast,
-  showLoading: function() { document.getElementById('loadingOverlay')?.classList.add('active'); },
-  hideLoading: function() { document.getElementById('loadingOverlay')?.classList.remove('active'); } });
+Object.assign(A, { state, dom, ditaCore, setStatus, toast, api: workspaceClient,
+  setFileContent, validateXml,
+  prepareProposal: (content, instruction = '') => documentStore.createProposal({ file: state.filesMap.get(state.activePath), workspaceToken: workspaceClient.token, content, instruction }, validateXml),
+  applyProposal: proposal => documentStore.applyProposal(proposal, { file: state.filesMap.get(state.activePath), workspaceToken: workspaceClient.token }, validateXml, setFileContent),
+  showLoading: function() { const el = document.getElementById('loadingOverlay'); if (el) { el.classList.add('active'); el.setAttribute('aria-hidden', 'false'); } },
+  hideLoading: function() { const el = document.getElementById('loadingOverlay'); if (el) { el.classList.remove('active'); el.setAttribute('aria-hidden', 'true'); } } });
 
 function setActiveView(view) {
   state.activeView = view;
@@ -203,7 +227,7 @@ function renderWorkspaceSearch(term = '') {
   if (!dom.workspaceSearchResults) return;
   const query = term.trim().toLowerCase();
   dom.workspaceSearchResults.replaceChildren();
-  const matches = state.files.filter(path => !query || path.toLowerCase().includes(query));
+  const matches = flattenFiles(state.files).filter(path => !query || path.toLowerCase().includes(query));
   if (!matches.length) {
     const empty = document.createElement('div');
     empty.className = 'outline-empty';
@@ -493,6 +517,8 @@ function hasUnsavedWork() {
 }
 
 async function reloadWorkspace(result) {
+  workspaceClient.adopt(result.workspaceToken);
+  A.releaseExportPreview?.();
   state.root = result.root;
   state.files = result.files;
   state.maps = result.maps;
@@ -531,7 +557,7 @@ async function loadRepositories() {
 }
 
 async function selectRepository() {
-  if (!hasUnsavedWork()) return;
+  if (!hasUnsavedWork()) { renderWorkspaceSwitches(); return; }
   const repository = dom.repositorySelect.value;
   try {
     const response = await fetch('/api/repository', {
@@ -539,28 +565,31 @@ async function selectRepository() {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ repository })
     });
-    if (!response.ok) throw new Error((await response.json()).error || await response.text());
+    if (!response.ok) throw new Error(await responseError(response));
     await reloadWorkspace(await response.json());
     setStatus('仓库已切换');
   } catch (error) {
+    renderWorkspaceSwitches();
     setStatus(`切换仓库失败：${error.message}`, true);
   }
 }
 
 async function selectBranch() {
-  if (!hasUnsavedWork()) return;
+  if (!hasUnsavedWork()) { renderWorkspaceSwitches(); return; }
   const branch = dom.branchSelect.value;
   try {
     const response = await fetch('/api/branch', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ branch, force: true })
+      body: JSON.stringify({ branch })
     });
-    if (!response.ok) throw new Error((await response.json()).error || await response.text());
+    if (!response.ok) throw new Error(await responseError(response));
     await reloadWorkspace(await response.json());
     setStatus(`分支已切换：${branch}`);
   } catch (error) {
+    renderWorkspaceSwitches();
     setStatus(`切换分支失败：${error.message}`, true);
+    toast(error.message, 'error');
   }
 }
 function renderMapPicker() {
@@ -653,52 +682,27 @@ function updateMapToolbar() {
 
 async function applyMapOperation(operation, details = {}) {
   if (!state.selectedMap) return null;
+  const mapPath = state.selectedMap;
   try {
-    const openMap = state.filesMap.get(state.selectedMap);
-    const requestBody = {
-      path: state.selectedMap,
-      operation,
-      sourcePath: details.sourcePath !== undefined ? details.sourcePath : state.selectedMapSourcePath,
-      ...details
-    };
-    // Apply structural changes to the in-memory document when the map has
-    // unsaved source edits. Otherwise the server would start from the disk
-    // version and silently discard those edits before saving the operation.
-    if (openMap?.dirty && requestBody.content == null) requestBody.content = openMap.current;
+    const file = await ensureMapAuthorFile(mapPath);
+    const before = file.current;
     const response = await fetch('/api/map/operation', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(requestBody)
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ path: mapPath, content: before, operation,
+        sourcePath: details.sourcePath !== undefined ? details.sourcePath : state.selectedMapSourcePath, ...details })
     });
-    if (!response.ok) throw new Error((await response.json()).error || await response.text());
+    if (!response.ok) throw new Error(await responseError(response));
     const result = await response.json();
-
-    const saveResponse = await fetch('/api/file', {
-      method: 'PUT',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ path: state.selectedMap, content: result.content })
-    });
-    if (!saveResponse.ok) throw new Error((await saveResponse.json()).error || await saveResponse.text());
-    const saved = await saveResponse.json();
-
-    const selectedMap = state.maps.find(map => map.path === state.selectedMap);
-    if (selectedMap) {
-      selectedMap.children = result.map.children;
-      const file = state.filesMap.get(state.selectedMap);
-      if (file) {
-        // Map operations are edits too. Preserve the pre-operation content
-        // so the user can undo the operation in the editor.
-        setFileContent(file, saved.content, { updateEditor: false });
-        file.disk = saved.content;
-        file.dirty = false;
-        file.gitStatus = 'modified';
-        if (state.activePath === state.selectedMap) refreshFileViews(file);
-      }
-    }
+    if (file.current !== before) throw new Error('Map 已修改，请重新执行结构操作');
+    const selectedMap = state.maps.find(map => map.path === mapPath);
+    if (selectedMap) Object.assign(selectedMap, result.map);
+    setFileContent(file, result.content);
+    if (state.activePath !== mapPath) await openFile(mapPath);
+    state.historyTargetPath = mapPath;
     state.selectedMapSourcePath = result.selectedSourcePath || '';
     updateTree('');
     renderTabs();
-    setStatus('Map 结构已更新并保存');
+    setStatus('Map 结构已更新；可撤销，按 Ctrl/Cmd+S 保存');
     return result;
   } catch (error) {
     setStatus(`Map 结构操作失败：${error.message}`, true);
@@ -742,6 +746,7 @@ function makeTab(file) {
 }
 
 function renderTabs() {
+  updateDocumentChrome();
   const fragment = document.createDocumentFragment();
   for (const file of state.filesMap.values()) {
     if (/\.ditamap$/i.test(state.activePath) && state.mapAuthorPaths?.has(file.path)) continue;
@@ -772,7 +777,35 @@ function updateHistoryButtons() {
   if (dom.redoButton) dom.redoButton.disabled = !history || history.redo.length === 0;
 }
 
+const mapRefreshTimers = new Map();
+function scheduleMapRefresh(file) {
+  if (!/\.ditamap$/i.test(file.path)) return;
+  clearTimeout(mapRefreshTimers.get(file.path));
+  const workspace = workspaceClient.token;
+  mapRefreshTimers.set(file.path, setTimeout(async () => {
+    mapRefreshTimers.delete(file.path);
+    if (workspace !== workspaceClient.token || state.filesMap.get(file.path) !== file) return;
+    const content = file.current;
+    try {
+      // Incomplete XML during typing is expected; retain the last valid tree.
+      validateXml(content);
+      const response = await fetch('/api/map/resolve', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ path: file.path, content })
+      });
+      if (!response.ok) return;
+      const map = await response.json();
+      if (file.current !== content || state.filesMap.get(file.path) !== file) return;
+      const index = state.maps.findIndex(item => item.path === file.path);
+      if (index < 0) state.maps.push(map); else state.maps[index] = map;
+      if (state.selectedMap === file.path) updateTree();
+      if (state.activePath === file.path && ['visual', 'preview', 'review'].includes(state.mode)) updateMapAuthor(file);
+    } catch { /* An incomplete edit or superseded workspace keeps its buffer. */ }
+  }, 180));
+}
+
 function refreshFileViews(file, { updateEditor = true } = {}) {
+  if (file) scheduleMapRefresh(file);
   if (!file || state.activePath !== file.path) return;
   if (updateEditor) dom.editor.value = file.current;
   if (state.mode === 'visual' || state.mode === 'preview' || state.mode === 'review') {
@@ -864,6 +897,7 @@ function updateActivePanes() {
   renderOutline();
   renderInspector(null);
   updateHistoryButtons();
+  updateDocumentChrome();
 }
 
 async function openFile(path) {
@@ -889,6 +923,8 @@ async function openFile(path) {
       throw error;
     }
   }
+  document.body.classList.remove('sidebar-open');
+  document.getElementById('sidebarToggleButton')?.setAttribute('aria-expanded', 'false');
   state.activePath = path;
   state.historyTargetPath = path;
   const reviewableModes = ['visual', 'preview', 'review'];
@@ -917,6 +953,7 @@ function closeFile(path) {
 }
 
 function setMode(mode) {
+  A.releaseExportPreview?.();
   state.mode = mode;
   dom.editorPane.classList.toggle('active', mode === 'editor');
   // Review keeps the Author surface in the main column. The review pane is a
@@ -929,7 +966,9 @@ function setMode(mode) {
   dom.reviewPane.classList.toggle('active', mode === 'review');
   dom.visualEditor?.classList.toggle('preview-editable', mode === 'preview');
   dom.inspector?.classList.toggle('reviewing', mode === 'review');
-  if (dom.inspectorTitle) dom.inspectorTitle.textContent = mode === 'review' ? '审阅' : 'Attributes';
+  if (dom.inspectorTitle) dom.inspectorTitle.textContent = mode === 'review' ? '变更审阅' : '文档属性';
+  dom.htmlPreviewPane?.classList.remove('active');
+  dom.mdPreviewPane?.classList.remove('active');
   if (dom.inspectorElement) dom.inspectorElement.hidden = mode === 'review';
   if (dom.attributesPanel) dom.attributesPanel.hidden = mode === 'review';
   for (const [button, buttonMode] of [[dom.sourceButton, 'editor'], [dom.visualButton, 'visual'], [dom.previewButton, 'preview']]) {
@@ -992,7 +1031,9 @@ async function fetchPreviewTopic(path) {
   return response.text();
 }
 
+let mapPreviewToken = 0;
 async function updateMapPreview(mapPath) {
+  const token = ++mapPreviewToken;
   try {
     const map = state.maps.find(item => item.path === mapPath);
     if (!map) throw new Error('Map not found');
@@ -1005,6 +1046,7 @@ async function updateMapPreview(mapPath) {
         files.set(entry.path, { path: entry.path, current: '', loadError: error });
       }
     }));
+    if (token !== mapPreviewToken || state.activePath !== mapPath) return;
     dom.preview.replaceChildren(ditaCore.createMapPreview({ map, files, document }));
   } catch (error) {
     const message = document.createElement('p');
@@ -2049,58 +2091,60 @@ function formatContent(text) {
   return `${declaration}\n${doctypeMatch ? doctypeMatch[0] + '\n' : ''}${pretty}\n`;
 }
 
-async function saveFile() {
+const saveDocument = documentStore.createSaveCoordinator(async snapshot => {
+  const response = await fetch('/api/file', {
+    method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify(snapshot)
+  });
+  if (!response.ok) throw new Error(await responseError(response));
+  const result = await response.json();
+  A.clearTopicCache();
+  return result;
+});
+let saveInProgress = null;
+function saveFile() {
+  if (saveInProgress) return saveInProgress;
+  saveInProgress = persistCurrentDocuments().finally(() => { saveInProgress = null; updateDocumentChrome(); });
+  updateDocumentChrome();
+  return saveInProgress;
+}
+async function persistCurrentDocuments() {
   const file = state.filesMap.get(state.activePath);
   if (!file) return false;
+  let savedCount = 0;
   try {
-    if (/\.ditamap$/i.test(file.path)) {
-      const topicFiles = Array.from(state.mapAuthorPaths || [])
-        .map(path => state.filesMap.get(path))
-        .filter(topic => topic?.dirty);
-      if (file.dirty) topicFiles.unshift(file);
-      if (!topicFiles.length) {
-        setStatus('Map Author：没有待保存修改');
-        return true;
-      }
-      for (const topic of topicFiles) {
-        const validation = validateXml(topic.current);
-        const response = await fetch('/api/file', {
-          method: 'PUT',
-          headers: {'content-type':'application/json'},
-          body: JSON.stringify({path: topic.path, content: topic.current})
-        });
-        if (!response.ok) throw new Error((await response.json()).error || await response.text());
-        const result = await response.json();
-        topic.current = result.content;
-        topic.disk = result.content;
-        topic.dirty = false;
-        topic.gitStatus = 'modified';
-        topic.lastValidation = validation.message;
-      }
-      A.clearTopicCache();
-      renderTabs();
-      updateHistoryButtons();
-      setStatus(`Map Author：已保存 ${topicFiles.length} 个 topic`);
-      return true;
+    const isMap = /\.ditamap$/i.test(file.path);
+    let topicPaths = [];
+    if (isMap) {
+      const content = file.current;
+      const response = await fetch('/api/map/resolve', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ path: file.path, content })
+      });
+      if (!response.ok) throw new Error(await responseError(response));
+      const map = await response.json();
+      if (file.current !== content) throw new Error('Map 已修改，请再次保存最新内容');
+      topicPaths = ditaCore.collectPreviewPaths(map.children || []).map(entry => entry.path);
     }
-    const validation = validateXml(file.current);
-    const response = await fetch('/api/file', {
-      method: 'PUT',
-      headers: {'content-type':'application/json'},
-      body: JSON.stringify({path: file.path, content: file.current})
-    });
-    if (!response.ok) throw new Error((await response.json()).error || await response.text());
-    const result = await response.json();
-    file.current = result.content;
-    file.disk = result.content;
-    file.dirty = false;
-    file.gitStatus = 'modified';
-    refreshFileViews(file);
-    A.clearTopicCache();
-    setStatus(`${validation.message}\uFF0C\u5DF2\u4FDD\u5B58`);
-    return true;
+    const files = isMap
+      ? [file, ...topicPaths.map(path => state.filesMap.get(path))].filter((item, i, all) => item?.dirty && all.indexOf(item) === i)
+      : [file];
+    // Validate the complete batch before the first write.
+    for (const item of files) validateXml(item.current);
+    for (const item of files) {
+      validateXml(item.current);
+      await saveDocument(item);
+      savedCount++;
+    }
+    const clean = !file.dirty && files.every(item => !item.dirty);
+    renderTabs();
+    updateHistoryButtons();
+    updateDocumentChrome();
+    setStatus(clean ? `已保存 ${savedCount} 个文档到磁盘 · 尚未提交 Git` : '已保存提交时的版本；新输入的内容仍待保存');
+    return clean;
   } catch (error) {
-    setStatus(`\u4FDD\u5B58\u5931\u8D25\uFF1A${error.message}`, true);
+    renderTabs();
+    setStatus(`${savedCount ? `已保存 ${savedCount} 个文档，其余未保存。` : ''}保存失败：${error.message}`, true);
+    toast(error.message, 'error');
     return false;
   }
 }
@@ -2142,22 +2186,29 @@ async function saveAsFile() {
     return;
   }
 
+  if (target === file.path) { await saveFile(); return; }
+  const snapshot = file.current;
+  let expectedContent;
   async function requestSave(overwrite = false) {
     return fetch('/api/file', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ path: target, content: file.current, overwrite })
+      body: JSON.stringify({ path: target, content: snapshot, overwrite, expectedContent })
     });
   }
 
   try {
     let response = await requestSave(false);
     if (response.status === 409) {
+      const existing = await fetch('/api/file?path=' + encodeURIComponent(target));
+      if (!existing.ok) throw new Error(await responseError(existing));
+      expectedContent = await existing.text();
       if (!confirm(`文件已存在，是否覆盖？\n\n${target}`)) return;
       response = await requestSave(true);
     }
-    if (!response.ok) throw new Error((await response.json().catch(() => null))?.error || await response.text());
+    if (!response.ok) throw new Error(await responseError(response));
     const result = await response.json();
+    A.clearTopicCache();
     const savedPath = result.path || target;
     state.filesMap.set(savedPath, {
       path: savedPath,
@@ -2269,22 +2320,27 @@ async function createNewDocument() {
   const title = prompt('请输入文档标题：', type === 'ditamap' ? '新建 DITA Map' : '新建文档');
   if (title == null) return;
   const content = newDocumentTemplate(type, title.trim() || '新建文档', target);
+  let expectedContent;
   async function requestCreate(overwrite = false) {
     return fetch('/api/file', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ path: target, content, overwrite })
+      body: JSON.stringify({ path: target, content, overwrite, expectedContent })
     });
   }
   try {
     let response = await requestCreate(false);
     if (response.status === 409) {
+      const existing = await fetch('/api/file?path=' + encodeURIComponent(target));
+      if (!existing.ok) throw new Error(await responseError(existing));
+      expectedContent = await existing.text();
       if (!confirm(`文件已存在，是否覆盖？\n\n${target}`)) return;
       response = await requestCreate(true);
     }
-    if (!response.ok) throw new Error((await response.json().catch(() => null))?.error || await response.text());
+    if (!response.ok) throw new Error(await responseError(response));
     const result = await response.json();
     await refreshWorkspaceTree();
+    A.clearTopicCache();
     const savedPath = result.path || target;
     state.filesMap.set(savedPath, {
       path: savedPath,
@@ -2304,6 +2360,29 @@ async function createNewDocument() {
     setStatus(`新建文档失败：${error.message}`, true);
   }
 }
+
+dom.inspectorToggleButton?.addEventListener('click', () => {
+  const open = dom.inspector.classList.toggle('drawer-open');
+  dom.inspectorToggleButton.setAttribute('aria-expanded', String(open));
+});
+document.addEventListener('click', event => {
+  const tools = document.querySelector('.editing-tools');
+  if (tools && !tools.contains(event.target)) tools.open = false;
+});
+document.getElementById('welcomeNewButton')?.addEventListener('click', createNewDocument);
+document.getElementById('sidebarToggleButton')?.addEventListener('click', event => {
+  const open = document.body.classList.toggle('sidebar-open');
+  event.currentTarget.setAttribute('aria-expanded', String(open));
+});
+document.addEventListener('keydown', event => {
+  if (event.key !== 'Escape') return;
+  document.body.classList.remove('sidebar-open');
+  document.getElementById('sidebarToggleButton')?.setAttribute('aria-expanded', 'false');
+  dom.inspector?.classList.remove('drawer-open');
+  dom.inspectorToggleButton?.setAttribute('aria-expanded', 'false');
+  A.closeExportMenu();
+  closeMenu();
+});
 
 dom.editor.addEventListener('input', markDirty);
 dom.visualEditor.addEventListener('input', syncVisualToModel);
@@ -2364,12 +2443,12 @@ dom.saveAsButton?.addEventListener('click', saveAsFile);
 dom.downloadButton?.addEventListener('click', downloadFile);
 dom.previewHtmlButton?.addEventListener('click', () => A.previewMapHtml());
 dom.exportHtmlButton?.addEventListener('click', () => A.exportMapToHtmlFile());
-dom.closeHtmlPreviewButton?.addEventListener('click', () => { dom.htmlPreviewPane.classList.remove('active'); dom.htmlPreviewFrame.src = ''; dom.visualPane.classList.add('active'); });
+dom.closeHtmlPreviewButton?.addEventListener('click', () => { dom.htmlPreviewPane.classList.remove('active'); dom.htmlPreviewFrame.src = ''; setMode(state.mode); });
 dom.previewMdButton?.addEventListener('click', () => A.previewMapMd());
 dom.exportMdButton?.addEventListener('click', () => A.exportMapToMarkdownFile());
 dom.exportMenuButton?.addEventListener('click', (e) => { e.stopPropagation(); A.toggleExportMenu(); });
 [dom.previewHtmlButton, dom.exportHtmlButton, dom.previewMdButton, dom.exportMdButton].forEach(btn => btn?.addEventListener('click', () => A.closeExportMenu()));
-dom.closeMdPreviewButton?.addEventListener('click', () => { dom.mdPreviewPane.classList.remove('active'); dom.mdPreviewContent.innerHTML = ''; dom.visualPane.classList.add('active'); });
+dom.closeMdPreviewButton?.addEventListener('click', () => { dom.mdPreviewPane.classList.remove('active'); dom.mdPreviewContent.innerHTML = ''; setMode(state.mode); });
 dom.branchSelect.addEventListener('change', selectBranch);
 dom.undoButton?.addEventListener('click', undoFile);
 dom.redoButton?.addEventListener('click', redoFile);
@@ -2529,3 +2608,4 @@ async function initialize() {
 
 initialize();
 })();
+

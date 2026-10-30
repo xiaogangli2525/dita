@@ -1,34 +1,45 @@
 'use strict';
-
-// Export functions — loaded before app.js.  Accesses shared state via window.DitaApp.
 (function () {
   const A = window.DitaApp = window.DitaApp || {};
+  // Only deduplicate in-flight reads. Completed disk reads must not outlive an
+  // export; an external editor may change a file without notifying this client.
+  const inFlight = new Map();
+  let epoch = 0;
+  let exporting = false;
+  let previewUrl = '';
+  A.clearTopicCache = function () { epoch++; inFlight.clear(); };
+  A.releaseExportPreview = function () {
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    previewUrl = '';
+  };
+  window.addEventListener('beforeunload', A.releaseExportPreview);
 
-  const topicCache = new Map();
-
-  A.clearTopicCache = function () { topicCache.clear(); };
-
-  A.loadTopicFiles = async function (map) {
-    const { ditaCore } = A;
-    const entries = ditaCore.collectPreviewPaths(map.children || []);
+  A.loadTopicFiles = async function (map, snapshot = A.state.filesMap) {
+    const entries = A.ditaCore.collectPreviewPaths(map.children || []);
     const files = new Map();
     const failures = [];
+    // Freeze buffers before awaiting IO, so a single export sees one revision.
+    const buffers = new Map(Array.from(snapshot, ([path, file]) => [path, file.current]));
     await Promise.all(entries.map(async entry => {
       try {
         let content;
-        if (topicCache.has(entry.path)) {
-          content = await topicCache.get(entry.path);
-        } else {
-          const promise = fetch('/api/file?path=' + encodeURIComponent(entry.path))
-            .then(resp => { if (!resp.ok) throw new Error('fetch failed'); return resp.text(); });
-          topicCache.set(entry.path, promise);
-          content = await promise;
+        if (buffers.has(entry.path)) content = buffers.get(entry.path);
+        else {
+          const key = `${A.api.token}:${epoch}:${entry.path}`;
+          if (!inFlight.has(key)) {
+            const promise = A.api.request('/api/file?path=' + encodeURIComponent(entry.path))
+              .then(async response => {
+                if (!response.ok) throw new Error(await A.api.error(response));
+                return response.text();
+              });
+            inFlight.set(key, promise);
+          }
+          const promise = inFlight.get(key);
+          try { content = await promise; }
+          finally { if (inFlight.get(key) === promise) inFlight.delete(key); }
         }
         files.set(entry.path, { path: entry.path, current: content });
-      } catch (error) {
-        topicCache.delete(entry.path);
-        failures.push({ path: entry.path, error: error.message });
-      }
+      } catch (error) { failures.push({ path: entry.path, error: error.message }); }
     }));
     return { files, failures };
   };
@@ -36,122 +47,92 @@
   A.toggleExportMenu = function () {
     const { dom } = A;
     if (!dom.exportMenu) return;
-    const open = dom.exportMenu.hasAttribute('hidden');
-    if (open) { dom.exportMenu.hidden = false; dom.exportMenuButton.setAttribute('aria-expanded', 'true'); }
-    else { dom.exportMenu.hidden = true; dom.exportMenuButton.setAttribute('aria-expanded', 'false'); }
+    dom.exportMenu.hidden = !dom.exportMenu.hidden;
+    dom.exportMenuButton.setAttribute('aria-expanded', String(!dom.exportMenu.hidden));
   };
-
   A.closeExportMenu = function () {
-    const { dom } = A;
-    if (!dom.exportMenu) return;
-    dom.exportMenu.hidden = true;
-    dom.exportMenuButton?.setAttribute('aria-expanded', 'false');
+    if (!A.dom.exportMenu) return;
+    A.dom.exportMenu.hidden = true;
+    A.dom.exportMenuButton?.setAttribute('aria-expanded', 'false');
   };
-
   A.browserLoadImageBytes = async function (path) {
-    const resp = await fetch('/api/asset?path=' + encodeURIComponent(path));
-    if (!resp.ok) return null;
-    const blob = await resp.blob();
-    return await new Promise((resolve, reject) => {
+    const response = await A.api.request('/api/asset?path=' + encodeURIComponent(path));
+    if (!response.ok) throw new Error(`图片加载失败：${path}`);
+    const blob = await response.blob();
+    return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(reader.result);
-      reader.onerror = reject;
+      reader.onerror = () => reject(new Error(`图片读取失败：${path}`));
       reader.readAsDataURL(blob);
     });
   };
 
-  A.previewMapHtml = async function () {
-    A.showLoading?.();
-    const { state, dom, ditaCore, setStatus, loadTopicFiles, browserLoadImageBytes } = A;
+  async function runExport(format, preview) {
+    if (exporting) return;
+    const { state, dom, ditaCore, setStatus } = A;
     const file = state.filesMap.get(state.activePath);
-    if (!file) return;
-    if (!/\.ditamap$/i.test(file.path)) { setStatus('HTML 预览仅支持 Map 文件', true); return; }
-    const map = state.maps.find(m => m.path === file.path);
-    if (!map) { setStatus('无法找到 Map 对象', true); return; }
+    if (!file || !/\.ditamap$/i.test(file.path)) {
+      setStatus('请先打开一个 Map 文档，再预览或导出', true);
+      return;
+    }
+    const snapshot = new Map(Array.from(state.filesMap, ([path, item]) => [path, { path, current: item.current }]));
+    const source = snapshot.get(file.path);
+    const workspace = A.api.token;
+    exporting = true;
+    A.showLoading?.();
     try {
-      const { files, failures } = await loadTopicFiles(map);
-      if (failures.length) setStatus(failures.length + ' 个 topic 加载失败', true);
-      const html = await ditaCore.exportMapToHtml({ map, files, title: map.title || map.name, loadImageBytes: browserLoadImageBytes });
-      const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      dom.htmlPreviewFrame.src = url;
-      dom.mdPreviewPane?.classList.remove('active');
-      dom.visualPane.classList.remove('active');
-      dom.htmlPreviewPane.classList.add('active');
+      const response = await A.api.request('/api/map/resolve', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ path: source.path, content: source.current })
+      });
+      if (!response.ok) throw new Error(await A.api.error(response));
+      const map = await response.json();
+      const { files, failures } = await A.loadTopicFiles(map, snapshot);
+      if (failures.length) throw new Error(`导出已停止，${failures.length} 个主题无法读取：${failures.map(item => item.path).join('、')}`);
+      const imageFailures = [];
+      const loadImageBytes = async path => {
+        try { return await A.browserLoadImageBytes(path); }
+        catch (error) { imageFailures.push(path); return null; }
+      };
+      const convert = format === 'html' ? ditaCore.exportMapToHtml : ditaCore.exportMapToMarkdown;
+      // Validate every topic first. Core renderers may tolerate failures for
+      // previews, but downloadable documents must not silently omit content.
+      for (const item of files.values()) ditaCore.parseXml(item.current);
+      const output = await convert({ map, files, title: map.title || map.name, loadImageBytes });
+      if (workspace !== A.api.token) throw new Error('工作区已切换，请重新导出');
+      if (imageFailures.length) throw new Error(`导出已停止，图片无法读取：${imageFailures.join('、')}`);
+      if (preview) {
+        if (state.activePath !== source.path) return;
+        dom.editorPane.classList.remove('active');
+        dom.visualPane.classList.remove('active');
+        dom.previewPane.classList.remove('active');
+        dom.htmlPreviewPane.classList.toggle('active', format === 'html');
+        dom.mdPreviewPane.classList.toggle('active', format === 'md');
+        if (format === 'html') {
+          A.releaseExportPreview();
+          previewUrl = URL.createObjectURL(new Blob([output], { type: 'text/html;charset=utf-8' }));
+          dom.htmlPreviewFrame.src = previewUrl;
+        } else dom.mdPreviewContent.innerHTML = ditaCore.highlightMarkdown(output);
+        setStatus('预览已更新 · 包含当前未保存的修改');
+      } else {
+        const url = URL.createObjectURL(new Blob([output], { type: format === 'html' ? 'text/html;charset=utf-8' : 'text/markdown;charset=utf-8' }));
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = source.path.split('/').pop().replace(/\.ditamap$/i, '.' + format);
+        document.body.append(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        setStatus('导出成功 · 包含当前未保存的修改');
+        A.toast?.('文档已导出', 'info');
+      }
     } catch (error) {
-      setStatus('HTML 预览失败：' + error.message, true);
+      setStatus(error.message, true);
       A.toast?.(error.message, 'error');
-    } finally { A.hideLoading?.(); }
-  };
-
-  A.exportMapToHtmlFile = async function () {
-    A.showLoading?.();
-    const { state, ditaCore, setStatus, loadTopicFiles } = A;
-    const file = state.filesMap.get(state.activePath);
-    if (!file) return;
-    if (!/\.ditamap$/i.test(file.path)) { setStatus('导出 HTML 仅支持 Map 文件', true); return; }
-    const map = state.maps.find(m => m.path === file.path);
-    if (!map) { setStatus('无法找到 Map 对象', true); return; }
-    try {
-      const { files, failures } = await loadTopicFiles(map);
-      if (failures.length) setStatus(failures.length + ' 个 topic 加载失败', true);
-      const html = await ditaCore.exportMapToHtml({ map, files, title: map.title || map.name });
-      const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = file.path.replace(/\.ditamap$/i, '.html');
-      link.click();
-      URL.revokeObjectURL(url);
-      setStatus('HTML 导出成功'); A.toast?.('HTML 导出成功', 'info');
-    } catch (error) {
-      setStatus('HTML 导出失败：' + error.message, true); A.toast?.(error.message, 'error');
-    } finally { A.hideLoading?.(); }
-  };
-
-  A.previewMapMd = async function () {
-    A.showLoading?.();
-    const { state, dom, ditaCore, setStatus, loadTopicFiles } = A;
-    const file = state.filesMap.get(state.activePath);
-    if (!file) return;
-    if (!/\.ditamap$/i.test(file.path)) { setStatus('Markdown 预览仅支持 Map 文件', true); return; }
-    const map = state.maps.find(m => m.path === file.path);
-    if (!map) { setStatus('无法找到 Map 对象', true); return; }
-    try {
-      const { files, failures } = await loadTopicFiles(map);
-      if (failures.length) setStatus(failures.length + ' 个 topic 加载失败', true);
-      const md = await ditaCore.exportMapToMarkdown({ map, files, title: map.title || map.name });
-      dom.mdPreviewContent.innerHTML = ditaCore.highlightMarkdown(md);
-      dom.htmlPreviewPane?.classList.remove('active');
-      dom.visualPane.classList.remove('active');
-      dom.mdPreviewPane.classList.add('active');
-    } catch (error) {
-      setStatus('Markdown 预览失败：' + error.message, true); A.toast?.(error.message, 'error');
-    } finally { A.hideLoading?.(); }
-  };
-
-  A.exportMapToMarkdownFile = async function () {
-    A.showLoading?.();
-    const { state, ditaCore, setStatus, loadTopicFiles, browserLoadImageBytes } = A;
-    const file = state.filesMap.get(state.activePath);
-    if (!file) return;
-    if (!/\.ditamap$/i.test(file.path)) { setStatus('导出 Markdown 仅支持 Map 文件', true); return; }
-    const map = state.maps.find(m => m.path === file.path);
-    if (!map) { setStatus('无法找到 Map 对象', true); return; }
-    try {
-      const { files, failures } = await loadTopicFiles(map);
-      if (failures.length) setStatus(failures.length + ' 个 topic 加载失败', true);
-      const md = await ditaCore.exportMapToMarkdown({ map, files, title: map.title || map.name, loadImageBytes: browserLoadImageBytes });
-      const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = file.path.replace(/\.ditamap$/i, '.md');
-      link.click();
-      URL.revokeObjectURL(url);
-      setStatus('Markdown 导出成功'); A.toast?.('Markdown 导出成功', 'info');
-    } catch (error) {
-      setStatus('Markdown 导出失败：' + error.message, true); A.toast?.(error.message, 'error');
-    } finally { A.hideLoading?.(); }
-  };
+    } finally { exporting = false; A.hideLoading?.(); }
+  }
+  A.previewMapHtml = () => runExport('html', true);
+  A.exportMapToHtmlFile = () => runExport('html', false);
+  A.previewMapMd = () => runExport('md', true);
+  A.exportMapToMarkdownFile = () => runExport('md', false);
 })();

@@ -207,3 +207,14 @@ test('N4: invalid numeric character reference does not throw', () => {
   assert.equal(parsed.root.name, 't');
   assert.ok(parsed.root.children[0].value.includes('&#99999999;'), 'invalid entity preserved as-is, not RangeError');
 });
+
+
+
+test('map operations use the exact source paths returned to the UI', async () => {
+  const original = '<map><title>Guide</title><topicref href="a.dita"/><topicref href="b.dita"/></map>';
+  const tree = core.mapNodeToTree(core.parseXml(original).root, 'main.ditamap');
+  const moved = await core.applyMapOperation(original, 'main.ditamap', { operation: 'moveDown', sourcePath: tree[0].sourcePath });
+  assert.deepEqual(moved.map.children.map(node => node.path), ['b.dita', 'a.dita']);
+  const restored = await core.applyMapOperation(moved.content, 'main.ditamap', { operation: 'moveUp', sourcePath: moved.selectedSourcePath });
+  assert.deepEqual(restored.map.children.map(node => node.path), ['a.dita', 'b.dita']);
+});

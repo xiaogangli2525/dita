@@ -2,10 +2,11 @@
   "name": "dita-lite-client",
   "version": "1.0.0",
   "description": "A lightweight local client for reading, editing, and reviewing DITA files.",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "node tests/all.js"
+    "test": "node tests/all.js",
+    "dev": "node scripts/dev-server.js"
   },
   "keywords": [],
   "author": "",
@@ -13,5 +14,8 @@
   "type": "commonjs",
   "dependencies": {
     "iconv-lite": "^0.7.3"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

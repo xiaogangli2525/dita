@@ -3,10 +3,13 @@
 const http = require('http');
 const path = require('path');
 const os = require('os');
-const iconv = require('iconv-lite');
 const fs = require('fs/promises');
 const { existsSync, readdirSync, statSync } = require('fs');
 const { spawn } = require('child_process');
+const { randomUUID } = require('crypto');
+const { createWorkspaceLock } = require('./lib/workspace-lock');
+const workspaceLock = createWorkspaceLock();
+let workspaceToken = randomUUID();
 
 const PORT = Number(process.env.PORT || 5050);
 const HOST = process.env.HOST || '127.0.0.1';
@@ -34,15 +37,19 @@ async function runGitOnce(executable, args, options) {
       const child = spawn(executable, args, {
         cwd: options.cwd,
         windowsHide: true,
-        stdio: ['ignore', handle.fd, 'ignore']
+        stdio: ['ignore', handle.fd, 'pipe']
       });
-      child.once('error', reject);
+      let stderr = '';
+      child.stderr.on('data', chunk => { stderr = (stderr + chunk).slice(-8192); });
+      const timer = setTimeout(() => { child.kill(); reject(new Error('Git command timed out')); }, 30000);
+      child.once('error', error => { clearTimeout(timer); reject(error); });
       child.once('exit', code => {
+        clearTimeout(timer);
         if (code === 0) resolve();
-        else reject(Object.assign(new Error(`Git command failed with exit code ${code}`), { code }));
+        else reject(Object.assign(new Error(`Git command failed with exit code ${code}`), { code, stderr }));
       });
     });
-    return await fs.readFile(output, 'utf8');
+    return await fs.readFile(output, options.binary ? undefined : 'utf8');
   } finally {
     await handle?.close().catch(() => {});
     await fs.rm(output, { force: true }).catch(() => {});
@@ -52,7 +59,7 @@ async function runGitOnce(executable, args, options) {
 async function runGit(args, options = {}) {
   try {
     const git = await findGitExecutable();
-    return await runGitOnce(git, args, { cwd: options.cwd || DOCS_ROOT });
+    return await runGitOnce(git, args, { cwd: options.cwd || DOCS_ROOT, binary: options.binary });
   } catch (error) {
     throw Object.assign(new Error(cleanGitError(error)), { status: Number(options.errorStatus || 500) });
   }
@@ -92,17 +99,17 @@ async function isGitRepository(directory) {
 }
 
 async function resolveSelectedRepository(value) {
-  const target = path.resolve(String(value || ''));
+  const target = await fs.realpath(path.resolve(String(value || '')));
+  const repositoriesRoot = await fs.realpath(REPOSITORIES_ROOT);
   const parent = path.dirname(target);
-  const allowedParents = [REPOSITORIES_ROOT, path.dirname(REPOSITORIES_ROOT)];
-  if (target !== REPOSITORIES_ROOT && !allowedParents.includes(parent)) {
+  if (target !== repositoriesRoot && parent !== repositoriesRoot) {
     throw gitError('Repository must be a direct child of the repositories root', 403);
   }
   const stat = await fs.stat(target).catch(() => null);
   if (!stat?.isDirectory()) throw gitError('Repository directory not found', 404);
   const info = await isGitRepository(target);
   if (!info.ok) throw gitError('Selected directory is not a Git repository', 400);
-  return info.root === path.dirname(REPOSITORIES_ROOT) ? target : info.root;
+  return target;
 }
 
 async function listRepositories() {
@@ -190,44 +197,10 @@ function relativePath(absolutePath) {
   return path.relative(DOCS_ROOT, absolutePath).replace(/\\/g, '/');
 }
 
-function normalizeEncodingName(encoding) {
-  const name = String(encoding || '').trim().toLowerCase();
-  if (name === 'utf8' || name === 'utf-8') return 'utf-8';
-  if (['gb2312', 'gbk', 'cp936'].includes(name)) return 'gb18030';
-  return name || null;
-}
-
-async function readXmlFile(file) {
-  const buffer = await fs.readFile(file);
-  if (buffer.length >= 2 && buffer[0] === 0xff && buffer[1] === 0xfe) {
-    return buffer.toString('utf16le');
-  }
-
-  const head = buffer.subarray(0, Math.min(buffer.length, 1024)).toString('latin1');
-  const declared = /encoding\s*=\s*["']([^"']+)["']/i.exec(head)?.[1];
-  const candidates = [...new Set([normalizeEncodingName(declared), 'utf-8', 'gb18030'].filter(Boolean))];
-
-  for (const candidate of candidates) {
-    try {
-      const text = new TextDecoder(candidate, { fatal: true }).decode(buffer);
-      if (candidate === 'utf-8' && text.includes('\uFFFD')) continue;
-      return text;
-    } catch {
-      // Try the next supported encoding candidate.
-    }
-  }
-
-  return buffer.toString('utf-8');
-}
-
-async function writeXmlFile(file, content) {
-  const declared = /encoding\s*=\s*["']([^"']+)["']/i.exec(content)?.[1];
-  const encoding = normalizeEncodingName(declared);
-  if (encoding && encoding !== 'utf-8') {
-    await fs.writeFile(file, iconv.encode(content, encoding));
-  } else {
-    await fs.writeFile(file, content, 'utf8');
-  }
+const { readXmlFile, writeXmlFile, decodeXmlBuffer, resolveWorkspacePath } = require('./lib/document-files');
+async function checkedResolve(relative, options) {
+  safeResolve(relative);
+  return resolveWorkspacePath(DOCS_ROOT, relative, options);
 }
 
 const MAP_REFERENCE_TAGS = new Set(["map", "bookmap", "topicref", "topichead", "topicgroup", "chapter", "appendix", "notices", "preface", "part", "frontmatter", "backmatter", "booklists"]);
@@ -433,16 +406,8 @@ function serializeXmlNode(node, level = 0) {
   if (node.type !== "element") throw new Error(`Cannot serialize XML node type: ${node.type}`);
 
   const attributes = Object.entries(node.attrs || {}).map(([name, value]) => ` ${name}="${encodeXmlAttribute(value)}"`).join("");
-  const children = node.children.filter(child => child.type !== "text" || child.value.trim() || child.cdata);
-  if (!hasSignificantChildren(node)) return `${"  ".repeat(level)}<${node.name}${attributes}/>`;
-
-  const inline = node.children.some(child => child.type === "text" && child.value.trim());
-  if (inline) return `${"  ".repeat(level)}<${node.name}${attributes}>${children.map(child => serializeXmlNode(child, 0)).join("")}</${node.name}>`;
-  return [
-    `${"  ".repeat(level)}<${node.name}${attributes}>`,
-    ...children.map(child => serializeXmlNode(child, level + 1)),
-    `${"  ".repeat(level)}</${node.name}>`
-  ].join("\n");
+  if (!node.children.length) return `<${node.name}${attributes}/>`;
+  return `<${node.name}${attributes}>${node.children.map(child => serializeXmlNode(child, 0)).join('')}</${node.name}>`;
 }
 
 function serializeXmlDocument(parsed) {
@@ -476,7 +441,7 @@ async function walkFileTree(current = '') {
   });
   const result = [];
   for (const entry of entries) {
-    if (entry.name === '.git') continue;
+    if (entry.name === '.git' || entry.isSymbolicLink()) continue;
     const relative = current ? `${current}/${entry.name}` : entry.name;
     if (entry.isDirectory()) {
       const children = await walkFileTree(relative);
@@ -530,7 +495,7 @@ function mapRefTitle(node, fallback) {
 
 function mapNodeToTree(node, mapPath, sourcePath = '') {
   const tree = [];
-  let childIndex = 0;
+  let childIndex = -1;
   for (const child of node.children) {
     if (child.type === 'element') {
       childIndex++;
@@ -621,7 +586,7 @@ async function validateTopicHref(mapPath, requestHref, dependencies = {}) {
   if (dependencies.resolveTopicHref) return dependencies.resolveTopicHref(mapPath, requestHref);
   const clean = String(requestHref || '').replace(/\\/g, '/').replace(/^\/+/, '');
   if (!clean || clean.includes('\0')) throw Object.assign(new Error('Topic path is required'), { status: 400 });
-  const target = safeResolve(clean);
+  const target = await checkedResolve(clean);
   const stat = await fs.stat(target).catch(() => null);
   if (!stat?.isFile() || !isDitaLike(target)) throw Object.assign(new Error('Topic file not found'), { status: 404 });
   const mapDirectory = path.dirname(safeResolve(mapPath));
@@ -706,7 +671,7 @@ async function buildMapTrees(files) {
   const trees = [];
   for (const mapPath of maps) {
     try {
-      const text = await readXmlFile(safeResolve(mapPath));
+      const text = await readXmlFile(await checkedResolve(mapPath));
       const parsed = parseXml(text);
       trees.push({
         path: mapPath,
@@ -724,14 +689,9 @@ async function buildMapTrees(files) {
 
 async function gitInfo(relativeFilePath) {
   try {
-    const absolute = safeResolve(relativeFilePath);
-    let root = path.dirname(absolute);
-    let gitRelative = path.basename(absolute);
-    while (path.dirname(root) !== root && !existsSync(path.join(root, '.git'))) {
-      root = path.dirname(root);
-      gitRelative = `${path.basename(root)}/${gitRelative}`;
-    }
-    if (path.dirname(root) === root) return { available: false, status: 'no-git', content: '' };
+    const absolute = await checkedResolve(relativeFilePath);
+    const root = await gitRoot(path.dirname(absolute));
+    const gitRelative = path.relative(root, absolute).replace(/\\/g, '/');
     let status = 'unknown';
     try {
       const statusResult = await runGit(['status', '--porcelain', '--', gitRelative], { cwd: root });
@@ -740,7 +700,7 @@ async function gitInfo(relativeFilePath) {
       status = 'unknown';
     }
     try {
-      const content = await runGit(['show', `HEAD:${gitRelative}`], { cwd: root });
+      const content = decodeXmlBuffer(await runGit(['show', `HEAD:${gitRelative}`], { cwd: root, binary: true }));
       return { available: true, status, content };
     } catch {
       return { available: false, status, content: '' };
@@ -753,12 +713,23 @@ async function buildWorkspace() {
   const files = await walkFileTree();
   const maps = await buildMapTrees(files);
   const git = await listBranches();
-  return { root: DOCS_ROOT, files, maps, currentBranch: git.current, branches: git.branches };
+  return { root: DOCS_ROOT, workspaceToken, files, maps, currentBranch: git.current, branches: git.branches };
 }
 
 async function handleApi(req, res, pathname, searchParams) {
+  const suppliedToken = req.headers['x-workspace-token'];
+  const bootstrap = pathname === '/api/repos' || pathname === '/api/workspace' || pathname === '/api/asset';
+  if ((suppliedToken && suppliedToken !== workspaceToken) || (!suppliedToken && !bootstrap)) {
+    res.setHeader('x-workspace-stale', '1');
+    throw gitError('Workspace changed. Reload before continuing.', 409);
+  }
   const origin = req.headers.origin;
   const allowed = ['http://127.0.0.1:' + PORT, 'http://localhost:' + PORT];
+  if (process.env.PUBLIC_ORIGIN) allowed.push(process.env.PUBLIC_ORIGIN);
+  // The demo contains only disposable sample documents and supports a preview proxy.
+  if (process.env.DITA_DEMO_MODE === '1' && origin) {
+    try { if (new URL(origin).host === req.headers.host) allowed.push(origin); } catch {}
+  }
   // Same-origin browser requests (especially GET) often omit the Origin header.
   // Reject only when Origin IS present but does not match (cross-origin CSRF).
   if (origin && !allowed.includes(origin)) {
@@ -780,8 +751,15 @@ async function handleApi(req, res, pathname, searchParams) {
   if (req.method === 'POST' && (pathname === '/api/repository' || pathname === '/api/branch')) {
     const body = await readJson(req);
     if (pathname === '/api/repository') {
-      DOCS_ROOT = await resolveSelectedRepository(body.repository);
-      sendJson(res, 200, await buildWorkspace());
+      const nextRoot = await resolveSelectedRepository(body.repository);
+      const previousRoot = DOCS_ROOT;
+      DOCS_ROOT = nextRoot;
+      let workspace;
+      try { workspace = await buildWorkspace(); }
+      catch (error) { DOCS_ROOT = previousRoot; throw error; }
+      workspaceToken = randomUUID();
+      workspace.workspaceToken = workspaceToken;
+      sendJson(res, 200, workspace);
       return;
     }
 
@@ -792,10 +770,11 @@ async function handleApi(req, res, pathname, searchParams) {
     const branches = await listBranches();
     if (!branches.branches.some(item => item.name === branch)) throw gitError('Branch not found', 404);
     const status = await gitWorktreeStatus();
-    if (!status.clean && body.force !== true) {
-      throw gitError('Working tree is not clean. Confirm the switch to overwrite local changes.', 409);
+    if (!status.clean) {
+      throw gitError('工作区有尚未提交的修改。请先提交或暂存（git stash），再切换分支；当前内容已保留。', 409);
     }
-    await runGit(['switch', '--force', branch]);
+    await runGit(['switch', branch]);
+    workspaceToken = randomUUID();
     sendJson(res, 200, await buildWorkspace());
     return;
   }
@@ -846,7 +825,7 @@ async function handleApi(req, res, pathname, searchParams) {
     return;
   }
   if (req.method === 'GET' && pathname === '/api/asset') {
-    const asset = safeResolve(searchParams.get('path'));
+    const asset = await checkedResolve(searchParams.get('path'));
     const stat = await fs.stat(asset);
     if (!stat.isFile()) throw Object.assign(new Error('Asset not found'), { status: 404 });
     const ext = path.extname(asset).toLowerCase();
@@ -858,9 +837,21 @@ async function handleApi(req, res, pathname, searchParams) {
     return;
   }
 
+  if (req.method === 'POST' && pathname === '/api/map/resolve') {
+    const body = await readJson(req);
+    const file = await checkedResolve(body.path);
+    if (!/\.ditamap$/i.test(file)) throw gitError('Not a DITA map');
+    const parsed = parseXml(String(body.content ?? ''));
+    if (!['map', 'bookmap'].includes(parsed.root.name)) throw gitError('Not a DITA map');
+    sendJson(res, 200, { path: body.path, name: path.basename(file),
+      title: textOf(childElement(childElement(parsed.root, 'booktitle'), 'mainbooktitle')).trim() || textOf(childElement(parsed.root, 'title')).trim() || path.basename(file),
+      children: mapNodeToTree(parsed.root, body.path) });
+    return;
+  }
+
   if (req.method === 'POST' && pathname === '/api/map/operation') {
     const body = await readJson(req);
-    const mapFile = safeResolve(body.path);
+    const mapFile = await checkedResolve(body.path);
     const stat = await fs.stat(mapFile);
     if (!stat.isFile() || !/\.ditamap$/i.test(mapFile)) throw Object.assign(new Error('Not a DITA map file'), { status: 404 });
     const content = body.content == null ? await readXmlFile(mapFile) : String(body.content);
@@ -875,7 +866,7 @@ async function handleApi(req, res, pathname, searchParams) {
   }
 
   if (req.method === 'GET' && pathname === '/api/file') {
-    const file = safeResolve(searchParams.get('path'));
+    const file = await checkedResolve(searchParams.get('path'));
     const stat = await fs.stat(file);
     if (!stat.isFile() || !isDitaLike(file)) throw Object.assign(new Error('Not a DITA/XML file'), { status: 404 });
     sendText(res, 200, await readXmlFile(file), 'application/xml');
@@ -892,7 +883,7 @@ async function handleApi(req, res, pathname, searchParams) {
     if (!isDitaLike(requestedPath)) {
       throw Object.assign(new Error('Save As path must end with .dita, .ditamap, or .xml'), { status: 400 });
     }
-    const file = safeResolve(requestedPath);
+    const file = await checkedResolve(requestedPath, { create: true });
     const parent = await fs.stat(path.dirname(file)).catch(() => null);
     if (!parent?.isDirectory()) {
       throw Object.assign(new Error('Save As directory does not exist'), { status: 400 });
@@ -907,7 +898,10 @@ async function handleApi(req, res, pathname, searchParams) {
     const content = String(body.content ?? '');
     const parsed = parseXml(content);
     if (!parsed.root) throw Object.assign(new Error('XML has no root element'), { status: 400 });
-    await writeXmlFile(file, content);
+    if (existing?.isFile() && (typeof body.expectedContent !== 'string' || body.expectedContent !== await readXmlFile(file))) {
+      throw gitError('File changed since it was read. Reopen before overwriting.', 409);
+    }
+    await writeXmlFile(file, content, { createOnly: !existing });
     const saved = await readXmlFile(file);
     sendJson(res, 201, { saved: true, created: !existing, path: relativePath(file), content: saved });
     return;
@@ -915,12 +909,15 @@ async function handleApi(req, res, pathname, searchParams) {
 
   if (req.method === 'PUT' && pathname === '/api/file') {
     const body = await readJson(req);
-    const file = safeResolve(body.path);
+    const file = await checkedResolve(body.path);
     const stat = await fs.stat(file);
     if (!stat.isFile() || !isDitaLike(file)) throw Object.assign(new Error('Not a DITA/XML file'), { status: 404 });
     const content = String(body.content ?? '');
     const parsed = parseXml(content);
     if (!parsed.root) throw Object.assign(new Error('XML has no root element'), { status: 400 });
+    if (typeof body.expectedContent !== 'string' || body.expectedContent !== await readXmlFile(file)) {
+      throw gitError('文件已在磁盘上变化。请下载保留当前修改，再重新打开文件进行比较。', 409);
+    }
     await writeXmlFile(file, content);
     const saved = await readXmlFile(file);
     sendJson(res, 200, { saved: true, content: saved });
@@ -949,7 +946,7 @@ const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
     if (url.pathname.startsWith('/api/')) {
-      await handleApi(req, res, url.pathname, url.searchParams);
+      await workspaceLock(req.method !== 'GET', () => handleApi(req, res, url.pathname, url.searchParams));
       return;
     }
     if (await serveStatic(res, url.pathname === '/' ? '/index.html' : url.pathname)) return;
@@ -967,5 +964,6 @@ if (require.main === module) {
   });
 }
 
-module.exports = { parseXml, decodeEntities, elementChildren, childElement, textOf, resolveHref, mapRefTitle, mapNodeToTree, serializeXmlNode, serializeXmlDocument, applyMapOperation, readXmlFile, writeXmlFile, listRepositories, listBranches, gitWorktreeStatus, resolveSelectedRepository, setDocsRoot: value => { DOCS_ROOT = path.resolve(value); } };
+module.exports = { server, gitInfo, parseXml, decodeEntities, elementChildren, childElement, textOf, resolveHref, mapRefTitle, mapNodeToTree, serializeXmlNode, serializeXmlDocument, applyMapOperation, readXmlFile, writeXmlFile, listRepositories, listBranches, gitWorktreeStatus, resolveSelectedRepository, setDocsRoot: value => { DOCS_ROOT = path.resolve(value); } };
+
 

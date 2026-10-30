@@ -8,7 +8,7 @@ const VISUAL_TO_DITA = new Map(Object.entries({
   p: 'p', ol: 'ol', ul: 'ul', li: 'li', pre: 'pre', table: 'table', image: 'image'
 }));
 
-let _ctx = { topicPath: '', imageDataCache: new Map(), fnCounter: 0, mdFnCounter: 0, mdFootnotes: [] };
+let _ctx = { topicPath: '', imageDataCache: new Map(), fnCounter: 0, mdFnCounter: 0, mdFootnotes: [] };
 function resolveAssetPath(href, ctx) {
   ctx = ctx || _ctx;
   if (!href) return '';
@@ -1051,7 +1051,7 @@ function ditaToHtml(node, ctx) {
     const href = node.getAttribute('href') || '';
     const alt = node.getAttribute('alt') || '';
     const resolved = resolveAssetPath(href, ctx);
-    const src = ctx.imageDataCache.has(resolved) ? ctx.imageDataCache.get(resolved) : '/api/asset?path=' + encodeURIComponent(resolved);
+    const src = ctx.imageDataCache.has(resolved) ? ctx.imageDataCache.get(resolved) : /^(https?:|data:)/i.test(resolved) ? resolved : '/api/asset?path=' + encodeURIComponent(resolved);
     return '<img src="' + escapeHtmlAttr(src) + '" alt="' + escapeHtmlAttr(alt) + '" style="max-width:100%;"/>';
   }
   if (tag === 'xref') {
@@ -1834,3 +1834,4 @@ const _exports = {
 };
 if (typeof module !== 'undefined') module.exports = _exports;
 if (typeof window !== 'undefined') window.DitaVisualCore = _exports;
+
