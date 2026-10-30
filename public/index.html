@@ -1,0 +1,182 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DITA Lite Client</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="app-titlebar">
+      <div class="brand">
+        <span class="brand-mark">O</span>
+        <strong>DITA Lite</strong>
+        <span id="rootPath">未加载</span>
+      </div>
+      <div class="titlebar-context">Web Author 工作区</div>
+    </div>
+    <nav class="main-menu" aria-label="主菜单">
+      <button type="button" data-menu="file">文件</button>
+      <button type="button" data-menu="edit">编辑</button>
+      <button type="button" data-menu="view">查看</button>
+      <button type="button" data-menu="dita">DITA</button>
+      <button type="button" data-menu="help">帮助</button>
+    </nav>
+    <div id="menuPopup" class="menu-popup" hidden></div>
+    <div class="toolbar">
+      <div class="toolbar-group workspace-group">
+        <label class="workspace-switch"><span>仓库</span><select id="repositorySelect"></select></label>
+        <label class="workspace-switch"><span>分支</span><select id="branchSelect"></select></label>
+      </div>
+      <span class="toolbar-divider" aria-hidden="true"></span>
+      <div class="toolbar-group mode-group" aria-label="编辑模式">
+        <button id="sourceButton" type="button" class="tool-button">Source 源码</button>
+        <button id="visualButton" type="button" class="tool-button active">Author</button>
+        <button id="previewButton" type="button" class="tool-button" title="预览与编辑（可直接修改内容）">预览/编辑</button>
+      </div>
+      <span class="toolbar-divider" aria-hidden="true"></span>
+      <div class="toolbar-group edit-group" aria-label="编辑操作">
+        <button id="undoButton" type="button" title="撤销 (Ctrl+Z)" disabled>撤销</button>
+        <button id="redoButton" type="button" title="重做 (Ctrl+Y)" disabled>重做</button>
+        <button id="formatButton" type="button">格式化</button>
+        <button id="findReplaceButton" type="button" title="在当前 DITA 文档中查找和替换">查找</button>
+        <label class="insert-element-control" title="在编辑器光标处插入 DITA 元素">
+          <span>插入</span>
+          <select id="insertElementSelect" aria-label="选择 DITA 元素">
+            <option value="p">段落 p</option>
+            <option value="section">节 section</option>
+            <option value="ul">无序列表 ul</option>
+            <option value="ol">有序列表 ol</option>
+            <option value="note">说明 note</option>
+            <option value="codeblock">代码块 codeblock</option>
+            <option value="table">表格 table</option>
+            <option value="image">图片 image</option>
+            <option value="xref">交叉引用 xref</option>
+            <option value="ph">短语 ph</option>
+            <option value="b">粗体 b</option>
+            <option value="i">斜体 i</option>
+          </select>
+        </label>
+        <button id="insertElementButton" type="button" title="在编辑器光标处插入所选 DITA 元素">插入</button>
+      </div>
+      <span class="toolbar-divider" aria-hidden="true"></span>
+      <div class="toolbar-group file-group" aria-label="文件操作">
+        <button id="newDocumentButton" type="button" title="创建新的 DITA 文档或 Map">新建</button>
+        <button id="validateButton" type="button">校验</button>
+        <button id="saveButton" type="button" class="primary-action">保存</button>
+        <button id="saveAsButton" type="button" title="将当前文档另存为新文件">另存为</button>
+        <button id="downloadButton" type="button" title="下载当前文档">下载</button>
+        <button id="previewHtmlButton" type="button" title="预览 Map 导出为 HTML 后的效果">预览 HTML</button>
+        <button id="exportHtmlButton" type="button" title="将当前 Map 导出为单文件 HTML（含目录和修订标记）">导出 HTML</button>
+        <button id="previewMdButton" type="button" title="预览 Map 导出为 Markdown 后的效果">预览 MD</button>
+        <button id="exportMdButton" type="button" title="将当前 Map 导出为 Markdown 文件">导出 MD</button>
+        <button id="reviewButton" type="button">审阅</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="layout">
+    <aside class="sidebar">
+      <div class="view-tabs" role="tablist" aria-label="视图">
+        <button type="button" class="view-tab active" data-view="map" role="tab">Map</button>
+        <button type="button" class="view-tab" data-view="outline" role="tab">Outline</button>
+        <button type="button" class="view-tab" data-view="search" role="tab">Search</button>
+      </div>
+      <div id="mapView" class="view-panel active">
+      <div class="panel-title">DITA Map</div>
+      <div id="mapPicker" class="map-picker"></div>
+      <div class="sidebar-search">
+        <span aria-hidden="true">⌕</span>
+        <input id="search" type="search" placeholder="过滤文件和节点" autocomplete="off" />
+      </div>
+      <div id="mapToolbar" class="map-toolbar">
+        <button id="moveMapUpButton" type="button" title="上移选中的 Map 节点">上移</button>
+        <button id="moveMapDownButton" type="button" title="下移选中的 Map 节点">下移</button>
+        <button id="promoteMapButton" type="button" title="升级选中的 Map 节点">升级</button>
+        <button id="demoteMapButton" type="button" title="降级选中的 Map 节点">降级</button>
+        <button id="removeMapButton" type="button" title="删除选中的 Map 节点">删除</button>
+        <button id="addTopicrefButton" type="button" title="向选中容器添加 topicref">加引用</button>
+        <button id="addTopicheadButton" type="button" title="添加 topichead 分组">加分组</button>
+      </div>
+      <div id="tree" class="tree"></div>
+      </div>
+      <div id="outlineView" class="view-panel" hidden>
+        <div class="panel-title">Document Outline</div>
+        <div id="outline" class="outline"></div>
+      </div>
+      <div id="searchView" class="view-panel" hidden>
+        <div class="panel-title">Search in workspace</div>
+        <div class="workspace-search">
+          <input id="workspaceSearchInput" type="search" placeholder="搜索文件名或标题" autocomplete="off" />
+          <div id="workspaceSearchResults" class="workspace-search-results"></div>
+        </div>
+      </div>
+    </aside>
+
+    <section class="content">
+      <div id="tabs" class="tabs"></div>
+      <div id="editSearchPanel" class="edit-search-panel" hidden>
+        <label>查找 <input id="editFindInput" type="search" autocomplete="off" /></label>
+        <label>替换为 <input id="editReplaceInput" type="text" autocomplete="off" /></label>
+        <label class="edit-search-case"><input id="editFindCase" type="checkbox" /> 区分大小写</label>
+        <button id="editFindNextButton" type="button">查找下一个</button>
+        <button id="editReplaceButton" type="button">替换</button>
+        <button id="editReplaceAllButton" type="button">全部替换</button>
+        <button id="editFindCloseButton" class="edit-search-close" type="button" title="关闭查找面板">关闭</button>
+        <span id="editFindMeta" class="edit-search-meta" aria-live="polite"></span>
+      </div>
+      <div id="editorPane" class="editor-pane">
+        <textarea id="editor" spellcheck="false" placeholder="请选择左侧 DITA 文件"></textarea>
+      </div>
+      <div id="visualPane" class="visual-pane active">
+        <div id="visualEditor" contenteditable="true" class="visual-editor dita-preview"></div>
+      </div>
+      <div id="previewPane" class="preview-pane">
+        <article id="preview" class="dita-preview"></article>
+      </div>
+      <div id="htmlPreviewPane" class="preview-pane html-preview-pane">
+        <div class="html-preview-toolbar"><span>HTML 预览</span><button id="closeHtmlPreviewButton" type="button">关闭</button></div>
+        <iframe id="htmlPreviewFrame" sandbox="allow-same-origin" title="HTML 预览"></iframe>
+      </div>
+      <div id="mdPreviewPane" class="preview-pane md-preview-pane">
+        <div class="md-preview-toolbar"><span>Markdown 预览</span><button id="closeMdPreviewButton" type="button">关闭</button></div>
+        <pre id="mdPreviewContent" class="md-preview-content"></pre>
+      </div>
+    </section>
+    <aside id="inspector" class="inspector" aria-label="属性检查器">
+      <div class="inspector-header">
+        <span id="inspectorTitle">Attributes</span>
+        <span id="inspectorElement" class="inspector-element">未选择元素</span>
+      </div>
+      <div id="contextToolbar" class="context-toolbar" hidden>
+        <span class="context-label">元素</span>
+        <button type="button" data-context-action="before">上方插入</button>
+        <button type="button" data-context-action="after">下方插入</button>
+        <button type="button" data-context-action="delete">删除元素</button>
+      </div>
+      <div id="attributesPanel" class="attributes-panel">
+        <div class="inspector-empty">在 Author 视图中选择一个元素以查看属性。</div>
+      </div>
+      <div id="reviewPane" class="review-pane" aria-label="审阅变更">
+        <div class="review-toolbar">
+          <span class="review-title">审阅变更</span>
+          <button id="acceptAllButton" type="button">接受全部</button>
+          <button id="rejectAllButton" type="button">拒绝全部</button>
+          <button id="closeReviewButton" type="button">关闭审阅</button>
+          <span id="reviewMeta" class="review-meta"></span>
+        </div>
+        <div id="diff" class="diff"></div>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="statusbar">
+    <span id="status" class="status">就绪</span>
+    <span class="statusbar-hint">Ctrl/Cmd+S 保存 · Ctrl/Cmd+F 查找</span>
+  </footer>
+
+  <script src="/app-core.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>
