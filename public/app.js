@@ -1,4 +1,5 @@
-﻿(() => {
+'use strict';
+(() => {
 ﻿
 const ditaCore = window.DitaVisualCore;
 const createVisualApiFromCore = ditaCore.createVisualApi;
@@ -2087,6 +2088,21 @@ function fileNameFromPath(filePath) {
   return String(filePath || '').split('/').pop() || 'document.dita';
 }
 
+async function loadTopicFiles(map) {
+  const entries = ditaCore.collectPreviewPaths(map.children || []);
+  const files = new Map();
+  const failures = [];
+  await Promise.all(entries.map(async entry => {
+    try {
+      const resp = await fetch('/api/file?path=' + encodeURIComponent(entry.path));
+      if (!resp.ok) throw new Error(await resp.text());
+      files.set(entry.path, { path: entry.path, current: await resp.text() });
+    } catch (error) {
+      failures.push({ path: entry.path, error: error.message });
+    }
+  }));
+  return { files, failures };
+}
 async function previewMapHtml() {
   const file = state.filesMap.get(state.activePath);
   if (!file) return;
@@ -2100,17 +2116,8 @@ async function previewMapHtml() {
     return;
   }
   try {
-    const entries = ditaCore.collectPreviewPaths(map.children || []);
-    const files = new Map();
-    await Promise.all(entries.map(async entry => {
-      try {
-        const resp = await fetch('/api/file?path=' + encodeURIComponent(entry.path));
-        if (!resp.ok) throw new Error(await resp.text());
-        files.set(entry.path, { path: entry.path, current: await resp.text() });
-      } catch (error) {
-        console.warn('skip', entry.path, error.message);
-      }
-    }));
+    const { files, failures } = await loadTopicFiles(map);
+    if (failures.length) setStatus(failures.length + ' 个 topic 加载失败', true);
     const html = await ditaCore.exportMapToHtml({ map, files, title: map.title || map.name });
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
     const url = URL.createObjectURL(blob);
@@ -2135,17 +2142,8 @@ async function exportMapToHtmlFile() {
     return;
   }
   try {
-    const entries = ditaCore.collectPreviewPaths(map.children || []);
-    const files = new Map();
-    await Promise.all(entries.map(async entry => {
-      try {
-        const resp = await fetch('/api/file?path=' + encodeURIComponent(entry.path));
-        if (!resp.ok) throw new Error(await resp.text());
-        files.set(entry.path, { path: entry.path, current: await resp.text() });
-      } catch (error) {
-        console.warn('skip', entry.path, error.message);
-      }
-    }));
+    const { files, failures } = await loadTopicFiles(map);
+    if (failures.length) setStatus(failures.length + ' 个 topic 加载失败', true);
     const html = await ditaCore.exportMapToHtml({ map, files, title: map.title || map.name });
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
     const url = URL.createObjectURL(blob);
@@ -2172,17 +2170,8 @@ async function previewMapMd() {
     return;
   }
   try {
-    const entries = ditaCore.collectPreviewPaths(map.children || []);
-    const files = new Map();
-    await Promise.all(entries.map(async entry => {
-      try {
-        const resp = await fetch('/api/file?path=' + encodeURIComponent(entry.path));
-        if (!resp.ok) throw new Error(await resp.text());
-        files.set(entry.path, { path: entry.path, current: await resp.text() });
-      } catch (error) {
-        console.warn('skip', entry.path, error.message);
-      }
-    }));
+    const { files, failures } = await loadTopicFiles(map);
+    if (failures.length) setStatus(failures.length + ' 个 topic 加载失败', true);
     const md = await ditaCore.exportMapToMarkdown({ map, files, title: map.title || map.name, embedImages: false });
     dom.mdPreviewContent.innerHTML = ditaCore.highlightMarkdown(md);
     dom.htmlPreviewPane?.classList.remove('active');
@@ -2205,17 +2194,8 @@ async function exportMapToMarkdownFile() {
     return;
   }
   try {
-    const entries = ditaCore.collectPreviewPaths(map.children || []);
-    const files = new Map();
-    await Promise.all(entries.map(async entry => {
-      try {
-        const resp = await fetch('/api/file?path=' + encodeURIComponent(entry.path));
-        if (!resp.ok) throw new Error(await resp.text());
-        files.set(entry.path, { path: entry.path, current: await resp.text() });
-      } catch (error) {
-        console.warn('skip', entry.path, error.message);
-      }
-    }));
+    const { files, failures } = await loadTopicFiles(map);
+    if (failures.length) setStatus(failures.length + ' 个 topic 加载失败', true);
     const md = await ditaCore.exportMapToMarkdown({ map, files, title: map.title || map.name, embedImages: true });
     const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
     const url = URL.createObjectURL(blob);

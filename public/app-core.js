@@ -8,13 +8,12 @@ const VISUAL_TO_DITA = new Map(Object.entries({
   p: 'p', ol: 'ol', ul: 'ul', li: 'li', pre: 'pre', table: 'table', image: 'image'
 }));
 
-let _currentTopicPath = '';
-const _imageDataCache = new Map();
+let _ctx = { topicPath: '', imageDataCache: new Map(), fnCounter: 0, mdFnCounter: 0, mdFootnotes: [] };
 function resolveAssetPath(href) {
   if (!href) return '';
   let raw = decodeURIComponent(href.split('?')[0].split('#')[0]);
   if (/^(https?:|data:|\/)/i.test(raw)) return raw;
-  const topicDir = _currentTopicPath ? _currentTopicPath.replace(/[^\/]+$/, '') : '';
+  const topicDir = _ctx.topicPath ? _ctx.topicPath.replace(/[^\/]+$/, '') : '';
   const combined = topicDir + raw;
   const parts = combined.split('/');
   const result = [];
@@ -390,10 +389,10 @@ function updateVisualFromXml(state, dom, source, documentRef = document, normali
   dom.visualEditor.replaceChildren(...container.childNodes);
 }
 
-let fnCounter = 0;
-function resetFnCounter() { fnCounter = 0; }
+
+function resetFnCounter() { _ctx.fnCounter = 0; }
 function createAuthorTopic(source, documentRef = document, normalizeOxy = false, topicPath = '') {
-  _currentTopicPath = topicPath;
+  _ctx.topicPath = topicPath;
   resetFnCounter();
   const doc = parseXml(source);
   if (normalizeOxy) normalizeOxyPIs(doc, true);
@@ -615,10 +614,10 @@ function renderAuthorNode(node, documentRef = document) {
     return el;
   }
   if (tag === 'fn') {
-    fnCounter++;
+    _ctx.fnCounter++;
     const sup = documentRef.createElement('sup');
     sup.className = 'fn-ref';
-    sup.textContent = '[' + fnCounter + ']';
+    sup.textContent = '[' + _ctx.fnCounter + ']';
     sup.title = node.textContent.trim();
     sup.dataset.fnText = node.textContent.trim();
     return sup;
@@ -875,10 +874,10 @@ function renderPreviewNode(node, documentRef = document) {
     return el;
   }
   if (tag === 'fn') {
-    fnCounter++;
+    _ctx.fnCounter++;
     const sup = documentRef.createElement('sup');
     sup.className = 'fn-ref';
-    sup.textContent = '[' + fnCounter + ']';
+    sup.textContent = '[' + _ctx.fnCounter + ']';
     sup.title = node.textContent.trim();
     sup.dataset.fnText = node.textContent.trim();
     return sup;
@@ -920,7 +919,7 @@ if (tag === 'ins') {
 }
 
 function renderPreviewContent(text, documentRef = document, topicPath = '') {
-  _currentTopicPath = topicPath;
+  _ctx.topicPath = topicPath;
   resetFnCounter();
   const doc = parseXml(text);
   normalizeOxyPIs(doc);
@@ -1050,7 +1049,7 @@ function ditaToHtml(node) {
     const href = node.getAttribute('href') || '';
     const alt = node.getAttribute('alt') || '';
     const resolved = resolveAssetPath(href);
-    const src = _imageDataCache.has(resolved) ? _imageDataCache.get(resolved) : '/api/asset?path=' + encodeURIComponent(resolved);
+    const src = _ctx.imageDataCache.has(resolved) ? _ctx.imageDataCache.get(resolved) : '/api/asset?path=' + encodeURIComponent(resolved);
     return '<img src="' + escapeHtmlAttr(src) + '" alt="' + escapeHtmlAttr(alt) + '" style="max-width:100%;"/>';
   }
   if (tag === 'xref') {
@@ -1077,19 +1076,19 @@ async function exportMapToHtml({ map, files, title }) {
   const entries = collectPreviewPaths(map.children || []);
   const sections = [];
   const failures = [];
-  _imageDataCache.clear();
+  _ctx.imageDataCache.clear();
   const imagePaths = new Set();
   for (const entry of entries) {
     try {
       const cached = files.get(entry.path);
       if (!cached) throw new Error('not loaded');
       const preDoc = parseXml(cached.current);
-      _currentTopicPath = entry.path;
+      _ctx.topicPath = entry.path;
       for (const img of preDoc.querySelectorAll('image')) {
         const r2 = resolveAssetPath(img.getAttribute('href') || '');
         if (r2 && !/^(https?:|data:|\/)/i.test(r2)) imagePaths.add(r2);
       }
-    } catch (e) {}
+    } catch (e) { console.warn('image pre-fetch parse error:', e.message); }
   }
   await Promise.all(Array.from(imagePaths).map(async (p) => {
     try {
@@ -1102,14 +1101,14 @@ async function exportMapToHtml({ map, files, title }) {
         reader.onerror = reject;
         reader.readAsDataURL(blob);
       });
-      _imageDataCache.set(p, dataUri);
-    } catch (e) {}
+      _ctx.imageDataCache.set(p, dataUri);
+    } catch (e) { console.warn('image fetch failed:', p, e.message); }
   }));
   for (const entry of entries) {
     try {
       const cached = files.get(entry.path);
       if (!cached) throw new Error('not loaded');
-      _currentTopicPath = entry.path;
+      _ctx.topicPath = entry.path;
       const doc = parseXml(cached.current);
       normalizeOxyPIs(doc);
       const topic = doc.documentElement;
@@ -1217,8 +1216,8 @@ function mdInline(node) {
   if (tag === 'sub') return '<sub>' + inner() + '</sub>';
   if (['codeph', 'filepath', 'varname', 'parmname', 'msgph'].includes(tag)) return '`' + node.textContent + '`';
   if (tag === 'xref') { const h = node.getAttribute('href') || ''; return '[' + inner() + '](' + h + ')'; }
-  if (tag === 'image') { const resolved = resolveAssetPath(node.getAttribute('href') || ''); const a = node.getAttribute('alt') || ''; const src = _imageDataCache.has(resolved) ? _imageDataCache.get(resolved) : resolved; return '![' + a + '](' + src + ')'; }
-  if (tag === 'fn') return '[^' + (++mdFnCounter) + ']';
+  if (tag === 'image') { const resolved = resolveAssetPath(node.getAttribute('href') || ''); const a = node.getAttribute('alt') || ''; const src = _ctx.imageDataCache.has(resolved) ? _ctx.imageDataCache.get(resolved) : resolved; return '![' + a + '](' + src + ')'; }
+  if (tag === 'fn') return '[^' + (++_ctx.mdFnCounter) + ']';
   if (tag === 'ins' && (node.getAttribute('class') || '').includes('oxy-insert')) return '**' + inner() + '**';
   if (tag === 'del' && (node.getAttribute('class') || '').includes('oxy-delete')) return '~~' + node.textContent + '~~';
   if (tag === 'span' && (node.getAttribute('class') || '').includes('oxy-comment')) { const c = node.getAttribute('data-comment') || ''; return '<!-- ' + c + ' -->'; }
@@ -1226,7 +1225,7 @@ function mdInline(node) {
   return inner();
 }
 
-let mdFnCounter = 0;
+
 
 function ditaToMarkdown(node) {
   if (node.nodeType === 3) { const t = node.data.replace(/\s+/g, ' '); return t; }
@@ -1260,7 +1259,7 @@ function ditaToMarkdown(node) {
     const href = node.getAttribute('href') || '';
     const a = node.getAttribute('alt') || '';
     const resolved = resolveAssetPath(href);
-    const src = _imageDataCache.has(resolved) ? _imageDataCache.get(resolved) : resolved;
+    const src = _ctx.imageDataCache.has(resolved) ? _ctx.imageDataCache.get(resolved) : resolved;
     return '![' + a + '](' + src + ')\n\n';
   }
 
@@ -1279,7 +1278,7 @@ function ditaToMarkdown(node) {
   if (tag === 'table') return mdTable(node);
   if (tag === 'dl') return mdDl(node);
 
-  if (tag === 'fn') { const t = node.textContent.trim(); mdFootnotes.push((mdFootnotes.length + 1) + ': ' + t); return '[^' + (++mdFnCounter) + ']'; }
+  if (tag === 'fn') { const t = node.textContent.trim(); _ctx.mdFootnotes.push((_ctx.mdFootnotes.length + 1) + ': ' + t); return '[^' + (++_ctx.mdFnCounter) + ']'; }
 
   if (tag === 'section' || tag === 'example') {
     const tEl = Array.from(node.childNodes).find(n => n.localName === 'title');
@@ -1291,7 +1290,7 @@ function ditaToMarkdown(node) {
   return children();
 }
 
-const mdFootnotes = [];
+
 
 function mdList(node, ordered) {
   const items = Array.from(node.childNodes).filter(n => n.localName === 'li' || n.localName === 'sli');
@@ -1343,18 +1342,18 @@ function mdDl(node) {
 }
 
 async function exportMapToMarkdown({ map, files, title, embedImages = true }) {
-  mdFnCounter = 0;
-  mdFootnotes.length = 0;
+  _ctx.mdFnCounter = 0;
+  _ctx.mdFootnotes.length = 0;
   const entries = collectPreviewPaths(map.children || []);
   const sections = [];
   const failures = [];
-  _imageDataCache.clear();
+  _ctx.imageDataCache.clear();
   if (!embedImages) {
     for (const entry of entries) {
       try {
         const cached = files.get(entry.path);
         if (!cached) throw new Error('not loaded');
-        _currentTopicPath = entry.path;
+        _ctx.topicPath = entry.path;
         const doc = parseXml(cached.current);
         normalizeOxyPIs(doc);
         const topic = doc.documentElement;
@@ -1374,9 +1373,9 @@ async function exportMapToMarkdown({ map, files, title, embedImages = true }) {
     sections.forEach((sec, i) => { md += (i + 1) + '. [' + sec.title + '](#' + sec.title.toLowerCase().replace(/[^a-z0-9\u4e00-\u9fff]+/g, '-') + ')\n'; });
     md += '\n---\n\n';
     sections.forEach(sec => { md += '## ' + sec.title + '\n\n' + sec.body + '\n'; });
-    if (mdFootnotes.length) {
+    if (_ctx.mdFootnotes.length) {
       md += '\n---\n\n**\u811a\u6ce8**\n\n';
-      mdFootnotes.forEach(f => { md += f + '\n'; });
+      _ctx.mdFootnotes.forEach(f => { md += f + '\n'; });
     }
     if (failures.length) md += '\n> \u4ee5\u4e0b topic \u52a0\u8f7d\u5931\u8d25\uff1a' + failures.join(', ') + '\n';
     return md;
@@ -1387,12 +1386,12 @@ async function exportMapToMarkdown({ map, files, title, embedImages = true }) {
       const cached = files.get(entry.path);
       if (!cached) throw new Error('not loaded');
       const preDoc = parseXml(cached.current);
-      _currentTopicPath = entry.path;
+      _ctx.topicPath = entry.path;
       for (const img of preDoc.querySelectorAll('image')) {
         const r = resolveAssetPath(img.getAttribute('href') || '');
         if (r && !/^(https?:|data:|\/)/i.test(r)) imagePaths.add(r);
       }
-    } catch (e) {}
+    } catch (e) { console.warn('warn:', e.message); }
   }
   await Promise.all(Array.from(imagePaths).map(async (p) => {
     try {
@@ -1405,14 +1404,14 @@ async function exportMapToMarkdown({ map, files, title, embedImages = true }) {
         reader.onerror = reject;
         reader.readAsDataURL(blob);
       });
-      _imageDataCache.set(p, dataUri);
-    } catch (e) {}
+      _ctx.imageDataCache.set(p, dataUri);
+    } catch (e) { console.warn('warn:', e.message); }
   }));
   for (const entry of entries) {
     try {
       const cached = files.get(entry.path);
       if (!cached) throw new Error('not loaded');
-      _currentTopicPath = entry.path;
+      _ctx.topicPath = entry.path;
       const doc = parseXml(cached.current);
       normalizeOxyPIs(doc);
       const topic = doc.documentElement;
@@ -1432,9 +1431,9 @@ async function exportMapToMarkdown({ map, files, title, embedImages = true }) {
   sections.forEach((sec, i) => { md += (i + 1) + '. [' + sec.title + '](#' + sec.title.toLowerCase().replace(/[^a-z0-9\u4e00-\u9fff]+/g, '-') + ')\n'; });
   md += '\n---\n\n';
   sections.forEach(sec => { md += '## ' + sec.title + '\n\n' + sec.body + '\n'; });
-  if (mdFootnotes.length) {
+  if (_ctx.mdFootnotes.length) {
     md += '\n---\n\n**脚注**\n\n';
-    mdFootnotes.forEach(f => { md += f + '\n'; });
+    _ctx.mdFootnotes.forEach(f => { md += f + '\n'; });
   }
   if (failures.length) md += '\n> 以下 topic 加载失败：' + failures.join(', ') + '\n';
   return md;
@@ -1858,66 +1857,16 @@ function createVisualApi(state, dom) {
   };
 }
 
-if (typeof module !== 'undefined') {
-  module.exports = {
-    BODY_TAGS,
-    INLINE_TAGS,
-    SKIP_TAGS,
-    VISUAL_TO_DITA,
-    stripDocType,
-    parseXml,
-    serializeXmlNode,
-    cloneDitaNode,
-    visualElementToDita,
-    updateDitaBody,
-    updateCurrentFromVisual,
-    updateVisualFromXml,
-    createAuthorTopic,
-    renderDitaNode,
-    renderPreviewContent,
-    collectPreviewPaths,
-    createMapPreview,
-    createVisualApi,
-    lineDiff,
-    inlineDiff,
-    groupDiffRows,
-    applyDiffGroups,
-    normalizeOxyPIs,
-    collectOxyTrackedChanges,
-    exportMapToHtml,
-    exportMapToMarkdown,
-    ditaToMarkdown,
-    renderMarkdownToHtml,
-    highlightMarkdown
-  };
-}
-
-if (typeof window !== 'undefined') {
-  window.DitaVisualCore = {
-    stripDocType,
-    parseXml,
-    serializeXmlNode,
-    createVisualApi,
-    updateVisualFromXml,
-    createAuthorTopic,
-    updateCurrentFromVisual,
-    renderDitaNode,
-    renderPreviewContent,
-    collectPreviewPaths,
-    createMapPreview,
-    lineDiff,
-    inlineDiff,
-    groupDiffRows,
-    applyDiffGroups,
-    normalizeOxyPIs,
-    collectOxyTrackedChanges,
-    exportMapToHtml,
-    exportMapToMarkdown,
-    ditaToMarkdown,
-    renderMarkdownToHtml,
-    highlightMarkdown
-  };
-}
-
-
-
+const _exports = {
+  BODY_TAGS, INLINE_TAGS, SKIP_TAGS, VISUAL_TO_DITA,
+  stripDocType, parseXml, serializeXmlNode, cloneDitaNode,
+  visualElementToDita, updateDitaBody, updateCurrentFromVisual,
+  updateVisualFromXml, createAuthorTopic, renderDitaNode,
+  renderPreviewContent, collectPreviewPaths, createMapPreview,
+  createVisualApi, lineDiff, inlineDiff, groupDiffRows,
+  applyDiffGroups, normalizeOxyPIs, collectOxyTrackedChanges,
+  exportMapToHtml, exportMapToMarkdown, ditaToMarkdown,
+  renderMarkdownToHtml, highlightMarkdown
+};
+if (typeof module !== 'undefined') module.exports = _exports;
+if (typeof window !== 'undefined') window.DitaVisualCore = _exports;

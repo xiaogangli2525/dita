@@ -1,7 +1,8 @@
-﻿'use strict';
+'use strict';
 
 const http = require('http');
 const path = require('path');
+const os = require('os');
 const fs = require('fs/promises');
 const { existsSync, readdirSync, statSync } = require('fs');
 const { spawn } = require('child_process');
@@ -24,7 +25,7 @@ function gitError(message, status = 400) {
 }
 
 async function runGitOnce(executable, args, options) {
-  const output = path.join(__dirname, `.git-output-${process.pid}-${Date.now()}-${Math.random().toString(16).slice(2)}.tmp`);
+  const output = path.join(os.tmpdir(), `dita-git-${process.pid}-${Date.now()}-${Math.random().toString(16).slice(2)}.tmp`);
   let handle;
   try {
     handle = await fs.open(output, 'w');
@@ -50,7 +51,7 @@ async function runGitOnce(executable, args, options) {
 async function runGit(args, options = {}) {
   try {
     const git = await findGitExecutable();
-    return await runGitOnce(git, args, { cwd: options.cwd || DOCS_ROOT, maxBuffer: MAX_BODY_SIZE });
+    return await runGitOnce(git, args, { cwd: options.cwd || DOCS_ROOT });
   } catch (error) {
     throw Object.assign(new Error(cleanGitError(error)), { status: Number(options.errorStatus || 500) });
   }
@@ -457,7 +458,7 @@ function findFileInSubdirs(dir, basename) {
         if (found) return found;
       }
     }
-  } catch (e) {}
+  } catch (e) { console.warn('findFileInSubdirs error:', e.message); }
   return null;
 }
 
