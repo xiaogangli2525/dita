@@ -3,6 +3,7 @@
 const http = require('http');
 const path = require('path');
 const os = require('os');
+const iconv = require('iconv-lite');
 const fs = require('fs/promises');
 const { existsSync, readdirSync, statSync } = require('fs');
 const { spawn } = require('child_process');
@@ -155,12 +156,20 @@ function sendText(res, status, body, type = 'text/plain') {
 }
 
 async function readJson(req) {
-  const chunks = [];
-  for await (const chunk of req) chunks.push(chunk);
-  const raw = Buffer.concat(chunks);
-  if (raw.length > MAX_BODY_SIZE) {
+  const declared = Number(req.headers['content-length'] || 0);
+  if (declared > MAX_BODY_SIZE) {
     throw Object.assign(new Error('Request body is too large'), { status: 413 });
   }
+  const chunks = [];
+  let total = 0;
+  for await (const chunk of req) {
+    total += chunk.length;
+    if (total > MAX_BODY_SIZE) {
+      throw Object.assign(new Error('Request body is too large'), { status: 413 });
+    }
+    chunks.push(chunk);
+  }
+  const raw = Buffer.concat(chunks);
   return JSON.parse(raw.toString('utf8'));
 }
 
@@ -211,6 +220,16 @@ async function readXmlFile(file) {
   return buffer.toString('utf-8');
 }
 
+async function writeXmlFile(file, content) {
+  const declared = /encoding\s*=\s*["']([^"']+)["']/i.exec(content)?.[1];
+  const encoding = normalizeEncodingName(declared);
+  if (encoding && encoding !== 'utf-8') {
+    await fs.writeFile(file, iconv.encode(content, encoding));
+  } else {
+    await writeXmlFile(file, content);
+  }
+}
+
 const MAP_REFERENCE_TAGS = new Set(["map", "bookmap", "topicref", "topichead", "topicgroup", "chapter", "appendix", "notices", "preface", "part", "frontmatter", "backmatter", "booklists"]);
 
 function isDitaLike(fileName) {
@@ -218,12 +237,16 @@ function isDitaLike(fileName) {
 
 }
 function decodeEntities(value) {
-  return String(value)
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '\"')
-    .replace(/&apos;/g, "'")
-    .replace(/&amp;/g, '&');
+  return String(value).replace(/&(?:#(\d+)|#x([0-9a-fA-F]+)|lt|gt|quot|apos|amp);/g, (m, dec, hex) => {
+    if (dec) return String.fromCodePoint(Number(dec));
+    if (hex) return String.fromCodePoint(parseInt(hex, 16));
+    if (m === '&lt;') return '<';
+    if (m === '&gt;') return '>';
+    if (m === '&quot;') return String.fromCharCode(34);
+    if (m === '&apos;') return String.fromCharCode(39);
+    if (m === '&amp;') return '&';
+    return m;
+  });
 }
 
 function parseAttributes(source) {
@@ -234,6 +257,22 @@ function parseAttributes(source) {
     attrs[match[1]] = decodeEntities(match[2] ?? match[3] ?? '');
   }
   return attrs;
+}
+
+function findTagEnd(text, start) {
+  let i = start;
+  let inQuote = null;
+  while (i < text.length) {
+    const ch = text[i];
+    if (inQuote) {
+      if (ch === inQuote) inQuote = null;
+    } else {
+      if (ch === '"' || ch === "'") inQuote = ch;
+      else if (ch === '>') return i;
+    }
+    i++;
+  }
+  return -1;
 }
 
 function parseXml(text) {
@@ -324,7 +363,7 @@ function parseXml(text) {
       continue;
     }
     if (text.startsWith('<', cursor)) {
-      const end = text.indexOf('>', cursor);
+      const end = findTagEnd(text, cursor);
       if (end < 0) error('Unterminated start tag');
       const source = text.slice(cursor + 1, end).trimStart();
       const selfClosing = source.endsWith('/');
@@ -714,6 +753,14 @@ async function buildWorkspace() {
 }
 
 async function handleApi(req, res, pathname, searchParams) {
+  const origin = req.headers.origin;
+  if (origin) {
+    const allowed = ['http://127.0.0.1:' + PORT, 'http://localhost:' + PORT];
+    if (!allowed.includes(origin)) {
+      sendJson(res, 403, { error: 'Forbidden origin' });
+      return;
+    }
+  }
   if (req.method === 'GET' && pathname === '/api/repos') {
     const repositories = await listRepositories();
     sendJson(res, 200, { root: REPOSITORIES_ROOT, repositories, current: DOCS_ROOT });
@@ -799,7 +846,9 @@ async function handleApi(req, res, pathname, searchParams) {
     const stat = await fs.stat(asset);
     if (!stat.isFile()) throw Object.assign(new Error('Asset not found'), { status: 404 });
     const ext = path.extname(asset).toLowerCase();
-    const type = ext === '.svg' ? 'image/svg+xml' : ext === '.png' ? 'image/png' : ext === '.jpg' || ext === '.jpeg' ? 'image/jpeg' : ext === '.gif' ? 'image/gif' : 'application/octet-stream';
+    const allowedExts = ['.svg', '.png', '.jpg', '.jpeg', '.gif', '.bmp'];
+    if (!allowedExts.includes(ext)) throw Object.assign(new Error('Unsupported asset type'), { status: 403 });
+    const type = ext === '.svg' ? 'image/svg+xml' : ext === '.png' ? 'image/png' : ext === '.jpg' || ext === '.jpeg' ? 'image/jpeg' : ext === '.gif' ? 'image/gif' : ext === '.bmp' ? 'image/bmp' : 'application/octet-stream';
     res.writeHead(200, { 'content-type': type, 'cache-control': 'no-store' });
     res.end(await fs.readFile(asset));
     return;
@@ -854,7 +903,7 @@ async function handleApi(req, res, pathname, searchParams) {
     const content = String(body.content ?? '');
     const parsed = parseXml(content);
     if (!parsed.root) throw Object.assign(new Error('XML has no root element'), { status: 400 });
-    await fs.writeFile(file, content, 'utf8');
+    await writeXmlFile(file, content);
     const saved = await readXmlFile(file);
     sendJson(res, 201, { saved: true, created: !existing, path: relativePath(file), content: saved });
     return;
@@ -868,7 +917,7 @@ async function handleApi(req, res, pathname, searchParams) {
     const content = String(body.content ?? '');
     const parsed = parseXml(content);
     if (!parsed.root) throw Object.assign(new Error('XML has no root element'), { status: 400 });
-    await fs.writeFile(file, content, 'utf8');
+    await writeXmlFile(file, content);
     const saved = await readXmlFile(file);
     sendJson(res, 200, { saved: true, content: saved });
     return;
@@ -914,5 +963,5 @@ if (require.main === module) {
   });
 }
 
-module.exports = { parseXml, decodeEntities, elementChildren, childElement, textOf, resolveHref, mapRefTitle, mapNodeToTree, serializeXmlNode, serializeXmlDocument, applyMapOperation, readXmlFile, listRepositories, listBranches, gitWorktreeStatus, resolveSelectedRepository, setDocsRoot: value => { DOCS_ROOT = path.resolve(value); } };
+module.exports = { parseXml, decodeEntities, elementChildren, childElement, textOf, resolveHref, mapRefTitle, mapNodeToTree, serializeXmlNode, serializeXmlDocument, applyMapOperation, readXmlFile, writeXmlFile, listRepositories, listBranches, gitWorktreeStatus, resolveSelectedRepository, setDocsRoot: value => { DOCS_ROOT = path.resolve(value); } };
 

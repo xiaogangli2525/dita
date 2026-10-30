@@ -162,3 +162,32 @@ test('map structure operations update source and keep the selected node stable',
 
   assert.equal(result.map.children.at(-1).title, 'New heading');
 });
+
+test('P0-2: numeric character references decode and survive round-trip', () => {
+  const xml = '<root><p>A &#169; B &#x2014; C</p></root>';
+  const parsed = core.parseXml(xml);
+  const p = core.childElement(core.childElement(parsed.root, 'body') || parsed.root, 'p') || core.childElement(parsed.root, 'p');
+  // &#169; should decode to copyright sign, &#x2014; to em dash
+  assert.ok(p.children[0].value.includes('\u00A9'), 'copyright sign decoded');
+  assert.ok(p.children[0].value.includes('\u2014'), 'em dash decoded');
+});
+
+test('P0-3: attributes containing > are parsed correctly', () => {
+  const xml = '<root><topic id="a" cond="x > y">text</topic></root>';
+  const parsed = core.parseXml(xml);
+  const topic = core.childElement(parsed.root, 'topic');
+  assert.equal(topic.attrs.id, 'a');
+  assert.equal(topic.attrs.cond, 'x > y');
+});
+
+test('P0-1: GBK file round-trip preserves Chinese text', async () => {
+  const root = 'tests/temp-gbk';
+  await fs.mkdir(root, { recursive: true });
+  const filePath = path.join(root, 'gbk_test.xml');
+  const content = '<?xml version="1.0" encoding="GB2312"?>\n<root><title>\u6982\u8FF0</title></root>';
+  await core.writeXmlFile(filePath, content);
+  const readBack = await core.readXmlFile(filePath);
+  assert.ok(readBack.includes('\u6982\u8FF0'), 'Chinese text preserved after round-trip');
+  // Cleanup
+  await fs.rm(root, { recursive: true, force: true });
+});
