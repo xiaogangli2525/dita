@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<topic id="getting-started"><title>开始使用 DITA 文档工作台</title><body>
+<p>好的文档，让知识更容易被理解、复用和维护。在这里，你可以把复杂的信息组织成清晰、独立的主题。</p>
+<section><title>一个工作区，完整的写作流程</title><p>在左侧选择文档，在中央编写内容，并在右侧检查元素属性。你也可以打开整个 Map，连续编辑多个主题。</p><ul><li>编写：直接编辑文档，保留原有 XML 结构。</li><li>审阅：对比 Git 基线，逐项确认内容变化。</li><li>导出：将当前内容打包为 HTML 或 Markdown。</li></ul></section>
+<note>编辑器中的未保存修改会包含在导出中。保存到磁盘与提交到 Git 是两个独立的步骤。</note>
+<section><title>从一个清晰的主题开始</title><p>每个主题回答一个问题。使用有意义的标题、简洁的段落和具体的例子，帮助读者快速找到需要的信息。</p></section>
+</body></topic>

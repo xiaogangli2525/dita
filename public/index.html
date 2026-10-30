@@ -3,18 +3,20 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>DITA Lite Client</title>
+  <meta name="description" content="专注于 DITA 文档编写、结构编辑与变更审阅的本地工作台" />
+  <title>DITA Lite · 文档工作台</title>
   <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="/workspace.css" />
 </head>
 <body>
   <header class="app-header">
     <div class="app-titlebar">
       <div class="brand">
-        <span class="brand-mark">O</span>
-        <strong>DITA Lite</strong>
+        <span class="brand-mark" aria-hidden="true">d.</span>
+        <div class="brand-name"><strong>DITA Lite</strong><small>DOCUMENT WORKSPACE</small></div>
         <span id="rootPath">未加载</span>
       </div>
-      <div class="titlebar-context">Web Author 工作区</div>
+      <div class="titlebar-context"><span class="connection-dot" aria-hidden="true"></span> 本地工作区 <span class="context-separator">/</span> 专注每一次表达</div>
     </div>
     <nav class="main-menu" aria-label="主菜单">
       <button type="button" data-menu="file" aria-label="文件菜单">文件</button>
@@ -25,17 +27,20 @@
     </nav>
     <div id="menuPopup" class="menu-popup" hidden></div>
     <div class="toolbar">
+      <button id="sidebarToggleButton" class="sidebar-toggle" type="button" aria-controls="workspaceSidebar" aria-expanded="false" title="打开文档导航">☰ 文档</button>
       <div class="toolbar-group workspace-group">
         <label class="workspace-switch"><span>仓库</span><select id="repositorySelect"></select></label>
         <label class="workspace-switch"><span>分支</span><select id="branchSelect"></select></label>
       </div>
       <span class="toolbar-divider" aria-hidden="true"></span>
       <div class="toolbar-group mode-group" aria-label="编辑模式">
-        <button id="sourceButton" type="button" class="tool-button" title="切换到源码编辑模式" aria-label="源码编辑模式">Source 源码</button>
-        <button id="visualButton" type="button" class="tool-button active" title="切换到 Author 可视化编辑模式" aria-label="Author 编辑模式">Author</button>
-        <button id="previewButton" type="button" class="tool-button" title="预览与编辑（可直接修改内容）">预览/编辑</button>
+        <button id="sourceButton" type="button" class="tool-button" title="切换到源码编辑模式" aria-label="源码编辑模式">源码</button>
+        <button id="visualButton" type="button" class="tool-button active" title="切换到 Author 可视化编辑模式" aria-label="Author 编辑模式">编写</button>
+        <button id="previewButton" type="button" class="tool-button" title="预览与编辑（可直接修改内容）">阅读</button>
       </div>
       <span class="toolbar-divider" aria-hidden="true"></span>
+      <details class="editing-tools">
+        <summary>编辑工具 <span aria-hidden="true">⌄</span></summary>
       <div class="toolbar-group edit-group" aria-label="编辑操作">
         <button id="undoButton" type="button" title="撤销 (Ctrl+Z)" disabled>撤销</button>
         <button id="redoButton" type="button" title="重做 (Ctrl+Y)" disabled>重做</button>
@@ -60,6 +65,7 @@
         </label>
         <button id="insertElementButton" type="button" title="在编辑器光标处插入所选 DITA 元素">插入</button>
       </div>
+      </details>
       <span class="toolbar-divider" aria-hidden="true"></span>
       <div class="toolbar-group file-group" aria-label="文件操作">
         <button id="newDocumentButton" type="button" title="创建新的 DITA 文档或 Map">新建</button>
@@ -78,17 +84,18 @@
           </div>
         </div>
         <button id="reviewButton" type="button" title="审阅文档变更（接受/拒绝修订）">审阅</button>
-        <button id="inspectorToggleButton" type="button" class="inspector-toggle" title="切换属性面板" hidden>属性</button>
+        <button id="inspectorToggleButton" type="button" class="inspector-toggle" title="切换属性面板" aria-controls="inspector" aria-expanded="false">属性</button>
       </div>
     </div>
   </header>
 
   <main class="layout">
-    <aside class="sidebar">
+    <aside id="workspaceSidebar" class="sidebar" aria-label="文档导航">
+      <div class="sidebar-heading"><span>工作区</span><span class="section-kicker">EXPLORER</span></div>
       <div class="view-tabs" role="tablist" aria-label="视图">
-        <button type="button" class="view-tab active" data-view="map" role="tab" aria-selected="true" title="Map 视图">Map</button>
-        <button type="button" class="view-tab" data-view="outline" role="tab" aria-selected="false" title="大纲视图">Outline</button>
-        <button type="button" class="view-tab" data-view="search" role="tab" aria-selected="false" title="搜索视图">Search</button>
+        <button type="button" class="view-tab active" data-view="map" role="tab" aria-selected="true" title="Map 视图">文档</button>
+        <button type="button" class="view-tab" data-view="outline" role="tab" aria-selected="false" title="大纲视图">大纲</button>
+        <button type="button" class="view-tab" data-view="search" role="tab" aria-selected="false" title="搜索视图">搜索</button>
       </div>
       <div id="mapView" class="view-panel active">
       <div class="panel-title">DITA Map</div>
@@ -109,11 +116,11 @@
       <div id="tree" class="tree"></div>
       </div>
       <div id="outlineView" class="view-panel" hidden>
-        <div class="panel-title">Document Outline</div>
+        <div class="panel-title">文档大纲</div>
         <div id="outline" class="outline"></div>
       </div>
       <div id="searchView" class="view-panel" hidden>
-        <div class="panel-title">Search in workspace</div>
+        <div class="panel-title">搜索工作区</div>
         <div class="workspace-search">
           <input id="workspaceSearchInput" type="search" placeholder="搜索文件名或标题" autocomplete="off" aria-label="搜索文件名或标题" />
           <div id="workspaceSearchResults" class="workspace-search-results"></div>
@@ -121,7 +128,11 @@
       </div>
     </aside>
 
-    <section class="content">
+    <section class="content" aria-label="文档编辑区">
+      <div class="document-heading">
+        <div><div id="documentLocation" class="document-location">选择一个文档，开始专注写作</div><h1 id="documentTitle">你的文档工作台</h1></div>
+        <span id="documentSaveState" class="save-badge" data-state="saved" role="status">本地工作区</span>
+      </div>
       <div id="tabs" class="tabs"></div>
       <div id="editSearchPanel" class="edit-search-panel" hidden>
         <label>查找 <input id="editFindInput" type="search" autocomplete="off" /></label>
@@ -133,8 +144,17 @@
         <button id="editFindCloseButton" class="edit-search-close" type="button" title="关闭查找面板">关闭</button>
         <span id="editFindMeta" class="edit-search-meta" aria-live="polite"></span>
       </div>
+      <div id="welcomePanel" class="welcome-panel">
+        <div class="welcome-symbol" aria-hidden="true">¶</div>
+        <span class="section-kicker">A SPACE FOR CLEAR THINKING</span>
+        <h2>让复杂的知识，<br>成为清晰的文档。</h2>
+        <p>从左侧选择文档或 Map，在同一工作区完成<br>编写、结构调整与变更审阅。</p>
+        <button id="welcomeNewButton" type="button" class="welcome-action">＋ 新建文档</button>
+        <div class="welcome-shortcuts"><span><kbd>Ctrl / ⌘ S</kbd> 保存</span><span><kbd>Ctrl / ⌘ F</kbd> 查找</span><span><kbd>Ctrl / ⌘ Z</kbd> 撤销</span></div>
+        <div class="welcome-note"><span class="connection-dot" aria-hidden="true"></span> 文件保留在本地，修改由你掌控</div>
+      </div>
       <div id="editorPane" class="editor-pane">
-        <textarea id="editor" spellcheck="false" placeholder="请选择左侧 DITA 文件"></textarea>
+        <textarea id="editor" aria-label="DITA XML 源码" spellcheck="false" placeholder="请选择左侧 DITA 文件"></textarea>
       </div>
       <div id="visualPane" class="visual-pane active">
         <div id="visualEditor" contenteditable="true" class="visual-editor dita-preview"></div>
@@ -153,7 +173,7 @@
     </section>
     <aside id="inspector" class="inspector" aria-label="属性检查器">
       <div class="inspector-header">
-        <span id="inspectorTitle">Attributes</span>
+        <span id="inspectorTitle">文档属性</span>
         <span id="inspectorElement" class="inspector-element">未选择元素</span>
       </div>
       <div id="contextToolbar" class="context-toolbar" hidden>
@@ -183,10 +203,13 @@
     <span class="statusbar-hint">Ctrl/Cmd+S 保存 · Ctrl/Cmd+F 查找</span>
   </footer>
 
-  <div id="loadingOverlay" class="loading-overlay" aria-hidden="true"></div>
+  <div id="loadingOverlay" class="loading-overlay" role="status" aria-hidden="true"><span>正在准备导出文档…</span></div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="/document-store.js"></script>
+  <script src="/workspace-client.js"></script>
   <script src="/app-core.js"></script>
-<script src="/export.js"></script>
+  <script src="/export.js"></script>
   <script src="/app.js"></script>
 </body>
 </html>
+
