@@ -1072,38 +1072,32 @@ function serializeOxyNode(node) {
   return ditaToHtml(node);
 }
 
-async function exportMapToHtml({ map, files, title }) {
+async function exportMapToHtml({ map, files, title, loadImageBytes }) {
   const entries = collectPreviewPaths(map.children || []);
   const sections = [];
   const failures = [];
   _ctx.imageDataCache.clear();
-  const imagePaths = new Set();
-  for (const entry of entries) {
-    try {
-      const cached = files.get(entry.path);
-      if (!cached) throw new Error('not loaded');
-      const preDoc = parseXml(cached.current);
-      _ctx.topicPath = entry.path;
-      for (const img of preDoc.querySelectorAll('image')) {
-        const r2 = resolveAssetPath(img.getAttribute('href') || '');
-        if (r2 && !/^(https?:|data:|\/)/i.test(r2)) imagePaths.add(r2);
-      }
-    } catch (e) { console.warn('image pre-fetch parse error:', e.message); }
+  if (loadImageBytes) {
+    const imagePaths = new Set();
+    for (const entry of entries) {
+      try {
+        const cached = files.get(entry.path);
+        if (!cached) throw new Error('not loaded');
+        const preDoc = parseXml(cached.current);
+        _ctx.topicPath = entry.path;
+        for (const img of preDoc.querySelectorAll('image')) {
+          const r2 = resolveAssetPath(img.getAttribute('href') || '');
+          if (r2 && !/^(https?:|data:|\x2f)/i.test(r2)) imagePaths.add(r2);
+        }
+      } catch (e) { console.warn('image pre-fetch parse error:', e.message); }
+    }
+    await Promise.all(Array.from(imagePaths).map(async (p) => {
+      try {
+        const dataUri = await loadImageBytes(p);
+        if (dataUri) _ctx.imageDataCache.set(p, dataUri);
+      } catch (e) { console.warn('image fetch failed:', p, e.message); }
+    }));
   }
-  await Promise.all(Array.from(imagePaths).map(async (p) => {
-    try {
-      const resp = await fetch('/api/asset?path=' + encodeURIComponent(p));
-      if (!resp.ok) return;
-      const blob = await resp.blob();
-      const reader = new FileReader();
-      const dataUri = await new Promise((resolve, reject) => {
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-      });
-      _ctx.imageDataCache.set(p, dataUri);
-    } catch (e) { console.warn('image fetch failed:', p, e.message); }
-  }));
   for (const entry of entries) {
     try {
       const cached = files.get(entry.path);
@@ -1341,72 +1335,34 @@ function mdDl(node) {
   return r;
 }
 
-async function exportMapToMarkdown({ map, files, title, embedImages = true }) {
+async function exportMapToMarkdown({ map, files, title, loadImageBytes }) {
   _ctx.mdFnCounter = 0;
   _ctx.mdFootnotes.length = 0;
   const entries = collectPreviewPaths(map.children || []);
   const sections = [];
   const failures = [];
   _ctx.imageDataCache.clear();
-  if (!embedImages) {
+  if (loadImageBytes) {
+    const imagePaths = new Set();
     for (const entry of entries) {
       try {
         const cached = files.get(entry.path);
         if (!cached) throw new Error('not loaded');
+        const preDoc = parseXml(cached.current);
         _ctx.topicPath = entry.path;
-        const doc = parseXml(cached.current);
-        normalizeOxyPIs(doc);
-        const topic = doc.documentElement;
-        const topicTitle = Array.from(topic?.childNodes || []).find(n => n.localName === 'title');
-        let body = '';
-        for (const child of topic?.childNodes || []) {
-          if (child === topicTitle) continue;
-          body += ditaToMarkdown(child);
+        for (const img of preDoc.querySelectorAll('image')) {
+          const r = resolveAssetPath(img.getAttribute('href') || '');
+          if (r && !/^(https?:|data:|\x2f)/i.test(r)) imagePaths.add(r);
         }
-        sections.push({ path: entry.path, title: topicTitle?.textContent?.trim() || entry.title || entry.path, body });
-      } catch (error) {
-        failures.push(entry.path);
-      }
+      } catch (e) { console.warn('warn:', e.message); }
     }
-    let md = '# ' + (title || map.title || map.path) + '\n\n';
-    md += '**\u76ee\u5f55**\n\n';
-    sections.forEach((sec, i) => { md += (i + 1) + '. [' + sec.title + '](#' + sec.title.toLowerCase().replace(/[^a-z0-9\u4e00-\u9fff]+/g, '-') + ')\n'; });
-    md += '\n---\n\n';
-    sections.forEach(sec => { md += '## ' + sec.title + '\n\n' + sec.body + '\n'; });
-    if (_ctx.mdFootnotes.length) {
-      md += '\n---\n\n**\u811a\u6ce8**\n\n';
-      _ctx.mdFootnotes.forEach(f => { md += f + '\n'; });
-    }
-    if (failures.length) md += '\n> \u4ee5\u4e0b topic \u52a0\u8f7d\u5931\u8d25\uff1a' + failures.join(', ') + '\n';
-    return md;
+    await Promise.all(Array.from(imagePaths).map(async (p) => {
+      try {
+        const dataUri = await loadImageBytes(p);
+        if (dataUri) _ctx.imageDataCache.set(p, dataUri);
+      } catch (e) { console.warn('warn:', e.message); }
+    }));
   }
-  const imagePaths = new Set();
-  for (const entry of entries) {
-    try {
-      const cached = files.get(entry.path);
-      if (!cached) throw new Error('not loaded');
-      const preDoc = parseXml(cached.current);
-      _ctx.topicPath = entry.path;
-      for (const img of preDoc.querySelectorAll('image')) {
-        const r = resolveAssetPath(img.getAttribute('href') || '');
-        if (r && !/^(https?:|data:|\/)/i.test(r)) imagePaths.add(r);
-      }
-    } catch (e) { console.warn('warn:', e.message); }
-  }
-  await Promise.all(Array.from(imagePaths).map(async (p) => {
-    try {
-      const resp = await fetch('/api/asset?path=' + encodeURIComponent(p));
-      if (!resp.ok) return;
-      const blob = await resp.blob();
-      const reader = new FileReader();
-      const dataUri = await new Promise((resolve, reject) => {
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-      });
-      _ctx.imageDataCache.set(p, dataUri);
-    } catch (e) { console.warn('warn:', e.message); }
-  }));
   for (const entry of entries) {
     try {
       const cached = files.get(entry.path);

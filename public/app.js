@@ -135,7 +135,7 @@ function setActiveView(view) {
     panel.hidden = name !== view;
     panel.classList.toggle('active', name === view);
   }
-  for (const button of dom.viewTabs || []) button.classList.toggle('active', button.dataset.view === view);
+  for (const button of dom.viewTabs || []) { button.classList.toggle('active', button.dataset.view === view); button.setAttribute('aria-selected', button.dataset.view === view ? 'true' : 'false'); }
   if (view === 'outline') renderOutline();
   if (view === 'search') renderWorkspaceSearch(dom.workspaceSearchInput?.value || '');
 }
@@ -2103,6 +2103,17 @@ async function loadTopicFiles(map) {
   }));
   return { files, failures };
 }
+async function browserLoadImageBytes(path) {
+  const resp = await fetch('/api/asset?path=' + encodeURIComponent(path));
+  if (!resp.ok) return null;
+  const blob = await resp.blob();
+  return await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
 async function previewMapHtml() {
   const file = state.filesMap.get(state.activePath);
   if (!file) return;
@@ -2118,7 +2129,7 @@ async function previewMapHtml() {
   try {
     const { files, failures } = await loadTopicFiles(map);
     if (failures.length) setStatus(failures.length + ' 个 topic 加载失败', true);
-    const html = await ditaCore.exportMapToHtml({ map, files, title: map.title || map.name });
+    const html = await ditaCore.exportMapToHtml({ map, files, title: map.title || map.name, loadImageBytes: browserLoadImageBytes });
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     dom.htmlPreviewFrame.src = url;
@@ -2172,7 +2183,7 @@ async function previewMapMd() {
   try {
     const { files, failures } = await loadTopicFiles(map);
     if (failures.length) setStatus(failures.length + ' 个 topic 加载失败', true);
-    const md = await ditaCore.exportMapToMarkdown({ map, files, title: map.title || map.name, embedImages: false });
+    const md = await ditaCore.exportMapToMarkdown({ map, files, title: map.title || map.name });
     dom.mdPreviewContent.innerHTML = ditaCore.highlightMarkdown(md);
     dom.htmlPreviewPane?.classList.remove('active');
     dom.visualPane.classList.remove('active');
@@ -2196,7 +2207,7 @@ async function exportMapToMarkdownFile() {
   try {
     const { files, failures } = await loadTopicFiles(map);
     if (failures.length) setStatus(failures.length + ' 个 topic 加载失败', true);
-    const md = await ditaCore.exportMapToMarkdown({ map, files, title: map.title || map.name, embedImages: true });
+    const md = await ditaCore.exportMapToMarkdown({ map, files, title: map.title || map.name, loadImageBytes: browserLoadImageBytes });
     const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -2421,6 +2432,15 @@ dom.visualEditor.addEventListener('focusout', () => {
 });
 dom.search.addEventListener('input', () => updateTree(dom.search.value));
 for (const button of dom.viewTabs || []) button.addEventListener('click', () => setActiveView(button.dataset.view));
+  for (const tl of dom.viewTabs || []) tl.addEventListener('keydown', (e) => {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    e.preventDefault();
+    const tabs = dom.viewTabs || [];
+    const idx = tabs.indexOf(tl);
+    const next = e.key === 'ArrowLeft' ? (idx - 1 + tabs.length) % tabs.length : (idx + 1) % tabs.length;
+    tabs[next].focus();
+    setActiveView(tabs[next].dataset.view);
+  });
 dom.workspaceSearchInput?.addEventListener('input', () => renderWorkspaceSearch(dom.workspaceSearchInput.value));
 for (const button of document.querySelectorAll('.main-menu [data-menu]')) {
   button.addEventListener('click', event => {
