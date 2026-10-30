@@ -238,8 +238,12 @@ function isDitaLike(fileName) {
 }
 function decodeEntities(value) {
   return String(value).replace(/&(?:#(\d+)|#x([0-9a-fA-F]+)|lt|gt|quot|apos|amp);/g, (m, dec, hex) => {
-    if (dec) return String.fromCodePoint(Number(dec));
-    if (hex) return String.fromCodePoint(parseInt(hex, 16));
+    try {
+      if (dec) return String.fromCodePoint(Number(dec));
+      if (hex) return String.fromCodePoint(parseInt(hex, 16));
+    } catch (e) {
+      return m;
+    }
     if (m === '&lt;') return '<';
     if (m === '&gt;') return '>';
     if (m === '&quot;') return String.fromCharCode(34);

@@ -201,3 +201,9 @@ test('writeXmlFile UTF-8 round-trip preserves content', async () => {
   assert.ok(readBack.includes('\u6982\u8FF0'), 'UTF-8 Chinese text preserved');
   await fs.rm(root, { recursive: true, force: true });
 });
+test('N4: invalid numeric character reference does not throw', () => {
+  const xml = '<t>&#99999999;</t>';
+  const parsed = core.parseXml(xml);
+  assert.equal(parsed.root.name, 't');
+  assert.ok(parsed.root.children[0].value.includes('&#99999999;'), 'invalid entity preserved as-is, not RangeError');
+});
