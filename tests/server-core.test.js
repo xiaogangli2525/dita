@@ -215,3 +215,11 @@ test('map operations use the exact source paths returned to the UI', async () =>
   const restored = await core.applyMapOperation(moved.content, 'main.ditamap', { operation: 'moveUp', sourcePath: moved.selectedSourcePath });
   assert.deepEqual(restored.map.children.map(node => node.path), ['a.dita', 'b.dita']);
 });
+
+test('resource-only roles cascade through Map groups and explicit normal children remain publishable', () => {
+  const root = core.parseXml('<map><topicgroup processing-role="resource-only"><topicref href="reuse.dita"/><topicref href="chapter.dita" processing-role="normal"/></topicgroup></map>').root;
+  const tree = core.mapNodeToTree(root, 'main.ditamap');
+  assert.equal(tree[0].children[0].processingRole, 'resource-only');
+  assert.equal(tree[0].children[1].processingRole, 'normal');
+  assert.deepEqual(require('../public/app-core').collectPreviewPaths(tree).map(item => item.path), ['chapter.dita']);
+});

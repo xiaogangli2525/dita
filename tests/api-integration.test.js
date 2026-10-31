@@ -93,6 +93,20 @@ test('HTTP workflow protects edits, Git baselines, repository boundaries and wor
     token = next.workspaceToken;
     assert.equal((await request('/api/file?path=topics/a.dita')).status, 200);
   });
+  await t.test('repository switches update file and Git roots together and retain stale-tab protection', async () => {
+    const second = path.join(temporary, 'second'); await fs.mkdir(second);
+    await fs.writeFile(path.join(second, 'second.dita'), '<topic>Second repository</topic>');
+    const git = (...args) => execFileSync('git', args, { cwd: second, stdio: 'ignore' });
+    git('init'); git('add', '.'); git('-c', 'user.name=Test', '-c', 'user.email=test@example.invalid', 'commit', '-m', 'second');
+    const switched = await request('/api/repository', 'POST', { repository: second }); assert.equal(switched.status, 200);
+    const next = await switched.json(); assert.equal(next.root, second); assert.notEqual(next.workspaceToken, token);
+    assert.equal((await request('/api/file?path=second.dita')).status, 409);
+    token = next.workspaceToken;
+    assert.equal(await (await request('/api/file?path=second.dita')).text(), '<topic>Second repository</topic>');
+    assert.equal((await (await request('/api/git?path=second.dita')).json()).content, '<topic>Second repository</topic>');
+    const rejected = await request('/api/repository', 'POST', { repository: path.join(repo, 'topics') }); assert.equal(rejected.status, 403);
+    assert.equal((await (await request('/api/workspace')).json()).root, second);
+  });
   await t.test('new files cannot overwrite existing paths without a matching baseline', async () => {
     assert.equal((await request('/api/file', 'POST', { path: 'new.dita', content: '<topic/>' })).status, 201);
     assert.equal((await request('/api/file', 'POST', { path: 'new.dita', content: '<topic id="new"/>' })).status, 409);

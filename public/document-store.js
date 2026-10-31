@@ -1,11 +1,19 @@
 'use strict';
 (function (root) {
   function historyOf(file) { return file.history || (file.history = { undo: [], redo: [] }); }
-  function editDocument(file, content, { record = true, historyMeta } = {}) {
+  function breakHistoryGroup(file) { if (file?.history) file.history.openGroup = null; }
+  function editDocument(file, content, { record = true, historyMeta, group } = {}) {
     if (!file || content === file.current && !historyMeta) return false;
     const history = historyOf(file);
     if (record) {
-      history.undo.push({ before: file.current, after: content, ...(historyMeta || {}) });
+      const previous = history.undo.at(-1);
+      const merge = group && history.openGroup === previous && previous?.group?.key === group.key && previous.after === file.current &&
+        (group.composition || group.time >= previous.group.time && group.time - previous.group.time <= 900 && previous.group.afterCursor === group.beforeCursor);
+      if (merge) { previous.after = content; previous.selectionAfter = historyMeta?.selectionAfter; previous.group = group; }
+      else history.undo.push({ before: file.current, after: content, ...(historyMeta || {}), ...(group ? { group } : {}) });
+      const cancelled = merge && previous.before === content;
+      if (cancelled) history.undo.pop();
+      history.openGroup = group && !cancelled ? history.undo.at(-1) : null;
       if (history.undo.length > 100) history.undo.shift();
       history.redo.length = 0;
     }
@@ -14,6 +22,7 @@
     return true;
   }
   function travelHistory(file, direction) {
+    breakHistoryGroup(file);
     const history = historyOf(file);
     const entry = history[direction].pop();
     if (!entry) return null;
@@ -25,9 +34,10 @@
   // Save acknowledgements advance disk, never a newer working buffer.
   function createSaveCoordinator(send) {
     const pending = new WeakMap();
-    return function save(file) {
+    return function save(file, submitted) {
+      breakHistoryGroup(file);
       if (pending.has(file)) return pending.get(file);
-      const snapshot = { path: file.path, content: file.current, expectedContent: file.disk };
+      const snapshot = submitted || { path: file.path, content: file.current, expectedContent: file.disk };
       const operation = Promise.resolve().then(() => send(snapshot)).then(result => {
         if (file.current === snapshot.content) file.current = result.content;
         file.disk = result.content;
@@ -57,7 +67,7 @@
     commit(file, proposal.after); // Reuses the editor's undo history; never saves.
     return Object.freeze({ ...proposal, status: 'applied' });
   }
-  const api = { editDocument, travelHistory, historyOf, createSaveCoordinator, createProposal, applyProposal };
+  const api = { editDocument, travelHistory, historyOf, breakHistoryGroup, createSaveCoordinator, createProposal, applyProposal };
   if (typeof module !== 'undefined') module.exports = api;
   else root.DitaDocumentStore = api;
 })(typeof window === 'undefined' ? globalThis : window);

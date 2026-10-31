@@ -18,6 +18,10 @@ test('real browser editing, reading and review workflow', async t => {
   await fs.writeFile(path.join(root, 'a.dita'), initial);
   await fs.writeFile(path.join(root, 'oxy.dita'), oxygen);
   await fs.writeFile(path.join(root, 'main.ditamap'), '<map><title>Map</title><topicref href="a.dita"/><topicref href="oxy.dita"/></map>');
+  await fs.cp(path.join(__dirname, 'fixtures/manual'), path.join(root, 'manual'), { recursive: true });
+  await fs.rename(path.join(root, 'manual/main.ditamap'), path.join(root, 'manual/mqtt-acceptance.ditamap'));
+  const gbkPath = path.join(root, 'manual/topics/publish.dita');
+  await fs.writeFile(gbkPath, require('iconv-lite').encode(await fs.readFile(gbkPath, 'utf8'), 'gbk'));
   const git = (...args) => execFileSync('git', args, { cwd: root, stdio: 'ignore' });
   git('init'); git('-c', 'user.name=Test', '-c', 'user.email=test@example.invalid', 'add', '.');
   git('-c', 'user.name=Test', '-c', 'user.email=test@example.invalid', 'commit', '-m', 'fixture');
@@ -54,8 +58,9 @@ test('real browser editing, reading and review workflow', async t => {
     await page.waitForFunction(file => window.DitaApp.state.activePath === file, file);
   };
   const current = () => page.evaluate(() => { const a = window.DitaApp; return a.state.filesMap.get(a.state.activePath).current; });
-  const source = async text => { await page.click('#sourceButton'); await page.fill('#editor', text); };
-  const undo = async () => { await page.click('#sourceButton'); await page.focus('#editor'); await page.keyboard.press('Control+z'); };
+  const showSource = async () => { if (!await page.locator('#sourceButton').isVisible()) await page.click('.editing-tools summary'); await page.click('#sourceButton'); if (await page.locator('.editing-tools[open]').count()) await page.click('.editing-tools summary'); };
+  const source = async text => { await showSource(); await page.fill('#editor', text); };
+  const undo = async () => { await showSource(); await page.focus('#editor'); await page.keyboard.press('Control+z'); };
 
   await t.test('reading is read-only for a Topic and every Map surface', async () => {
     await open('a.dita');
@@ -143,7 +148,7 @@ test('real browser editing, reading and review workflow', async t => {
     assert.match(await page.locator('#footnoteContent').inputValue(), /<xref href="a.dita">link<\/xref>/);
     await page.fill('#footnoteProducts', 'M200 M300'); await page.click('#footnoteEditForm button[type="submit"]');
     assert.match(await current(), /product="M200 M300"/); assert.match(await current(), /<xref href="a.dita">link<\/xref>/);
-    await open('main.ditamap'); await page.click('#exportMenuButton'); await page.click('#previewHtmlButton');
+    await open('main.ditamap'); await page.click('#exportMenuButton'); await page.locator('#exportModel:not(:disabled)').waitFor(); await page.selectOption('#exportModel', ''); await page.selectOption('#exportFormat', 'html'); await page.click('#modelExportForm button[value="preview"]');
     await page.waitForFunction(() => document.getElementById('htmlPreviewFrame').src.startsWith('blob:'));
     const frame = page.frameLocator('#htmlPreviewFrame');
     await frame.locator('.export-footnotes').waitFor();
@@ -156,7 +161,7 @@ test('real browser editing, reading and review workflow', async t => {
     try {
     const publication = '<topic id="a"><title>Publication</title><body><p>Body<fn product="M100">A ONLY</fn><fn product="M200">B ONLY</fn><fn>UNKNOWN NOTE</fn></p><fn id="n" product="M100">SHARED NOTE</fn><p>One<xref href="#a/n" type="fn"/> Two<xref href="#a/n" type="fn"/></p></body></topic>';
     await open('a.dita'); await source(publication); await open('main.ditamap');
-    await page.click('#exportMenuButton'); await page.click('#modelExportButton');
+    await page.click('#exportMenuButton'); await page.locator('#exportModel:not(:disabled)').waitFor();
     await page.selectOption('#exportModel', 'M100');
     assert.match(await page.locator('#modelExportSummary').innerText(), /包含 3 条.*排除 1 条.*保留 1 条/);
     await page.click('#modelExportForm button[value="preview"]');
@@ -167,7 +172,7 @@ test('real browser editing, reading and review workflow', async t => {
     assert.equal(await frame.locator('a[href="#fn-3"]').count(), 2);
     assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.get('a.dita').current), publication);
     await page.click('#closeHtmlPreviewButton');
-    await page.click('#exportMenuButton'); await page.click('#modelExportButton');
+    await page.click('#exportMenuButton'); await page.locator('#exportModel:not(:disabled)').waitFor();
     await page.selectOption('#exportModel', 'M100'); await page.selectOption('#exportFormat', 'md');
     const downloadPromise = page.waitForEvent('download');
     await page.click('#modelExportForm button[value="download"]');
@@ -177,7 +182,7 @@ test('real browser editing, reading and review workflow', async t => {
     assert.match(md, /A ONLY/); assert.match(md, /UNKNOWN NOTE/); assert.doesNotMatch(md, /B ONLY/);
     assert.match(md, /One\[\^3\] Two\[\^3\]/);
     // A buffered edit after the dialog has captured its snapshot must invalidate it.
-    await page.click('#exportMenuButton'); await page.click('#modelExportButton');
+    await page.click('#exportMenuButton'); await page.locator('#exportModel:not(:disabled)').waitFor();
     await page.locator('#modelExportDialog').waitFor({ state: 'visible' });
     await page.evaluate(() => { const a = window.DitaApp, f = a.state.filesMap.get('a.dita'); a.setFileContent(f, f.current.replace('A ONLY', 'NEWER')); });
     await page.click('#modelExportForm button[value="preview"]');
@@ -186,6 +191,58 @@ test('real browser editing, reading and review workflow', async t => {
     await open('a.dita'); await source(initial);
     } catch (error) { console.error('Publication flow:', error); throw error; }
     finally { await page.locator('dialog[open]').evaluateAll(dialogs => dialogs.forEach(dialog => dialog.close())); await open('a.dita'); await source(initial); }
+  });
+  await t.test('MQTT delivery acceptance: GBK save, dependency buffers, three models and real HTML/MD downloads', async () => {
+    const resourcePath = 'manual/shared/notes.dita';
+    const resourceOriginal = await fs.readFile(path.join(root, resourcePath), 'utf8');
+    try {
+      await open('manual/topics/publish.dita');
+      assert.match(await current(), /发布消息/);
+      await source((await current()).replace('C_ONLY', 'C_EDITED'));
+      await page.click('#saveButton');
+      await page.waitForFunction(() => !window.DitaApp.state.filesMap.get('manual/topics/publish.dita').dirty);
+      const saved = require('iconv-lite').decode(await fs.readFile(gbkPath), 'gbk');
+      assert.match(saved, /encoding="GBK"/); assert.match(saved, /发布消息/); assert.match(saved, /C_EDITED/);
+      await open(resourcePath); await source(resourceOriginal.replace('AB_SHARED', 'AB_WORKING'));
+      await open('manual/mqtt-acceptance.ditamap');
+      for (const model of ['M100', 'M200', 'M300']) {
+        await page.click('#exportMenuButton'); await page.locator('#exportModel:not(:disabled)').waitFor();
+        await page.selectOption('#exportModel', model); await page.selectOption('#exportFormat', 'html');
+        await page.click('#modelExportForm button[value="preview"]');
+        const frame = page.frameLocator('#htmlPreviewFrame'); await frame.locator('.export-footnotes').waitFor();
+        const text = await frame.locator('body').innerText();
+        assert.equal(text.includes('A_CONREF'), model === 'M100');
+        assert.equal(text.includes('AB_WORKING'), model !== 'M300');
+        assert.equal(text.includes('C_EDITED'), model === 'M300');
+        assert.match(text, /COMMON_CONREF/); assert.match(text, /UNMARKED/);
+        assert.doesNotMatch(text, /UNUSED_RESOURCE_BODY|ANCESTOR_EXCLUDED/);
+        assert.equal(await frame.locator('a[href="#sec-1-node-publish%2Fparameters"]').count(), 1);
+        assert.equal(await frame.locator('#sec-1-node-publish\\%2Fparameters').count(), 1);
+        assert.equal(await frame.locator('table').count(), 2);
+        assert.equal(await frame.locator('img').evaluateAll(images => images.every(image => image.complete && image.naturalWidth > 0)), true);
+        await page.click('#closeHtmlPreviewButton');
+        for (const format of ['html', 'md']) {
+          await page.click('#exportMenuButton'); await page.locator('#exportModel:not(:disabled)').waitFor();
+          await page.selectOption('#exportModel', model); await page.selectOption('#exportFormat', format);
+          const downloadPromise = page.waitForEvent('download');
+          await page.click('#modelExportForm button[value="download"]');
+          const download = await downloadPromise;
+          assert.equal(download.suggestedFilename(), 'mqtt-acceptance-' + model + '.' + format);
+          const output = await fs.readFile(await download.path(), 'utf8');
+          assert.equal(output.includes('AB_WORKING'), model !== 'M300');
+          assert.equal(output.includes('C_EDITED'), model === 'M300');
+          assert.match(output, /COMMON_CONREF/); assert.match(output, /data:image\/svg\+xml/);
+          assert.doesNotMatch(output, /UNUSED_RESOURCE_BODY|ANCESTOR_EXCLUDED/);
+        }
+      }
+      assert.equal(await fs.readFile(path.join(root, resourcePath), 'utf8'), resourceOriginal);
+      assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.get('manual/shared/notes.dita').current.includes('AB_WORKING')), true);
+    } finally {
+      await page.locator('dialog[open]').evaluateAll(dialogs => dialogs.forEach(dialog => dialog.close()));
+      if (await page.locator('#htmlPreviewPane.active').count()) await page.click('#closeHtmlPreviewButton');
+      await open(resourcePath); await source(resourceOriginal);
+      await open('a.dita'); await source(initial);
+    }
   });
   await t.test('Git bulk rejection stays unsaved, undoable and keeps the Git baseline', async () => {
     const changed = initial.replace('Original', 'Saved change');
@@ -222,7 +279,7 @@ test('real browser editing, reading and review workflow', async t => {
     assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.get('a.dita').current), initial);
     assert.match(await fs.readFile(path.join(root, 'a.dita'), 'utf8'), /Saved change/);
     assert.equal(writes.length, before);
-    await page.click('#saveButton');
+    await page.click('#saveButton'); await page.click('#saveScopeConfirm');
     await page.waitForFunction(() => Array.from(window.DitaApp.state.filesMap.values()).every(file => !file.dirty));
     assert.equal(await fs.readFile(path.join(root, 'a.dita'), 'utf8'), initial);
   });

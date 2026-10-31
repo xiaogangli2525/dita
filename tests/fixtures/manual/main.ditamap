@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map><title>MQTT 兼容性验收样例（虚构参数）</title><topicref href="topics/connect.dita"/><topicref href="topics/publish.dita"/><topicref href="shared/notes.dita" processing-role="resource-only"/></map>

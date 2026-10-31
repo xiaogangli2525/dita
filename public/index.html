@@ -16,7 +16,7 @@
         <div class="brand-name"><strong>DITA Lite</strong><small>DOCUMENT WORKSPACE</small></div>
         <span id="rootPath">未加载</span>
       </div>
-      <div class="titlebar-context"><span class="connection-dot" aria-hidden="true"></span> 本地工作区 <span class="context-separator">/</span> 专注每一次表达</div>
+      <div class="titlebar-context"><span class="connection-dot" aria-hidden="true"></span> 本地工作区 <span class="context-separator">/</span> 功能手册编写</div>
     </div>
     <nav class="main-menu" aria-label="主菜单">
       <button type="button" data-menu="file" aria-label="文件菜单">文件</button>
@@ -31,19 +31,22 @@
       <div class="toolbar-group workspace-group">
         <label class="workspace-switch"><span>仓库</span><select id="repositorySelect"></select></label>
         <label class="workspace-switch"><span>分支</span><select id="branchSelect"></select></label>
+        <button id="projectButton" type="button" title="维护当前仓库的型号清单">型号清单</button>
       </div>
       <span class="toolbar-divider" aria-hidden="true"></span>
       <div class="toolbar-group mode-group" aria-label="编辑模式">
-        <button id="sourceButton" type="button" class="tool-button" title="切换到源码编辑模式" aria-label="源码编辑模式">源码</button>
         <button id="visualButton" type="button" class="tool-button active" title="切换到 Author 可视化编辑模式" aria-label="Author 编辑模式">编写</button>
-        <button id="previewButton" type="button" class="tool-button" title="阅读当前内容（只读）">阅读</button>
+        <button id="previewButton" type="button" class="tool-button" title="阅读未筛选的原文（只读）">阅读原文</button>
       </div>
       <span class="toolbar-divider" aria-hidden="true"></span>
       <details class="editing-tools">
         <summary>编辑工具 <span aria-hidden="true">⌄</span></summary>
       <div class="toolbar-group edit-group" aria-label="编辑操作">
+        <button id="sourceButton" type="button" class="tool-button" title="切换到源码编辑模式" aria-label="源码编辑模式">源码</button>
+
         <button id="undoButton" type="button" title="撤销 (Ctrl+Z)" disabled>撤销</button>
         <button id="redoButton" type="button" title="重做 (Ctrl+Y)" disabled>重做</button>
+        <button id="validateButton" type="button" title="检查 XML 语法">XML 校验</button>
         <button id="formatButton" type="button" title="格式化当前 DITA 文档">格式化</button>
         <button id="findReplaceButton" type="button" title="在当前 DITA 文档中查找和替换">查找</button>
         <label class="insert-element-control" title="在编辑器光标处插入 DITA 元素">
@@ -54,6 +57,7 @@
             <option value="ul">无序列表 ul</option>
             <option value="ol">有序列表 ol</option>
             <option value="note">说明 note</option>
+            <option value="fn">注脚 fn</option>
             <option value="codeblock">代码块 codeblock</option>
             <option value="table">表格 table</option>
             <option value="image">图片 image</option>
@@ -61,6 +65,7 @@
             <option value="ph">短语 ph</option>
             <option value="b">粗体 b</option>
             <option value="i">斜体 i</option>
+            <option value="codeph">行内代码 codeph</option>
           </select>
         </label>
         <button id="insertElementButton" type="button" title="在编辑器光标处插入所选 DITA 元素">插入</button>
@@ -69,20 +74,10 @@
       <span class="toolbar-divider" aria-hidden="true"></span>
       <div class="toolbar-group file-group" aria-label="文件操作">
         <button id="newDocumentButton" type="button" title="创建新的 DITA 文档或 Map">新建</button>
-        <button id="validateButton" type="button" title="检查 XML 语法">XML 校验</button>
         <button id="saveButton" type="button" class="primary-action" title="保存当前文档 (Ctrl+S)">保存</button>
-        <div class="export-dropdown">
-          <button id="exportMenuButton" type="button" class="dropdown-toggle" title="导出或预览 Map 文档" aria-haspopup="true" aria-expanded="false">导出 <span class="caret" aria-hidden="true">▾</span></button>
-          <div id="exportMenu" class="dropdown-menu" hidden>
-            <button id="modelExportButton" type="button">按型号预览／导出…</button>
-            <div class="dropdown-separator" role="separator"></div>
-            <button id="previewHtmlButton" type="button" title="预览 Map 导出为 HTML 后的效果">预览 HTML</button>
-            <button id="exportHtmlButton" type="button" title="将当前 Map 导出为单文件 HTML（含目录和修订标记）">导出 HTML</button>
-            <div class="dropdown-separator" role="separator"></div>
-            <button id="previewMdButton" type="button" title="预览 Map 导出为 Markdown 后的效果">预览 MD</button>
-            <button id="exportMdButton" type="button" title="将当前 Map 导出为 Markdown 文件">导出 MD</button>
-          </div>
-        </div>
+        <button id="exportMenuButton" type="button" title="检查、预览和交付当前功能手册">交付…</button>
+        <button id="releasesButton" type="button" title="查看当前浏览器保存的交付记录">交付记录</button>
+        <button id="draftsButton" type="button" title="恢复当前仓库和分支的未保存草稿">草稿</button>
         <button id="footnotesButton" type="button" title="管理型号差异注脚">型号注脚</button>
         <button id="reviewButton" type="button" title="审阅文档变更（接受/拒绝修订）">审阅</button>
         <button id="inspectorToggleButton" type="button" class="inspector-toggle" title="切换属性面板" aria-controls="inspector" aria-expanded="false">属性</button>
@@ -105,6 +100,7 @@
         <span aria-hidden="true">⌕</span>
         <input id="search" type="search" placeholder="过滤文件和节点" autocomplete="off" aria-label="过滤文件和节点" />
       </div>
+      <details class="map-structure-tools"><summary>目录结构工具</summary>
       <div id="mapToolbar" class="map-toolbar">
         <button id="moveMapUpButton" type="button" title="上移选中的 Map 节点">上移</button>
         <button id="moveMapDownButton" type="button" title="下移选中的 Map 节点">下移</button>
@@ -114,6 +110,7 @@
         <button id="addTopicrefButton" type="button" title="向选中容器添加 topicref">加引用</button>
         <button id="addTopicheadButton" type="button" title="添加 topichead 分组">加分组</button>
       </div>
+      </details>
       <div id="tree" class="tree"></div>
       </div>
       <div id="outlineView" class="view-panel" hidden>
@@ -125,6 +122,13 @@
         <div class="workspace-search">
           <input id="workspaceSearchInput" type="search" placeholder="搜索文件路径" autocomplete="off" aria-label="搜索文件路径" />
           <div id="workspaceSearchResults" class="workspace-search-results"></div>
+          <div class="content-search-tools">
+            <label>正文范围<select id="contentSearchScope"><option value="manual">当前功能手册</option><option value="repository">整个仓库</option></select></label>
+            <label>正文关键词<input id="contentSearchInput" type="search" placeholder="例如命令、参数、错误码" maxlength="200"/></label>
+            <button id="contentSearchButton" type="button">搜索正文</button>
+            <p id="contentSearchMeta" role="status">搜索当前功能手册或整个仓库的正文。</p>
+            <div id="contentSearchResults"></div>
+          </div>
         </div>
       </div>
     </aside>
@@ -136,6 +140,7 @@
       </div>
       <div id="tabs" class="tabs"></div>
       <div id="editSearchPanel" class="edit-search-panel" hidden>
+        <span id="editSearchKind" class="edit-search-kind">正文</span><select id="editSearchTopic" aria-label="查找范围：当前 Topic" title="替换仅作用于选定的 Topic"></select>
         <label>查找 <input id="editFindInput" type="search" autocomplete="off" /></label>
         <label>替换为 <input id="editReplaceInput" type="text" autocomplete="off" /></label>
         <label class="edit-search-case"><input id="editFindCase" type="checkbox" /> 区分大小写</label>
@@ -158,10 +163,17 @@
         <textarea id="editor" aria-label="DITA XML 源码" spellcheck="false" placeholder="请选择左侧 DITA 文件"></textarea>
       </div>
       <div id="visualPane" class="visual-pane active">
+        <div id="authoringToolbar" class="authoring-toolbar" hidden>
+          <div class="authoring-context"><span class="writing-dot" aria-hidden="true"></span><strong>正文编写</strong><span id="authoringHint">在正文放好光标，新增注脚</span></div>
+          <div class="authoring-actions">
+            <div class="author-format-actions" role="group" aria-label="选中文字格式"><button id="authorBoldButton" type="button" title="加粗／取消粗体 Ctrl/Cmd+B" aria-label="加粗／取消粗体"><strong>B</strong></button><button id="authorItalicButton" type="button" title="斜体／取消斜体 Ctrl/Cmd+I" aria-label="斜体／取消斜体"><em>I</em></button><button id="authorCodeButton" type="button" title="行内代码／取消行内代码" aria-label="行内代码／取消行内代码">&lt;/&gt;</button></div>
+            <select id="authorInsertSelect" aria-label="插入正文内容" title="块元素插在当前块之后；图片和链接使用正文光标或选区"><option value="">插入…</option><option value="p">段落</option><option value="ul">无序列表</option><option value="ol">有序列表</option><option value="table">表格</option><option value="section">节</option><option value="note">说明</option><option value="codeblock">代码块</option><optgroup label="光标／选区处"><option value="image">图片</option><option value="xref">链接</option></optgroup></select><button id="authorFindButton" type="button" title="正文查找与替换 Ctrl/Cmd+F">查找</button>
+            <button id="authorUndoButton" type="button" title="撤销 Ctrl/Cmd+Z" disabled>撤销</button><button id="authorRedoButton" type="button" title="重做 Ctrl/Cmd+Y" disabled>重做</button><button id="newFootnoteButton" type="button" class="note-create-action" title="新增注脚 Ctrl/Cmd+Alt+N">＋ 新增注脚</button></div>
+        </div>
         <div id="visualEditor" contenteditable="true" class="visual-editor dita-preview"></div>
       </div>
       <div id="htmlPreviewPane" class="preview-pane html-preview-pane">
-        <div class="html-preview-toolbar"><span>HTML 预览</span><button id="closeHtmlPreviewButton" type="button" title="关闭 HTML 预览">关闭</button></div>
+        <div class="html-preview-toolbar"><span id="deliveryPreviewTitle">HTML 预览</span><button id="printDeliveryButton" type="button" hidden>打印 / 另存 PDF</button><button id="closeHtmlPreviewButton" type="button" title="关闭交付预览">关闭</button></div>
         <iframe id="htmlPreviewFrame" sandbox="allow-same-origin" title="HTML 预览"></iframe>
       </div>
       <div id="mdPreviewPane" class="preview-pane md-preview-pane">
@@ -173,16 +185,18 @@
       <div class="inspector-header">
         <span id="inspectorTitle">文档属性</span>
         <span id="inspectorElement" class="inspector-element">未选择元素</span>
+        <button id="inspectorCloseButton" type="button" aria-label="关闭侧栏" title="关闭侧栏">×</button>
       </div>
       <div class="inspector-tabs" role="tablist" aria-label="检查面板">
         <button id="propertiesTab" type="button" role="tab" aria-selected="true" class="active">元素属性</button>
         <button id="footnotesTab" type="button" role="tab" aria-selected="false">型号注脚</button>
       </div>
       <section id="footnotesPanel" class="footnotes-panel" hidden aria-label="型号注脚管理">
-        <div class="footnote-panel-intro"><span class="section-kicker">MODEL NOTES</span><h2>一处维护，差异清晰。</h2><p id="footnoteScope">当前功能文档</p></div>
-        <div class="footnote-stats"><div><strong id="footnoteCount">0</strong><span>条注脚</span></div><div><strong id="footnoteUnassigned">0</strong><span>条未标注型号</span></div></div>
+        <div class="footnote-panel-intro"><div class="footnote-panel-title"><h2>型号注脚</h2><button id="panelNewFootnoteButton" class="note-create-action" type="button" title="先在正文放置光标，再新增注脚">＋ 新增</button></div><p id="footnoteScope">当前功能文档</p></div>
+        <div class="footnote-stats"><div><strong id="footnoteCount">0</strong><span>条注脚</span></div><div><strong id="footnoteUnassigned">0</strong><span>条待确认</span></div></div>
         <div class="footnote-filters"><label>适用型号<select id="footnoteModel"><option value="">全部型号</option></select></label><input id="footnoteSearch" type="search" placeholder="查找命令、参数或注脚内容" aria-label="查找注脚"/></div>
-        <p class="footnote-scope-hint">此处仅筛选列表；按型号发布请使用导出菜单。</p>
+        <label class="note-pending-filter"><input id="footnoteUnassignedOnly" type="checkbox"/>仅看待确认适用范围</label>
+        <p class="footnote-scope-hint">按型号查看差异；双击正文中的注脚标记可编辑。</p>
         <div class="footnote-list-heading"><span id="footnoteResultCount">0 条注脚</span><button id="footnoteRefresh" type="button">刷新</button></div>
         <p id="footnotesMessage" class="footnote-message" role="status"></p>
         <div id="footnoteList" class="footnote-list"></div>
@@ -199,7 +213,7 @@
       <div id="reviewPane" class="review-pane" aria-label="审阅变更">
         <div class="review-toolbar">
           <span class="review-title">审阅变更</span>
-          <label>全部操作范围 <select id="reviewScope"><option value="git">Git 工作区变更</option><option value="oxygen">Oxygen 修订标记</option></select></label>
+          <label>全部操作范围 <select id="reviewScope"><option value="git">Git 工作区变更</option><optgroup label="高级：导入的修订"><option value="oxygen">Oxygen 修订标记</option></optgroup></select></label>
           <button id="acceptAllButton" type="button" title="接受所有修订">接受全部</button>
           <button id="rejectAllButton" type="button" title="拒绝所有修订">拒绝全部</button>
           <button id="closeReviewButton" type="button" title="关闭审阅面板">关闭审阅</button>
@@ -217,39 +231,113 @@
 
   <dialog id="modelExportDialog" class="footnote-dialog" aria-labelledby="modelExportHeading">
     <form id="modelExportForm">
-      <span class="section-kicker">MODEL PUBLICATION</span><h2 id="modelExportHeading">按型号导出功能手册</h2>
-      <p id="modelExportScope"></p>
+      <span class="section-kicker">MODEL PUBLICATION</span><h2 id="modelExportHeading">交付功能手册</h2>
+      <p id="modelExportScope"></p><p id="deliverySource" class="muted"></p>
       <label>适用型号<select id="exportModel"><option value="">全部型号</option></select></label>
-      <label>文件格式<select id="exportFormat"><option value="html">HTML</option><option value="md">Markdown</option></select></label>
-      <p>仅按注脚自身的 product 属性筛选，正文保持完整。未标注型号的注脚始终保留；不从文字推断支持范围。</p>
-      <p id="modelExportSummary" role="status"></p><p id="modelExportError" class="footnote-edit-error" role="alert"></p>
-      <div class="footnote-dialog-actions"><button id="modelExportCancel" type="button">取消</button><button type="submit" value="preview">预览</button><button type="submit" value="download" class="primary-action">导出文件</button></div>
+      <label>文件格式<select id="exportFormat"><option value="html">HTML（推荐交付）</option><option value="pdf">PDF</option><option value="docx">Word（.docx）</option><option value="md">Markdown</option></select></label>
+      <p id="exportFormatHint" class="muted"></p>
+      <label>文档版本<input id="exportVersion" maxlength="80" placeholder="例如 V1.2，可留空"/></label>
+      <p>按注脚及其 Topic 祖先的 product 条件筛选，正文保持完整。没有型号条件的注脚始终保留；不从文字推断支持范围。</p>
+      <p id="modelExportSummary" role="status"></p><ul id="deliveryChecks" class="delivery-checks"></ul><p id="deliveryCheckStatus" role="status"></p><p id="modelExportError" class="footnote-edit-error" role="alert"></p>
+      <div class="footnote-dialog-actions"><button id="modelExportCancel" type="button">取消</button><button type="submit" value="check">发布前检查</button><button type="submit" value="preview">交付预览</button><button type="submit" value="download" class="primary-action">导出文件</button></div>
     </form>
   </dialog>
-  <dialog id="footnoteEditDialog" class="footnote-dialog" aria-labelledby="footnoteEditHeading">
+  <dialog id="footnoteEditDialog" class="footnote-dialog note-create-dialog" aria-labelledby="footnoteEditHeading">
     <form id="footnoteEditForm">
-      <span class="section-kicker">MODEL NOTE</span><h2 id="footnoteEditHeading">编辑注脚</h2>
+      <span class="section-kicker">编写 · 编辑注脚</span><h2 id="footnoteEditHeading">编辑注脚</h2>
       <p>将型号差异保留在原文位置，便于审阅与追溯。</p>
       <label><span id="footnoteContentLabel">注脚内容</span><textarea id="footnoteContent" rows="6" required></textarea></label>
-      <label>适用型号<input id="footnoteProducts" placeholder="例如 M100 M200，多个型号用空格分隔"/></label>
-      <p class="footnote-form-hint">留空表示未标注，不会自动视为所有型号通用。</p>
+      <p id="footnoteSourceHint" class="footnote-form-hint"></p>
+      <fieldset class="note-scope-options"><legend>适用范围</legend><label><input type="radio" name="scope" value="models"/>指定型号</label><label><input id="footnoteCommon" type="radio" name="scope" value="common"/>已确认通用</label><label><input type="radio" name="scope" value="unresolved"/>待确认</label></fieldset>
+      <div id="footnoteModelPicker"><div id="footnoteModels" class="note-model-choices"></div><label id="footnoteCustomModels">补充型号<input id="footnoteProducts" list="projectModelOptions" placeholder="多个型号用空格分隔"/></label></div>
+      <p id="footnoteInheritance" class="note-inheritance"></p>
+      <p class="footnote-form-hint">待确认注脚仍保留在交付中。Ctrl/Cmd+Enter 应用修改；保存后写入工作区。</p>
       <p id="footnoteEditError" class="footnote-edit-error" role="alert"></p>
       <div class="footnote-dialog-actions"><button id="footnoteCancel" type="button">取消</button><button type="submit" class="primary-action">应用修改</button></div>
     </form>
   </dialog>
+  <dialog id="newFootnoteDialog" class="footnote-dialog note-create-dialog" aria-labelledby="newFootnoteHeading">
+    <form id="newFootnoteForm">
+      <span class="section-kicker">编写 · 新增注脚</span><h2 id="newFootnoteHeading">补充这一处的型号说明</h2>
+      <p id="newFootnoteLocation" class="note-location"></p>
+      <label for="newFootnoteContent">注脚内容</label><textarea id="newFootnoteContent" rows="4" required placeholder="填写参数差异、使用限制或补充说明"></textarea>
+      <fieldset class="note-scope-options"><legend>适用范围</legend>
+        <label><input type="radio" name="scope" value="models" checked/>指定型号</label><label><input id="newFootnoteCommon" type="radio" name="scope" value="common"/>已确认通用</label><label><input type="radio" name="scope" value="unresolved"/>待确认</label>
+      </fieldset>
+      <div id="newFootnoteModelPicker"><div id="newFootnoteModels" class="note-model-choices"></div><label id="newFootnoteCustomModels">补充型号<input id="newFootnoteProductInput" placeholder="多个型号用空格分隔"/></label></div>
+      <p id="newFootnoteInheritance" class="note-inheritance"></p>
+      <p class="note-save-hint">Ctrl/Cmd+Enter 插入，Esc 取消。插入后可撤销；点击保存后写入工作区。待确认注脚仍会保留在交付中。</p>
+      <p id="newFootnoteError" class="footnote-edit-error" role="alert"></p>
+      <div class="footnote-dialog-actions"><button id="newFootnoteCancel" type="button">取消</button><button type="submit" class="primary-action">插入注脚</button></div>
+    </form>
+  </dialog>
+  <datalist id="projectModelOptions"></datalist>
+  <dialog id="saveScopeDialog" class="workspace-dialog" aria-labelledby="saveScopeTitle"><form id="saveScopeForm">
+    <h2 id="saveScopeTitle">保存功能手册及依赖</h2><p>只保存勾选的文件；其他修改继续保留在编辑区。</p>
+    <div id="saveScopeList" class="scope-list"></div><p id="saveScopeError" class="form-error" role="alert"></p>
+    <div class="dialog-actions"><button id="saveScopeCancel" type="button">取消</button><button id="saveScopeConfirm" type="submit" class="primary-action">保存所选文件</button></div>
+  </form></dialog>
+  <dialog id="projectDialog" class="workspace-dialog" aria-labelledby="projectHeading"><form id="projectForm">
+    <h2 id="projectHeading">项目型号清单</h2><p>每行一个型号。配置保存在当前 Git 仓库，清单仅用于校验，不会批量改动文档。留空表示尚未启用清单校验。</p>
+    <label>有效型号<textarea id="projectModels" rows="9" placeholder="M100&#10;M200&#10;M300"></textarea></label>
+    <button id="projectDiscover" type="button">从当前手册导入已有型号</button><p id="projectError" class="form-error" role="alert"></p>
+    <div class="dialog-actions"><button id="projectClose" type="button">取消</button><button type="submit" class="primary-action">保存清单</button></div>
+  </form></dialog>
+  <dialog id="draftDialog" class="workspace-dialog" aria-labelledby="draftHeading">
+    <h2 id="draftHeading">恢复未保存草稿</h2><p>仅显示当前仓库和分支。恢复前会核对磁盘版本；草稿保存在当前浏览器。</p>
+    <div id="draftList" class="record-list"></div><p id="draftError" class="form-error" role="alert"></p>
+    <div class="dialog-actions"><button id="draftClose" type="button">关闭</button></div>
+  </dialog>
+  <dialog id="releaseDialog" class="workspace-dialog" aria-labelledby="releaseHeading">
+    <h2 id="releaseHeading">交付记录</h2><p>记录下载发起时的型号、版本、源文件指纹与未保存状态。保留当前浏览器中此仓库最近 50 条记录；可下载 JSON 随交付归档。</p>
+    <div id="releaseList" class="record-list"></div><div class="dialog-actions"><button id="releaseClose" type="button">关闭</button></div>
+  </dialog>
+  <dialog id="resourceDialog" class="workspace-dialog" aria-labelledby="resourceHeading"><form id="resourceForm">
+    <h2 id="resourceHeading">插入图片或链接</h2><p id="resourceScope"></p>
+    <label>资源类型<select id="resourceKind"><option value="image">图片</option><option value="link">手册内链接</option></select></label>
+    <label>查找资源<input id="resourceFilter" type="search" placeholder="过滤文件或章节"/></label>
+    <label>目标<select id="resourceTarget" size="7"></select></label>
+    <label>图片说明／链接文字<input id="resourceLabel" placeholder="可填写给读者看的说明"/></label>
+    <label id="resourceUploadRow">上传图片<input id="resourceUpload" type="file" accept=".png,.jpg,.jpeg,.gif,.bmp,.svg,.webp"/></label>
+    <p id="resourceMessage" class="muted"></p><p id="resourceError" class="form-error" role="alert"></p>
+    <div class="dialog-actions"><button id="resourceClose" type="button">取消</button><button type="submit" class="primary-action">应用到文档</button></div>
+  </form></dialog>
   <div id="loadingOverlay" class="loading-overlay" role="status" aria-hidden="true"><span>正在准备导出文档…</span></div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <script src="/vendor/sax.js"></script>
   <script src="/xml-source.js"></script>
+  <script src="/manual-core.js"></script>
   <script src="/footnotes-core.js"></script>
   <script src="/footnotes.js"></script>
   <script src="/review.js"></script>
   <script src="/document-store.js"></script>
   <script src="/workspace-client.js"></script>
+  <script src="/publication-resolver.js"></script>
   <script src="/publication-core.js"></script>
+  <script src="/delivery-core.js"></script>
+  <script src="/diff-core.js"></script>
   <script src="/app-core.js"></script>
+  <script src="/manual-service.js"></script>
+  <script src="/browser-files.js"></script>
+  <script src="/draft-store.js"></script>
+  <script src="/drafts.js"></script>
+  <script src="/project.js"></script>
+  <script src="/save.js"></script>
+  <script src="/search-core.js"></script>
+  <script src="/search.js"></script>
+  <script src="/asset-core.js"></script>
+  <script src="/resources.js"></script>
+  <script src="/release-store.js"></script>
+  <script src="/office-export.js"></script>
   <script src="/export.js"></script>
+  <script src="/map-controller.js"></script>
+  <script src="/documents.js"></script>
+  <script src="/input-history.js"></script>
+  <script src="/editor-controller.js"></script>
+  <script src="/note-scope.js"></script>
+  <script src="/author-notes.js"></script>
+  <script src="/author-selection.js"></script>
+  <script src="/editor-tools.js"></script>
   <script src="/app.js"></script>
 </body>
 </html>
-
