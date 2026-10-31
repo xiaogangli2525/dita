@@ -58,20 +58,7 @@
     async function focus(note) {
       note = note.sourceNote || note;
       try {
-        await A.openFile(note.path, { preserveFootnotesScope: true });
-        const file = A.state.filesMap.get(note.path);
-        if (file.current !== note.source) throw new Error('文档已变化，请刷新注脚列表后定位');
-        A.setMode('visual');
-        const marker = Array.from(A.dom.visualEditor.querySelectorAll('[data-dita-source="fn"]')).find(node => node.ditaSourcePath === note.xmlPath);
-        if (marker) {
-          const target = marker.closest('p,td,li') || marker;
-          A.dom.visualEditor.querySelectorAll('.footnote-located').forEach(node => node.classList.remove('footnote-located'));
-          target.classList.add('footnote-located'); target.scrollIntoView({ block: 'center', behavior: 'smooth' });
-        } else {
-          A.setMode('editor'); A.dom.editor.focus(); A.dom.editor.setSelectionRange(note.start, note.end);
-          const lines = file.current.slice(0, note.start).split('\n').length - 1;
-          A.dom.editor.scrollTop = Math.max(0, lines - 4) * parseFloat(getComputedStyle(A.dom.editor).lineHeight || '20');
-        }
+        await A.bodyNavigation.node(note.path, note.xmlPath, note.source);
         A.setStatus('已定位注脚 · ' + note.path); syncMode();
       } catch (e) { error(e.message); }
     }

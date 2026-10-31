@@ -2,6 +2,14 @@
 
 A lightweight local web client for reading, editing, reviewing, and exporting DITA documents.
 
+## Writing workflow
+
+- **New** opens one form with function overview, AT command, parameter table, operation example, model difference and standard DITA templates. New files are create-only and can be added to a function manual through the Map tools.
+- Select an element in Author mode to edit its **source attributes**, including cells inside a Map. Every change enters shared undo/redo and must be saved explicitly.
+- Simple CALS tables support named columns, inserting/deleting rows and columns, header conversion and column widths (`1*`, `2*`, `30mm`). Delete table removes the complete table. Merged/irregular structures remain readable, with unsupported structure commands disabled.
+- Paste text or basic rich HTML directly into Author mode. Paragraphs, emphasis, lists, links and rectangular tables are converted into DITA; images use the existing image tool. Complex tables fall back to plain text with a visible message. One paste is one undo action. Paragraph applicability is retained when a paste splits a conditioned paragraph.
+- Search results and note locations navigate in the existing Map when possible. **Return to writing position** restores the preceding position; search results also offer explicit Source navigation.
+
 ## Quick Start
 
 ```bash

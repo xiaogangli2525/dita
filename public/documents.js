@@ -74,116 +74,43 @@ async function saveAsFile() {
   }
 }
 
-function escapeXmlText(value) {
-  return String(value || '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
+const get = id => document.getElementById(id), templates = root.DitaDocumentTemplates;
+let creating = false, creationWorkspace = '';
+for (const [kind, [label]] of Object.entries(templates.definitions)) get('newDocumentTemplate').add(new Option(label, kind));
+function suggestion() { return 'new-' + get('newDocumentTemplate').value + (get('newDocumentTemplate').value === 'ditamap' ? '.ditamap' : '.dita'); }
+function createNewDocument() {
+  if (creating) return;
+  creationWorkspace = A.api.token; get('newDocumentForm').reset(); get('newDocumentPath').value = suggestion(); get('newDocumentError').textContent = '';
+  get('newDocumentDialog').showModal(); get('newDocumentTitle').focus();
 }
-
-function newDocumentId(filePath) {
-  const stem = fileNameFromPath(filePath).replace(/\.[^.]+$/, '');
-  const id = stem.toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || 'new-topic';
-  return /^\d/.test(id) ? `topic-${id}` : id;
-}
-
-function newDocumentTemplate(type, title, filePath) {
-  const safeTitle = escapeXmlText(title || '新建文档');
-  const id = newDocumentId(filePath);
-  const declaration = '<?xml version="1.0" encoding="UTF-8"?>';
-  if (type === 'ditamap') {
-    return `${declaration}\n<!DOCTYPE map PUBLIC "-//OASIS//DTD DITA Map//EN" "map.dtd">\n<map id="${id}">\n  <title>${safeTitle}</title>\n</map>\n`;
-  }
-  const definitions = {
-    topic: ['topic', 'body', 'topic'],
-    concept: ['concept', 'conbody', 'concept'],
-    task: ['task', 'taskbody', 'task'],
-    reference: ['reference', 'refbody', 'reference']
-  };
-  const [root, body, dtdName] = definitions[type] || definitions.topic;
-  const bodyContent = type === 'task'
-    ? '    <steps>\n      <step><cmd>在此输入步骤。</cmd></step>\n    </steps>'
-    : '    <p>在此输入内容。</p>';
-  const shortdesc = type === 'topic' || type === 'concept' || type === 'task' || type === 'reference'
-    ? '  <shortdesc></shortdesc>\n'
-    : '';
-  return `${declaration}\n<!DOCTYPE ${root} PUBLIC "-//OASIS//DTD DITA ${dtdName[0].toUpperCase()}${dtdName.slice(1)}//EN" "${root}.dtd">\n<${root} id="${id}">\n  <title>${safeTitle}</title>\n${shortdesc}<${body}>\n${bodyContent}\n  </${body}>\n</${root}>\n`;
-}
-
-async function createNewDocument() {
-  const requestedType = prompt('请选择文档类型（topic、concept、task、reference 或 ditamap）：', 'topic');
-  if (requestedType == null) return;
-  const type = requestedType.trim().toLowerCase();
-  if (!['topic', 'concept', 'task', 'reference', 'ditamap'].includes(type)) {
-    setStatus('不支持的文档类型', true);
-    return;
-  }
-  const extension = type === 'ditamap' ? '.ditamap' : '.dita';
-  const defaultName = `new-${type}${extension}`;
-  const requestedPath = prompt('请输入相对当前仓库根目录的文件路径：', defaultName);
-  if (requestedPath == null) return;
-  let target = requestedPath.trim().replace(/\\/g, '/').replace(/^\/+/, '');
-  if (!target) return;
-  if (!/\.(?:dita|ditamap|xml)$/i.test(target)) target += extension;
-  if (target.split('/').some(part => !part || part === '..') || !/^(?:[^/]+\/)*[^/]+\.(?:dita|ditamap|xml)$/i.test(target)) {
-    setStatus('新建路径必须是仓库内的 .dita、.ditamap 或 .xml 文件', true);
-    return;
-  }
-  if (type === 'ditamap' && !/\.ditamap$/i.test(target)) {
-    setStatus('Map 文档必须使用 .ditamap 扩展名', true);
-    return;
-  }
-  if (type !== 'ditamap' && /\.ditamap$/i.test(target)) {
-    setStatus('主题文档不能使用 .ditamap 扩展名', true);
-    return;
-  }
-  if (state.filesMap.get(target)?.dirty) { setStatus('目标文件有未保存修改，请先保存或下载：' + target, true); return; }
-  const title = prompt('请输入文档标题：', type === 'ditamap' ? '新建 DITA Map' : '新建文档');
-  if (title == null) return;
-  const content = newDocumentTemplate(type, title.trim() || '新建文档', target);
-  let expectedContent;
-  async function requestCreate(overwrite = false) {
-    return fetch('/api/file', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ path: target, content, overwrite, expectedContent })
-    });
-  }
+get('newDocumentTemplate').addEventListener('change', () => {
+  const input = get('newDocumentPath'); if (/^new-[^/]+\.(dita|ditamap)$/.test(input.value)) input.value = suggestion();
+});
+get('newDocumentCancel').addEventListener('click', () => { if (!creating) get('newDocumentDialog').close(); });
+get('newDocumentDialog').addEventListener('cancel', event => { if (creating) event.preventDefault(); });
+get('newDocumentForm').addEventListener('submit', async event => {
+  event.preventDefault(); if (creating) return;
+  const kind = get('newDocumentTemplate').value, map = kind === 'ditamap';
+  let target = get('newDocumentPath').value.trim().replace(/\\/g, '/');
   try {
-    let response = await requestCreate(false);
-    if (response.status === 409) {
-      const existing = await fetch('/api/file?path=' + encodeURIComponent(target));
-      if (!existing.ok) throw new Error(await responseError(existing));
-      expectedContent = await existing.text();
-      if (!confirm(`文件已存在，是否覆盖？\n\n${target}`)) return;
-      response = await requestCreate(true);
-    }
+    if (creationWorkspace !== A.api.token) throw new Error('工作区已切换，请重新打开新建表单');
+    if (!/\.(dita|ditamap|xml)$/i.test(target)) target += map ? '.ditamap' : '.dita';
+    if (target.split('/').some(part => !part || part === '..' || part === '.') || target.includes('\0')) throw new Error('请输入仓库内的相对文件路径');
+    if (map !== /\.ditamap$/i.test(target)) throw new Error(map ? '目录文件须使用 .ditamap 扩展名' : '正文文件请使用 .dita 或 .xml 扩展名');
+    if (state.filesMap.get(target)?.dirty) throw new Error('目标文件有未保存修改，请先保存或下载');
+    const content = templates.create(kind, get('newDocumentTitle').value.trim() || '新建文档', target);
+    A.validateXml(content); creating = true; get('newDocumentSubmit').disabled = true;
+    // New templates create files only. Existing documents stay intact.
+    const response = await fetch('/api/file', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ path: target, content, overwrite: false }) });
+    if (response.status === 409) throw new Error('文件已存在，请换一个文件名');
     if (!response.ok) throw new Error(await responseError(response));
-    const result = await response.json();
-    await refreshWorkspaceTree();
-    A.clearTopicCache();
-    const savedPath = result.path || target;
-    state.filesMap.set(savedPath, {
-      path: savedPath,
-      disk: result.content,
-      baseline: result.content,
-      gitStatus: result.created ? 'untracked' : 'modified',
-      current: result.content,
-      dirty: false
-    });
-    state.activePath = savedPath; A.footnotes?.setScope(savedPath); A.events.emit('file:opened', state.filesMap.get(savedPath));
-    renderTabs();
-    setMode('visual');
-    updateActivePanes();
-    updateTree();
-    setStatus(`已创建：${savedPath}`);
-  } catch (error) {
-    setStatus(`新建文档失败：${error.message}`, true);
-  }
-}
-
+    const result = await response.json(); await refreshWorkspaceTree(); A.clearTopicCache();
+    const savedPath = result.path || target, file = { path: savedPath, disk: result.content, baseline: result.content, gitStatus: 'untracked', current: result.content, dirty: false };
+    state.filesMap.set(savedPath, file); state.activePath = savedPath; A.footnotes?.setScope(savedPath); A.events.emit('file:opened', file);
+    renderTabs(); setMode('visual'); updateActivePanes(); updateTree(); get('newDocumentDialog').close(); setStatus('已创建：' + savedPath);
+  } catch (error) { get('newDocumentError').textContent = error.message; }
+  finally { creating = false; get('newDocumentSubmit').disabled = false; }
+});
 
     return { downloadFile, saveAsFile, createNewDocument };
   }
