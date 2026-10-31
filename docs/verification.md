@@ -58,3 +58,10 @@ The GitHub Actions workflow runs the suite on Node 20 and 22. The browser workfl
 - 105 unit/HTTP tests and 12 Chromium tests pass, including the three-model MQTT acceptance workflow and six actual HTML/Markdown downloads.
 - GBK saves, unsaved dependency buffers, local conref chains, shared cross-file note identity, inherited Topic note conditions, resource-only Map roles, image rebasing, ordinary links and tables are covered.
 - The representative fixture is not a company documentation repository. See [supported cases, test method and remaining boundaries](publication-compatibility.md).
+
+## Workspace foundation regression
+
+- 121 unit/HTTP checks and 22 Chromium checks pass. Existing source/Author conversion, review, undo, Map operations and publication cases remain covered after extracting rendering, diff and UI controllers.
+- New browser workflows verify shared note scope/source editing and explicit dependency saves, project model validation/common confirmation, unsaved cross-inline text search, refresh recovery with disk-conflict refusal, relative resource insertion/upload, document create/save-as and UTF-8 XML downloads, cancellation during delayed image IO, snapshot/output hashes and source issue navigation.
+- New real HTTP checks cover config conflicts/repair, GBK search offsets, image validation/create-only uploads, workspace/origin checks and symlink containment. Native preview QA also verified hosted layout, model preflight and content search.
+- Architecture, API/module boundaries, browser storage limits and remaining DITA/company-document validation limits are documented in [architecture.md](architecture.md).

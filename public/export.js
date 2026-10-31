@@ -1,5 +1,5 @@
 'use strict';
-(function () {
+(function (root) {
   const A = window.DitaApp = window.DitaApp || {};
   // Only deduplicate in-flight reads. Completed disk reads must not outlive an
   // export; an external editor may change a file without notifying this client.
@@ -44,24 +44,6 @@
     return { files, failures };
   };
 
-  A.loadPublicationFiles = async function (map, snapshot = A.state.filesMap) {
-    const workspace = A.api.token;
-    const buffers = new Map(Array.from(snapshot, ([path, file]) => [path, file.current]));
-    const { files, failures } = await A.loadTopicFiles(map, snapshot);
-    if (failures.length) throw new Error('文档读取失败：' + failures.map(item => item.path).join('、'));
-    const loaded = await window.DitaPublicationResolver.loadDependencies(files, async path => {
-      if (workspace !== A.api.token) throw new Error('工作区已切换，请重新导出');
-      if (buffers.has(path)) return buffers.get(path);
-      const response = await A.api.request('/api/file?path=' + encodeURIComponent(path));
-      if (!response.ok) throw new Error(await A.api.error(response));
-      const content = await response.text();
-      if (workspace !== A.api.token) throw new Error('工作区已切换，请重新导出');
-      return content;
-    });
-    if (workspace !== A.api.token) throw new Error('工作区已切换，请重新导出');
-    return loaded;
-  };
-
   A.toggleExportMenu = function () {
     const { dom } = A;
     if (!dom.exportMenu) return;
@@ -73,143 +55,169 @@
     A.dom.exportMenu.hidden = true;
     A.dom.exportMenuButton?.setAttribute('aria-expanded', 'false');
   };
-  A.browserLoadImageBytes = async function (path) {
-    const response = await A.api.request('/api/asset?path=' + encodeURIComponent(path));
+  A.browserLoadImageBytes = async function (path, signal) {
+    const response = await A.api.request('/api/asset?path=' + encodeURIComponent(path), { signal });
     if (!response.ok) throw new Error(`图片加载失败：${path}`);
     const blob = await response.blob();
-    return new Promise((resolve, reject) => {
+    const data = await new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(reader.result);
       reader.onerror = () => reject(new Error(`图片读取失败：${path}`));
       reader.readAsDataURL(blob);
     });
+    const image = new Image(); image.src = data;
+    let timer;
+    try { await Promise.race([image.decode(), new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('图片解码超时：' + path)), 10000); })]); }
+    finally { clearTimeout(timer); }
+    if (signal?.aborted) throw new Error('已取消');
+    return data;
   };
 
-  async function runExport(format, preview, model = '', frozen = null) {
-    if (exporting) return;
-    const { state, dom, ditaCore, setStatus } = A;
-    const file = state.filesMap.get(state.activePath);
-    if (!file || !/\.ditamap$/i.test(file.path)) {
-      setStatus('请先打开一个 Map 文档，再预览或导出', true);
-      return;
-    }
-    const snapshot = new Map(Array.from(state.filesMap, ([path, item]) => [path, { path, current: item.current }]));
-    const source = snapshot.get(file.path);
-    const workspace = A.api.token;
-    exporting = true;
-    A.showLoading?.();
-    try {
-      let map, files, failures = [];
-      if (frozen) { map = frozen.map; files = frozen.files; }
-      else {
-        const response = await A.api.request('/api/map/resolve', {
-          method: 'POST', headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ path: source.path, content: source.current })
-        });
-        if (!response.ok) throw new Error(await A.api.error(response));
-        map = await response.json();
-        map.source = source.current;
-        files = await A.loadPublicationFiles(map, snapshot);
-      }
-      if (failures.length) throw new Error(`导出已停止，${failures.length} 个主题无法读取：${failures.map(item => item.path).join('、')}`);
-      const imageFailures = [];
-      const loadImageBytes = async path => {
-        try { return await A.browserLoadImageBytes(path); }
-        catch (error) { imageFailures.push(path); return null; }
-      };
-      const convert = format === 'html' ? ditaCore.exportMapToHtml : ditaCore.exportMapToMarkdown;
-      // Validate every topic first. Core renderers may tolerate failures for
-      // previews, but downloadable documents must not silently omit content.
-      for (const item of files.values()) ditaCore.parseXml(item.current);
-      const publicationData = window.DitaPublication.preparePublication({ map, files, model }, ditaCore.collectPreviewPaths);
-      const output = await convert({ map, files, title: map.title || map.name, loadImageBytes, model, publicationData });
-      const report = publicationData.report;
-      const scope = (model ? ` · ${model}，排除 ${report.excluded} 条、保留 ${report.unmarked} 条未标注注脚` : '') + (report.unused ? ` · ${report.unused} 条未引用的注脚定义未输出` : '');
-      A.lastExportReport = report;
-      if (workspace !== A.api.token) throw new Error('工作区已切换，请重新导出');
-      if (imageFailures.length) throw new Error(`导出已停止，图片无法读取：${imageFailures.join('、')}`);
-      if (preview) {
-        if (state.activePath !== source.path) return;
-        dom.editorPane.classList.remove('active');
-        dom.visualPane.classList.remove('active');
-        dom.htmlPreviewPane.classList.toggle('active', format === 'html');
-        dom.mdPreviewPane.classList.toggle('active', format === 'md');
-        if (format === 'html') {
-          A.releaseExportPreview();
-          previewUrl = URL.createObjectURL(new Blob([output], { type: 'text/html;charset=utf-8' }));
-          dom.htmlPreviewFrame.src = previewUrl;
-        } else dom.mdPreviewContent.innerHTML = ditaCore.highlightMarkdown(output);
-        setStatus('预览已更新 · 包含当前未保存的修改' + scope);
-      } else {
-        const url = URL.createObjectURL(new Blob([output], { type: format === 'html' ? 'text/html;charset=utf-8' : 'text/markdown;charset=utf-8' }));
-        const link = document.createElement('a');
-        link.href = url;
-        const suffix = model ? '-' + model.replace(/[^\p{L}\p{N}_-]/gu, '-') : '';
-        link.download = source.path.split('/').pop().replace(/\.ditamap$/i, suffix + '.' + format);
-        document.body.append(link);
-        link.click();
-        link.remove();
-        setTimeout(() => URL.revokeObjectURL(url), 1000);
-        setStatus('导出成功 · 包含当前未保存的修改' + scope);
-        A.toast?.('文档已导出', 'info');
-      }
-    } catch (error) {
-      setStatus(error.message, true);
-      A.toast?.(error.message, 'error');
-    } finally { exporting = false; A.hideLoading?.(); }
-  }
-  let configuring = false, configuration = null;
   const get = id => document.getElementById(id);
-  function updateSummary() {
+  let configuration = null, configuring = false, compiled = null, operation = 0, abortController = null;
+  const service = () => A.manual || (A.manual = root.DitaManualService.createManualService(A));
+  function issue(error, snapshot) {
+    if (error.issues) return error.issues.map(item => ({ ...item, severity: 'error' }));
+    const path = snapshot ? [...snapshot.files.keys(), snapshot.path].find(path => error.message.startsWith(path + '：')) : '';
+    return [{ path: path || '', severity: 'error', message: error.message }];
+  }
+  function showIssues(issues) {
+    const list = get('deliveryChecks'); if (!list) return;
+    list.replaceChildren();
+    for (const item of issues) {
+      const row = document.createElement('li'); row.className = 'check-' + item.severity;
+      row.append(document.createTextNode((item.severity === 'error' ? '需处理：' : '提醒：') + item.message));
+      if (item.path && /\.(dita|xml|ditamap)$/i.test(item.path)) {
+        const button = document.createElement('button'); button.type = 'button'; button.textContent = item.path;
+        button.addEventListener('click', async () => { get('modelExportDialog').close(); try { await A.navigateToSource(item.path); } catch (error) { A.setStatus(error.message, true); } }); row.append(button);
+      }
+      list.append(row);
+    }
+  }
+  function summary() {
     if (!configuration) return;
+    compiled = null;
     try {
-      const data = window.DitaPublication.preparePublication({ map: configuration.map, files: configuration.files, model: get('exportModel').value }, A.ditaCore.collectPreviewPaths);
-      get('modelExportSummary').textContent = `包含 ${data.report.included} 条注脚；排除 ${data.report.excluded} 条；保留 ${data.report.unmarked} 条未标注注脚。` + (data.report.unused ? `另有 ${data.report.unused} 条带 id 的注脚未被引用，将不输出。` : '');
-      get('modelExportError').textContent = '';
-    } catch (e) { get('modelExportSummary').textContent = ''; get('modelExportError').textContent = e.message; }
+      const data = service().prepare(configuration.snapshot, get('exportModel').value);
+      get('modelExportSummary').textContent = `包含 ${data.report.included} 条注脚；排除 ${data.report.excluded} 条；保留 ${data.report.unmarked} 条待确认注脚。` + (data.report.unused ? ` ${data.report.unused} 条未引用定义不输出。` : '');
+      const warnings = data.notes.filter(note => note.unmarked).map(note => ({ path: note.origin.path, severity: 'warning', message: '注脚尚未确认适用范围，将保留在交付中' }));
+      for (const [path, file] of configuration.snapshot.files) if (/oxy_(insert|delete|comment)/.test(file.current)) warnings.push({ path, severity: 'warning', message: '含 Oxygen 修订或批注，请检查是否适合交付' });
+      showIssues(warnings); get('modelExportError').textContent = '';
+    } catch (error) { get('modelExportSummary').textContent = ''; get('modelExportError').textContent = error.message; showIssues(issue(error, configuration.snapshot)); }
+  }
+  async function provenance() {
+    try { const response = await A.api.request('/api/provenance'); if (response.ok) return response.json(); } catch {}
+    return { commit: null, branch: null, dirty: null };
   }
   A.openModelExport = async function () {
     if (configuring || exporting) return;
-    configuring = true; A.closeExportMenu();
+    configuring = true; configuration = null; compiled = null; A.closeExportMenu();
+    get('exportModel').replaceChildren(new Option('正在读取…', ''));
+    get('exportModel').disabled = true;
+    get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = true; });
+    get('modelExportError').textContent = ''; get('modelExportSummary').textContent = '正在读取手册及依赖…';
+    get('modelExportScope').textContent = ''; get('deliveryChecks').replaceChildren(); get('modelExportDialog').showModal();
     try {
-      let file = A.state.filesMap.get(A.state.activePath);
-      if (!file || !/\.ditamap$/i.test(file.path)) {
-        if (!A.state.selectedMap) throw new Error('请先选择一份功能 Map');
-        await A.openFile(A.state.selectedMap); file = A.state.filesMap.get(A.state.activePath);
-      }
-      const workspace = A.api.token, content = file.current;
-      const response = await A.api.request('/api/map/resolve', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ path: file.path, content }) });
-      if (!response.ok) throw new Error(await A.api.error(response));
-      const map = await response.json();
-      map.source = content;
-      const files = await A.loadPublicationFiles(map);
-      if (workspace !== A.api.token || file.current !== content || A.state.activePath !== file.path) throw new Error('文档或工作区已变化，请重新打开导出设置');
-      const models = window.DitaPublication.listModels(files);
+      const generation = operation;
+      const snapshot = await service().capture(service().scopePath()), source = await provenance();
+      if (generation !== operation || !get('modelExportDialog').open) return;
+      if (!service().current(snapshot)) throw new Error('内容已变化，请重新打开交付设置');
+      const models = [...new Set([...(snapshot.project.models || []), ...service().listModels(snapshot)])].sort();
       get('exportModel').replaceChildren(new Option('全部型号', ''));
       models.forEach(model => get('exportModel').add(new Option(model, model)));
-      const selected = get('footnoteModel')?.value || '';
-      if (models.includes(selected)) get('exportModel').value = selected;
-      configuration = { path: file.path, source: content, workspace, map, files };
-      get('modelExportScope').textContent = map.title + ' · ' + file.path;
-      updateSummary(); get('modelExportDialog').showModal();
-    } catch (e) { A.setStatus(e.message, true); A.toast?.(e.message, 'error'); }
+      const selected = get('footnoteModel')?.value || ''; if (models.includes(selected)) get('exportModel').value = selected;
+      configuration = { snapshot, source };
+      get('exportModel').disabled = false;
+      get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = false; });
+      get('modelExportScope').textContent = snapshot.map.title + ' · ' + snapshot.path;
+      const dirty = service().saveCandidates(snapshot).length;
+      get('deliverySource').textContent = `${snapshot.files.size} 个正文／依赖文件 · ${dirty} 个未保存` + (source.commit ? ` · Git ${source.commit.slice(0, 8)}${source.dirty ? '（含未提交修改）' : ''}` : ' · 未取得 Git 版本');
+      summary();
+    } catch (error) { get('modelExportSummary').textContent = ''; get('modelExportError').textContent = error.message; showIssues(issue(error)); }
     finally { configuring = false; }
   };
-  get('modelExportButton')?.addEventListener('click', A.openModelExport);
-  get('exportModel')?.addEventListener('change', updateSummary);
-  get('modelExportCancel')?.addEventListener('click', () => get('modelExportDialog').close());
-  get('modelExportForm')?.addEventListener('submit', event => {
-    event.preventDefault();
-    if (!configuration || configuration.workspace !== A.api.token || configuration.path !== A.state.activePath) { get('modelExportError').textContent = '工作区或文档已变化，请重新打开导出设置'; return; }
-    if (A.state.filesMap.get(configuration.path)?.current !== configuration.source || Array.from(configuration.files, ([path, file]) => { const current = A.state.filesMap.get(path); return current && current.current !== file.current; }).some(Boolean)) {
-      get('modelExportError').textContent = '内容已变化，请重新打开导出设置以更新快照'; return;
+  async function convert(snapshot, model, format, version) {
+    const failures = [], publicationData = service().prepare(snapshot, model);
+    const output = await (format === 'html' ? A.ditaCore.exportMapToHtml : A.ditaCore.exportMapToMarkdown)({ map: snapshot.map, files: snapshot.files, model, version, title: snapshot.map.title, publicationData,
+      loadImageBytes: async path => { try { return await A.browserLoadImageBytes(path, abortController?.signal); } catch (error) { failures.push({ path, severity: 'error', message: '图片无法读取：' + path }); return null; } } });
+    if (failures.length) throw Object.assign(new Error('图片无法读取，请检查问题清单'), { issues: failures });
+    return { output, report: publicationData.report };
+  }
+  function filename(snapshot, model, format, version = '') {
+    const safe = value => value.replace(/[^\p{L}\p{N}_-]/gu, '-');
+    return snapshot.path.split('/').pop().replace(/\.(ditamap|dita|xml)$/i, '') + (model ? '-' + safe(model) : '') + (version ? '-' + safe(version) : '') + '.' + format;
+  }
+  async function record(snapshot, source, data, model, format, version, name) {
+    const documents = new Map([[snapshot.path, snapshot.content], ...Array.from(snapshot.files, ([path, file]) => [path, file.current])]);
+    const record = { schema: 1, createdAt: new Date().toISOString(), state: 'download-initiated', manualPath: snapshot.path, model, format, version, filename: name,
+      source, capturedAt: snapshot.capturedAt, unsavedPaths: service().saveCandidates(snapshot).map(file => file.path), report: data.report,
+      documents: await Promise.all(Array.from(documents, async ([path, content]) => ({ path, sha256: await root.DitaBrowserFiles.sha256(content) }))),
+      projectSha256: await root.DitaBrowserFiles.sha256(JSON.stringify(snapshot.project)), outputSha256: await root.DitaBrowserFiles.sha256(data.output) };
+    root.DitaReleaseStore.createReleaseStore(root.localStorage).append(snapshot.root, record); A.lastDeliveryRecord = record;
+  }
+  async function publish(preview, legacy) {
+    if (exporting || !configuration) return;
+    const { snapshot, source } = configuration;
+    if (!service().current(snapshot)) { if (!legacy) get('modelExportError').textContent = '内容已变化，请重新打开交付设置以更新快照'; return; }
+    const model = legacy ? '' : get('exportModel').value, format = legacy?.format || get('exportFormat').value, version = legacy ? '' : get('exportVersion').value.trim();
+    if (version.length > 80) { get('modelExportError').textContent = '文档版本请限制在 80 字以内'; return; }
+    const generation = ++operation;
+    abortController = new AbortController();
+    exporting = true; A.showLoading?.();
+    if (!legacy) { for (const id of ['exportModel', 'exportFormat', 'exportVersion']) get(id).disabled = true; get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = true; }); }
+    try {
+      const key = JSON.stringify([model, format, version]);
+      const data = compiled?.key === key ? compiled.data : await convert(snapshot, model, format, version);
+      if (generation !== operation) return;
+      if (!service().current(snapshot)) throw new Error('内容已变化，请重新打开交付设置以更新快照');
+      compiled = { key, data }; A.lastExportReport = data.report;
+      if (preview === 'check') { get('deliveryCheckStatus').textContent = '发布检查通过，图片和链接已核对。预览与下载将使用这份快照。'; return; }
+      if (preview) {
+        A.dom.editorPane.classList.remove('active'); A.dom.visualPane.classList.remove('active');
+        A.dom.htmlPreviewPane.classList.toggle('active', format === 'html'); A.dom.mdPreviewPane.classList.toggle('active', format === 'md');
+        if (format === 'html') { A.releaseExportPreview(); previewUrl = URL.createObjectURL(new Blob([data.output], { type: 'text/html;charset=utf-8' })); A.dom.htmlPreviewFrame.src = previewUrl; }
+        else A.dom.mdPreviewContent.innerHTML = A.ditaCore.highlightMarkdown(data.output);
+        A.setStatus('交付预览已更新 · 包含当前未保存修改' + (model ? ' · ' + model : ''));
+      } else {
+        const name = filename(snapshot, model, format, version);
+        (A.downloadText || root.DitaBrowserFiles.downloadText)(data.output, name, format === 'html' ? 'text/html;charset=utf-8' : 'text/markdown;charset=utf-8');
+        let recorded = true;
+        if (!legacy) try { await record(snapshot, source, data, model, format, version, name); } catch { recorded = false; }
+        A.setStatus('已发起下载，请查看浏览器下载记录 · ' + name + (recorded ? '' : ' · 本地交付记录未能保存'));
+        A.toast?.('请在浏览器下载记录中查看文件', 'info');
+      }
+      if (!legacy) get('modelExportDialog').close();
+    } catch (error) {
+      if (generation !== operation) return;
+      if (!legacy) { get('modelExportError').textContent = error.message; showIssues(issue(error, snapshot)); }
+      A.setStatus(error.message, true); A.toast?.(error.message, 'error');
+    } finally { exporting = false; abortController = null; A.hideLoading?.(); if (!legacy && configuration) { for (const id of ['exportModel', 'exportFormat', 'exportVersion']) get(id).disabled = false; get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = false; }); } }
+  }
+  async function legacyExport(format, preview) {
+    if (!/\.ditamap$/i.test(A.state.activePath)) { A.setStatus('请先打开一个 Map 文档，再预览或导出', true); return; }
+    try { configuration = { snapshot: await service().capture(A.state.activePath), source: {} }; compiled = null; await publish(preview, { format }); }
+    catch (error) { A.setStatus(error.message, true); A.hideLoading?.(); }
+  }
+  A.previewMapHtml = () => legacyExport('html', true); A.exportMapToHtmlFile = () => legacyExport('html', false);
+  A.previewMapMd = () => legacyExport('md', true); A.exportMapToMarkdownFile = () => legacyExport('md', false);
+  get('exportModel')?.addEventListener('change', summary); get('exportFormat')?.addEventListener('change', () => { compiled = null; get('deliveryCheckStatus').textContent = ''; });
+  function cancelDelivery() { operation++; abortController?.abort(); }
+  get('modelExportCancel')?.addEventListener('click', () => { cancelDelivery(); get('modelExportDialog').close(); });
+  get('modelExportDialog')?.addEventListener('cancel', cancelDelivery);
+  get('modelExportDialog')?.addEventListener('close', cancelDelivery);
+  get('modelExportForm')?.addEventListener('submit', event => { event.preventDefault(); publish(event.submitter?.value === 'preview' ? true : event.submitter?.value === 'check' ? 'check' : false); });
+  function history() {
+    const list = get('releaseList'); list.replaceChildren();
+    let records = [];
+    try { records = root.DitaReleaseStore.createReleaseStore(root.localStorage).list(A.state.root); } catch {}
+    if (!records.length) list.textContent = '当前浏览器没有此仓库的交付记录。预览不计入记录。';
+    for (const item of records) {
+      const row = document.createElement('article'), title = document.createElement('strong'), detail = document.createElement('p'), button = document.createElement('button');
+      title.textContent = item.filename; detail.textContent = `${item.createdAt} · ${item.source.branch || '未知分支'} · ${item.source.commit?.slice(0, 8) || '无 Git 版本'} · ${item.unsavedPaths.length} 个未保存文件 · 下载已发起`;
+      button.type = 'button'; button.textContent = '下载记录 JSON'; button.addEventListener('click', () => A.downloadText(JSON.stringify(item, null, 2), item.filename + '.record.json', 'application/json;charset=utf-8'));
+      row.append(title, detail, button); list.append(row);
     }
-    if (get('modelExportError').textContent) return;
-    const model = get('exportModel').value, format = get('exportFormat').value;
-    get('modelExportDialog').close(); runExport(format, event.submitter?.value === 'preview', model, configuration);
-  });
-  A.previewMapHtml = () => runExport('html', true);
-  A.exportMapToHtmlFile = () => runExport('html', false);
-  A.previewMapMd = () => runExport('md', true);
-  A.exportMapToMarkdownFile = () => runExport('md', false);
-})();
+    get('releaseDialog').showModal();
+  }
+  get('releasesButton')?.addEventListener('click', history); get('releaseClose')?.addEventListener('click', () => get('releaseDialog').close());
+})(window);

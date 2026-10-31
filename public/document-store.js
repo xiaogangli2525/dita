@@ -25,9 +25,9 @@
   // Save acknowledgements advance disk, never a newer working buffer.
   function createSaveCoordinator(send) {
     const pending = new WeakMap();
-    return function save(file) {
+    return function save(file, submitted) {
       if (pending.has(file)) return pending.get(file);
-      const snapshot = { path: file.path, content: file.current, expectedContent: file.disk };
+      const snapshot = submitted || { path: file.path, content: file.current, expectedContent: file.disk };
       const operation = Promise.resolve().then(() => send(snapshot)).then(result => {
         if (file.current === snapshot.content) file.current = result.content;
         file.disk = result.content;

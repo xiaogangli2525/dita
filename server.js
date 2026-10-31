@@ -9,6 +9,7 @@ const { spawn } = require('child_process');
 const { randomUUID } = require('crypto');
 const { createWorkspaceLock } = require('./lib/workspace-lock');
 const workspaceLock = createWorkspaceLock();
+const { handleWorkspaceTools } = require('./lib/workspace-tools');
 let workspaceToken = randomUUID();
 
 const PORT = Number(process.env.PORT || 5050);
@@ -498,7 +499,7 @@ async function buildWorkspace() {
   const files = await walkFileTree();
   const maps = await buildMapTrees(files);
   const git = await listBranches();
-  return { root: DOCS_ROOT, workspaceToken, files, maps, currentBranch: git.current, branches: git.branches };
+  return { root: DOCS_ROOT, workspaceToken, capabilities: { persistence: 'filesystem', git: true }, files, maps, currentBranch: git.current, branches: git.branches };
 }
 
 async function handleApi(req, res, pathname, searchParams) {
@@ -521,6 +522,7 @@ async function handleApi(req, res, pathname, searchParams) {
     sendJson(res, 403, { error: 'Forbidden origin' });
     return;
   }
+  if (await handleWorkspaceTools(req, res, pathname, searchParams, { root: DOCS_ROOT, readJson, sendJson, checkedResolve, readXmlFile, walkFileTree, runGit, gitWorktreeStatus })) return;
   if (req.method === 'GET' && pathname === '/api/repos') {
     const repositories = await listRepositories();
     sendJson(res, 200, { root: REPOSITORIES_ROOT, repositories, current: DOCS_ROOT });
@@ -614,10 +616,10 @@ async function handleApi(req, res, pathname, searchParams) {
     const stat = await fs.stat(asset);
     if (!stat.isFile()) throw Object.assign(new Error('Asset not found'), { status: 404 });
     const ext = path.extname(asset).toLowerCase();
-    const allowedExts = ['.svg', '.png', '.jpg', '.jpeg', '.gif', '.bmp'];
+    const allowedExts = ['.svg', '.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp'];
     if (!allowedExts.includes(ext)) throw Object.assign(new Error('Unsupported asset type'), { status: 403 });
-    const type = ext === '.svg' ? 'image/svg+xml' : ext === '.png' ? 'image/png' : ext === '.jpg' || ext === '.jpeg' ? 'image/jpeg' : ext === '.gif' ? 'image/gif' : ext === '.bmp' ? 'image/bmp' : 'application/octet-stream';
-    res.writeHead(200, { 'content-type': type, 'cache-control': 'no-store' });
+    const type = ext === '.svg' ? 'image/svg+xml' : ext === '.png' ? 'image/png' : ext === '.jpg' || ext === '.jpeg' ? 'image/jpeg' : ext === '.gif' ? 'image/gif' : ext === '.bmp' ? 'image/bmp' : ext === '.webp' ? 'image/webp' : 'application/octet-stream';
+    res.writeHead(200, { 'content-type': type, 'cache-control': 'no-store', 'x-content-type-options': 'nosniff', 'content-security-policy': "sandbox; default-src 'none'; style-src 'unsafe-inline'" });
     res.end(await fs.readFile(asset));
     return;
   }

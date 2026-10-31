@@ -8,6 +8,7 @@ const workspaceClient = window.DitaWorkspaceClient;
 const fetch = workspaceClient.request;
 const responseError = workspaceClient.error;
 const documentStore = window.DitaDocumentStore;
+const events = window.DitaManualCore.createEvents();
 const createVisualApiFromCore = ditaCore.createVisualApi;
 
 const state = {
@@ -18,6 +19,7 @@ const state = {
   repositories: [],
   branches: [],
   currentBranch: '',
+  capabilities: { persistence: 'filesystem', git: true },
   filesMap: new Map(),
   activePath: '',
   // Oxygen Author opens documents in the structured visual editor. Source is
@@ -131,8 +133,8 @@ function updateDocumentChrome() {
   if (location) location.textContent = file ? file.path : '选择一个文档，开始专注写作';
   if (badge) {
     const dirty = Array.from(state.filesMap.values()).filter(item => item.dirty).length;
-    badge.textContent = saveInProgress ? '正在保存…' : dirty ? `${dirty} 个文档待保存` : file ? '已保存到磁盘' : '本地工作区';
-    badge.dataset.state = saveInProgress ? 'saving' : dirty ? 'dirty' : 'saved';
+    badge.textContent = A.saving ? '正在保存…' : dirty ? `${dirty} 个文档待保存` : file ? (state.capabilities.persistence === 'browser' ? '已保存到浏览器' : '已保存到磁盘') : '本地工作区';
+    badge.dataset.state = A.saving ? 'saving' : dirty ? 'dirty' : 'saved';
   }
   if (empty) empty.hidden = Boolean(file);
   document.title = file ? `${fileNameFromPath(file.path)} · DITA Lite` : 'DITA Lite · 文档工作台';
@@ -154,7 +156,15 @@ function toast(message, level) {
   toastTimer = setTimeout(() => { el.className = 'toast'; }, 3000);
 }
 Object.assign(A, { state, dom, ditaCore, setStatus, toast, api: workspaceClient,
-  setFileContent, validateXml, openFile, setMode,
+  setFileContent, validateXml, openFile, setMode, events, downloadText: window.DitaBrowserFiles.downloadText, downloadXML: window.DitaBrowserFiles.downloadXML,
+  refreshChrome: updateDocumentChrome, refreshFiles: () => { renderTabs(); updateHistoryButtons(); updateDocumentChrome(); },
+  navigateToSource: async (path, start = 0, end = start, expected) => {
+    const workspace = workspaceClient.token; await openFile(path, { preserveFootnotesScope: true });
+    if (workspace !== workspaceClient.token) throw new Error('工作区已切换');
+    const file = state.filesMap.get(path); if (expected !== undefined && file.current.slice(start, end) !== expected) throw new Error('内容已变化');
+    setMode('editor'); dom.editor.focus(); dom.editor.setSelectionRange(start, end);
+    dom.editor.scrollTop = Math.max(0, file.current.slice(0, start).split('\n').length - 5) * 22;
+  },
   prepareProposal: (content, instruction = '') => documentStore.createProposal({ file: state.filesMap.get(state.activePath), workspaceToken: workspaceClient.token, content, instruction }, validateXml),
   applyProposal: proposal => documentStore.applyProposal(proposal, { file: state.filesMap.get(state.activePath), workspaceToken: workspaceClient.token }, validateXml, setFileContent),
   showLoading: function() { const el = document.getElementById('loadingOverlay'); if (el) { el.classList.add('active'); el.setAttribute('aria-hidden', 'false'); } },
@@ -469,10 +479,10 @@ function applyContextAction(action) {
 }
 
 const menuDefinitions = {
-  file: [['新建文档', () => createNewDocument()], ['保存', () => saveFile(), 'Ctrl+S'], ['另存为', () => saveAsFile()], ['下载', () => downloadFile()]],
+  file: [['恢复草稿', () => A.drafts.show()], ['交付记录', () => document.getElementById('releasesButton').click()], ['新建文档', () => createNewDocument()], ['保存', () => saveFile(), 'Ctrl+S'], ['另存为', () => saveAsFile()], ['下载', () => downloadFile()]],
   edit: [['撤销', () => undoFile(), 'Ctrl+Z'], ['重做', () => redoFile(), 'Ctrl+Y'], ['查找和替换', () => openFindReplace(), 'Ctrl+F'], ['格式化 XML', () => dom.formatButton?.click()]],
   view: [['Source 源码', () => setMode('editor')], ['Author 编辑', () => setMode('visual')], ['阅读（只读）', () => setMode('preview')], ['显示 Map', () => setActiveView('map')], ['显示 Outline', () => setActiveView('outline')]],
-  dita: [['插入元素', () => dom.insertElementButton?.click()], ['XML 语法校验', () => dom.validateButton?.click()], ['审阅变更', () => setMode('review')]],
+  dita: [['项目型号清单', () => A.project.show()], ['插入元素', () => dom.insertElementButton?.click()], ['XML 语法校验', () => dom.validateButton?.click()], ['审阅变更', () => setMode('review')]],
   help: [['快捷键', () => setStatus('Ctrl+S 保存 · Ctrl+F 查找 · Ctrl+Z 撤销')]]
 };
 
@@ -536,9 +546,11 @@ function hasUnsavedWork() {
 }
 
 async function reloadWorkspace(result) {
+  events.emit('workspace:willChange');
   workspaceClient.adopt(result.workspaceToken);
   A.releaseExportPreview?.();
   state.root = result.root;
+  state.capabilities = result.capabilities || { persistence: 'filesystem', git: true };
   state.files = result.files;
   state.maps = result.maps;
   state.currentBranch = result.currentBranch;
@@ -566,6 +578,7 @@ async function reloadWorkspace(result) {
   renderTabs();
   updateActivePanes();
   updateTree('');
+  await A.project.load(); events.emit('workspace:changed');
 }
 
 async function loadRepositories() {
@@ -612,135 +625,10 @@ async function selectBranch() {
     toast(error.message, 'error');
   }
 }
-function renderMapPicker() {
-  dom.mapPicker.replaceChildren();
-  const label = document.createElement('label');
-  label.className = 'map-label';
-  label.append('Map: ');
-  const select = document.createElement('select');
-  select.id = 'mapSelect';
-  for (const map of state.maps) {
-    const option = document.createElement('option');
-    option.value = map.path;
-    const title = map.title?.trim() || map.name || map.path;
-    const duplicates = state.maps.filter(m => (m.title?.trim() || m.name) === (map.title?.trim() || map.name));
-    option.textContent = duplicates.length > 1 ? title + '（' + map.name + '）' : title;
-    select.append(option);
-  }
-  select.value = state.selectedMap;
-  select.addEventListener('change', () => {
-    state.selectedMap = select.value;
-    updateTree();
-  });
-  const openButton = document.createElement('button');
-  openButton.type = 'button';
-  openButton.className = 'map-open-author';
-  openButton.textContent = '打开全文';
-  openButton.title = '在 Author 编辑区打开整个 DITA Map';
-  openButton.addEventListener('click', () => openFile(select.value));
-  label.append(select, openButton);
-  dom.mapPicker.append(label);
-}
-
-function renderTree(nodes, filter = '') {
-  const result = [];
-  const term = filter.trim().toLowerCase();
-
-  function walk(items, parentMatched = false, output = result) {
-    for (const node of Array.from(items || [])) {
-      const title = node.title || node.name || '';
-      const matched = !term || title.toLowerCase().includes(term) || node.path?.toLowerCase().includes(term);
-      const children = node.children ? walk(node.children, parentMatched || matched, []) : [];
-      if (!matched && !parentMatched && !children.length) continue;
-      const nodeButton = document.createElement('button');
-      nodeButton.type = 'button';
-      nodeButton.className = 'map-node';
-      nodeButton.dataset.sourcePath = node.sourcePath || '';
-      nodeButton.textContent = (node.type === 'file' ? '' : '\u{1F4C1} ') + title;
-      nodeButton.addEventListener('click', () => {
-        state.selectedMapSourcePath = node.sourcePath || '';
-        if (node.type === 'file') openFile(node.path);
-        else updateTree();
-      });
-      output.push(nodeButton);
-      if (children.length) {
-        const childContainer = document.createElement('div');
-        childContainer.className = 'children';
-        childContainer.append(...children);
-        output.push(childContainer);
-      }
-
-    }
-    return output;
-  }
-
-  const selected = state.maps.find(map => map.path === state.selectedMap);
-  const items = (selected?.children || state.files) || [];
-  return walk(items);
-}
-
-function updateTree(filter = dom.search.value) {
-  const searched = Boolean(filter && filter.trim()) && !state.selectedMap;
-  const source = searched ? state.files : (state.maps.find(map => map.path === state.selectedMap)?.children || state.files);
-  dom.tree.replaceChildren(...renderTree(source, filter));
-  for (const button of dom.tree.querySelectorAll('button')) {
-    const selected = button.dataset.sourcePath === state.selectedMapSourcePath;
-    button.classList.toggle('selected', selected);
-    if (selected) button.scrollIntoView({ block: 'nearest' });
-  }
-  updateMapToolbar();
-}
-
-function updateMapToolbar() {
-  const hasMap = Boolean(state.selectedMap);
-  const hasSelection = hasMap && state.selectedMapSourcePath !== '';
-  for (const button of [dom.moveMapUpButton, dom.moveMapDownButton, dom.promoteMapButton, dom.demoteMapButton, dom.removeMapButton, dom.addTopicrefButton]) {
-    button.disabled = !hasSelection;
-  }
-  dom.addTopicheadButton.disabled = !hasMap;
-}
-
-async function applyMapOperation(operation, details = {}) {
-  if (!state.selectedMap) return null;
-  const mapPath = state.selectedMap;
-  try {
-    const file = await ensureMapAuthorFile(mapPath);
-    const before = file.current;
-    const response = await fetch('/api/map/operation', {
-      method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ path: mapPath, content: before, operation,
-        sourcePath: details.sourcePath !== undefined ? details.sourcePath : state.selectedMapSourcePath, ...details })
-    });
-    if (!response.ok) throw new Error(await responseError(response));
-    const result = await response.json();
-    if (file.current !== before) throw new Error('Map 已修改，请重新执行结构操作');
-    const selectedMap = state.maps.find(map => map.path === mapPath);
-    if (selectedMap) Object.assign(selectedMap, result.map);
-    setFileContent(file, result.content);
-    if (state.activePath !== mapPath) await openFile(mapPath);
-    state.historyTargetPath = mapPath;
-    state.selectedMapSourcePath = result.selectedSourcePath || '';
-    updateTree('');
-    renderTabs();
-    setStatus('Map 结构已更新；可撤销，按 Ctrl/Cmd+S 保存');
-    return result;
-  } catch (error) {
-    setStatus(`Map 结构操作失败：${error.message}`, true);
-    return null;
-  }
-}
-
-function promptMapTarget() {
-  const input = prompt('请输入要添加的 DITA 文件路径（相对当前 Map）：');
-  if (input === null) return '';
-  const value = input.trim();
-  if (!value) return '';
-  if (!/\.dita$/i.test(value)) {
-    setStatus('Map 引用必须指向 .dita 文件', true);
-    return '';
-  }
-  return value;
-}
+function renderMapPicker() { return A.maps.renderPicker(); }
+function updateTree(filter) { return A.maps.updateTree(filter); }
+function applyMapOperation(operation, details) { return A.maps.applyOperation(operation, details); }
+function promptMapTarget() { return A.maps.promptTarget(); }
 
 function makeTab(file) {
   const tab = document.createElement('div');
@@ -865,6 +753,7 @@ function setFileContent(file, content, { record = true, updateEditor = true, his
     state.historyTargetPath = file.path;
   }
   if (render) refreshFileViews(file, { updateEditor });
+  events.emit('document:changed', file);
   return true;
 }
 
@@ -874,7 +763,7 @@ function undoFile() {
   const entry = documentStore.travelHistory(file, 'undo');
   if (!entry) return;
   if (entry.reviewDecisionsBefore) state.reviewDecisions = new Map(entry.reviewDecisionsBefore);
-  refreshHistoryTargetView(file);
+  refreshHistoryTargetView(file); events.emit('document:changed', file);
   setStatus('已撤销');
 }
 
@@ -884,7 +773,7 @@ function redoFile() {
   const entry = documentStore.travelHistory(file, 'redo');
   if (!entry) return;
   if (entry.reviewDecisionsAfter) state.reviewDecisions = new Map(entry.reviewDecisionsAfter);
-  refreshHistoryTargetView(file);
+  refreshHistoryTargetView(file); events.emit('document:changed', file);
   setStatus('已重做');
 }
 
@@ -936,6 +825,7 @@ async function openFile(path, { preserveFootnotesScope = false } = {}) {
   updateActivePanes();
   updateHistoryButtons();
   updateTree();
+  events.emit('file:opened', state.filesMap.get(path));
   const git = state.filesMap.get(path)?.gitStatus || 'unknown';
   setStatus(git === 'clean' ? 'Git\uFF1A\u65E0\u672A\u63D0\u4EA4\u4FEE\u6539' : `Git\uFF1A${git}`);
 }
@@ -943,7 +833,7 @@ async function openFile(path, { preserveFootnotesScope = false } = {}) {
 function closeFile(path) {
   const file = state.filesMap.get(path);
   if (file?.dirty && !confirm(`${path} \u5C1A\u672A\u4FDD\u5B58\uFF0C\u786E\u5B9A\u5173\u95ED\uFF1F`)) return;
-  state.filesMap.delete(path);
+  state.filesMap.delete(path); events.emit('file:closed', path);
   if (state.activePath === path) {
     state.activePath = Array.from(state.filesMap.keys()).pop() || '';
     state.historyTargetPath = state.activePath;
@@ -1239,6 +1129,7 @@ function insertDitaElement() {
   }
   if (state.mode === 'preview' || state.mode === 'review') return;
   const tag = dom.insertElementSelect?.value || 'p';
+  if (tag === 'image' || tag === 'xref') { A.resources.show(tag === 'image' ? 'image' : 'link'); return; }
   if (state.mode === 'visual' || state.mode === 'preview') {
     insertVisualElement(tag);
     return;
@@ -1457,183 +1348,15 @@ function validateXml(text) {
 
 const formatContent = window.DitaXmlSource.formatXml;
 
-const saveDocument = documentStore.createSaveCoordinator(async snapshot => {
-  const response = await fetch('/api/file', {
-    method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify(snapshot)
-  });
-  if (!response.ok) throw new Error(await responseError(response));
-  const result = await response.json();
-  A.clearTopicCache();
-  return result;
-});
-let saveInProgress = null;
-function saveFile() {
-  if (saveInProgress) return saveInProgress;
-  saveInProgress = persistCurrentDocuments().finally(() => { saveInProgress = null; updateDocumentChrome(); });
-  updateDocumentChrome();
-  return saveInProgress;
-}
-async function persistCurrentDocuments() {
-  const file = state.filesMap.get(state.activePath);
-  if (!file) return false;
-  let savedCount = 0;
-  try {
-    const isMap = /\.ditamap$/i.test(file.path);
-    let topicPaths = [];
-    if (isMap) {
-      const content = file.current;
-      const response = await fetch('/api/map/resolve', {
-        method: 'POST', headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ path: file.path, content })
-      });
-      if (!response.ok) throw new Error(await responseError(response));
-      const map = await response.json();
-      if (file.current !== content) throw new Error('Map 已修改，请再次保存最新内容');
-      topicPaths = ditaCore.collectPreviewPaths(map.children || []).map(entry => entry.path);
-    }
-    const files = isMap
-      ? [file, ...topicPaths.map(path => state.filesMap.get(path))].filter((item, i, all) => item?.dirty && all.indexOf(item) === i)
-      : [file];
-    // Validate the complete batch before the first write.
-    for (const item of files) validateXml(item.current);
-    for (const item of files) {
-      validateXml(item.current);
-      await saveDocument(item);
-      savedCount++;
-    }
-    const clean = !file.dirty && files.every(item => !item.dirty);
-    renderTabs();
-    updateHistoryButtons();
-    updateDocumentChrome();
-    setStatus(clean ? `已保存 ${savedCount} 个文档到磁盘 · 尚未提交 Git` : '已保存提交时的版本；新输入的内容仍待保存');
-    return clean;
-  } catch (error) {
-    renderTabs();
-    setStatus(`${savedCount ? `已保存 ${savedCount} 个文档，其余未保存。` : ''}保存失败：${error.message}`, true);
-    toast(error.message, 'error');
-    return false;
-  }
-}
+function saveFile() { return A.save.saveCurrent(); }
 
 function fileNameFromPath(filePath) {
   return String(filePath || '').split('/').pop() || 'document.dita';
 }
 
 
-function downloadFile() {
-  const file = state.filesMap.get(state.activePath);
-  if (!file) return;
-  try {
-    const blob = new Blob([file.current], { type: 'application/xml;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = fileNameFromPath(file.path);
-    link.rel = 'noopener';
-    document.body.append(link);
-    link.click();
-    link.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 0);
-    setStatus(`已下载：${link.download}`);
-  } catch (error) {
-    setStatus(`下载失败：${error.message}`, true);
-  }
-}
-
-async function saveAsFile() {
-  const file = state.filesMap.get(state.activePath);
-  if (!file) return;
-  const suggested = file.path || 'new-topic.dita';
-  const requested = prompt('请输入相对当前仓库根目录的文件路径：', suggested);
-  if (requested == null) return;
-  const target = requested.trim().replace(/\\/g, '/').replace(/^\/+/, '');
-  if (!target || !/\.(?:dita|ditamap|xml)$/i.test(target) || target.split('/').some(part => part === '..')) {
-    setStatus('另存为路径必须是仓库内的 .dita、.ditamap 或 .xml 文件', true);
-    return;
-  }
-
-  if (target === file.path) { await saveFile(); return; }
-  const snapshot = file.current;
-  let expectedContent;
-  async function requestSave(overwrite = false) {
-    return fetch('/api/file', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ path: target, content: snapshot, overwrite, expectedContent })
-    });
-  }
-
-  try {
-    let response = await requestSave(false);
-    if (response.status === 409) {
-      const existing = await fetch('/api/file?path=' + encodeURIComponent(target));
-      if (!existing.ok) throw new Error(await responseError(existing));
-      expectedContent = await existing.text();
-      if (!confirm(`文件已存在，是否覆盖？\n\n${target}`)) return;
-      response = await requestSave(true);
-    }
-    if (!response.ok) throw new Error(await responseError(response));
-    const result = await response.json();
-    A.clearTopicCache();
-    const savedPath = result.path || target;
-    state.filesMap.set(savedPath, {
-      path: savedPath,
-      disk: result.content,
-      baseline: result.content,
-      gitStatus: result.created ? 'untracked' : 'modified',
-      current: result.content,
-      dirty: false
-    });
-    state.activePath = savedPath;
-    if (!state.files.some(entry => entry.path === savedPath)) {
-      state.files.push({ type: 'file', path: savedPath, name: fileNameFromPath(savedPath) });
-    }
-    renderTabs();
-    updateActivePanes();
-    updateTree();
-    setStatus(`已另存为：${savedPath}`);
-  } catch (error) {
-    setStatus(`另存为失败：${error.message}`, true);
-  }
-}
-
-function escapeXmlText(value) {
-  return String(value || '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
-}
-
-function newDocumentId(filePath) {
-  const stem = fileNameFromPath(filePath).replace(/\.[^.]+$/, '');
-  const id = stem.toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || 'new-topic';
-  return /^\d/.test(id) ? `topic-${id}` : id;
-}
-
-function newDocumentTemplate(type, title, filePath) {
-  const safeTitle = escapeXmlText(title || '新建文档');
-  const id = newDocumentId(filePath);
-  const declaration = '<?xml version="1.0" encoding="UTF-8"?>';
-  if (type === 'ditamap') {
-    return `${declaration}\n<!DOCTYPE map PUBLIC "-//OASIS//DTD DITA Map//EN" "map.dtd">\n<map id="${id}">\n  <title>${safeTitle}</title>\n</map>\n`;
-  }
-  const definitions = {
-    topic: ['topic', 'body', 'topic'],
-    concept: ['concept', 'conbody', 'concept'],
-    task: ['task', 'taskbody', 'task'],
-    reference: ['reference', 'refbody', 'reference']
-  };
-  const [root, body, dtdName] = definitions[type] || definitions.topic;
-  const bodyContent = type === 'task'
-    ? '    <steps>\n      <step><cmd>在此输入步骤。</cmd></step>\n    </steps>'
-    : '    <p>在此输入内容。</p>';
-  const shortdesc = type === 'topic' || type === 'concept' || type === 'task' || type === 'reference'
-    ? '  <shortdesc></shortdesc>\n'
-    : '';
-  return `${declaration}\n<!DOCTYPE ${root} PUBLIC "-//OASIS//DTD DITA ${dtdName[0].toUpperCase()}${dtdName.slice(1)}//EN" "${root}.dtd">\n<${root} id="${id}">\n  <title>${safeTitle}</title>\n${shortdesc}<${body}>\n${bodyContent}\n  </${body}>\n</${root}>\n`;
-}
+function downloadFile() { return A.documents.downloadFile(); }
+function saveAsFile() { return A.documents.saveAsFile(); }
 
 async function refreshWorkspaceTree() {
   const response = await fetch('/api/workspace');
@@ -1656,76 +1379,7 @@ async function refreshWorkspaceTree() {
   updateTree('');
 }
 
-async function createNewDocument() {
-  const requestedType = prompt('请选择文档类型（topic、concept、task、reference 或 ditamap）：', 'topic');
-  if (requestedType == null) return;
-  const type = requestedType.trim().toLowerCase();
-  if (!['topic', 'concept', 'task', 'reference', 'ditamap'].includes(type)) {
-    setStatus('不支持的文档类型', true);
-    return;
-  }
-  const extension = type === 'ditamap' ? '.ditamap' : '.dita';
-  const defaultName = `new-${type}${extension}`;
-  const requestedPath = prompt('请输入相对当前仓库根目录的文件路径：', defaultName);
-  if (requestedPath == null) return;
-  let target = requestedPath.trim().replace(/\\/g, '/').replace(/^\/+/, '');
-  if (!target) return;
-  if (!/\.(?:dita|ditamap|xml)$/i.test(target)) target += extension;
-  if (target.split('/').some(part => !part || part === '..') || !/^(?:[^/]+\/)*[^/]+\.(?:dita|ditamap|xml)$/i.test(target)) {
-    setStatus('新建路径必须是仓库内的 .dita、.ditamap 或 .xml 文件', true);
-    return;
-  }
-  if (type === 'ditamap' && !/\.ditamap$/i.test(target)) {
-    setStatus('Map 文档必须使用 .ditamap 扩展名', true);
-    return;
-  }
-  if (type !== 'ditamap' && /\.ditamap$/i.test(target)) {
-    setStatus('主题文档不能使用 .ditamap 扩展名', true);
-    return;
-  }
-  const title = prompt('请输入文档标题：', type === 'ditamap' ? '新建 DITA Map' : '新建文档');
-  if (title == null) return;
-  const content = newDocumentTemplate(type, title.trim() || '新建文档', target);
-  let expectedContent;
-  async function requestCreate(overwrite = false) {
-    return fetch('/api/file', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ path: target, content, overwrite, expectedContent })
-    });
-  }
-  try {
-    let response = await requestCreate(false);
-    if (response.status === 409) {
-      const existing = await fetch('/api/file?path=' + encodeURIComponent(target));
-      if (!existing.ok) throw new Error(await responseError(existing));
-      expectedContent = await existing.text();
-      if (!confirm(`文件已存在，是否覆盖？\n\n${target}`)) return;
-      response = await requestCreate(true);
-    }
-    if (!response.ok) throw new Error(await responseError(response));
-    const result = await response.json();
-    await refreshWorkspaceTree();
-    A.clearTopicCache();
-    const savedPath = result.path || target;
-    state.filesMap.set(savedPath, {
-      path: savedPath,
-      disk: result.content,
-      baseline: result.content,
-      gitStatus: result.created ? 'untracked' : 'modified',
-      current: result.content,
-      dirty: false
-    });
-    state.activePath = savedPath;
-    renderTabs();
-    setMode('visual');
-    updateActivePanes();
-    updateTree();
-    setStatus(`已创建：${savedPath}`);
-  } catch (error) {
-    setStatus(`新建文档失败：${error.message}`, true);
-  }
-}
+function createNewDocument() { return A.documents.createNewDocument(); }
 
 dom.inspectorToggleButton?.addEventListener('click', () => {
   const open = dom.inspector.classList.toggle('drawer-open');
@@ -1813,7 +1467,7 @@ dom.exportHtmlButton?.addEventListener('click', () => A.exportMapToHtmlFile());
 dom.closeHtmlPreviewButton?.addEventListener('click', () => { dom.htmlPreviewPane.classList.remove('active'); dom.htmlPreviewFrame.src = ''; setMode(state.mode); });
 dom.previewMdButton?.addEventListener('click', () => A.previewMapMd());
 dom.exportMdButton?.addEventListener('click', () => A.exportMapToMarkdownFile());
-dom.exportMenuButton?.addEventListener('click', (e) => { e.stopPropagation(); A.toggleExportMenu(); });
+dom.exportMenuButton?.addEventListener('click', (e) => { e.stopPropagation(); A.openModelExport(); });
 [dom.previewHtmlButton, dom.exportHtmlButton, dom.previewMdButton, dom.exportMdButton].forEach(btn => btn?.addEventListener('click', () => A.closeExportMenu()));
 dom.closeMdPreviewButton?.addEventListener('click', () => { dom.mdPreviewPane.classList.remove('active'); dom.mdPreviewContent.innerHTML = ''; setMode(state.mode); });
 dom.branchSelect.addEventListener('change', selectBranch);
@@ -1925,6 +1579,14 @@ async function initialize() {
   }
 }
 
+A.maps = window.DitaMapController.createMapController(A, { ensureMapAuthorFile, renderTabs });
+A.documents = window.DitaDocuments.createDocumentController(A, { renderTabs, updateActivePanes, updateTree, refreshWorkspaceTree });
+A.manual = window.DitaManualService.createManualService(A);
+A.project = window.DitaProject.createProjectController(A);
+A.save = window.DitaSave.createSaveController(A);
+A.drafts = window.DitaDrafts.createDraftController(A);
+A.search = window.DitaSearch.createSearchController(A);
+A.resources = window.DitaResources.createResourceController(A);
 A.footnotes = window.DitaFootnotes.createPanel(A);
 initialize();
 })();

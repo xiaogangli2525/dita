@@ -43,3 +43,7 @@ This remains a lightweight publisher, not DITA-OT or a DTD/schema-validating pro
 Before company rollout, run this workflow against an authorized real function repository and compare its output with the current released manual. Product truth, full schema conformance and unseen company-specific structures have not been validated here.
 
 Reference specifications consulted: [OASIS DITA conref](https://docs.oasis-open.org/dita/dita/v1.3/os/part2-tech-content/langRef/attributes/theconrefattribute.html), [conditional processing](https://docs.oasis-open.org/dita/dita/v1.3/os/part2-tech-content/archSpec/base/condproc.html) and [Map cascading](https://docs.oasis-open.org/dita/dita/v1.3/cs01/part1-base/archSpec/base/cascading-in-a-ditamap.html). The supported subset above defines this implementation's behavior.
+
+## Workspace integration
+
+The note panel, manual save scope and delivery now consume `manual-service.js` snapshots. Source origins survive reuse expansion, so the panel can open shared note definitions for editing. Topic ancestor product matching is shared with publication. Explicit confirmed-common metadata is separate from unresolved applicability. See `architecture.md` for recovery, registry, search and delivery-record boundaries and the expanded regression workflow.

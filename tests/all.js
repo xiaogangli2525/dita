@@ -15,3 +15,5 @@ require('./footnotes.test.js');
 require('./publication.test.js');
 
 require('./publication-compatibility.test');
+require('./foundation-core.test');
+require('./workspace-tools.test');

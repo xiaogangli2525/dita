@@ -36,6 +36,11 @@ The browser and server share a vendored copy of **sax 1.6.1** for XML validation
 - Security: Origin validation, real-path containment, asset whitelist, streaming body limit
 - Export includes current working buffers; local images are embedded in HTML and Markdown
 - Map structure operations are undoable edits; use Save to write them to disk
+- Manual saves show an explicit selection of changed Topics and referenced resources
+- Recoverable browser drafts with repository/branch isolation and disk-base conflict checks
+- Project model registry, explicit confirmed-common notes, and source editing for reused notes
+- Cross-Topic plaintext search including unsaved buffers, plus image/Topic-link pickers
+- Unified delivery preflight, version/model selection and downloadable provenance records
 
 ## Configuration
 
@@ -61,7 +66,12 @@ The light workspace separates document navigation, editing and the attribute/rev
 - `public/export.js`: export snapshots, resource loading and preview/download orchestration.
 - `public/publication-core.js`: shared source-preserving model-footnote filtering and reference validation for both publication formats.
 - `public/publication-resolver.js`: bounded local dependency loading, common conref expansion and unsupported-feature checks.
-- `public/app-core.js`: Author rendering, source conversion, diff algorithms and HTML/Markdown export.
+- `public/app-core.js`: source-preserving Author rendering/conversion.
+- `public/delivery-core.js` / `public/diff-core.js`: publication rendering and pure diff algorithms.
+- `public/manual-core.js` / `public/manual-service.js`: shared applicability/configuration and immutable manual dependency snapshots.
+- `public/save.js`, `drafts.js`, `project.js`, `search.js`, `resources.js`: independent feature controllers.
+- `public/map-controller.js` / `public/documents.js`: directory and document lifecycle UI.
+- `lib/workspace-tools.js`: authenticated project config, search, provenance and image routes.
 - `lib/document-files.js`: encoding, real-path containment and atomic file writes.
 - `lib/workspace-lock.js`: concurrent reads with exclusive saves/workspace switches.
 
@@ -69,7 +79,7 @@ Branch switching refuses a dirty Git worktree, including changes already saved b
 
 The HTTP API requires the `workspaceToken` returned by `/api/workspace` in the `x-workspace-token` header for document operations. Updates also require `expectedContent`, the last-read disk content. This is a local single-workspace application, not a shared multi-user server. `PUBLIC_ORIGIN` can explicitly allow a trusted reverse-proxy origin; default access remains localhost.
 
-See [verification](docs/verification.md) and the [AI authoring integration plan](docs/ai-editing.md). AI proposal primitives are implemented; no AI provider or generation UI is connected yet.
+See [architecture and extension boundaries](docs/architecture.md), [verification](docs/verification.md) and the [AI authoring integration plan](docs/ai-editing.md). AI proposal primitives are implemented; no AI provider or generation UI is connected yet.
 
 ## Editing and review behavior
 
@@ -83,15 +93,15 @@ Run browser regression tests with `npx playwright-core install chromium` followe
 
 Click **型号注脚** while a Topic or function Map is open. The panel indexes actual `fn` elements, shows their surrounding command/context and supports model/keyword filtering, source navigation and editing. A Map scope stays selected while navigating to its individual Topics.
 
-Explicit model associations are stored in each footnote's standard `product` attribute (space-separated model names). Existing prose is never used to infer support. Unlabelled footnotes remain visible under every panel filter. Publication also evaluates product conditions on Topic ancestors. The panel filter only affects its list. Use the export menu's model publication action to filter published footnotes.
+Explicit model associations are stored in each footnote's standard `product` attribute (space-separated model names). Existing prose is never used to infer support. Unlabelled footnotes remain visible under every panel filter. Publication also evaluates product conditions on Topic ancestors. The panel and delivery use the same applicability and dependency rules. Use **交付…** to select the publication model and format.
 
-Plain notes use a text editor with safe XML escaping; notes with inline markup use an XML-preserving editor. Updates retain identifiers, links, encoding declarations and surrounding source, use the shared undo history and require explicit Save. Outdated edits are refused. Content-reference footnotes require editing their source. HTML exports include a linked footnote list with return links; Markdown includes complete numbered footnote definitions.
+Plain notes use a text editor with safe XML escaping; notes with inline markup use an XML-preserving editor. Updates retain identifiers, links, encoding declarations and surrounding source, use the shared undo history and require explicit Save. Outdated edits are refused. Reused footnotes offer **编辑引用源** and keep their including conditions visible. HTML exports include a linked footnote list with return links; Markdown includes complete numbered footnote definitions.
 
 `npm run dev` opens an isolated MQTT demonstration with fictional M100/M200/M300 models. Open `main.ditamap`, click **型号注脚**, choose M100 and try editing or locating a note. All product limits/commands in this demo are illustrative.
 
 ### Publish a function manual for a model
 
-Open the function's Map, then choose **导出 → 按型号预览／导出…**. Select a model and HTML or Markdown, inspect the included/excluded/unlabelled counts, then preview or download. The current Map and Topic buffers are captured without saving or changing the source; changing an opened buffer invalidates the settings and requires reopening them. Each function Map remains a separate delivery. Existing ordinary exports include all models.
+Open the function's Map, then choose **交付…**. Select a model and HTML or Markdown, inspect the included/excluded/unlabelled counts, then preview or download. The current Map and Topic buffers are captured without saving or changing the source; changing an opened buffer invalidates the settings and requires reopening them. Each function Map remains a separate delivery. Existing ordinary exports include all models.
 
 ```xml
 <p>Connection limit<fn product="M100">Up to two connections.</fn></p>
@@ -113,3 +123,13 @@ Footnote references may target another local workspace file, including a resourc
 Local DITA links are rewritten to explicit document anchors. Missing targets stop export. CALS column/row spans are retained in HTML; Markdown rejects merged cells explicitly instead of flattening them into misleading columns. Simple tables and footnotes in tables/lists use the same publication context. See [compatibility verification and supported boundaries](docs/publication-compatibility.md).
 
 ![Model footnotes workspace](docs/assets/model-footnotes-preview.png)
+
+## Workspace foundation
+
+Use **型号清单** to maintain allowed names in the current repository's optional `.dita-project.json`. Confirm a universally applicable footnote explicitly; an empty model field alone remains unresolved and retained. The standard metadata marker `otherprops="applicability(common)"` records confirmation without turning an inline note into an ID-bearing definition.
+
+Saving a Map lists dirty files in its direct local dependency scope. Select the files to persist; unrelated and unselected edits stay in the workspace. Multi-file saves remain non-transactional and report partial failures. Draft recovery preserves the exact disk base, is isolated by repository and branch, and never overwrites a changed disk file automatically. Drafts and delivery records live in the current browser.
+
+The sidebar offers repository/manual plaintext search with exact source navigation; current dirty buffers override disk hits. Insert **image** or **xref** through the resource picker to choose files/sections and generate relative paths. Uploaded images are create-only and limited to 2 MiB.
+
+**交付…** combines model/format/version selection, issue navigation, image/link preflight and preview/download. Cancel stops pending delivery. Downloads are announced as initiated; use browser download history to find them. **交付记录** stores up to 50 local provenance records per repository and can download their JSON for separate archiving. XML source/draft downloads normalize their declarations to the browser's UTF-8 bytes; encoded filesystem saves continue to preserve the declared encoding.

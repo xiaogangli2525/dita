@@ -33,7 +33,7 @@
       const model = $('footnoteModel').value, query = $('footnoteSearch').value;
       const matches = core.filterNotes(notes, model, query);
       $('footnoteCount').textContent = String(notes.length);
-      $('footnoteUnassigned').textContent = String(notes.filter(note => !note.products.length).length);
+      $('footnoteUnassigned').textContent = String(notes.filter(note => note.unmarked).length);
       $('footnoteResultCount').textContent = matches.length + ' 条注脚';
       const list = $('footnoteList'); list.replaceChildren();
       if (!matches.length) list.append(el('p', 'footnote-empty', notes.length ? '没有匹配注脚，试试其他型号或关键词。' : '当前文档没有注脚。打开功能手册或包含 fn 注脚的 Topic 后查看。'));
@@ -41,19 +41,21 @@
         const card = el('article', 'footnote-card');
         const header = el('div', 'footnote-card-heading');
         header.append(el('span', 'footnote-number', String(note.index + 1).padStart(2, '0')),
-          el('span', note.products.length ? 'footnote-model-badge' : 'footnote-unassigned', note.products.join(' / ') || '未标注型号'));
+          el('span', !note.unmarked ? 'footnote-model-badge' : 'footnote-unassigned', note.common ? '已确认通用' : note.conditions.join(' ∩ ') || '待确认适用范围'));
         card.append(header, el('p', 'footnote-context', note.context || '文档注脚'), el('p', 'footnote-text', note.text || (note.referenced ? '引用注脚，请在引用源中维护。' : '（空注脚）')));
         const path = el('small', 'footnote-path', note.path); path.title = note.path; card.append(path);
         const actions = el('div', 'footnote-actions');
         const locate = el('button', '', '定位正文'); locate.type = 'button'; locate.addEventListener('click', () => focus(note));
-        const edit = el('button', 'footnote-edit-button', '编辑注脚'); edit.type = 'button'; edit.disabled = note.referenced;
-        edit.title = note.referenced ? '此注脚来自内容引用，请在引用源中修改' : '修改内容与适用型号';
+        const edit = el('button', 'footnote-edit-button', '编辑注脚'); edit.type = 'button'; edit.disabled = false;
+        edit.title = note.reused ? '打开公共注脚引用源进行修改' : '修改内容与适用型号';
+        if (note.reused) edit.textContent = '编辑引用源';
         edit.addEventListener('click', () => beginEdit(note));
         actions.append(locate, edit); card.append(actions); list.append(card);
       }
       syncMode();
     }
     async function focus(note) {
+      note = note.sourceNote || note;
       try {
         await A.openFile(note.path, { preserveFootnotesScope: true });
         const file = A.state.filesMap.get(note.path);
@@ -73,6 +75,7 @@
       } catch (e) { error(e.message); }
     }
     async function beginEdit(note) {
+      const reused = note.reused; note = note.sourceNote || note;
       try {
         if (editing && !confirm('放弃当前注脚编辑，打开另一条注脚？')) return;
         await A.openFile(note.path, { preserveFootnotesScope: true });
@@ -83,12 +86,14 @@
         $('footnoteContentLabel').textContent = note.rich ? '注脚内容（保留行内 XML 标记）' : '注脚内容';
         $('footnoteContent').value = note.rich ? note.inner : note.text;
         $('footnoteProducts').value = note.products.join(' ');
+        $('footnoteCommon').checked = Boolean(note.common);
+        $('footnoteSourceHint').textContent = reused ? '正在修改公共引用源，所有引用位置会随之更新。引用处的型号条件仍会生效。' : '型号条件同时受 Topic 祖先约束。';
         $('footnoteEditError').textContent = '';
         $('footnoteEditDialog').showModal(); $('footnoteContent').focus();
       } catch (e) { error(e.message); }
     }
     function signature() {
-      return JSON.stringify([A.api.token, scopePath || A.state.activePath, Array.from(A.state.filesMap.values(), f => [f.path, f.current])]);
+      return JSON.stringify([A.api.token, scopePath || A.state.activePath, A.project?.expectedContent, Array.from(A.state.filesMap.values(), f => [f.path, f.current])]);
     }
     async function refresh(force = false) {
       if (!shown || A.state.mode === 'review') return;
@@ -100,27 +105,21 @@
       const activePath = scopePath || A.state.activePath;
       const active = A.state.filesMap.get(activePath);
       $('footnoteScope').textContent = activePath || '当前功能文档';
-      let files = new Map(), failures = [];
       error(active ? '正在读取注脚…' : '先从左侧打开一份功能手册。');
       try {
-        if (active && /\.ditamap$/i.test(active.path)) {
-          const response = await A.api.request('/api/map/resolve', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ path: active.path, content: active.current }) });
-          if (!response.ok) throw new Error(await A.api.error(response));
-          ({ files, failures } = await A.loadTopicFiles(await response.json()));
-        } else if (active) files.set(active.path, { path: active.path, current: active.current });
-        const next = [];
-        for (const file of files.values()) {
-          try { next.push(...core.listFootnotes(file.current, file.path)); }
-          catch (e) { failures.push({ path: file.path, error: e.message }); }
-        }
+        if (!active) { notes = []; draw(); return; }
+        const snapshot = await A.manual.capture(activePath);
+        const data = A.manual.listNotes(snapshot);
         if (token !== generation || workspace !== A.api.token || activePath !== (scopePath || A.state.activePath)) return;
-        notes = next;
+        notes = data.notes;
         const previous = $('footnoteModel').value;
         $('footnoteModel').replaceChildren(new Option('全部型号', ''));
-        for (const model of [...new Set(notes.flatMap(note => note.products))].sort()) $('footnoteModel').add(new Option(model, model));
+        const models = new Set([...(A.project?.value.models || []), ...A.manual.listModels(snapshot)]);
+        for (const model of [...models].sort()) $('footnoteModel').add(new Option(model, model));
         if (Array.from($('footnoteModel').options).some(option => option.value === previous)) $('footnoteModel').value = previous;
         draw();
-        error(failures.length ? '有 ' + failures.length + ' 个文档无法读取：' + failures.map(f => f.path).join('、') : '未标注型号的注脚始终保留在筛选结果中。');
+        const common = notes.filter(note => note.common).length;
+        error('与交付共用依赖及型号规则 · ' + common + ' 条已确认通用；待确认注脚仍保留在交付中。');
       } catch (e) { if (token === generation) { notes = []; draw(); error('读取失败：' + e.message); } }
     }
     function scheduleRefresh() { clearTimeout(timer); if (shown) timer = setTimeout(() => refresh(), 180); }
@@ -137,13 +136,15 @@
       try {
         if (!editing || editing.workspace !== A.api.token || A.state.filesMap.get(editing.file.path) !== editing.file) throw new Error('工作区已变化，请重新打开注脚');
         const { file, note } = editing;
-        const next = core.updateFootnote(file.current, note, { content: $('footnoteContent').value, products: $('footnoteProducts').value });
+        A.project?.check($('footnoteProducts').value.trim().split(/\s+/).filter(Boolean));
+        const next = core.updateFootnote(file.current, note, { content: $('footnoteContent').value, products: $('footnoteProducts').value, common: $('footnoteCommon').checked });
         A.setFileContent(file, next);
         $('footnoteEditDialog').close();
-        A.setStatus('注脚已更新，可撤销 · 点击保存后写入磁盘');
+        A.setStatus('注脚已更新，可撤销 · 点击保存后写入工作区');
         refresh(true);
       } catch (e) { $('footnoteEditError').textContent = e.message; }
     });
+    A.events.on('project:changed', () => { revision = ''; scheduleRefresh(); });
     return { scheduleRefresh, syncMode, show, setScope };
   }
   root.DitaFootnotes = { createPanel };

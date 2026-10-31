@@ -58,8 +58,9 @@ test('real browser editing, reading and review workflow', async t => {
     await page.waitForFunction(file => window.DitaApp.state.activePath === file, file);
   };
   const current = () => page.evaluate(() => { const a = window.DitaApp; return a.state.filesMap.get(a.state.activePath).current; });
-  const source = async text => { await page.click('#sourceButton'); await page.fill('#editor', text); };
-  const undo = async () => { await page.click('#sourceButton'); await page.focus('#editor'); await page.keyboard.press('Control+z'); };
+  const showSource = async () => { if (!await page.locator('#sourceButton').isVisible()) await page.click('.editing-tools summary'); await page.click('#sourceButton'); if (await page.locator('.editing-tools[open]').count()) await page.click('.editing-tools summary'); };
+  const source = async text => { await showSource(); await page.fill('#editor', text); };
+  const undo = async () => { await showSource(); await page.focus('#editor'); await page.keyboard.press('Control+z'); };
 
   await t.test('reading is read-only for a Topic and every Map surface', async () => {
     await open('a.dita');
@@ -147,7 +148,7 @@ test('real browser editing, reading and review workflow', async t => {
     assert.match(await page.locator('#footnoteContent').inputValue(), /<xref href="a.dita">link<\/xref>/);
     await page.fill('#footnoteProducts', 'M200 M300'); await page.click('#footnoteEditForm button[type="submit"]');
     assert.match(await current(), /product="M200 M300"/); assert.match(await current(), /<xref href="a.dita">link<\/xref>/);
-    await open('main.ditamap'); await page.click('#exportMenuButton'); await page.click('#previewHtmlButton');
+    await open('main.ditamap'); await page.click('#exportMenuButton'); await page.locator('#exportModel:not(:disabled)').waitFor(); await page.selectOption('#exportModel', ''); await page.selectOption('#exportFormat', 'html'); await page.click('#modelExportForm button[value="preview"]');
     await page.waitForFunction(() => document.getElementById('htmlPreviewFrame').src.startsWith('blob:'));
     const frame = page.frameLocator('#htmlPreviewFrame');
     await frame.locator('.export-footnotes').waitFor();
@@ -160,7 +161,7 @@ test('real browser editing, reading and review workflow', async t => {
     try {
     const publication = '<topic id="a"><title>Publication</title><body><p>Body<fn product="M100">A ONLY</fn><fn product="M200">B ONLY</fn><fn>UNKNOWN NOTE</fn></p><fn id="n" product="M100">SHARED NOTE</fn><p>One<xref href="#a/n" type="fn"/> Two<xref href="#a/n" type="fn"/></p></body></topic>';
     await open('a.dita'); await source(publication); await open('main.ditamap');
-    await page.click('#exportMenuButton'); await page.click('#modelExportButton');
+    await page.click('#exportMenuButton'); await page.locator('#exportModel:not(:disabled)').waitFor();
     await page.selectOption('#exportModel', 'M100');
     assert.match(await page.locator('#modelExportSummary').innerText(), /包含 3 条.*排除 1 条.*保留 1 条/);
     await page.click('#modelExportForm button[value="preview"]');
@@ -171,7 +172,7 @@ test('real browser editing, reading and review workflow', async t => {
     assert.equal(await frame.locator('a[href="#fn-3"]').count(), 2);
     assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.get('a.dita').current), publication);
     await page.click('#closeHtmlPreviewButton');
-    await page.click('#exportMenuButton'); await page.click('#modelExportButton');
+    await page.click('#exportMenuButton'); await page.locator('#exportModel:not(:disabled)').waitFor();
     await page.selectOption('#exportModel', 'M100'); await page.selectOption('#exportFormat', 'md');
     const downloadPromise = page.waitForEvent('download');
     await page.click('#modelExportForm button[value="download"]');
@@ -181,7 +182,7 @@ test('real browser editing, reading and review workflow', async t => {
     assert.match(md, /A ONLY/); assert.match(md, /UNKNOWN NOTE/); assert.doesNotMatch(md, /B ONLY/);
     assert.match(md, /One\[\^3\] Two\[\^3\]/);
     // A buffered edit after the dialog has captured its snapshot must invalidate it.
-    await page.click('#exportMenuButton'); await page.click('#modelExportButton');
+    await page.click('#exportMenuButton'); await page.locator('#exportModel:not(:disabled)').waitFor();
     await page.locator('#modelExportDialog').waitFor({ state: 'visible' });
     await page.evaluate(() => { const a = window.DitaApp, f = a.state.filesMap.get('a.dita'); a.setFileContent(f, f.current.replace('A ONLY', 'NEWER')); });
     await page.click('#modelExportForm button[value="preview"]');
@@ -205,7 +206,7 @@ test('real browser editing, reading and review workflow', async t => {
       await open(resourcePath); await source(resourceOriginal.replace('AB_SHARED', 'AB_WORKING'));
       await open('manual/mqtt-acceptance.ditamap');
       for (const model of ['M100', 'M200', 'M300']) {
-        await page.click('#exportMenuButton'); await page.click('#modelExportButton');
+        await page.click('#exportMenuButton'); await page.locator('#exportModel:not(:disabled)').waitFor();
         await page.selectOption('#exportModel', model); await page.selectOption('#exportFormat', 'html');
         await page.click('#modelExportForm button[value="preview"]');
         const frame = page.frameLocator('#htmlPreviewFrame'); await frame.locator('.export-footnotes').waitFor();
@@ -221,7 +222,7 @@ test('real browser editing, reading and review workflow', async t => {
         assert.equal(await frame.locator('img').evaluateAll(images => images.every(image => image.complete && image.naturalWidth > 0)), true);
         await page.click('#closeHtmlPreviewButton');
         for (const format of ['html', 'md']) {
-          await page.click('#exportMenuButton'); await page.click('#modelExportButton');
+          await page.click('#exportMenuButton'); await page.locator('#exportModel:not(:disabled)').waitFor();
           await page.selectOption('#exportModel', model); await page.selectOption('#exportFormat', format);
           const downloadPromise = page.waitForEvent('download');
           await page.click('#modelExportForm button[value="download"]');
@@ -278,7 +279,7 @@ test('real browser editing, reading and review workflow', async t => {
     assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.get('a.dita').current), initial);
     assert.match(await fs.readFile(path.join(root, 'a.dita'), 'utf8'), /Saved change/);
     assert.equal(writes.length, before);
-    await page.click('#saveButton');
+    await page.click('#saveButton'); await page.click('#saveScopeConfirm');
     await page.waitForFunction(() => Array.from(window.DitaApp.state.filesMap.values()).every(file => !file.dirty));
     assert.equal(await fs.readFile(path.join(root, 'a.dita'), 'utf8'), initial);
   });

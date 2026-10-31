@@ -50,8 +50,9 @@
       if (node.attrs.href && decode(node.attrs.href).includes('#')) throw new Error('暂不支持 Map 引用指定 Topic 片段，请使用单 Topic 文件');
     });
   }
-  function resolveConrefs(files) {
-    const documents = new Map(), output = new Map();
+  function resolveConrefsDetailed(files) {
+    const documents = new Map(), output = new Map(), origins = new Map();
+    let activeOrigins = [];
     function indexIds(tree, path) {
       const ids = new Map();
       walk(tree, (node, ancestors) => {
@@ -100,6 +101,7 @@
         const start = '<' + node.name + Object.entries(attrs).map(([k, v]) => ' ' + k + '="' + escape(decode(v)) + '"').join('') + '>';
         return start + (resolvedNode.close ? resolved.slice(resolvedNode.end, resolvedNode.close.start) : '') + '</' + node.name + '>';
       }
+      if (node.name === 'fn') activeOrigins.push({ path: origin, start: node.start });
       let opening = source.slice(node.start, node.end);
       if (origin !== destination && attrs.href) {
         if (node.name === 'xref' && decode(attrs.href).startsWith('#')) throw new Error(origin + '：复用片段中的同文件链接需先显式展开，避免目标 ID 重定位错误');
@@ -116,15 +118,17 @@
     }
     for (const [path, file] of files) {
       const doc = documents.get(path);
+      activeOrigins = [];
       try {
         const content = doc.source.slice(0, doc.tree.start) + render(doc.tree, path, path) + doc.source.slice(doc.tree.close?.end ?? doc.tree.end);
         if (content.length > 4 * 1024 * 1024) throw new Error('展开后的 Topic 超过 4 MiB');
         indexIds(xml.inspectSource(content), path);
-        output.set(path, { ...file, current: content });
+        output.set(path, { ...file, current: content }); origins.set(path, activeOrigins);
       } catch (e) { throw new Error(path + '：' + e.message); }
     }
-    return output;
+    return { files: output, origins };
   }
-  const api = { decode, escape, walk, localTarget, dependencies, loadDependencies, resolveConrefs, validateMap };
+  function resolveConrefs(files) { return resolveConrefsDetailed(files).files; }
+  const api = { decode, escape, walk, localTarget, dependencies, loadDependencies, resolveConrefs, resolveConrefsDetailed, validateMap };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaPublicationResolver = api;
 })(typeof window === 'undefined' ? globalThis : window);

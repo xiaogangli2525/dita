@@ -1,6 +1,7 @@
 'use strict';
 (function (root) {
   const xml = typeof module !== 'undefined' ? require('./xml-source') : root.DitaXmlSource;
+  const manual = typeof module !== 'undefined' ? require('./manual-core') : root.DitaManualCore;
   const resolver = typeof module !== 'undefined' ? require('./publication-resolver') : root.DitaPublicationResolver;
   const { decode, walk, localTarget } = resolver;
   const topicTags = new Set(['topic', 'concept', 'task', 'reference']);
@@ -11,7 +12,7 @@
   }
   function preparePublication({ map, files, model = '' }, collectPaths) {
     resolver.validateMap(map.source, model);
-    const expanded = resolver.resolveConrefs(files);
+    const resolved = resolver.resolveConrefsDetailed(files), expanded = resolved.files;
     const published = new Set(collectPaths(map.children || []).map(entry => entry.path));
     const records = new Map(), definitions = new Map(), used = new Set(), referenced = new Set();
     const report = { model, excluded: 0, unmarked: 0, included: 0, unused: 0 };
@@ -27,10 +28,12 @@
             if (insideNote) throw new Error('注脚不能包含嵌套注脚');
             // An excluded ancestor cannot be overridden by a matching child.
             // Only footnotes are filtered; body containers remain intact.
-            const conditions = [...ancestors, node].map(parent => decode(parent.attrs.product).trim()).filter(Boolean);
+            const conditions = manual.conditions(node, ancestors);
+            if (manual.common(node.attrs) && conditions.length) throw new Error('通用注脚与型号条件冲突，请检查注脚或祖先条件');
             if (model && conditions.some(value => /[()]/.test(value))) throw new Error('型号导出暂不支持分组 product 条件，请使用空格分隔的型号');
             const note = { node, path, key: node.attrs.id ? path + '#' + decode(topic?.attrs.id) + '/' + decode(node.attrs.id) : '',
-              allowed: !model || conditions.every(value => value.split(/\s+/).includes(model)), unmarked: !conditions.length };
+              conditions, common: manual.common(node.attrs), origin: resolved.origins.get(path)[notes.length],
+              allowed: manual.matches(conditions, model), unmarked: !conditions.length && !manual.common(node.attrs) };
             notes.push(note);
             if (note.key) { if (definitions.has(note.key)) throw new Error('重复的注脚 ID：' + note.key); definitions.set(note.key, note); }
           }
@@ -52,7 +55,7 @@
         if (!target.allowed) remove(record, ref.node); else used.add(ref.key);
       }
     }
-    const noteDefinitions = new Map(), prepared = new Map();
+    const noteDefinitions = new Map(), prepared = new Map(), publicationNotes = [];
     for (const [path, record] of records) {
       const visible = published.has(path);
       for (const note of record.notes) {
@@ -60,6 +63,7 @@
         else if (note.key && !used.has(note.key)) { remove(record, note.node); if (visible) report.unused++; }
         else if (visible || used.has(note.key)) {
           report.included++; if (note.unmarked) report.unmarked++;
+          publicationNotes.push({ path, origin: note.origin, conditions: note.conditions, common: note.common, unmarked: note.unmarked, key: note.key, xml: record.source.slice(note.node.start, note.node.close?.end ?? note.node.end) });
           if (note.key) noteDefinitions.set(note.key, { path, xml: record.source.slice(note.node.start, note.node.close?.end ?? note.node.end) });
         }
       }
@@ -67,7 +71,7 @@
       for (const [start, end] of record.removals.sort((a, b) => b[0] - a[0])) content = content.slice(0, start) + content.slice(end);
       xml.validateXml(content); prepared.set(path, { ...record.file, current: content });
     }
-    return { files: prepared, report, noteDefinitions };
+    return { files: prepared, report, noteDefinitions, notes: publicationNotes };
   }
   function prepareTopic(source, path, model = '') {
     const map = { children: [{ path }] }, files = new Map([[path, { current: source }]]);
