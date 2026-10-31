@@ -68,3 +68,18 @@ test('exportMapToHtml embeds images via loadImageBytes', async () => {
   assert.ok(html.includes('data:image/png;base64,STUB'), 'html should embed image as data URI');
 });
 
+
+test('HTML and Markdown include full inline footnotes with unique references across Topics', async () => {
+  const core = require('../public/app-core');
+  buildMockDom();
+  const map = { title: 'MQTT', children: [{ type: 'file', path: 'a.dita' }, { type: 'file', path: 'b.dita' }] };
+  const files = new Map(['a.dita', 'b.dita'].map((path, i) => [path, { current: '<topic><title>T</title><body><p>Command<fn product="M100">Note ' + i + ' with <b>format</b>.</fn></p></body></topic>' }]));
+  const html = await core.exportMapToHtml({ map, files });
+  assert.match(html, /href="#fn-1"/); assert.match(html, /id="fn-2"/);
+  assert.match(html, /Note 0 with <strong>format<\/strong>/);
+  assert.match(html, /适用型号：M100/);
+  const md = await core.exportMapToMarkdown({ map, files });
+  assert.match(md, /Command\[\^1\]/); assert.match(md, /Command\[\^2\]/);
+  assert.match(md, /\[\^1\]: .*Note 0 with \*\*format\*\*/);
+  assert.match(md, /\[\^2\]: .*Note 1 with \*\*format\*\*/);
+});

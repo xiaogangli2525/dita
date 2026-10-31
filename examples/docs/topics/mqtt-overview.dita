@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<topic id="mqtt-overview"><title>MQTT 功能概述</title><shortdesc>一份公共功能文档，清晰维护不同型号的细节。</shortdesc><body>
+<note type="important">本手册仅供体验编辑器。M100、M200、M300 均为虚构型号，命令、参数及限制均为演示数据。</note>
+<section><title>连接、订阅与消息收发</title><p>模组通过 MQTT 连接消息服务器，发布设备状态并订阅控制指令。公共流程由所有适用型号共用；型号间的连接限制、参数差异和固件说明写在原文注脚中。</p></section>
+<section><title>怎样体验型号注脚</title><ol><li>点击顶部“型号注脚”，查看整份功能手册的注脚。</li><li>选择 M100 或 M200，定位相关说明；未标注型号的注脚会继续显示。</li><li>编辑一条注脚，应用后试试撤销，再保存或导出 HTML／MD。</li></ol></section>
+</body></topic>

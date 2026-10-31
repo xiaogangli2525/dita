@@ -105,6 +105,53 @@ test('real browser editing, reading and review workflow', async t => {
     assert.equal((await current()).match(/<entry/g).length, 3);
     await undo(); assert.equal(await current(), table);
   });
+  await t.test('model footnotes support filtering, exact-source edits, undo, stale protection and full export', async () => {
+    const notes = '<topic id="a"><title>MQTT</title><body><p>AT+MQTTOPEN<fn id="limit" product="M100">Limit &amp; retry.</fn></p><p>AT+MQTTPUB<fn id="unknown">Legacy unassigned.</fn></p><p>AT+MQTTSUB<fn product="M200">Keep <xref href="a.dita">link</xref>.</fn></p></body></topic>';
+    await source(notes); await page.click('#footnotesButton');
+    await page.waitForFunction(() => document.getElementById('footnoteCount').textContent === '3');
+    await page.selectOption('#footnoteModel', 'M100');
+    assert.equal(await page.locator('.footnote-card').count(), 2);
+    assert.match(await page.locator('#footnoteList').innerText(), /Legacy unassigned/);
+    const before = writes.length;
+    await page.locator('.footnote-edit-button').first().click();
+    await page.fill('#footnoteContent', 'Revised & exact.');
+    await page.fill('#footnoteProducts', 'M100 M300');
+    await page.click('#footnoteEditForm button[type="submit"]');
+    const revised = notes.replace('product="M100">Limit &amp; retry.', 'product="M100 M300">Revised &amp; exact.');
+    assert.equal(await current(), revised); assert.equal(writes.length, before);
+    await undo(); assert.equal(await current(), notes);
+    await page.keyboard.press('Control+y'); assert.equal(await current(), revised);
+    // Prove full source snapshots protect edits opened before another change.
+    await page.click('#footnoteRefresh');
+    await page.waitForFunction(() => document.querySelector('.footnote-text')?.textContent === 'Revised & exact.');
+    await page.locator('.footnote-edit-button').first().click();
+    await page.evaluate(() => { const a = window.DitaApp, f = a.state.filesMap.get('a.dita'); a.setFileContent(f, f.current.replace('Legacy unassigned.', 'Changed elsewhere.')); });
+    await page.fill('#footnoteContent', 'Stale edit'); await page.click('#footnoteEditForm button[type="submit"]');
+    assert.match(await page.locator('#footnoteEditError').innerText(), /文档已变化/);
+    await page.click('#footnoteCancel');
+    // Opening a Map indexes the complete manual; locating one topic retains its scope.
+    await open('main.ditamap'); await page.click('#footnotesButton');
+    await page.waitForFunction(() => document.getElementById('footnoteCount').textContent === '3');
+    await page.selectOption('#footnoteModel', '');
+    await page.locator('.footnote-actions button').first().click();
+    await page.waitForFunction(() => window.DitaApp.state.activePath === 'a.dita');
+    assert.equal(await page.locator('#footnoteScope').innerText(), 'main.ditamap');
+    assert.match(await page.locator('#editor').inputValue(), /Changed elsewhere/);
+    assert.match(await page.locator('.footnote-located').innerText(), /AT\+MQTTOPEN/);
+    await page.locator('.footnote-edit-button').last().click();
+    assert.match(await page.locator('#footnoteContentLabel').innerText(), /XML/);
+    assert.match(await page.locator('#footnoteContent').inputValue(), /<xref href="a.dita">link<\/xref>/);
+    await page.fill('#footnoteProducts', 'M200 M300'); await page.click('#footnoteEditForm button[type="submit"]');
+    assert.match(await current(), /product="M200 M300"/); assert.match(await current(), /<xref href="a.dita">link<\/xref>/);
+    await open('main.ditamap'); await page.click('#exportMenuButton'); await page.click('#previewHtmlButton');
+    await page.waitForFunction(() => document.getElementById('htmlPreviewFrame').src.startsWith('blob:'));
+    const frame = page.frameLocator('#htmlPreviewFrame');
+    await frame.locator('.export-footnotes').waitFor();
+    assert.match(await frame.locator('.export-footnotes').innerText(), /Revised & exact/);
+    assert.match(await frame.locator('.export-footnotes').innerText(), /Changed elsewhere/);
+    await page.click('#closeHtmlPreviewButton');
+    await page.click('#propertiesTab'); await open('a.dita'); await source(initial);
+  });
   await t.test('Git bulk rejection stays unsaved, undoable and keeps the Git baseline', async () => {
     const changed = initial.replace('Original', 'Saved change');
     await source(changed); await page.click('#saveButton');

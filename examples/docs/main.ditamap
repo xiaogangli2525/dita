@@ -1,2 +1,2 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map><title>产品文档中心</title><topicref href="topics/getting-started.dita"/><topicref href="topics/writing-guide.dita"/></map>
+<map id="mqtt-guide"><title>MQTT 应用指南 · 演示</title><topicref href="topics/mqtt-overview.dita"/><topicref href="topics/mqtt-connect.dita"/><topicref href="topics/mqtt-publish.dita"/></map>
