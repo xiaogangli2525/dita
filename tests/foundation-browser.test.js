@@ -67,8 +67,9 @@ test('foundation browser workflows', async t => {
     assert.match(await current(), /otherprops="applicability\(common\)"/);
     await page.waitForFunction(() => document.getElementById('footnoteUnassigned').textContent === '0');
     await page.locator('.footnote-card').filter({ hasText: 'A_EDITED' }).getByRole('button', { name: '编辑引用源' }).click(); await page.locator('#footnoteEditDialog').waitFor();
-    const before = await current(); await page.fill('#footnoteProducts', 'M1O0'); await page.click('#footnoteEditForm button[type=submit]');
-    assert.match(await page.locator('#footnoteEditError').innerText(), /型号未登记/); assert.equal(await current(), before); await page.click('#footnoteCancel');
+    const before = await current(); assert.equal(await page.locator('#footnoteProducts').isVisible(), false);
+    assert.deepEqual(await page.locator('#footnoteModels input').evaluateAll(inputs => inputs.map(input => input.value)), ['M100', 'M200', 'M300']);
+    assert.equal(await current(), before); await page.click('#footnoteCancel');
   });
   let working;
   await scenario('repository full-text search includes unsaved buffers and locates across inline XML', async () => {

@@ -6,6 +6,12 @@
     let snapshot = null, targets = [], loadGeneration = 0;
     function capture() {
       if (!['visual', 'editor'].includes(A.state.mode)) throw new Error('请先切换到编写或源码模式');
+      if (A.state.mode === 'visual') {
+        const author = A.authorSelection.capture(), { copy, range } = A.authorSelection.clone(author);
+        const block = A.authorSelection.validateRange(range, copy, { body: true });
+        if (block.matches('pre,h2,h3,h4')) throw new Error('请在普通正文、列表或表格中放置光标');
+        return { ...author, author: true, label: range.collapsed ? '当前光标位置' : '所选文字（图片插在选区之后，链接保留文字格式）' };
+      }
       const selection = root.getSelection(), anchor = selection?.anchorNode?.nodeType === 1 ? selection.anchorNode : selection?.anchorNode?.parentElement;
       const selected = anchor && A.dom.visualEditor.contains(anchor) ? anchor.closest('p,td,li,pre') : A.state.selectedVisualElement;
       let path = A.state.activePath;
@@ -54,13 +60,19 @@
     }
     async function show(kind = 'image') {
       try {
-        snapshot = capture(); get('resourceKind').value = kind; get('resourceFilter').value = ''; get('resourceLabel').value = '';
+        if (get('resourceDialog').open) return;
+        snapshot = capture(); get('resourceKind').value = kind; get('resourceFilter').value = ''; get('resourceLabel').value = kind === 'link' && snapshot.author ? snapshot.range.toString() : '';
         get('resourceError').textContent = ''; get('resourceScope').textContent = snapshot.path + ' · ' + snapshot.label;
         get('resourceDialog').showModal(); await load();
       } catch (error) { if (get('resourceDialog').open) get('resourceError').textContent = error.message; else A.setStatus(error.message, true); }
     }
     get('resourceKind').addEventListener('change', () => load().catch(error => { get('resourceError').textContent = error.message; }));
-    get('resourceFilter').addEventListener('input', draw); get('resourceClose').addEventListener('click', () => get('resourceDialog').close());
+    function cancel() {
+      const target = snapshot; snapshot = null; loadGeneration++; get('resourceDialog').close();
+      if (target?.author) try { A.authorSelection.restoreTarget(target); } catch { /* A stale context is never restored over a newer buffer. */ }
+    }
+    get('resourceFilter').addEventListener('input', draw); get('resourceClose').addEventListener('click', cancel);
+    get('resourceDialog').addEventListener('cancel', event => { event.preventDefault(); cancel(); });
     get('resourceUpload').addEventListener('change', async event => {
       const file = event.target.files[0]; if (!file) return;
       try {
@@ -82,14 +94,23 @@
         if (!target || !get('resourceTarget').options.length) throw new Error('请先选择图片或链接目标');
         const file = A.state.filesMap.get(snapshot?.path);
         if (!file || snapshot.workspace !== A.api.token || file.current !== snapshot.current || snapshot.activePath !== A.state.activePath) throw new Error('内容已变化，请重新打开资源选择器');
+        if (snapshot.author && A.state.mode !== 'visual' || !snapshot.author && A.state.mode !== 'editor') throw new Error('编辑模式已变化，请重新打开资源选择器');
         const href = root.DitaManualCore.relativeHref(snapshot.path, target.path, target.fragment);
         const kind = get('resourceKind').value, label = get('resourceLabel').value.trim() || target.label;
+        if (snapshot.author) {
+          const node = document.createElement(kind === 'image' ? 'img' : 'a'); node.setAttribute('data-dita-source', kind === 'image' ? 'image' : 'xref');
+          if (kind === 'image') { node.setAttribute('data-dita-href', href); node.alt = label; }
+          else { node.setAttribute('href', href); node.textContent = label; }
+          A.authorSelection.insertInline(snapshot, node, { collapse: kind === 'image', wrap: kind === 'link' });
+          snapshot = null; loadGeneration++; get('resourceDialog').close(); A.setStatus('已在正文插入' + (kind === 'image' ? '图片' : '链接') + '，可撤销；保存后写入工作区'); return;
+        }
         let snippet = kind === 'image' ? '<image href="' + escape(href) + '" alt="' + escape(label) + '"/>' : '<xref href="' + escape(href) + '">' + escape(label) + '</xref>';
         if (!snapshot.inline && kind === 'link') snippet = '<p>' + snippet + '</p>';
         const content = file.current.slice(0, snapshot.start) + snippet + file.current.slice(snapshot.end);
         xml.validateXml(content); A.setFileContent(file, content); get('resourceDialog').close(); A.setStatus('已插入' + (kind === 'image' ? '图片' : '链接') + '，可撤销；保存后写入磁盘');
       } catch (error) { get('resourceError').textContent = error.message; }
     });
+    A.events.on('workspace:willChange', () => { snapshot = null; loadGeneration++; get('resourceDialog').close(); });
     return { show };
   }
   root.DitaResources = { createResourceController };

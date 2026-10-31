@@ -19,3 +19,4 @@ require('./foundation-core.test');
 require('./workspace-tools.test');
 require('./architecture.test');
 require('./author-notes-core.test');
+require('./input-history.test');

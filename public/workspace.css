@@ -300,6 +300,7 @@ kbd { display: inline-block; border: 1px solid #dde4e8; border-radius: 4px; back
 .note-model-choices { display:flex; flex-wrap:wrap; gap:8px; max-height:150px; overflow:auto; padding:2px; }
 .note-create-dialog .note-model-choices label { display:flex; gap:7px; align-items:center; margin:0; padding:8px 11px; border:1px solid #dce5df; border-radius:7px; background:#fff; font-size:12px; }
 .note-model-choices label:has(input:checked) { background:#e9f5ee; border-color:#78b297; color:#176047; }
+.note-model-choices label.unknown-model { color:#8c5e1f; border-color:#d9bc85; background:#fff8e9; }
 .note-create-dialog .note-model-choices input { width:auto; margin:0; }
 .note-create-dialog .note-save-hint { font-size:11px; color:#63776a; }
 .note-create-dialog .note-inheritance { color:#916c2d; font-size:11px; }

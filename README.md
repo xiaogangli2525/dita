@@ -81,7 +81,8 @@ The light workspace separates document navigation, editing and the attribute/rev
 - `public/app-core.js`: source-preserving Author rendering/conversion.
 - `public/editor-controller.js`: Source/Topic/Map synchronization, document history, mode changes and review coordination, with injected view callbacks.
 - `public/author-notes.js`: cancellable note insertion and direct marker editing, using the same source and history rules.
-- `public/author-selection.js` / `public/editor-tools.js`: source-aware selections and detached edits; Author formatting, current-Topic plaintext search/replace, block insertion and explicit Source tools.
+- `public/author-selection.js` / `public/editor-tools.js`: source-aware selections, bookmarks and detached edits; Author formatting, current-Topic plaintext search/replace, block/resource insertion and explicit Source tools.
+- `public/input-history.js` / `public/note-scope.js`: input grouping/IME lifecycle and the shared model picker for new/existing notes.
 - `public/delivery-core.js` / `public/diff-core.js`: publication rendering and pure diff algorithms.
 - `public/manual-core.js` / `public/manual-service.js`: shared applicability/configuration and immutable manual dependency snapshots.
 - `public/save.js`, `drafts.js`, `project.js`, `search.js`, `resources.js`: independent feature controllers.
@@ -107,6 +108,16 @@ Select text inside one paragraph, title, list item or table cell, then use **B**
 Use **插入…** for paragraphs, lists, tables, sections, notes and code blocks. Selected text is retained; a new block follows the current block and its first placeholder is selected so you can immediately type. Paragraphs inside list items stay inside that item; tables inserted from a cell follow the enclosing table; new sections follow the containing body block. These structural choices avoid nesting blocks inside inline text. Save remains explicit, and current buffers participate in delivery before save.
 
 ![Author formatting and body search](docs/assets/writing-tools-preview.jpg)
+
+## Continuous writing, notes and resources
+
+Continuous text input and deletion are grouped by operation and caret continuity, with a 900 ms pause boundary. Moving the caret, changing modes, saving, undo/redo and explicit commands start a new group. One IME composition forms one undo group; cancelling it leaves no empty undo step. Source and Author input record before/after selections, including the target Topic in a Map. These and migrated visual operations restore their recorded writing positions; legacy review/structural commands retain their fallback behavior.
+
+New and existing footnotes share the same **指定型号／已确认通用／待确认** picker. Registered model names are selectable chips; existing unknown names stay visible for repair. Without a registry, discovered names and a free-form supplement remain available. Inherited product conditions prevent confirming a note as universally common. Editing a local note from the Map list keeps the Map open. Shared notes still explicitly open their reference source, since that change affects every reference.
+
+Choose **插入… → 图片／链接** from the writing toolbar, or use the advanced insertion picker. Images insert at the saved caret, or after selected text. Links use selected text while retaining inline attributes/IDs, or insert the chosen label at a collapsed caret. Both work inside a Map child without opening it separately. Cancel restores the selection; source/mode/workspace changes refuse stale insertion. Actual image uploads are create-only filesystem operations; applying the document reference and saving the document remain separate steps.
+
+![Shared footnote model picker](docs/assets/note-scope-edit-preview.jpg)
 
 ## Editing and review behavior
 
@@ -157,7 +168,7 @@ Local DITA links are rewritten to explicit document anchors. Missing targets sto
 
 ## Workspace foundation
 
-Use **型号清单** to maintain allowed names in the current repository's optional `.dita-project.json`. Confirm a universally applicable footnote explicitly; an empty model field alone remains unresolved and retained. The standard metadata marker `otherprops="applicability(common)"` records confirmation without turning an inline note into an ID-bearing definition.
+Use **型号清单** to maintain allowed names in the current repository's optional `.dita-project.json`. Choose **已确认通用** to confirm a universally applicable note, or **待确认** for unresolved applicability; unresolved notes remain in delivery. The standard metadata marker `otherprops="applicability(common)"` records confirmation without turning an inline note into an ID-bearing definition.
 
 Saving a Map lists dirty files in its direct local dependency scope. Select the files to persist; unrelated and unselected edits stay in the workspace. Multi-file saves remain non-transactional and report partial failures. Draft recovery preserves the exact disk base, is isolated by repository and branch, and never overwrites a changed disk file automatically. Drafts and delivery records live in the current browser.
 

@@ -167,7 +167,7 @@
           <div class="authoring-context"><span class="writing-dot" aria-hidden="true"></span><strong>正文编写</strong><span id="authoringHint">在正文放好光标，新增注脚</span></div>
           <div class="authoring-actions">
             <div class="author-format-actions" role="group" aria-label="选中文字格式"><button id="authorBoldButton" type="button" title="加粗／取消粗体 Ctrl/Cmd+B" aria-label="加粗／取消粗体"><strong>B</strong></button><button id="authorItalicButton" type="button" title="斜体／取消斜体 Ctrl/Cmd+I" aria-label="斜体／取消斜体"><em>I</em></button><button id="authorCodeButton" type="button" title="行内代码／取消行内代码" aria-label="行内代码／取消行内代码">&lt;/&gt;</button></div>
-            <select id="authorInsertSelect" aria-label="在当前块后插入" title="块元素插在当前段落之后，选区文字会保留"><option value="">插入…</option><option value="p">段落</option><option value="ul">无序列表</option><option value="ol">有序列表</option><option value="table">表格</option><option value="section">节</option><option value="note">说明</option><option value="codeblock">代码块</option></select><button id="authorFindButton" type="button" title="正文查找与替换 Ctrl/Cmd+F">查找</button>
+            <select id="authorInsertSelect" aria-label="插入正文内容" title="块元素插在当前块之后；图片和链接使用正文光标或选区"><option value="">插入…</option><option value="p">段落</option><option value="ul">无序列表</option><option value="ol">有序列表</option><option value="table">表格</option><option value="section">节</option><option value="note">说明</option><option value="codeblock">代码块</option><optgroup label="光标／选区处"><option value="image">图片</option><option value="xref">链接</option></optgroup></select><button id="authorFindButton" type="button" title="正文查找与替换 Ctrl/Cmd+F">查找</button>
             <button id="authorUndoButton" type="button" title="撤销 Ctrl/Cmd+Z" disabled>撤销</button><button id="authorRedoButton" type="button" title="重做 Ctrl/Cmd+Y" disabled>重做</button><button id="newFootnoteButton" type="button" class="note-create-action" title="新增注脚 Ctrl/Cmd+Alt+N">＋ 新增注脚</button></div>
         </div>
         <div id="visualEditor" contenteditable="true" class="visual-editor dita-preview"></div>
@@ -242,15 +242,16 @@
       <div class="footnote-dialog-actions"><button id="modelExportCancel" type="button">取消</button><button type="submit" value="check">发布前检查</button><button type="submit" value="preview">交付预览</button><button type="submit" value="download" class="primary-action">导出文件</button></div>
     </form>
   </dialog>
-  <dialog id="footnoteEditDialog" class="footnote-dialog" aria-labelledby="footnoteEditHeading">
+  <dialog id="footnoteEditDialog" class="footnote-dialog note-create-dialog" aria-labelledby="footnoteEditHeading">
     <form id="footnoteEditForm">
-      <span class="section-kicker">MODEL NOTE</span><h2 id="footnoteEditHeading">编辑注脚</h2>
+      <span class="section-kicker">编写 · 编辑注脚</span><h2 id="footnoteEditHeading">编辑注脚</h2>
       <p>将型号差异保留在原文位置，便于审阅与追溯。</p>
       <label><span id="footnoteContentLabel">注脚内容</span><textarea id="footnoteContent" rows="6" required></textarea></label>
-      <label>适用型号<input id="footnoteProducts" list="projectModelOptions" placeholder="例如 M100 M200，多个型号用空格分隔"/></label>
       <p id="footnoteSourceHint" class="footnote-form-hint"></p>
-      <label class="checkbox-row"><input id="footnoteCommon" type="checkbox"/>已确认所有型号通用</label>
-      <p class="footnote-form-hint">留空且未确认通用，表示适用范围待确认，交付时仍保留。Ctrl/Cmd+Enter 应用修改。</p>
+      <fieldset class="note-scope-options"><legend>适用范围</legend><label><input type="radio" name="scope" value="models"/>指定型号</label><label><input id="footnoteCommon" type="radio" name="scope" value="common"/>已确认通用</label><label><input type="radio" name="scope" value="unresolved"/>待确认</label></fieldset>
+      <div id="footnoteModelPicker"><div id="footnoteModels" class="note-model-choices"></div><label id="footnoteCustomModels">补充型号<input id="footnoteProducts" list="projectModelOptions" placeholder="多个型号用空格分隔"/></label></div>
+      <p id="footnoteInheritance" class="note-inheritance"></p>
+      <p class="footnote-form-hint">待确认注脚仍保留在交付中。Ctrl/Cmd+Enter 应用修改；保存后写入工作区。</p>
       <p id="footnoteEditError" class="footnote-edit-error" role="alert"></p>
       <div class="footnote-dialog-actions"><button id="footnoteCancel" type="button">取消</button><button type="submit" class="primary-action">应用修改</button></div>
     </form>
@@ -331,7 +332,9 @@
   <script src="/export.js"></script>
   <script src="/map-controller.js"></script>
   <script src="/documents.js"></script>
+  <script src="/input-history.js"></script>
   <script src="/editor-controller.js"></script>
+  <script src="/note-scope.js"></script>
   <script src="/author-notes.js"></script>
   <script src="/author-selection.js"></script>
   <script src="/editor-tools.js"></script>

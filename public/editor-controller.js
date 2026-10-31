@@ -10,6 +10,21 @@
     const fetch = workspaceClient.request;
     const { renderTabs, renderOutline, renderInspector, updateTree,
       refreshChrome: updateDocumentChrome, beforeModeChange, modeChanged } = views;
+    let inputHistory = null;
+    function surfaceFor(file) {
+      return state.activePath === file.path && !/\.ditamap$/i.test(file.path) ? dom.visualEditor :
+        Array.from(dom.visualEditor.querySelectorAll('.map-topic-surface')).find(node => node.dataset.mapTopicPath === file.path);
+    }
+    function captureSelection(file) {
+      if (state.mode === 'editor' && state.activePath === file.path) return { mode: 'editor', path: file.path, start: dom.editor.selectionStart, end: dom.editor.selectionEnd, direction: dom.editor.selectionDirection, scrollTop: dom.editor.scrollTop, scrollLeft: dom.editor.scrollLeft };
+      const surface = state.mode === 'visual' && surfaceFor(file), bookmark = surface && A.authorSelection?.bookmark(surface);
+      return bookmark ? { mode: 'visual', path: file.path, bookmark } : null;
+    }
+    function restoreSelection(file, saved) {
+      if (!saved || saved.mode !== state.mode || saved.path !== file.path) return;
+      if (saved.mode === 'editor') { dom.editor.focus(); dom.editor.setSelectionRange(saved.start, saved.end, saved.direction); dom.editor.scrollTop = saved.scrollTop; dom.editor.scrollLeft = saved.scrollLeft; }
+      else { const surface = surfaceFor(file); if (surface) A.authorSelection?.restore(surface, saved.bookmark); }
+    }
     function ensureHistory(file) {
       return documentStore.historyOf(file);
     }
@@ -106,9 +121,9 @@
       }
     }
 
-    function setFileContent(file, content, { record = true, updateEditor = true, historyMeta, render = true } = {}) {
+    function setFileContent(file, content, { record = true, updateEditor = true, historyMeta, group, render = true } = {}) {
       if (!file) return false;
-      if (!documentStore.editDocument(file, content, { record, historyMeta })) return false;
+      if (!documentStore.editDocument(file, content, { record, historyMeta, group })) return false;
       if (file.path === state.activePath || (/\.ditamap$/i.test(state.activePath) && state.mapAuthorPaths?.has(file.path))) {
         state.historyTargetPath = file.path;
       }
@@ -123,7 +138,7 @@
       const entry = documentStore.travelHistory(file, 'undo');
       if (!entry) return;
       if (entry.reviewDecisionsBefore) state.reviewDecisions = new Map(entry.reviewDecisionsBefore);
-      refreshHistoryTargetView(file); events.emit('document:changed', file);
+      refreshHistoryTargetView(file); restoreSelection(file, entry.selectionBefore); events.emit('document:changed', file);
       setStatus('已撤销');
     }
 
@@ -133,7 +148,7 @@
       const entry = documentStore.travelHistory(file, 'redo');
       if (!entry) return;
       if (entry.reviewDecisionsAfter) state.reviewDecisions = new Map(entry.reviewDecisionsAfter);
-      refreshHistoryTargetView(file); events.emit('document:changed', file);
+      refreshHistoryTargetView(file); restoreSelection(file, entry.selectionAfter); events.emit('document:changed', file);
       setStatus('已重做');
     }
 
@@ -153,6 +168,7 @@
 
 
     function setMode(mode) {
+      inputHistory?.breakAll();
       beforeModeChange?.();
       state.mode = mode;
       dom.editorPane.classList.toggle('active', mode === 'editor');
@@ -330,7 +346,7 @@
         if (surface.ditaSourceContent !== topicFile.current) throw new Error('正文已由其他操作更新，请重新打开此 Topic 后继续编写');
         const next = ditaCore.updateCurrentFromVisual(null, { visualEditor: surface }, topicFile.current);
         if (next !== topicFile.current) {
-          setFileContent(topicFile, next, { updateEditor: false, render: false });
+          setFileContent(topicFile, next, { updateEditor: false, render: false, ...inputHistory?.take(topicFile, event) });
           topicFile.gitStatus = topicFile.gitStatus === 'unknown' ? 'modified' : topicFile.gitStatus;
           renderTabs();
           updateHistoryButtons();
@@ -398,7 +414,7 @@
         if (dom.visualEditor.ditaSourceContent !== previous) throw new Error('正文已由其他操作更新，请重新打开后继续编写');
         const next = visualCore.visualToXml();
         if (next !== previous) {
-          setFileContent(file, next, { updateEditor: false, render: false });
+          setFileContent(file, next, { updateEditor: false, render: false, ...inputHistory?.take(file, event) });
         }
         dom.visualEditor.ditaSourceContent = file.current;
         // Keep the live Author DOM in place while the user is typing. Rebuilding
@@ -419,10 +435,10 @@
       state, dom, ditaCore, setFileContent, updateVisual, renderTabs, updateHistoryButtons, setStatus
     });
 
-    function markDirty() {
+    function markDirty(event) {
       const file = state.filesMap.get(state.activePath);
-      if (!file) return;
-      setFileContent(file, dom.editor.value, { updateEditor: false });
+      if (!file || file.current === dom.editor.value) return;
+      setFileContent(file, dom.editor.value, { updateEditor: false, ...inputHistory?.take(file, event) });
     }
 
     function renderAuthorSurface(file, surface, rendered) {
@@ -460,19 +476,32 @@
       if (state.activePath === file.path) dom.editor.value = file.current;
     }
 
-    function applyAuthorEdit(file, content, surface) {
+    function applyAuthorEdit(file, content, surface, { selectionBefore, selectionAfter } = {}) {
       const active = state.filesMap.get(state.activePath);
       const isTopic = active === file && surface === dom.visualEditor;
       const isMapTopic = /\.ditamap$/i.test(active?.path || '') && state.mapAuthorPaths.has(file?.path) &&
         dom.visualEditor.contains(surface) && surface.dataset.mapTopicPath === file.path;
       if (state.mode !== 'visual' || state.filesMap.get(file?.path) !== file || (!isTopic && !isMapTopic)) throw new Error('编写位置已变化，请重新选择正文位置');
       validateXml(content);
+      const before = selectionBefore ? { mode: 'visual', path: file.path, bookmark: selectionBefore } : captureSelection(file);
+      if (content === file.current) { if (selectionAfter) A.authorSelection?.restore(surface, selectionAfter); return; }
       const rendered = ditaCore.createAuthorTopic(content, document, false, file.path);
-      if (!setFileContent(file, content, { render: false })) return;
+      if (!setFileContent(file, content, { render: false, historyMeta: { selectionBefore: before } })) return;
       renderAuthorSurface(file, surface, rendered);
+      if (selectionAfter) A.authorSelection?.restore(surface, selectionAfter);
+      ensureHistory(file).undo.at(-1).selectionAfter = captureSelection(file);
     }
 
+    inputHistory = root.DitaInputHistory?.createController(A, { capture: captureSelection, syncVisual: syncVisualToModel, syncSource: markDirty, undo: undoFile, redo: redoFile,
+      resolve(target) {
+        if (target === dom.editor && state.mode === 'editor') return state.filesMap.get(state.activePath);
+        if (state.mode !== 'visual' || !dom.visualEditor.contains(target)) return null;
+        const path = target.closest?.('.map-topic-surface')?.dataset.mapTopicPath || state.activePath;
+        return /\.ditamap$/i.test(path) ? null : state.filesMap.get(path);
+      } });
+
     function reset() {
+      inputHistory?.reset();
       for (const timer of mapRefreshTimers.values()) clearTimeout(timer);
       mapRefreshTimers.clear();
       state.mapAuthorRenderToken += 1;

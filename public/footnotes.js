@@ -6,6 +6,7 @@
     const panel = $('footnotesPanel'), inspector = A.dom.inspector;
     let shown = false, notes = [], revision = '', generation = 0, timer;
     let editing = null, scopePath = '';
+    const picker = root.DitaNoteScope.createPicker(A, 'footnote', 'footnoteEditForm', 'footnoteProducts');
     function setScope(path) { scopePath = path; revision = ''; generation++; scheduleRefresh(); }
     const el = (tag, cls, text) => { const node = document.createElement(tag); if (cls) node.className = cls; if (text !== undefined) node.textContent = text; return node; };
     function show(showNotes) {
@@ -74,20 +75,22 @@
         A.setStatus('已定位注脚 · ' + note.path); syncMode();
       } catch (e) { error(e.message); }
     }
-    async function beginEdit(note, preserveContext = false) {
+    async function beginEdit(note) {
       const reused = note.reused; note = note.sourceNote || note;
       try {
         if (editing && $('footnoteEditDialog').open && !confirm('放弃当前注脚编辑，打开另一条注脚？')) return;
-        if (!preserveContext) await A.openFile(note.path, { preserveFootnotesScope: true });
+        await A.project.ready();
+        let surface = A.state.mode === 'visual' ? (/\.ditamap$/i.test(A.state.activePath) ? Array.from(A.dom.visualEditor.querySelectorAll('.map-topic-surface')).find(node => node.dataset.mapTopicPath === note.path) : A.state.activePath === note.path ? A.dom.visualEditor : null) : null;
+        if (reused || !surface) { await A.openFile(note.path, { preserveFootnotesScope: true }); if (A.state.mode !== 'visual') A.setMode('visual'); surface = A.dom.visualEditor; }
         const file = A.state.filesMap.get(note.path);
         if (file.current !== note.source) throw new Error('文档已变化，请刷新后重新编辑注脚');
-        const surface = preserveContext ? (/\.ditamap$/i.test(A.state.activePath) ? Array.from(A.dom.visualEditor.querySelectorAll('.map-topic-surface')).find(node => node.dataset.mapTopicPath === note.path) : A.dom.visualEditor) : null;
-        editing = { note, file, workspace: A.api.token, activePath: A.state.activePath, surface };
+        if (surface.ditaSourceContent !== file.current) throw new Error('正文已变化，请重新打开后编辑注脚');
+        editing = { note, file, workspace: A.api.token, activePath: A.state.activePath, surface, project: A.project.expectedContent,
+          beforeSelection: A.authorSelection.bookmark(surface) || A.authorSelection.afterNode(note.xmlPath) };
         $('footnoteEditHeading').textContent = '编辑注脚 ' + (note.index + 1);
         $('footnoteContentLabel').textContent = note.rich ? '注脚内容（保留行内 XML 标记）' : '注脚内容';
         $('footnoteContent').value = note.rich ? note.inner : note.text;
-        $('footnoteProducts').value = note.products.join(' ');
-        $('footnoteCommon').checked = Boolean(note.common);
+        picker.draw(note);
         $('footnoteSourceHint').textContent = reused ? '正在修改公共引用源，所有引用位置会随之更新。引用处的型号条件仍会生效。' : '型号条件同时受 Topic 祖先约束。';
         $('footnoteEditError').textContent = '';
         $('footnoteEditDialog').showModal(); $('footnoteContent').focus();
@@ -133,7 +136,7 @@
     $('footnoteRefresh').addEventListener('click', () => refresh(true));
     function cancelEdit() {
       const target = editing; editing = null; $('footnoteEditDialog').close();
-      if (target?.surface?.isConnected && target.workspace === A.api.token && target.activePath === A.state.activePath) A.authorNotes?.focusAfter(target.surface, target.note.xmlPath);
+      if (target?.surface?.isConnected && target.workspace === A.api.token && target.activePath === A.state.activePath && target.file.current === target.note.source) A.authorSelection.restore(target.surface, target.beforeSelection);
     }
     $('footnoteCancel').addEventListener('click', cancelEdit);
     $('footnoteEditDialog').addEventListener('cancel', event => { event.preventDefault(); cancelEdit(); });
@@ -143,12 +146,12 @@
       try {
         if (!editing || editing.workspace !== A.api.token || A.state.filesMap.get(editing.file.path) !== editing.file) throw new Error('工作区已变化，请重新打开注脚');
         const { file, note } = editing;
-        A.project?.check($('footnoteProducts').value.trim().split(/\s+/).filter(Boolean));
-        const next = core.updateFootnote(file.current, note, { content: $('footnoteContent').value, products: $('footnoteProducts').value, common: $('footnoteCommon').checked });
+        if (editing.project !== A.project.expectedContent) throw new Error('型号清单已变化，请重新打开注脚');
+        const next = core.updateFootnote(file.current, note, { content: $('footnoteContent').value, ...picker.read() });
         const surface = editing.surface;
         if (surface) {
           if (editing.activePath !== A.state.activePath || !editing.surface.isConnected) throw new Error('编写位置已变化，请重新打开注脚');
-          A.applyAuthorEdit(file, next, surface);
+          A.applyAuthorEdit(file, next, surface, { selectionBefore: editing.beforeSelection, selectionAfter: A.authorSelection.afterNode(note.xmlPath) });
         } else A.setFileContent(file, next);
         editing = null;
         $('footnoteEditDialog').close();
@@ -163,7 +166,7 @@
         const file = A.state.filesMap.get(path), note = file && core.listFootnotes(file.current, path).find(note => note.xmlPath === xmlPath);
         if (!note) throw new Error('注脚位置已变化，请重新点击正文标记');
         if (note.referenced) { show(true); error('这条注脚引用公共内容，请在列表中选择“编辑引用源”。'); return; }
-        await beginEdit(note, true);
+        await beginEdit(note);
       } catch (e) { A.setStatus(e.message, true); }
     }
     return { scheduleRefresh, syncMode, show, setScope, editAt };
