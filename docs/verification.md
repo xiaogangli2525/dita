@@ -80,3 +80,10 @@ The GitHub Actions workflow runs the suite on Node 20 and 22. The browser workfl
 - Editor coordination checks verify Map child edits, background edits and review decisions share the correct document's undo history; pending Map refreshes are discarded when workspace change begins.
 - `npm run test:browser`: 30 passing Chromium checks. Existing Source/Author input, read-only surfaces, Map editing, review/undo, saves, recovery, model publication and all four export formats remain covered.
 - Existing server exports and the browser facade retain their interfaces. This refactor adds no runtime dependencies or DITA behavior changes.
+
+## Author footnotes and writing experience
+
+- `npm test`: 128 passing unit/HTTP checks. New cases exercise exact source/encoding/comment/code preservation, safe plain-text escaping, temporary-ID removal, explicit common scope, ancestor restrictions and invalid/ambiguous insertion rejection.
+- `npm run test:browser`: 43 passing Chromium checks, with no skipped cases. Twelve new writing subcases cover caret and selected-text insertion, repeated text, nested inline content, merged CALS cells, Map child ownership, direct marker edit/Enter, cancellation/Esc, keyboard insertion, continuous writing, shared undo/redo, retained Map surfaces/scroll, stale-dialog refusal, pending-only filtering, common scope, repeated insertion, explicit GBK save, registry-free model suggestions/manual names and 390px layout.
+- A real Chromium Enter split reproduced duplicate XML IDs; the fix keeps source IDs and removes only browser-created duplicates. Simulated composition key events verify application shortcuts do not interrupt input composition; this is not a native OS IME certification.
+- Native preview QA verifies the HTTP preview environment as well as the new form and fixed panel controls. HTTP previews use `crypto.getRandomValues` because `randomUUID` requires a secure context. Publication regression still downloads and verifies all four delivery formats. No company document corpus or non-Chromium browser certification is implied.

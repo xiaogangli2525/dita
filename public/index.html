@@ -16,7 +16,7 @@
         <div class="brand-name"><strong>DITA Lite</strong><small>DOCUMENT WORKSPACE</small></div>
         <span id="rootPath">未加载</span>
       </div>
-      <div class="titlebar-context"><span class="connection-dot" aria-hidden="true"></span> 本地工作区 <span class="context-separator">/</span> 专注每一次表达</div>
+      <div class="titlebar-context"><span class="connection-dot" aria-hidden="true"></span> 本地工作区 <span class="context-separator">/</span> 功能手册编写</div>
     </div>
     <nav class="main-menu" aria-label="主菜单">
       <button type="button" data-menu="file" aria-label="文件菜单">文件</button>
@@ -57,6 +57,7 @@
             <option value="ul">无序列表 ul</option>
             <option value="ol">有序列表 ol</option>
             <option value="note">说明 note</option>
+            <option value="fn">注脚 fn</option>
             <option value="codeblock">代码块 codeblock</option>
             <option value="table">表格 table</option>
             <option value="image">图片 image</option>
@@ -160,6 +161,10 @@
         <textarea id="editor" aria-label="DITA XML 源码" spellcheck="false" placeholder="请选择左侧 DITA 文件"></textarea>
       </div>
       <div id="visualPane" class="visual-pane active">
+        <div id="authoringToolbar" class="authoring-toolbar" hidden>
+          <div class="authoring-context"><span class="writing-dot" aria-hidden="true"></span><strong>正文编写</strong><span id="authoringHint">在正文放好光标，新增注脚</span></div>
+          <div class="authoring-actions"><button id="authorUndoButton" type="button" title="撤销 Ctrl/Cmd+Z" disabled>撤销</button><button id="authorRedoButton" type="button" title="重做 Ctrl/Cmd+Y" disabled>重做</button><button id="newFootnoteButton" type="button" class="note-create-action" title="新增注脚 Ctrl/Cmd+Alt+N">＋ 新增注脚</button></div>
+        </div>
         <div id="visualEditor" contenteditable="true" class="visual-editor dita-preview"></div>
       </div>
       <div id="htmlPreviewPane" class="preview-pane html-preview-pane">
@@ -175,16 +180,18 @@
       <div class="inspector-header">
         <span id="inspectorTitle">文档属性</span>
         <span id="inspectorElement" class="inspector-element">未选择元素</span>
+        <button id="inspectorCloseButton" type="button" aria-label="关闭侧栏" title="关闭侧栏">×</button>
       </div>
       <div class="inspector-tabs" role="tablist" aria-label="检查面板">
         <button id="propertiesTab" type="button" role="tab" aria-selected="true" class="active">元素属性</button>
         <button id="footnotesTab" type="button" role="tab" aria-selected="false">型号注脚</button>
       </div>
       <section id="footnotesPanel" class="footnotes-panel" hidden aria-label="型号注脚管理">
-        <div class="footnote-panel-intro"><span class="section-kicker">MODEL NOTES</span><h2>一处维护，差异清晰。</h2><p id="footnoteScope">当前功能文档</p></div>
+        <div class="footnote-panel-intro"><div class="footnote-panel-title"><h2>型号注脚</h2><button id="panelNewFootnoteButton" class="note-create-action" type="button" title="先在正文放置光标，再新增注脚">＋ 新增</button></div><p id="footnoteScope">当前功能文档</p></div>
         <div class="footnote-stats"><div><strong id="footnoteCount">0</strong><span>条注脚</span></div><div><strong id="footnoteUnassigned">0</strong><span>条待确认</span></div></div>
         <div class="footnote-filters"><label>适用型号<select id="footnoteModel"><option value="">全部型号</option></select></label><input id="footnoteSearch" type="search" placeholder="查找命令、参数或注脚内容" aria-label="查找注脚"/></div>
-        <p class="footnote-scope-hint">与交付共用注脚范围及型号规则。正文保持完整。</p>
+        <label class="note-pending-filter"><input id="footnoteUnassignedOnly" type="checkbox"/>仅看待确认适用范围</label>
+        <p class="footnote-scope-hint">按型号查看差异；双击正文中的注脚标记可编辑。</p>
         <div class="footnote-list-heading"><span id="footnoteResultCount">0 条注脚</span><button id="footnoteRefresh" type="button">刷新</button></div>
         <p id="footnotesMessage" class="footnote-message" role="status"></p>
         <div id="footnoteList" class="footnote-list"></div>
@@ -238,9 +245,24 @@
       <label>适用型号<input id="footnoteProducts" list="projectModelOptions" placeholder="例如 M100 M200，多个型号用空格分隔"/></label>
       <p id="footnoteSourceHint" class="footnote-form-hint"></p>
       <label class="checkbox-row"><input id="footnoteCommon" type="checkbox"/>已确认所有型号通用</label>
-      <p class="footnote-form-hint">留空且未确认通用，表示适用范围待确认，交付时仍保留。</p>
+      <p class="footnote-form-hint">留空且未确认通用，表示适用范围待确认，交付时仍保留。Ctrl/Cmd+Enter 应用修改。</p>
       <p id="footnoteEditError" class="footnote-edit-error" role="alert"></p>
       <div class="footnote-dialog-actions"><button id="footnoteCancel" type="button">取消</button><button type="submit" class="primary-action">应用修改</button></div>
+    </form>
+  </dialog>
+  <dialog id="newFootnoteDialog" class="footnote-dialog note-create-dialog" aria-labelledby="newFootnoteHeading">
+    <form id="newFootnoteForm">
+      <span class="section-kicker">编写 · 新增注脚</span><h2 id="newFootnoteHeading">补充这一处的型号说明</h2>
+      <p id="newFootnoteLocation" class="note-location"></p>
+      <label for="newFootnoteContent">注脚内容</label><textarea id="newFootnoteContent" rows="4" required placeholder="填写参数差异、使用限制或补充说明"></textarea>
+      <fieldset class="note-scope-options"><legend>适用范围</legend>
+        <label><input type="radio" name="scope" value="models" checked/>指定型号</label><label><input id="newFootnoteCommon" type="radio" name="scope" value="common"/>已确认通用</label><label><input type="radio" name="scope" value="unresolved"/>待确认</label>
+      </fieldset>
+      <div id="newFootnoteModelPicker"><div id="newFootnoteModels" class="note-model-choices"></div><label id="newFootnoteCustomModels">补充型号<input id="newFootnoteProductInput" placeholder="多个型号用空格分隔"/></label></div>
+      <p id="newFootnoteInheritance" class="note-inheritance"></p>
+      <p class="note-save-hint">Ctrl/Cmd+Enter 插入，Esc 取消。插入后可撤销；点击保存后写入工作区。待确认注脚仍会保留在交付中。</p>
+      <p id="newFootnoteError" class="footnote-edit-error" role="alert"></p>
+      <div class="footnote-dialog-actions"><button id="newFootnoteCancel" type="button">取消</button><button type="submit" class="primary-action">插入注脚</button></div>
     </form>
   </dialog>
   <datalist id="projectModelOptions"></datalist>
@@ -305,6 +327,7 @@
   <script src="/map-controller.js"></script>
   <script src="/documents.js"></script>
   <script src="/editor-controller.js"></script>
+  <script src="/author-notes.js"></script>
   <script src="/app.js"></script>
 </body>
 </html>

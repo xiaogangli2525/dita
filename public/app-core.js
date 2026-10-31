@@ -626,8 +626,11 @@ function renderAuthorNode(node, documentRef = document) {
     sup.setAttribute('data-dita-source', 'fn');
     sup.setAttribute('data-dita-original', serializeXmlNode(node));
     sup.setAttribute('contenteditable', 'false');
+    sup.setAttribute('role', 'button');
+    sup.setAttribute('tabindex', '0');
+    sup.setAttribute('aria-label', '注脚 ' + _ctx.fnCounter + '，双击或按 Enter 编辑');
     sup.textContent = '[' + _ctx.fnCounter + ']';
-    sup.title = node.textContent.trim();
+    sup.title = node.textContent.trim() + ' · 双击编辑';
     sup.setAttribute('data-fn-text', node.textContent.trim());
     return sup;
   }

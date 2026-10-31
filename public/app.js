@@ -57,6 +57,8 @@ const dom = {
   insertElementButton: document.querySelector('#insertElementButton'),
   undoButton: document.querySelector('#undoButton'),
   redoButton: document.querySelector('#redoButton'),
+  authorUndoButton: document.querySelector('#authorUndoButton'),
+  authorRedoButton: document.querySelector('#authorRedoButton'),
   validateButton: document.querySelector('#validateButton'),
   saveButton: document.querySelector('#saveButton'),
   saveAsButton: document.querySelector('#saveAsButton'),
@@ -136,6 +138,7 @@ function updateDocumentChrome() {
     badge.dataset.state = A.saving ? 'saving' : dirty ? 'dirty' : 'saved';
   }
   if (empty) empty.hidden = Boolean(file);
+  A.authorNotes?.syncMode();
   document.title = file ? `${fileNameFromPath(file.path)} · DITA Lite` : 'DITA Lite · 文档工作台';
 }
 
@@ -171,11 +174,11 @@ Object.assign(A, { state, dom, ditaCore, setStatus, toast, api: workspaceClient,
 
 const editor = window.DitaEditorController.createEditorController(A, {
   renderTabs, renderOutline, renderInspector, updateTree, refreshChrome: updateDocumentChrome,
-  beforeModeChange: () => A.releaseExportPreview?.(), modeChanged: () => A.footnotes?.syncMode()
+  beforeModeChange: () => A.releaseExportPreview?.(), modeChanged: () => { A.footnotes?.syncMode(); A.authorNotes?.syncMode(); }
 });
 const { setFileContent, setMode, updateHistoryButtons, updateActivePanes, ensureMapAuthorFile,
   undoFile, redoFile, syncVisualToModel, markDirty, renderDiff, renderMapReview, reviewAll } = editor;
-Object.assign(A, { setFileContent, setMode });
+Object.assign(A, { setFileContent, setMode, applyAuthorEdit: editor.applyAuthorEdit });
 
 function setActiveView(view) {
   state.activeView = view;
@@ -757,6 +760,7 @@ function insertDitaElement() {
   }
   if (state.mode === 'preview' || state.mode === 'review') return;
   const tag = dom.insertElementSelect?.value || 'p';
+  if (tag === 'fn') { A.authorNotes.show(); return; }
   if (tag === 'image' || tag === 'xref') { A.resources.show(tag === 'image' ? 'image' : 'link'); return; }
   if (state.mode === 'visual' || state.mode === 'preview') {
     insertVisualElement(tag);
@@ -1013,6 +1017,9 @@ dom.inspectorToggleButton?.addEventListener('click', () => {
   const open = dom.inspector.classList.toggle('drawer-open');
   dom.inspectorToggleButton.setAttribute('aria-expanded', String(open));
 });
+document.getElementById('inspectorCloseButton')?.addEventListener('click', () => {
+  dom.inspector.classList.remove('drawer-open'); dom.inspectorToggleButton?.setAttribute('aria-expanded', 'false');
+});
 document.addEventListener('click', event => {
   const tools = document.querySelector('.editing-tools');
   if (tools && !tools.contains(event.target)) tools.open = false;
@@ -1039,10 +1046,11 @@ dom.visualEditor.addEventListener('click', event => {
   if (!element || state.mode !== 'visual') return;
   event.stopPropagation();
   renderInspector(element);
+  A.footnotes?.syncMode();
 });
 dom.visualEditor.addEventListener('keyup', event => {
   const element = selectedAuthorElement(event.target);
-  if (element && state.mode === 'visual') renderInspector(element);
+  if (element && state.mode === 'visual') { renderInspector(element); A.footnotes?.syncMode(); }
 });
 dom.visualEditor.addEventListener('focusout', () => {
   if (state.mode !== 'visual') renderInspector(null);
@@ -1101,6 +1109,8 @@ dom.closeMdPreviewButton?.addEventListener('click', () => { dom.mdPreviewPane.cl
 dom.branchSelect.addEventListener('change', selectBranch);
 dom.undoButton?.addEventListener('click', undoFile);
 dom.redoButton?.addEventListener('click', redoFile);
+dom.authorUndoButton?.addEventListener('click', undoFile);
+dom.authorRedoButton?.addEventListener('click', redoFile);
 dom.findReplaceButton?.addEventListener('click', () => {
   if (dom.editSearchPanel?.hidden) openFindReplace();
   else closeFindReplace();
@@ -1155,6 +1165,7 @@ dom.reviewScope.addEventListener('change', () => {
 dom.repositorySelect.addEventListener('change', selectRepository);
 
 document.addEventListener('keydown', event => {
+  if (event.isComposing || event.keyCode === 229) return;
   if (!(event.ctrlKey || event.metaKey) || event.altKey) return;
   // Leave native undo/redo available for the workspace search and other
   // controls; the shared history applies to the source and visual editors.
@@ -1216,6 +1227,7 @@ A.drafts = window.DitaDrafts.createDraftController(A);
 A.search = window.DitaSearch.createSearchController(A);
 A.resources = window.DitaResources.createResourceController(A);
 A.footnotes = window.DitaFootnotes.createPanel(A);
+A.authorNotes = window.DitaAuthorNotes.createController(A);
 initialize();
 })();
 

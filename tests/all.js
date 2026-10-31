@@ -18,3 +18,4 @@ require('./publication-compatibility.test');
 require('./foundation-core.test');
 require('./workspace-tools.test');
 require('./architecture.test');
+require('./author-notes-core.test');

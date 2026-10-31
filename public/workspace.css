@@ -249,3 +249,72 @@ kbd { display: inline-block; border: 1px solid #dde4e8; border-radius: 4px; back
 .content-search-result span { font-size:12px; line-height:1.6; color:#53695b; }
 .map-structure-tools summary { padding:8px 12px; font-size:12px; cursor:pointer; color:#607364; }
 @media(max-width:700px) { .workspace-dialog { padding:18px; } .workspace-dialog h2 { font-size:19px; } .toolbar-group.workspace-group { flex-wrap:wrap; } }
+
+/* Keep the frequent writing actions beside the document, with the same
+   history as the existing Source tools. The document scrolls independently. */
+#visualPane.active { display:flex; flex-direction:column; overflow:hidden; }
+#visualPane > #visualEditor { flex:1; min-height:0; overflow:auto; }
+.authoring-toolbar { flex:none; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 20px; background:#fff; border-bottom:1px solid var(--border); }
+.authoring-context { min-width:0; display:flex; align-items:center; gap:8px; font-size:11px; color:#65776e; }
+.authoring-context strong { color:#36564b; font-size:12px; white-space:nowrap; }
+.writing-dot { width:6px; height:6px; border-radius:50%; background:var(--accent); flex:none; }
+#authoringHint { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.authoring-actions { display:flex; align-items:center; gap:5px; flex:none; }
+.authoring-actions button { border:1px solid transparent; border-radius:6px; background:#fff; padding:7px 9px; color:#596d63; font:inherit; font-size:12px; }
+.authoring-actions button:hover:not(:disabled) { background:#f0f6f3; }
+.authoring-actions .note-create-action, .note-create-action { border:1px solid #c8ded4; border-radius:7px; background:#eaf5ef; color:#126950; padding:7px 10px; font:inherit; font-size:12px; font-weight:600; white-space:nowrap; }
+.note-create-action:hover:not(:disabled) { background:#dceee4; }
+.footnotes-panel { display:flex; flex-direction:column; overflow:hidden; padding:16px 16px 0; }
+.footnote-panel-title { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.footnote-panel-title h2 { margin:0 0 8px; font-size:18px; }
+.footnote-panel-intro p { color:#65786c; margin:0 0 12px; }
+.footnote-stats { margin-bottom:10px; }
+.footnote-stats div { padding:5px 10px; }
+.footnote-stats strong { font-size:18px; }
+.footnote-filters { gap:8px; }
+.footnote-filters label { font-size:12px; color:#4e685c; }
+.note-pending-filter { display:flex; gap:7px; align-items:center; font-size:12px; color:#64776a; margin:10px 0 0; }
+.note-pending-filter input, .note-scope-options input, .note-model-choices input { accent-color:var(--accent); }
+.footnote-scope-hint, .footnote-message { font-size:11px; color:#63776a; margin:6px 0; }
+.footnote-scope-hint { display:none; }
+.footnote-list-heading { margin-top:7px; padding-top:10px; }
+.footnote-list { min-height:0; flex:1; overflow:auto; align-content:start; padding:4px 3px 18px 0; scrollbar-gutter:stable; }
+.footnotes-panel > :not(.footnote-list) { flex-shrink:0; }
+.footnote-card { padding:13px; }
+.footnote-context { font-size:12px; color:#3b574a; }
+.footnote-text { font-size:13px; color:#475f50; line-height:1.75; }
+.footnote-path { color:#6b7e71; font-size:10px; }
+.footnote-actions button { font-size:12px; color:#63776b; }
+.fn-ref[role="button"] { cursor:pointer; border-radius:3px; padding:0 2px; }
+.fn-ref[role="button"]:hover { background:#dcefe5; outline:1px solid #9ac7b0; }
+.fn-just-inserted { animation:note-placed 2s ease-out; }
+@keyframes note-placed { from { background:#bfe9d4; outline:3px solid #8fc8aa; } to { background:transparent; outline-color:transparent; } }
+.note-create-dialog { max-width:580px; max-height:calc(100dvh - 40px); overflow:auto; }
+.note-create-dialog .note-location { padding:10px 12px; border-radius:7px; background:#f1f6f3; color:#536e5e; overflow-wrap:anywhere; }
+.note-create-dialog textarea { min-height:110px; }
+.note-create-dialog label[for="newFootnoteContent"] { margin-bottom:8px; font-weight:600; }
+.note-create-dialog .note-scope-options { display:flex; gap:14px; flex-wrap:wrap; border:0; padding:0; margin:18px 0 12px; }
+.note-scope-options legend { font-size:12px; font-weight:600; margin-bottom:10px; }
+.note-create-dialog .note-scope-options label { display:flex; align-items:center; gap:6px; margin:0; font-size:12px; }
+.note-create-dialog .note-scope-options input { width:auto; margin:0; }
+.note-model-choices { display:flex; flex-wrap:wrap; gap:8px; max-height:150px; overflow:auto; padding:2px; }
+.note-create-dialog .note-model-choices label { display:flex; gap:7px; align-items:center; margin:0; padding:8px 11px; border:1px solid #dce5df; border-radius:7px; background:#fff; font-size:12px; }
+.note-model-choices label:has(input:checked) { background:#e9f5ee; border-color:#78b297; color:#176047; }
+.note-create-dialog .note-model-choices input { width:auto; margin:0; }
+.note-create-dialog .note-save-hint { font-size:11px; color:#63776a; }
+.note-create-dialog .note-inheritance { color:#916c2d; font-size:11px; }
+@media(max-width:1100px) { #authoringHint { display:none; } }
+@media(max-width:700px) {
+  .authoring-toolbar { padding:8px 12px; gap:6px; }
+  .authoring-context { gap:5px; }
+  .authoring-actions button { padding:7px; font-size:11px; }
+  .footnote-dialog-actions { flex-wrap:wrap; }
+}
+@media(prefers-reduced-motion:reduce) { .fn-just-inserted { animation:none; outline:2px solid #78b297; } }
+#inspectorCloseButton { display:none; border:0; border-radius:5px; background:transparent; font-size:22px; color:#60766a; padding:0 7px; margin-left:auto; }
+@media(max-width:1050px) { #inspectorCloseButton { display:block; } }
+@media(max-height:700px) {
+  .footnote-panel-intro p, .footnote-stats, .footnote-message { display:none; }
+  .footnotes-panel { padding-top:10px; }
+  .footnote-panel-title h2 { font-size:16px; }
+}

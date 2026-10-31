@@ -26,7 +26,7 @@ The browser and server share a vendored copy of **sax 1.6.1** for XML validation
 
 ## Key Features
 
-- Author mode: visual editing with Oxygen tracked-change support
+- Author mode: visual editing with Oxygen tracked-change support, caret-based footnote creation and in-place note editing
 - Reading mode: read-only Topic and Map surfaces sharing the Author renderer
 - Review mode: side-by-side diff with accept/reject per change block
 - Map view: edit entire ditamap with all referenced topics
@@ -80,6 +80,7 @@ The light workspace separates document navigation, editing and the attribute/rev
 - `public/publication-resolver.js`: bounded local dependency loading, common conref expansion and unsupported-feature checks.
 - `public/app-core.js`: source-preserving Author rendering/conversion.
 - `public/editor-controller.js`: Source/Topic/Map synchronization, document history, mode changes and review coordination, with injected view callbacks.
+- `public/author-notes.js`: guarded Author selections, cancellable note insertion and direct marker editing, using the same source and history rules.
 - `public/delivery-core.js` / `public/diff-core.js`: publication rendering and pure diff algorithms.
 - `public/manual-core.js` / `public/manual-service.js`: shared applicability/configuration and immutable manual dependency snapshots.
 - `public/save.js`, `drafts.js`, `project.js`, `search.js`, `resources.js`: independent feature controllers.
@@ -105,6 +106,10 @@ XML validation is shared by browser and HTTP writes. It checks XML syntax, not f
 Run browser regression tests with `npx playwright-core install chromium` followed by `npm run test:browser`. `DITA_CHROMIUM_EXECUTABLE` optionally selects an installed Chromium binary. CI runs unit/API tests on Node 20/22 and browser tests on Node 22.
 
 ## Model footnotes
+
+In **编写** mode, place the caret in a paragraph, list or table, then choose **＋ 新增注脚** (Ctrl/Cmd+Alt+N). Enter the note, explicitly choose its models, confirmed-common or unresolved scope, then click **插入注脚** (Ctrl/Cmd+Enter). A text selection is retained and the note is inserted after it. Continue typing after the marker; double-click a marker or focus it and press Enter to edit. Esc/cancel restores the writing position without changing the document. Undo/redo is visible beside the document; Save remains explicit. Map edits stay in the correct Topic without leaving the Map.
+
+![Author footnote creation](docs/assets/author-footnote-dialog.jpg)
 
 Click **型号注脚** while a Topic or function Map is open. The panel indexes actual `fn` elements, shows their surrounding command/context and supports model/keyword filtering, source navigation and editing. A Map scope stays selected while navigating to its individual Topics.
 

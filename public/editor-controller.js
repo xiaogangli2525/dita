@@ -27,6 +27,8 @@
       const history = file ? ensureHistory(file) : null;
       if (dom.undoButton) dom.undoButton.disabled = !history || history.undo.length === 0;
       if (dom.redoButton) dom.redoButton.disabled = !history || history.redo.length === 0;
+      if (dom.authorUndoButton) dom.authorUndoButton.disabled = !history || history.undo.length === 0;
+      if (dom.authorRedoButton) dom.authorRedoButton.disabled = !history || history.redo.length === 0;
     }
 
     const mapRefreshTimers = new Map();
@@ -75,6 +77,13 @@
 
     function refreshHistoryTargetView(file) {
       if (!file) return;
+      // Keep a long Map and its other Topics in place during Author undo/redo.
+      const activeFile = state.filesMap.get(state.activePath);
+      if (state.mode === 'visual') {
+        const surface = activeFile === file && !/\.ditamap$/i.test(file.path) ? dom.visualEditor :
+          Array.from(dom.visualEditor.querySelectorAll('.map-topic-surface')).find(node => node.dataset.mapTopicPath === file.path);
+        if (surface) { renderAuthorSurface(file, surface); return; }
+      }
       if (state.activePath === file.path) {
         refreshFileViews(file);
         return;
@@ -356,6 +365,21 @@
       if (state.mode !== 'visual') return;
       const file = state.filesMap.get(state.activePath);
       if (!file) return;
+      if (event?.inputType === 'insertParagraph') {
+        const surface = event.target?.closest?.('.map-topic-surface') || dom.visualEditor;
+        // Chromium clones XML IDs when Enter splits a paragraph or inline
+        // element. Keep original source identities; only strip new duplicates.
+        const groups = new Map();
+        for (const node of surface.querySelectorAll('[id]')) {
+          const id = node.getAttribute('id');
+          if (!groups.has(id)) groups.set(id, []);
+          groups.get(id).push(node);
+        }
+        for (const nodes of groups.values()) {
+          const original = nodes.find(node => node.ditaSourcePath !== undefined) || nodes[0];
+          for (const node of nodes) if (node !== original && node.ditaSourcePath === undefined) node.removeAttribute('id');
+        }
+      }
       if (/\.ditamap$/i.test(file.path)) {
         syncMapAuthorToModel(event);
         return;
@@ -390,6 +414,52 @@
       setFileContent(file, dom.editor.value, { updateEditor: false });
     }
 
+    function renderAuthorSurface(file, surface, rendered) {
+      const scrollTop = dom.visualEditor.scrollTop, scrollLeft = dom.visualEditor.scrollLeft;
+      const selection = root.getSelection(), current = selection?.rangeCount ? selection.getRangeAt(0) : null;
+      let bookmark;
+      if (current && surface.contains(current.endContainer)) {
+        const element = current.endContainer.nodeType === 1 ? current.endContainer : current.endContainer.parentElement;
+        const block = element.closest('p,td,th,li,pre,h2,h3,h4') || surface;
+        const prefix = current.cloneRange(); prefix.selectNodeContents(block); prefix.setEnd(current.endContainer, current.endOffset);
+        bookmark = { path: block.ditaSourcePath, offset: prefix.toString().length };
+      }
+      rendered ||= ditaCore.createAuthorTopic(file.current, document, false, file.path);
+      surface.replaceChildren(...rendered.childNodes);
+      renderInspector(null); renderTabs(); updateHistoryButtons(); renderOutline();
+      if (bookmark) {
+        const block = bookmark.path === undefined ? surface : Array.from(surface.querySelectorAll('*')).find(node => node.ditaSourcePath === bookmark.path) || surface;
+        const walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT);
+        let node, remaining = bookmark.offset, last;
+        while ((node = walker.nextNode())) {
+          last = node;
+          if (remaining <= node.length) break;
+          remaining -= node.length;
+        }
+        const range = document.createRange();
+        node ||= last;
+        const marker = node?.parentElement.closest('[data-dita-source="fn"]');
+        if (marker) range.setStartAfter(marker);
+        else if (node) range.setStart(node, Math.min(remaining, node.length));
+        else { range.selectNodeContents(block); range.collapse(false); }
+        range.collapse(true); surface.focus({ preventScroll: true }); selection.removeAllRanges(); selection.addRange(range);
+      }
+      dom.visualEditor.scrollTop = scrollTop; dom.visualEditor.scrollLeft = scrollLeft;
+      if (state.activePath === file.path) dom.editor.value = file.current;
+    }
+
+    function applyAuthorEdit(file, content, surface) {
+      const active = state.filesMap.get(state.activePath);
+      const isTopic = active === file && surface === dom.visualEditor;
+      const isMapTopic = /\.ditamap$/i.test(active?.path || '') && state.mapAuthorPaths.has(file?.path) &&
+        dom.visualEditor.contains(surface) && surface.dataset.mapTopicPath === file.path;
+      if (state.mode !== 'visual' || state.filesMap.get(file?.path) !== file || (!isTopic && !isMapTopic)) throw new Error('编写位置已变化，请重新选择正文位置');
+      validateXml(content);
+      const rendered = ditaCore.createAuthorTopic(content, document, false, file.path);
+      if (!setFileContent(file, content, { render: false })) return;
+      renderAuthorSurface(file, surface, rendered);
+    }
+
     function reset() {
       for (const timer of mapRefreshTimers.values()) clearTimeout(timer);
       mapRefreshTimers.clear();
@@ -398,7 +468,7 @@
     events.on('workspace:willChange', reset);
     return { setFileContent, undoFile, redoFile, updateHistoryButtons, updateActivePanes,
       setMode, ensureMapAuthorFile, updateVisual, syncVisualToModel, markDirty,
-      resetReviewSnapshot, renderDiff, renderMapReview, reviewAll, reset };
+      resetReviewSnapshot, renderDiff, renderMapReview, reviewAll, applyAuthorEdit, reset };
   }
   const api = { createEditorController };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaEditorController = api;

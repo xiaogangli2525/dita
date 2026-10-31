@@ -71,6 +71,22 @@
     return notes.filter(note => manual.matches(note.conditions || [note.products.join(' ')].filter(Boolean), model) &&
       (!term || [note.text, note.context, note.path, ...note.products].join(' ').toLowerCase().includes(term)));
   }
-  const api = { listFootnotes, updateFootnote, filterNotes };
+  // Author insertion first creates a temporary identified note in a detached
+  // projection. Reuse the normal source/applicability checks, then remove its
+  // temporary ID so the result is an inline call, not an unused definition.
+  function completeInsertion(source, temporaryId, options) {
+    if (typeof options.content !== 'string' || !options.content.trim()) throw new Error('请填写注脚内容');
+    const find = value => {
+      const matches = listFootnotes(value).filter(note => xml.inspectSource(note.before).attrs.id === temporaryId);
+      if (matches.length !== 1) throw new Error('插入位置已失效，请重新选择正文位置');
+      return matches[0];
+    };
+    const next = updateFootnote(source, find(source), { ...options, rich: false, common: Boolean(options.common) });
+    const note = find(next), opening = next.slice(note.start, note.openEnd).replace(/\s+id\s*=\s*(?:"[^"]*"|'[^']*')/, '');
+    const content = next.slice(0, note.start) + opening + next.slice(note.openEnd);
+    xml.validateXml(content);
+    return { content, note: listFootnotes(content).find(item => item.start === note.start) };
+  }
+  const api = { listFootnotes, updateFootnote, filterNotes, completeInsertion };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaFootnotesCore = api;
 })(typeof window === 'undefined' ? globalThis : window);
