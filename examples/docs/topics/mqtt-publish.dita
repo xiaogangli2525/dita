@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <topic id="mqtt-publish"><title>发布与订阅消息</title><body>
-<section><title>发送消息</title><p>使用 <codeph>AT+MQTTPUB</codeph> 指定主题、消息质量和负载长度。发送前确认连接已建立。</p><p><codeph>AT+MQTTPUB</codeph>：消息长度<fn id="payload-size" product="M100 M200">M100 与 M200 的单条消息负载上限不同，调试前应检查返回值并拆分大消息。此说明仅用于演示。</fn>。</p></section>
-<section><title>订阅消息</title><p><codeph>AT+MQTTSUB</codeph>：订阅确认<fn id="subscribe-confirm" product="M300">M300 的演示流程需要等待订阅确认后再发送业务消息，不应仅根据 OK 判断订阅成功。</fn>。</p><note>实际手册中的参数、错误码和型号支持范围应由产品资料确认。</note></section>
+<section><title>发送消息</title><p>使用 <codeph>AT+MQTTPUB</codeph> 指定主题、消息质量和负载长度。发送前确认连接已建立。</p><p><codeph>AT+MQTTPUB</codeph>：消息长度<fn product="M100 M200">M100 与 M200 的单条消息负载上限不同，调试前应检查返回值并拆分大消息。此说明仅用于演示。</fn>。</p></section>
+<section><title>订阅消息</title><p><codeph>AT+MQTTSUB</codeph>：订阅确认<xref href="#mqtt-publish/subscribe-confirm" type="fn"/>。再次订阅时也需要确认<xref href="#mqtt-publish/subscribe-confirm" type="fn"/>。<fn id="subscribe-confirm" product="M300">M300 的演示流程需要等待订阅确认后再发送业务消息，不应仅根据 OK 判断订阅成功。</fn>。</p><note>实际手册中的参数、错误码和型号支持范围应由产品资料确认。</note></section>
 </body></topic>

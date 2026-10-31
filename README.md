@@ -59,6 +59,7 @@ The light workspace separates document navigation, editing and the attribute/rev
 - `lib/xml-tree.js`: server XML tree parsing and serialization.
 - `public/workspace-client.js`: workspace identity and stale-response handling.
 - `public/export.js`: export snapshots, resource loading and preview/download orchestration.
+- `public/publication-core.js`: shared source-preserving model-footnote filtering and reference validation for both publication formats.
 - `public/app-core.js`: Author rendering, source conversion, diff algorithms and HTML/Markdown export.
 - `lib/document-files.js`: encoding, real-path containment and atomic file writes.
 - `lib/workspace-lock.js`: concurrent reads with exclusive saves/workspace switches.
@@ -81,10 +82,31 @@ Run browser regression tests with `npx playwright-core install chromium` followe
 
 Click **型号注脚** while a Topic or function Map is open. The panel indexes actual `fn` elements, shows their surrounding command/context and supports model/keyword filtering, source navigation and editing. A Map scope stays selected while navigating to its individual Topics.
 
-Explicit model associations are stored in each footnote's standard `product` attribute (space-separated model names). Existing prose is never used to infer support. Unlabelled footnotes remain visible under every filter; ancestor profiling conditions are not interpreted. Filtering is an authoring aid and does not remove content from exports.
+Explicit model associations are stored in each footnote's standard `product` attribute (space-separated model names). Existing prose is never used to infer support. Unlabelled footnotes remain visible under every filter; ancestor profiling conditions are not interpreted. The panel filter only affects its list. Use the export menu's model publication action to filter published footnotes.
 
 Plain notes use a text editor with safe XML escaping; notes with inline markup use an XML-preserving editor. Updates retain identifiers, links, encoding declarations and surrounding source, use the shared undo history and require explicit Save. Outdated edits are refused. Content-reference footnotes require editing their source. HTML exports include a linked footnote list with return links; Markdown includes complete numbered footnote definitions.
 
 `npm run dev` opens an isolated MQTT demonstration with fictional M100/M200/M300 models. Open `main.ditamap`, click **型号注脚**, choose M100 and try editing or locating a note. All product limits/commands in this demo are illustrative.
+
+### Publish a function manual for a model
+
+Open the function's Map, then choose **导出 → 按型号预览／导出…**. Select a model and HTML or Markdown, inspect the included/excluded/unlabelled counts, then preview or download. The current Map and Topic buffers are captured without saving or changing the source; changing an opened buffer invalidates the settings and requires reopening them. Each function Map remains a separate delivery. Existing ordinary exports include all models.
+
+```xml
+<p>Connection limit<fn product="M100">Up to two connections.</fn></p>
+<p>Shared limit<fn product="M100 M200">Check the firmware release notes.</fn></p>
+```
+
+Only the explicit `product` on an `fn` controls this filtering. Notes without it are retained, and the body is retained. This is not a complete DITA conditional-processing pipeline: inherited profiling conditions and grouped product expressions are not evaluated; grouped expressions stop model export with an error.
+
+An `fn` with an `id` is a reusable definition. Reference it with `xref type="fn"`; unreferenced definitions are omitted, repeated references share one number, and HTML callouts link to one footnote entry and back. The MQTT publishing sample demonstrates repeated references:
+
+```xml
+<p>First mention<xref href="#topic-id/note-id" type="fn"/>.</p>
+<p>Second mention<xref href="#topic-id/note-id" type="fn"/>.</p>
+<fn id="note-id" product="M100">Model-specific detail.</fn>
+```
+
+References must target a note in the same file. Broken references, duplicate note IDs, nested notes and unresolved `conref`/`conkeyref` notes stop export explicitly. Content references are not expanded. HTML and Markdown use the same prepared publication snapshot and filtering rules.
 
 ![Model footnotes workspace](docs/assets/model-footnotes-preview.png)

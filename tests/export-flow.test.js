@@ -23,9 +23,9 @@ function harness() {
     setStatus(message, error) { A.status = message; A.failed = error; },
     showLoading() { A.loading = true; }, hideLoading() { A.loading = false; }
   };
-  const sandbox = { window: { DitaApp: A, addEventListener() {} }, Blob, setTimeout: callback => callback(),
+  const sandbox = { window: { DitaApp: A, DitaPublication: require('../public/publication-core'), addEventListener() {} }, Blob, setTimeout: callback => callback(),
     URL: { createObjectURL(value) { blob = value; return 'blob:test'; }, revokeObjectURL() {} },
-    document: { body: { append() {} }, createElement() { return { click() {}, remove() {} }; } }
+    document: { getElementById() { return null; }, body: { append() {} }, createElement() { return { click() {}, remove() {} }; } }
   };
   vm.runInNewContext(fs.readFileSync(require.resolve('../public/export.js'), 'utf8'), sandbox);
   A.browserLoadImageBytes = async () => 'data:image/png;base64,AAAA';

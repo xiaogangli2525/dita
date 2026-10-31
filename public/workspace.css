@@ -216,3 +216,6 @@ kbd { display: inline-block; border: 1px solid #dde4e8; border-radius: 4px; back
 @media (max-width: 700px) { .layout:has(.inspector.notes-open) { grid-template-columns: minmax(0, 1fr); } .footnote-dialog { padding: 20px; } }
 
 .footnote-located { background-color: #fff4ce !important; outline: 2px solid #dfc877; outline-offset: 5px; border-radius: 3px; }
+
+.footnote-dialog select { width: 100%; border: 1px solid #dce5df; border-radius: 7px; padding: 10px; background: white; font: inherit; color: #3a5347; }
+#modelExportSummary { background: #edf7f0; color: #246555; padding: 12px; border-radius: 7px; }

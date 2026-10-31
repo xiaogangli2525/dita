@@ -74,6 +74,8 @@
         <div class="export-dropdown">
           <button id="exportMenuButton" type="button" class="dropdown-toggle" title="导出或预览 Map 文档" aria-haspopup="true" aria-expanded="false">导出 <span class="caret" aria-hidden="true">▾</span></button>
           <div id="exportMenu" class="dropdown-menu" hidden>
+            <button id="modelExportButton" type="button">按型号预览／导出…</button>
+            <div class="dropdown-separator" role="separator"></div>
             <button id="previewHtmlButton" type="button" title="预览 Map 导出为 HTML 后的效果">预览 HTML</button>
             <button id="exportHtmlButton" type="button" title="将当前 Map 导出为单文件 HTML（含目录和修订标记）">导出 HTML</button>
             <div class="dropdown-separator" role="separator"></div>
@@ -180,7 +182,7 @@
         <div class="footnote-panel-intro"><span class="section-kicker">MODEL NOTES</span><h2>一处维护，差异清晰。</h2><p id="footnoteScope">当前功能文档</p></div>
         <div class="footnote-stats"><div><strong id="footnoteCount">0</strong><span>条注脚</span></div><div><strong id="footnoteUnassigned">0</strong><span>条未标注型号</span></div></div>
         <div class="footnote-filters"><label>适用型号<select id="footnoteModel"><option value="">全部型号</option></select></label><input id="footnoteSearch" type="search" placeholder="查找命令、参数或注脚内容" aria-label="查找注脚"/></div>
-        <p class="footnote-scope-hint">型号筛选仅用于查找；正文与导出保留完整注脚。</p>
+        <p class="footnote-scope-hint">此处仅筛选列表；按型号发布请使用导出菜单。</p>
         <div class="footnote-list-heading"><span id="footnoteResultCount">0 条注脚</span><button id="footnoteRefresh" type="button">刷新</button></div>
         <p id="footnotesMessage" class="footnote-message" role="status"></p>
         <div id="footnoteList" class="footnote-list"></div>
@@ -213,6 +215,17 @@
     <span class="statusbar-hint">Ctrl/Cmd+S 保存 · Ctrl/Cmd+F 查找</span>
   </footer>
 
+  <dialog id="modelExportDialog" class="footnote-dialog" aria-labelledby="modelExportHeading">
+    <form id="modelExportForm">
+      <span class="section-kicker">MODEL PUBLICATION</span><h2 id="modelExportHeading">按型号导出功能手册</h2>
+      <p id="modelExportScope"></p>
+      <label>适用型号<select id="exportModel"><option value="">全部型号</option></select></label>
+      <label>文件格式<select id="exportFormat"><option value="html">HTML</option><option value="md">Markdown</option></select></label>
+      <p>仅按注脚自身的 product 属性筛选，正文保持完整。未标注型号的注脚始终保留；不从文字推断支持范围。</p>
+      <p id="modelExportSummary" role="status"></p><p id="modelExportError" class="footnote-edit-error" role="alert"></p>
+      <div class="footnote-dialog-actions"><button id="modelExportCancel" type="button">取消</button><button type="submit" value="preview">预览</button><button type="submit" value="download" class="primary-action">导出文件</button></div>
+    </form>
+  </dialog>
   <dialog id="footnoteEditDialog" class="footnote-dialog" aria-labelledby="footnoteEditHeading">
     <form id="footnoteEditForm">
       <span class="section-kicker">MODEL NOTE</span><h2 id="footnoteEditHeading">编辑注脚</h2>
@@ -233,6 +246,7 @@
   <script src="/review.js"></script>
   <script src="/document-store.js"></script>
   <script src="/workspace-client.js"></script>
+  <script src="/publication-core.js"></script>
   <script src="/app-core.js"></script>
   <script src="/export.js"></script>
   <script src="/app.js"></script>
