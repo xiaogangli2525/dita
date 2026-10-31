@@ -81,6 +81,7 @@
             <button id="exportMdButton" type="button" title="将当前 Map 导出为 Markdown 文件">导出 MD</button>
           </div>
         </div>
+        <button id="footnotesButton" type="button" title="管理型号差异注脚">型号注脚</button>
         <button id="reviewButton" type="button" title="审阅文档变更（接受/拒绝修订）">审阅</button>
         <button id="inspectorToggleButton" type="button" class="inspector-toggle" title="切换属性面板" aria-controls="inspector" aria-expanded="false">属性</button>
       </div>
@@ -171,6 +172,19 @@
         <span id="inspectorTitle">文档属性</span>
         <span id="inspectorElement" class="inspector-element">未选择元素</span>
       </div>
+      <div class="inspector-tabs" role="tablist" aria-label="检查面板">
+        <button id="propertiesTab" type="button" role="tab" aria-selected="true" class="active">元素属性</button>
+        <button id="footnotesTab" type="button" role="tab" aria-selected="false">型号注脚</button>
+      </div>
+      <section id="footnotesPanel" class="footnotes-panel" hidden aria-label="型号注脚管理">
+        <div class="footnote-panel-intro"><span class="section-kicker">MODEL NOTES</span><h2>一处维护，差异清晰。</h2><p id="footnoteScope">当前功能文档</p></div>
+        <div class="footnote-stats"><div><strong id="footnoteCount">0</strong><span>条注脚</span></div><div><strong id="footnoteUnassigned">0</strong><span>条未标注型号</span></div></div>
+        <div class="footnote-filters"><label>适用型号<select id="footnoteModel"><option value="">全部型号</option></select></label><input id="footnoteSearch" type="search" placeholder="查找命令、参数或注脚内容" aria-label="查找注脚"/></div>
+        <p class="footnote-scope-hint">型号筛选仅用于查找；正文与导出保留完整注脚。</p>
+        <div class="footnote-list-heading"><span id="footnoteResultCount">0 条注脚</span><button id="footnoteRefresh" type="button">刷新</button></div>
+        <p id="footnotesMessage" class="footnote-message" role="status"></p>
+        <div id="footnoteList" class="footnote-list"></div>
+      </section>
       <div id="contextToolbar" class="context-toolbar" hidden>
         <span class="context-label">元素</span>
         <button type="button" data-context-action="before" title="在当前元素上方插入新元素">上方插入</button>
@@ -199,10 +213,23 @@
     <span class="statusbar-hint">Ctrl/Cmd+S 保存 · Ctrl/Cmd+F 查找</span>
   </footer>
 
+  <dialog id="footnoteEditDialog" class="footnote-dialog" aria-labelledby="footnoteEditHeading">
+    <form id="footnoteEditForm">
+      <span class="section-kicker">MODEL NOTE</span><h2 id="footnoteEditHeading">编辑注脚</h2>
+      <p>将型号差异保留在原文位置，便于审阅与追溯。</p>
+      <label><span id="footnoteContentLabel">注脚内容</span><textarea id="footnoteContent" rows="6" required></textarea></label>
+      <label>适用型号<input id="footnoteProducts" placeholder="例如 M100 M200，多个型号用空格分隔"/></label>
+      <p class="footnote-form-hint">留空表示未标注，不会自动视为所有型号通用。</p>
+      <p id="footnoteEditError" class="footnote-edit-error" role="alert"></p>
+      <div class="footnote-dialog-actions"><button id="footnoteCancel" type="button">取消</button><button type="submit" class="primary-action">应用修改</button></div>
+    </form>
+  </dialog>
   <div id="loadingOverlay" class="loading-overlay" role="status" aria-hidden="true"><span>正在准备导出文档…</span></div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <script src="/vendor/sax.js"></script>
   <script src="/xml-source.js"></script>
+  <script src="/footnotes-core.js"></script>
+  <script src="/footnotes.js"></script>
   <script src="/review.js"></script>
   <script src="/document-store.js"></script>
   <script src="/workspace-client.js"></script>

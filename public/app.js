@@ -154,7 +154,7 @@ function toast(message, level) {
   toastTimer = setTimeout(() => { el.className = 'toast'; }, 3000);
 }
 Object.assign(A, { state, dom, ditaCore, setStatus, toast, api: workspaceClient,
-  setFileContent, validateXml,
+  setFileContent, validateXml, openFile, setMode,
   prepareProposal: (content, instruction = '') => documentStore.createProposal({ file: state.filesMap.get(state.activePath), workspaceToken: workspaceClient.token, content, instruction }, validateXml),
   applyProposal: proposal => documentStore.applyProposal(proposal, { file: state.filesMap.get(state.activePath), workspaceToken: workspaceClient.token }, validateXml, setFileContent),
   showLoading: function() { const el = document.getElementById('loadingOverlay'); if (el) { el.classList.add('active'); el.setAttribute('aria-hidden', 'false'); } },
@@ -547,6 +547,7 @@ async function reloadWorkspace(result) {
   state.selectedMap = (branchMap ? branchMap.path : null) || state.maps.find(map => /http_httpsdevelopmentusermanual_en\.ditamap$/i.test(map.path))?.path || state.maps[0]?.path || '';
   state.selectedMapSourcePath = '';
   state.filesMap.clear();
+  A.footnotes?.setScope('');
   A.clearTopicCache();
   state.activePath = '';
   state.historyTargetPath = '';
@@ -766,6 +767,7 @@ function makeTab(file) {
 
 function renderTabs() {
   updateDocumentChrome();
+  A.footnotes?.scheduleRefresh();
   const fragment = document.createDocumentFragment();
   for (const file of state.filesMap.values()) {
     if (/\.ditamap$/i.test(state.activePath) && state.mapAuthorPaths?.has(file.path)) continue;
@@ -900,7 +902,7 @@ function updateActivePanes() {
   updateDocumentChrome();
 }
 
-async function openFile(path) {
+async function openFile(path, { preserveFootnotesScope = false } = {}) {
   if (!state.filesMap.has(path)) {
     try {
       const [fileResponse, gitResponse] = await Promise.all([
@@ -926,6 +928,7 @@ async function openFile(path) {
   document.body.classList.remove('sidebar-open');
   document.getElementById('sidebarToggleButton')?.setAttribute('aria-expanded', 'false');
   state.activePath = path;
+  if (!preserveFootnotesScope) A.footnotes?.setScope(path);
   state.historyTargetPath = path;
   const reviewableModes = ['visual', 'preview', 'review'];
   setMode(reviewableModes.includes(state.mode) ? state.mode : 'visual');
@@ -995,6 +998,7 @@ function setMode(mode) {
   if (dom.contextToolbar) dom.contextToolbar.hidden = mode !== 'visual' || !state.selectedVisualElement;
   if (mode !== 'visual') renderInspector(null);
   if (mode === 'visual' || mode === 'preview') renderOutline();
+  A.footnotes?.syncMode();
 }
 
 
@@ -1921,6 +1925,7 @@ async function initialize() {
   }
 }
 
+A.footnotes = window.DitaFootnotes.createPanel(A);
 initialize();
 })();
 

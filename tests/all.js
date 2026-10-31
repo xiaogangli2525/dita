@@ -11,3 +11,4 @@ require('./export-flow.test.js');
 require('./api-integration.test.js');
 
 require('./xml-source.test.js');
+require('./footnotes.test.js');

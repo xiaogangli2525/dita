@@ -310,3 +310,14 @@ test('visual table edits retain title, tgroup metadata, and header rows', () => 
   assert.ok(file.current.includes('<thead>'), file.current);
   assert.ok(file.current.includes('<entry>Edited cell</entry>'), file.current);
 });
+
+
+test('Author text edits preserve footnote content, links and model metadata', () => {
+  const source = '<topic><title>T</title><body><p>Before<fn id="n" product="M100">Keep <xref href="other.dita">link</xref>.</fn> after.</p></body></topic>';
+  const app = createTestApp(source);
+  app.updateVisualFromXml(source);
+  const p = app.dom.visualEditor.querySelector('p');
+  p.firstChild.data = 'Edited';
+  app.visualToXml();
+  assert.equal(app.state.filesMap.get('topic.dita').current, source.replace('Before', 'Edited'));
+});

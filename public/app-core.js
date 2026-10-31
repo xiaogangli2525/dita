@@ -74,6 +74,9 @@ function convertVisualElement(node, documentRef, preserveAttributes = false) {
   const sourceTag = node.localName.toLowerCase();
   const ditaTag = VISUAL_TO_DITA.get(sourceTag) || sourceTag;
   const sourceTagAttribute = node.getAttribute?.('data-dita-source');
+  if (sourceTagAttribute === 'fn' && node.getAttribute('data-dita-original')) {
+    return parseXml(node.getAttribute('data-dita-original')).documentElement;
+  }
   if (sourceTagAttribute === 'table' && sourceTag === 'div') {
     let table = null;
     const original = node.getAttribute('data-dita-original');
@@ -620,9 +623,12 @@ function renderAuthorNode(node, documentRef = document) {
     _ctx.fnCounter++;
     const sup = documentRef.createElement('sup');
     sup.className = 'fn-ref';
+    sup.setAttribute('data-dita-source', 'fn');
+    sup.setAttribute('data-dita-original', serializeXmlNode(node));
+    sup.setAttribute('contenteditable', 'false');
     sup.textContent = '[' + _ctx.fnCounter + ']';
     sup.title = node.textContent.trim();
-    sup.dataset.fnText = node.textContent.trim();
+    sup.setAttribute('data-fn-text', node.textContent.trim());
     return sup;
   }
   if (tag === 'filepath') {
@@ -862,8 +868,13 @@ function ditaToHtml(node, ctx) {
     return '<span class="oxy-comment" title="' + escapeHtmlAttr(title) + '">' + Array.from(node.childNodes).map(function(n) { return ditaToHtml(n, ctx); }).join('') + '</span>';
   }
   if (tag === 'fn') {
-    const text = node.textContent.trim();
-    return '<sup class="fn-ref" title="' + escapeHtmlAttr(text) + '">[fn]</sup>';
+    ctx.htmlFootnotes = ctx.htmlFootnotes || [];
+    const n = ctx.htmlFootnotes.length + 1;
+    ctx.htmlFootnotes.push('');
+    const models = node.getAttribute('product');
+    const label = models ? '<small>适用型号：' + escapeHtmlAttr(models) + '</small> ' : '';
+    ctx.htmlFootnotes[n - 1] = label + Array.from(node.childNodes).map(child => ditaToHtml(child, ctx)).join('');
+    return '<sup class="fn-ref" id="fnref-' + n + '"><a href="#fn-' + n + '">[' + n + ']</a></sup>';
   }
   if (tag === 'image') {
     const href = node.getAttribute('href') || '';
@@ -998,6 +1009,7 @@ async function exportMapToHtml({ map, files, title, loadImageBytes }) {
     body += '<h2 id="sec-' + i + '" style="scroll-margin-top: 20px;">' + escapeHtmlAttr(sec.title) + '</h2>\n' + sec.body + '\n';
     if (i < sections.length - 1) body += '<hr>\n';
   });
+  if (ctx.htmlFootnotes?.length) body += '<section class="export-footnotes"><h2>注脚</h2><ol>' + ctx.htmlFootnotes.map((text, i) => '<li id="fn-' + (i + 1) + '">' + text + ' <a href="#fnref-' + (i + 1) + '" aria-label="返回正文">↩</a></li>').join('') + '</ol></section>';
   let failuresHtml = '';
   if (failures.length) failuresHtml = '<p class="error">\u4ee5\u4e0b topic \u52a0\u8f7d\u5931\u8d25\uff1a' + failures.map(escapeHtmlAttr).join(', ') + '</p>';
   const html = [
@@ -1019,6 +1031,16 @@ function mdEscape(text) {
   return String(text || '').replace(/([\\`*{}\[\]()#+\-.!])/g, '\\$1');
 }
 
+function markdownFootnote(node, ctx) {
+  ctx.mdFootnotes = ctx.mdFootnotes || [];
+  const index = (ctx.mdFnCounter || 0) + 1;
+  ctx.mdFnCounter = index;
+  const models = node.getAttribute('product');
+  const content = (models ? '**适用型号：' + mdEscape(models) + '。** ' : '') + Array.from(node.childNodes).map(child => mdInline(child, ctx)).join('');
+  ctx.mdFootnotes.push('[^' + index + ']: ' + content.trim().replace(/\n/g, '\n    '));
+  return '[^' + index + ']';
+}
+
 function mdInline(node, ctx) {
   ctx = ctx || _ctx;
   if (node.nodeType === 3) return node.data;
@@ -1033,7 +1055,7 @@ function mdInline(node, ctx) {
   if (['codeph', 'filepath', 'varname', 'parmname', 'msgph'].includes(tag)) return '`' + node.textContent + '`';
   if (tag === 'xref') { const h = node.getAttribute('href') || ''; return '[' + inner() + '](' + h + ')'; }
   if (tag === 'image') { const resolved = resolveAssetPath(node.getAttribute('href') || '', ctx); const a = node.getAttribute('alt') || ''; const src = ctx.imageDataCache.has(resolved) ? ctx.imageDataCache.get(resolved) : resolved; return '![' + a + '](' + src + ')'; }
-  if (tag === 'fn') return '[^' + (++ctx.mdFnCounter) + ']';
+  if (tag === 'fn') return markdownFootnote(node, ctx);
   if (tag === 'ins' && (node.getAttribute('class') || '').includes('oxy-insert')) return '**' + inner() + '**';
   if (tag === 'del' && (node.getAttribute('class') || '').includes('oxy-delete')) return '~~' + node.textContent + '~~';
   if (tag === 'span' && (node.getAttribute('class') || '').includes('oxy-comment')) { const c = node.getAttribute('data-comment') || ''; return '<!-- ' + c + ' -->'; }
@@ -1095,7 +1117,7 @@ function ditaToMarkdown(node, ctx) {
   if (tag === 'table') return mdTable(node);
   if (tag === 'dl') return mdDl(node);
 
-  if (tag === 'fn') { const t = node.textContent.trim(); ctx.mdFootnotes.push((ctx.mdFootnotes.length + 1) + ': ' + t); return '[^' + (++ctx.mdFnCounter) + ']'; }
+  if (tag === 'fn') return markdownFootnote(node, ctx);
 
   if (tag === 'section' || tag === 'example') {
     const tEl = Array.from(node.childNodes).find(n => n.localName === 'title');
