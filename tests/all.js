@@ -9,3 +9,5 @@ require('./review-core.test.js');
 require('./workspace.test.js');
 require('./export-flow.test.js');
 require('./api-integration.test.js');
+
+require('./xml-source.test.js');

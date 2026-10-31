@@ -1,5 +1,27 @@
 'use strict';
 (function (root) {
+  function historyOf(file) { return file.history || (file.history = { undo: [], redo: [] }); }
+  function editDocument(file, content, { record = true, historyMeta } = {}) {
+    if (!file || content === file.current && !historyMeta) return false;
+    const history = historyOf(file);
+    if (record) {
+      history.undo.push({ before: file.current, after: content, ...(historyMeta || {}) });
+      if (history.undo.length > 100) history.undo.shift();
+      history.redo.length = 0;
+    }
+    file.current = content;
+    file.dirty = content !== file.disk;
+    return true;
+  }
+  function travelHistory(file, direction) {
+    const history = historyOf(file);
+    const entry = history[direction].pop();
+    if (!entry) return null;
+    history[direction === 'undo' ? 'redo' : 'undo'].push(entry);
+    file.current = direction === 'undo' ? entry.before : entry.after;
+    file.dirty = file.current !== file.disk;
+    return entry;
+  }
   // Save acknowledgements advance disk, never a newer working buffer.
   function createSaveCoordinator(send) {
     const pending = new WeakMap();
@@ -35,7 +57,7 @@
     commit(file, proposal.after); // Reuses the editor's undo history; never saves.
     return Object.freeze({ ...proposal, status: 'applied' });
   }
-  const api = { createSaveCoordinator, createProposal, applyProposal };
+  const api = { editDocument, travelHistory, historyOf, createSaveCoordinator, createProposal, applyProposal };
   if (typeof module !== 'undefined') module.exports = api;
   else root.DitaDocumentStore = api;
 })(typeof window === 'undefined' ? globalThis : window);

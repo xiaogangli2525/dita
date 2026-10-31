@@ -4,46 +4,6 @@ const assert = require('node:assert/strict');
 const test = require('node:test');
 const { buildMockDom } = require('./visual-harness');
 
-test('map preview renders all referenced topics', async () => {
-  const core = require('../public/app-core.js');
-  const { document } = buildMockDom();
-
-  const entries = [
-    { type: 'file', path: 'topics/first.dita', title: 'First' },
-    { type: 'file', path: 'topics/second.dita', title: 'Second' }
-  ];
-  const files = new Map(entries.map(entry => [entry.path, {
-    path: entry.path,
-    current: `<topic><title>${entry.title}</title><body><p>${entry.title} body</p></body></topic>`
-  }]));
-  const fragment = core.createMapPreview({
-    map: { title: 'Manual', children: entries },
-    files,
-    document
-  });
-
-  assert.equal(fragment.querySelectorAll('h1').length, 3);
-  assert.ok(fragment.textContent.includes('Manual'));
-  assert.ok(fragment.textContent.includes('First body'));
-  assert.ok(fragment.textContent.includes('Second body'));
-});
-
-test('map preview reports topics that cannot be loaded', async () => {
-  const core = require('../public/app-core.js');
-  const { document } = buildMockDom();
-  const entries = [
-    { type: 'file', path: 'topics/first.dita', title: 'First' },
-    { type: 'file', path: 'topics/missing.dita', title: 'Missing' }
-  ];
-  const files = new Map([
-    ['topics/first.dita', { path: 'topics/first.dita', current: '<topic><title>First</title><body><p>First body</p></body></topic>' }]
-  ]);
-  const fragment = core.createMapPreview({ map: { title: 'Manual', children: entries }, files, document });
-
-  assert.ok(fragment.textContent.includes('First body'));
-  assert.ok(fragment.textContent.includes('topics/missing.dita'));
-});
-
 test('exportMapToMarkdown converts DITA elements to Markdown', async () => {
   const core = require('../public/app-core.js');
   const entries = [{ type: 'file', path: 'topics/test.dita', title: 'Test' }];
@@ -107,3 +67,4 @@ test('exportMapToHtml embeds images via loadImageBytes', async () => {
   const html = await core.exportMapToHtml({ map: { title: 'M', children: entries }, files, title: 'M', loadImageBytes: stubLoader });
   assert.ok(html.includes('data:image/png;base64,STUB'), 'html should embed image as data URI');
 });
+

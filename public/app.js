@@ -9,7 +9,6 @@ const fetch = workspaceClient.request;
 const responseError = workspaceClient.error;
 const documentStore = window.DitaDocumentStore;
 const createVisualApiFromCore = ditaCore.createVisualApi;
-const { lineDiff, groupDiffRows, applyDiffGroups, inlineDiff } = ditaCore;
 
 const state = {
   root: '',
@@ -41,13 +40,6 @@ const state = {
 // review changes can all be undone through the same model.  The browser's
 // native textarea history only knows about source edits and cannot restore a
 // visual/review transition.
-const HISTORY_LIMIT = 100;
-
-// Keep the context width stable while a review block is being accepted or
-// rejected.  This must be shared by renderDiff and applyReviewedGroup so that
-// clicking an individual review action does not depend on a function-local
-// variable.
-const REVIEW_CONTEXT_SIZE = 3;
 
 const dom = {
   rootPath: document.querySelector('#rootPath'),
@@ -107,10 +99,9 @@ const dom = {
   editorPane: document.querySelector('#editorPane'),
   visualPane: document.querySelector('#visualPane'),
   visualEditor: document.querySelector('#visualEditor'),
-  previewPane: document.querySelector('#previewPane'),
-  preview: document.querySelector('#preview'),
   reviewPane: document.querySelector('#reviewPane'),
   reviewMeta: document.querySelector('#reviewMeta'),
+  reviewScope: document.querySelector('#reviewScope'),
   diff: document.querySelector('#diff'),
   inspector: document.querySelector('#inspector'),
   inspectorTitle: document.querySelector('#inspectorTitle'),
@@ -207,7 +198,7 @@ function renderOutline() {
       item.title = title.textContent.trim();
       item.addEventListener('click', () => {
         if (/\.ditamap$/i.test(file.path)) return;
-        setMode('visual');
+        setMode(state.mode === 'preview' ? 'preview' : 'visual');
         const target = Array.from(dom.visualEditor.querySelectorAll('h2, h3, h4, h5, h6'))[index];
         target?.scrollIntoView({ block: 'center', behavior: 'smooth' });
         target?.classList.add('author-focus');
@@ -231,7 +222,7 @@ function renderWorkspaceSearch(term = '') {
   if (!matches.length) {
     const empty = document.createElement('div');
     empty.className = 'outline-empty';
-    empty.textContent = query ? '没有匹配文件。' : '输入文件名搜索。';
+    empty.textContent = query ? '没有匹配文件路径。' : '输入文件名搜索。';
     dom.workspaceSearchResults.append(empty);
     return;
   }
@@ -260,7 +251,7 @@ function buildContextToolbar(tag) {
   const actions = [];
   const add = (action, label, cls) => actions.push({ action, label, cls });
   const tagLower = (tag || '').toLowerCase();
-  if (['table'].includes(tagLower) || tagLower === 'div' && (state.selectedVisualElement?.getAttribute('data-dita-source') === 'table')) {
+  if (state.selectedVisualElement?.closest('td,th') || ['table'].includes(tagLower) || tagLower === 'div' && (state.selectedVisualElement?.getAttribute('data-dita-source') === 'table')) {
     add('row-before', '上方插行');
     add('row-after', '下方插行');
     add('row-delete', '删除行');
@@ -311,7 +302,7 @@ function renderInspector(targetElement = state.selectedVisualElement) {
   selectedElement.classList.add('author-selected');
   const tag = selectedElement.getAttribute('data-dita-source') || (selectedElement.localName === 'h2' ? 'title' : selectedElement.localName);
   dom.inspectorElement.textContent = `<${tag}>`;
-  dom.contextToolbar.hidden = !['visual', 'preview'].includes(state.mode);
+  dom.contextToolbar.hidden = state.mode !== 'visual';
   if (!dom.contextToolbar.hidden) buildContextToolbar(tag);
   const attributes = Array.from(selectedElement.attributes).filter(attr => !['class', 'style', 'contenteditable'].includes(attr.name) && !attr.name.startsWith('data-'));
   if (!attributes.length) {
@@ -392,7 +383,20 @@ function renderInspector(targetElement = state.selectedVisualElement) {
 
 function applyContextAction(action) {
   const element = state.selectedVisualElement;
-  if (!element || !['visual', 'preview'].includes(state.mode)) return;
+  if (!element || state.mode !== 'visual') return;
+  const editSurface = element.closest('.map-topic-surface') || dom.visualEditor;
+  const table = element.closest('table');
+  const wrapper = table?.closest('[data-dita-source="table"]');
+  const originalTable = wrapper?.getAttribute('data-dita-original') || '';
+  if (/^(row|col)-/.test(action) && /\b(?:morerows|namest|nameend|spanname)\s*=/.test(originalTable)) {
+    setStatus('此表格包含合并单元格，请在源码中调整行列结构', true);
+    return;
+  }
+  if (/^col-/.test(action) && /<colspec\b/.test(originalTable)) {
+    setStatus('此表格包含列定义，请在源码中调整列结构', true);
+    return;
+  }
+
   if (action === 'bold') { document.execCommand('bold'); syncVisualToModel({ target: element }); return; }
   if (action === 'italic') { document.execCommand('italic'); syncVisualToModel({ target: element }); return; }
   if (action === 'code-inline') {
@@ -408,17 +412,26 @@ function applyContextAction(action) {
     if (action === 'row-delete') { tr.remove(); }
     else {
       const newRow = tr.cloneNode(true);
+      for (const node of [newRow, ...newRow.querySelectorAll('td,th')]) {
+        node.removeAttribute('id');
+        for (const name of ['data-dita-row-attrs', 'data-dita-entry-attrs']) {
+          if (!node.hasAttribute(name)) continue;
+          const attrs = JSON.parse(node.getAttribute(name)); delete attrs.id;
+          node.setAttribute(name, JSON.stringify(attrs));
+        }
+      }
       newRow.querySelectorAll('td,th').forEach(td => { td.textContent = ''; });
       action === 'row-before' ? tr.before(newRow) : tr.after(newRow);
     }
-    syncVisualToModel({ target: element });
+    syncVisualToModel({ target: editSurface });
     return;
   }
   if (action === 'col-before' || action === 'col-after' || action === 'col-delete') {
     const td = element.closest('td,th');
     if (!td) return;
     const cellIndex = Array.from(td.parentElement.children).indexOf(td);
-    element.closest('table').querySelectorAll('tr').forEach(row => {
+    if (action === 'col-delete' && td.parentElement.children.length <= 1) { setStatus('表格至少保留一列', true); return; }
+    table.querySelectorAll('tr').forEach(row => {
       const cell = row.children[cellIndex];
       if (!cell) return;
       if (action === 'col-delete') cell.remove();
@@ -428,7 +441,13 @@ function applyContextAction(action) {
         action === 'col-before' ? cell.before(newCell) : cell.after(newCell);
       }
     });
-    syncVisualToModel({ target: element });
+    if (wrapper && originalTable) {
+      const doc = ditaCore.parseXml(originalTable);
+      const tgroup = doc.querySelector('tgroup');
+      if (tgroup) tgroup.setAttribute('cols', String(table.querySelector('tr')?.children.length || 1));
+      wrapper.setAttribute('data-dita-original', ditaCore.serializeXmlNode(doc.documentElement));
+    }
+    syncVisualToModel({ target: editSurface });
     return;
   }
   if (action === 'delete') {
@@ -452,8 +471,8 @@ function applyContextAction(action) {
 const menuDefinitions = {
   file: [['新建文档', () => createNewDocument()], ['保存', () => saveFile(), 'Ctrl+S'], ['另存为', () => saveAsFile()], ['下载', () => downloadFile()]],
   edit: [['撤销', () => undoFile(), 'Ctrl+Z'], ['重做', () => redoFile(), 'Ctrl+Y'], ['查找和替换', () => openFindReplace(), 'Ctrl+F'], ['格式化 XML', () => dom.formatButton?.click()]],
-  view: [['Source 源码', () => setMode('editor')], ['Author 编辑', () => setMode('visual')], ['Preview 预览/编辑', () => setMode('preview')], ['显示 Map', () => setActiveView('map')], ['显示 Outline', () => setActiveView('outline')]],
-  dita: [['插入元素', () => dom.insertElementButton?.click()], ['校验文档', () => dom.validateButton?.click()], ['审阅变更', () => setMode('review')]],
+  view: [['Source 源码', () => setMode('editor')], ['Author 编辑', () => setMode('visual')], ['阅读（只读）', () => setMode('preview')], ['显示 Map', () => setActiveView('map')], ['显示 Outline', () => setActiveView('outline')]],
+  dita: [['插入元素', () => dom.insertElementButton?.click()], ['XML 语法校验', () => dom.validateButton?.click()], ['审阅变更', () => setMode('review')]],
   help: [['快捷键', () => setStatus('Ctrl+S 保存 · Ctrl+F 查找 · Ctrl+Z 撤销')]]
 };
 
@@ -758,8 +777,7 @@ function renderTabs() {
 }
 
 function ensureHistory(file) {
-  if (!file.history) file.history = { undo: [], redo: [] };
-  return file.history;
+  return documentStore.historyOf(file);
 }
 
 function historyTargetFile() {
@@ -813,7 +831,6 @@ function refreshFileViews(file, { updateEditor = true } = {}) {
     updateVisual(file, state.mode === 'review');
     state.suppressVisualInput = false;
   }
-  updatePreview(file);
   if (state.mode === 'review') {
     if (/\.ditamap$/i.test(file.path)) renderMapReview(file);
     else renderDiff(file, false);
@@ -839,34 +856,22 @@ function refreshHistoryTargetView(file) {
   }
 }
 
-function setFileContent(file, content, { record = true, updateEditor = true, historyMeta } = {}) {
-  if (!file || content === file.current) return false;
-  const previous = file.current;
-  const history = ensureHistory(file);
-  if (record) {
-    history.undo.push({ before: previous, after: content, ...(historyMeta || {}) });
-    if (history.undo.length > HISTORY_LIMIT) history.undo.shift();
-    history.redo.length = 0;
-  }
-  file.current = content;
-  file.dirty = file.current !== file.disk;
+function setFileContent(file, content, { record = true, updateEditor = true, historyMeta, render = true } = {}) {
+  if (!file) return false;
+  if (!documentStore.editDocument(file, content, { record, historyMeta })) return false;
   if (file.path === state.activePath || (/\.ditamap$/i.test(state.activePath) && state.mapAuthorPaths?.has(file.path))) {
     state.historyTargetPath = file.path;
   }
-  refreshFileViews(file, { updateEditor });
+  if (render) refreshFileViews(file, { updateEditor });
   return true;
 }
 
 function undoFile() {
   const file = historyTargetFile();
   if (!file) return;
-  const history = ensureHistory(file);
-  const entry = history.undo.pop();
+  const entry = documentStore.travelHistory(file, 'undo');
   if (!entry) return;
-  history.redo.push(entry);
   if (entry.reviewDecisionsBefore) state.reviewDecisions = new Map(entry.reviewDecisionsBefore);
-  file.current = entry.before;
-  file.dirty = file.current !== file.disk;
   refreshHistoryTargetView(file);
   setStatus('已撤销');
 }
@@ -874,13 +879,9 @@ function undoFile() {
 function redoFile() {
   const file = historyTargetFile();
   if (!file) return;
-  const history = ensureHistory(file);
-  const entry = history.redo.pop();
+  const entry = documentStore.travelHistory(file, 'redo');
   if (!entry) return;
-  history.undo.push(entry);
   if (entry.reviewDecisionsAfter) state.reviewDecisions = new Map(entry.reviewDecisionsAfter);
-  file.current = entry.after;
-  file.dirty = file.current !== file.disk;
   refreshHistoryTargetView(file);
   setStatus('已重做');
 }
@@ -889,11 +890,10 @@ function updateActivePanes() {
   const file = state.filesMap.get(state.activePath);
   dom.editor.value = file?.current || '';
   dom.editor.disabled = !file;
-  dom.visualEditor.contentEditable = file && !/\.ditamap$/i.test(file.path) ? 'true' : 'false';
+  dom.visualEditor.contentEditable = file && state.mode === 'visual' && !/\.ditamap$/i.test(file.path) ? 'true' : 'false';
   state.suppressVisualInput = true;
   updateVisual(file);
   state.suppressVisualInput = false;
-  updatePreview(file);
   renderOutline();
   renderInspector(null);
   updateHistoryButtons();
@@ -959,10 +959,7 @@ function setMode(mode) {
   // Review keeps the Author surface in the main column. The review pane is a
   // docked right sidebar, matching Oxygen Author's reading flow.
   dom.visualPane.classList.toggle('active', mode === 'visual' || mode === 'preview' || mode === 'review');
-  // Preview uses the same editable visual surface as Author. The legacy
-  // separate preview article stays hidden so there is never a second stale
-  // rendering competing with the editor.
-  dom.previewPane.classList.remove('active');
+  // Reading reuses the Author rendering with all editing disabled.
   dom.reviewPane.classList.toggle('active', mode === 'review');
   dom.visualEditor?.classList.toggle('preview-editable', mode === 'preview');
   dom.inspector?.classList.toggle('reviewing', mode === 'review');
@@ -975,12 +972,14 @@ function setMode(mode) {
     button?.classList.toggle('active', mode === buttonMode);
   }
   dom.reviewButton?.classList.toggle('active', mode === 'review');
+  for (const button of [dom.insertElementButton, dom.formatButton]) button.disabled = mode === 'preview' || mode === 'review';
+  dom.contextToolbar.hidden = true;
   const file = state.filesMap.get(state.activePath);
   if (file && mode === 'editor') dom.editor.value = file.current;
-  if (dom.visualEditor && mode === 'review') {
+  if (dom.visualEditor && (mode === 'review' || mode === 'preview')) {
     dom.visualEditor.contentEditable = 'false';
     for (const surface of dom.visualEditor.querySelectorAll('[contenteditable]')) surface.contentEditable = 'false';
-  } else if (dom.visualEditor && (mode === 'visual' || mode === 'preview') && file && !/\.ditamap$/i.test(file.path)) {
+  } else if (dom.visualEditor && mode === 'visual' && file && !/\.ditamap$/i.test(file.path)) {
     dom.visualEditor.contentEditable = 'true';
   }
   if (file && (mode === 'visual' || mode === 'preview' || mode === 'review')) {
@@ -988,73 +987,17 @@ function setMode(mode) {
     updateVisual(file);
     state.suppressVisualInput = false;
   }
-  // Preview and Author share the same editable visual surface. Keeping one
-  // DOM surface prevents preview edits from diverging from the Author model.
   if (file && mode === 'review') {
     if (/\.ditamap$/i.test(file.path)) renderMapReview(file);
     else renderDiff(file, false);
   }
   if (!file && mode === 'review') renderDiff(null);
-  if (dom.contextToolbar) dom.contextToolbar.hidden = !['visual', 'preview'].includes(mode) || !state.selectedVisualElement;
-  if (!['visual', 'preview'].includes(mode)) renderInspector(null);
+  if (dom.contextToolbar) dom.contextToolbar.hidden = mode !== 'visual' || !state.selectedVisualElement;
+  if (mode !== 'visual') renderInspector(null);
   if (mode === 'visual' || mode === 'preview') renderOutline();
 }
 
 
-async function updatePreview(file) {
-  if (!file) {
-    dom.preview.replaceChildren(document.createTextNode('\u672A\u6253\u5F00\u6587\u4EF6'));
-    return;
-  }
-
-  if (/\.ditamap$/i.test(file.path)) {
-    await updateMapPreview(file.path);
-    return;
-  }
-
-  try {
-    dom.preview.replaceChildren(...ditaCore.renderPreviewContent(file.current, document, file.path));
-  } catch (error) {
-    const message = document.createElement('p');
-    message.className = 'preview-error';
-    message.textContent = '\u9884\u89C8\u5931\u8D25\uFF1A' + error.message;
-    dom.preview.replaceChildren(message);
-  }
-}
-
-async function fetchPreviewTopic(path) {
-  const cached = state.filesMap.get(path);
-  if (cached) return cached.current;
-
-  const response = await fetch('/api/file?path=' + encodeURIComponent(path));
-  if (!response.ok) throw new Error(path + ': ' + (await response.text()).trim());
-  return response.text();
-}
-
-let mapPreviewToken = 0;
-async function updateMapPreview(mapPath) {
-  const token = ++mapPreviewToken;
-  try {
-    const map = state.maps.find(item => item.path === mapPath);
-    if (!map) throw new Error('Map not found');
-    const files = new Map(state.filesMap);
-    await Promise.all(ditaCore.collectPreviewPaths(map.children || []).map(async entry => {
-      if (files.has(entry.path)) return;
-      try {
-        files.set(entry.path, { path: entry.path, current: await fetchPreviewTopic(entry.path) });
-      } catch (error) {
-        files.set(entry.path, { path: entry.path, current: '', loadError: error });
-      }
-    }));
-    if (token !== mapPreviewToken || state.activePath !== mapPath) return;
-    dom.preview.replaceChildren(ditaCore.createMapPreview({ map, files, document }));
-  } catch (error) {
-    const message = document.createElement('p');
-    message.className = 'preview-error';
-    message.textContent = '预览失败：' + error.message;
-    dom.preview.replaceChildren(message);
-  }
-}
 const visualCore = createVisualApiFromCore(state, dom);
 
 async function ensureMapAuthorFile(path) {
@@ -1101,7 +1044,7 @@ async function updateMapAuthor(file) {
   heading.className = 'map-author-title';
   heading.textContent = map.title || map.name || map.path;
   heading.dataset.mapTitle = 'true';
-  heading.contentEditable = state.mode === 'review' ? 'false' : 'true';
+  heading.contentEditable = state.mode === 'visual' ? 'true' : 'false';
   fragment.append(heading);
   if (!loaded.length) {
     const empty = document.createElement('p');
@@ -1131,7 +1074,7 @@ async function updateMapAuthor(file) {
         const surface = ditaCore.createAuthorTopic(item.file.current, document, state.mode === 'review', item.entry.path);
         surface.className = 'map-topic-surface';
         surface.dataset.mapTopicPath = item.entry.path;
-        surface.contentEditable = state.mode === 'review' ? 'false' : 'true';
+        surface.contentEditable = state.mode === 'visual' ? 'true' : 'false';
         topic.append(surface);
       } catch (error) {
         const message = document.createElement('p');
@@ -1225,7 +1168,7 @@ function updateVisual(file, reviewMode = false) {
 
 function syncVisualToModel(event) {
   if (state.suppressVisualInput) return;
-  if (state.mode === 'review') return;
+  if (state.mode !== 'visual') return;
   const file = state.filesMap.get(state.activePath);
   if (!file) return;
   if (/\.ditamap$/i.test(file.path)) {
@@ -1236,18 +1179,12 @@ function syncVisualToModel(event) {
     const previous = file.current;
     const next = visualCore.visualToXml();
     if (next !== previous) {
-      const history = ensureHistory(file);
-      history.undo.push({ before: previous, after: next });
-      if (history.undo.length > HISTORY_LIMIT) history.undo.shift();
-      history.redo.length = 0;
-      file.current = next;
-      file.dirty = next !== file.disk;
+      setFileContent(file, next, { updateEditor: false, render: false });
     }
     // Keep the live Author DOM in place while the user is typing. Rebuilding
     // it on every input would move the caret and drop the current selection;
     // Oxygen updates the source model separately from the editor surface.
     dom.editor.value = file.current;
-    updatePreview(file);
     renderTabs();
     updateHistoryButtons();
     const surfaceLabel = state.mode === 'preview' ? '\u9884\u89C8\u7F16\u8F91' : '\u53EF\u89C6\u5316\u7F16\u8F91';
@@ -1257,565 +1194,9 @@ function syncVisualToModel(event) {
   }
 }
 
-function resetReviewSnapshot(file) {
-  state.reviewGroups = new Map();
-  state.reviewDecisions = new Map();
-  state.reviewPath = file ? file.path : '';
-  state.reviewBaseline = file ? file.baseline : '';
-  state.reviewCurrent = file ? file.current : '';
-}
-
-// A block decision changes file.current while the review still refers to the
-// original baseline/current pair. Preserve that session across a temporary
-// mode switch as long as the current content is still derived from it.
-function reviewSnapshotCanReuse(file) {
-  if (!file || state.reviewPath !== file.path) return false;
-  if (state.reviewBaseline !== file.baseline) return false;
-  if (state.reviewCurrent === file.current) return true;
-  return applyDiffGroups(
-    state.reviewBaseline,
-    state.reviewCurrent,
-    state.reviewDecisions,
-    0
-  ) === file.current;
-}
-
-function reviewTextWithoutMarkup(value) {
-  return String(value || '')
-    .replace(/<[^>]*>/g, ' ')
-    .replace(/&(?:amp|lt|gt|quot|apos);/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .toLowerCase();
-}
-
-function reviewRowLabel(value) {
-  const raw = String(value || '').trim();
-  if (!raw) return '(空行)';
-  const withoutTags = raw.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-  if (withoutTags) return withoutTags;
-  const element = raw.match(/^<\/?([\w:.-]+)\b([^>]*)>/);
-  if (!element) return raw;
-  const attrs = element[2].replace(/\s+/g, ' ').trim().replace(/\/$/, '').trim();
-  return `${element[1]}${attrs ? ` · ${attrs}` : ' 元素'}`;
-}
-
-function reviewDiffLabel(value) {
-  const raw = String(value || '').trim();
-  const label = reviewRowLabel(raw);
-  const element = raw.match(/^<([\w:.-]+)\b([^>]*)>/);
-  if (!element) return label;
-  const attrs = element[2].replace(/\s+/g, ' ').trim().replace(/\/$/, '').trim();
-  return attrs && !label.includes(attrs) ? `${label} · ${attrs}` : label;
-}
-
-// Render a review row from the readable text projection.  Oxygen's Author
-// review surface keeps the surrounding sentence intact and marks only the
-// changed words; doing the same here avoids turning a one-word edit into a
-// large full-line diff in the right dock.
-function createReviewLine(row, decision, segments = null) {
-  const line = document.createElement('div');
-  line.className = `diff-line ${row.type}${segments ? ' inline' : ''}`;
-  if (decision && ((decision === 'accept' && row.type === 'old') || (decision === 'reject' && row.type === 'new'))) {
-    line.classList.add('inactive');
-  }
-  const num = document.createElement('div');
-  num.className = 'num';
-  num.textContent = row.type === 'new' ? `+${row.newIndex}` : `-${row.oldIndex}`;
-  const text = document.createElement('div');
-  text.className = 'text';
-  const label = reviewDiffLabel(row.text);
-  text.title = row.text;
-  if (!segments) {
-    text.textContent = label;
-  } else {
-    for (const segment of segments) {
-      if (!segment.text) continue;
-      const part = document.createElement('span');
-      part.className = `diff-inline-${segment.type}`;
-      part.textContent = segment.text;
-      text.append(part);
-    }
-  }
-  line.append(num, text);
-  return line;
-}
-
-function appendReviewRows(container, rows, decision) {
-  const oldRows = rows.filter(row => row.type === 'old');
-  const newRows = rows.filter(row => row.type === 'new');
-  // A replacement of equal line count can be paired for character-level
-  // highlighting. Insertions/deletions and structural changes keep their
-  // complete readable line so the reviewer still sees the affected element.
-  if (oldRows.length && newRows.length && oldRows.length === newRows.length && typeof inlineDiff === 'function') {
-    for (let index = 0; index < oldRows.length; index += 1) {
-      const oldLabel = reviewDiffLabel(oldRows[index].text);
-      const newLabel = reviewDiffLabel(newRows[index].text);
-      const segments = inlineDiff(oldLabel, newLabel);
-      const oldSegments = segments.filter(segment => segment.type === 'same' || segment.type === 'old');
-      const newSegments = segments.filter(segment => segment.type === 'same' || segment.type === 'new');
-      container.append(
-        createReviewLine(oldRows[index], decision, oldSegments),
-        createReviewLine(newRows[index], decision, newSegments)
-      );
-    }
-    return;
-  }
-  for (const row of rows) container.append(createReviewLine(row, decision));
-}
-
-// Review entries live in the right dock while the center remains an Author
-// surface. Selecting an entry can still locate its visual counterpart, which
-// keeps the review workflow connected to the rendered document without
-// painting source-line markup over the Author content.
-function focusReviewGroup(group, topicPath = '') {
-  if (!group || !dom.visualEditor) return;
-  let candidates = Array.from(dom.visualEditor.querySelectorAll(
-    '[data-dita-source], h1, h2, h3, h4, h5, h6, p, li, pre, table, img'
-  ));
-  if (topicPath) {
-    if (/\.ditamap$/i.test(topicPath)) {
-      candidates = candidates.filter(element => element.closest('[data-map-title]') || element.closest('[data-map-topic-path]')?.dataset.mapTopicPath === topicPath);
-    } else {
-      candidates = candidates.filter(element => element.closest('.map-topic')?.dataset.mapTopicPath === topicPath);
-    }
-  }
-  if (!candidates.length) return;
-    const changedRows = group.rows.filter(row => row.type !== 'same');
-  const needles = changedRows.map(row => reviewTextWithoutMarkup(row.text)).filter(text => text.length >= 2);
-  let target = candidates.find(element => {
-    const content = reviewTextWithoutMarkup(element.textContent || element.getAttribute('alt') || '');
-    return needles.some(needle => content.includes(needle) || needle.includes(content));
-  });
-  if (!target) {
-    const firstRow = changedRows[0];
-    const line = Number(firstRow?.newIndex || firstRow?.oldIndex || 1);
-    target = candidates[Math.min(candidates.length - 1, Math.max(0, line - 1))];
-  }
-  target.scrollIntoView({ block: 'center', behavior: 'smooth' });
-  target.classList.remove('review-target-focus');
-  void target.offsetWidth;
-  target.classList.add('review-target-focus');
-  window.setTimeout(() => target.classList.remove('review-target-focus'), 1300);
-}
-
-function getOxyReplacement(change, accept) {
-  if (change.type === 'insert') return accept ? (change.keepContent || '') : '';
-  if (change.type === 'delete') return accept ? '' : (change.content || '');
-  return change.keepContent || '';
-}
-
-function applyOxyChange(file, change, accept) {
-  if (!file || typeof change.index !== 'number') return;
-  const source = file.current;
-  const replacement = getOxyReplacement(change, accept);
-  const next = source.slice(0, change.index) + replacement + source.slice(change.index + change.matchLength);
-  setFileContent(file, next, {});
-  setStatus(accept ? '已接受修订' : '已拒绝修订');
-  if (state.mode === 'review') {
-    const activeFile = state.filesMap.get(state.activePath);
-    if (activeFile && /\.ditamap$/i.test(activeFile.path)) {
-      updateVisual(activeFile, true);
-      renderMapReview(activeFile);
-    } else {
-      updateVisual(file, true);
-      renderDiff(file, true);
-    }
-  }
-}
-
-function scrollToOxyChange(oxyIndex) {
-  if (typeof oxyIndex !== 'number') return;
-  const el = dom.visualEditor.querySelector('[data-oxy-index="' + oxyIndex + '"]');
-  if (!el) return;
-  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  el.classList.add('oxy-flash');
-  setTimeout(() => el.classList.remove('oxy-flash'), 1500);
-}
-
-function createOxyChangeBlock(change, oxyIndex, file) {
-  const block = document.createElement('div');
-  block.className = 'oxy-change oxy-' + change.type + '-type';
-  block.dataset.oxyIndex = String(oxyIndex);
-  block.addEventListener('click', event => {
-    if (event.target.closest('button')) return;
-    scrollToOxyChange(oxyIndex);
-  });
-  block.style.cursor = 'pointer';
-  const typeLabel = document.createElement('span');
-  typeLabel.className = 'oxy-type ' + change.type;
-  typeLabel.textContent = change.type === 'insert' ? '插入' : change.type === 'delete' ? '删除' : '批注';
-  const author = document.createElement('span');
-  author.className = 'oxy-author';
-  author.textContent = change.author || '';
-  block.append(typeLabel, author);
-  if (change.content) {
-    const content = document.createElement('div');
-    content.className = 'oxy-content';
-    content.textContent = change.content;
-    block.append(content);
-  }
-  if (change.context) {
-    const ctx = document.createElement('div');
-    ctx.className = 'oxy-context';
-    ctx.textContent = '上下文：' + change.context;
-    block.append(ctx);
-  }
-  const actions = document.createElement('div');
-  actions.className = 'diff-actions';
-  const accept = document.createElement('button');
-  accept.type = 'button';
-  accept.textContent = '接受';
-  accept.addEventListener('click', () => applyOxyChange(file, change, true));
-  const reject = document.createElement('button');
-  reject.type = 'button';
-  reject.textContent = '拒绝';
-  reject.addEventListener('click', () => applyOxyChange(file, change, false));
-  actions.append(accept, reject);
-  block.append(actions);
-  return block;
-}
-function renderDiff(file, resetSnapshot = false) {
-  if (!file) {
-    resetReviewSnapshot(null);
-    dom.diff.replaceChildren(document.createTextNode('未打开文件'));
-    dom.reviewMeta.textContent = '';
-    dom.acceptAllButton.disabled = true;
-    dom.rejectAllButton.disabled = true;
-    return;
-  }
-
-  if (resetSnapshot || !reviewSnapshotCanReuse(file)) resetReviewSnapshot(file);
-  const fragment = document.createDocumentFragment();
-  let changed = 0;
-  let oxyCount = 0;
-  const oxyChanges = ditaCore.collectOxyTrackedChanges ? ditaCore.collectOxyTrackedChanges(file.current) : [];
-  if (oxyChanges.length) {
-    const oxyHeader = document.createElement('div');
-    oxyHeader.className = 'diff-section-header';
-    oxyHeader.textContent = 'Oxygen 修订标记（' + oxyChanges.length + '）';
-    fragment.append(oxyHeader);
-    oxyChanges.forEach((change, idx) => {
-      oxyCount++;
-      fragment.append(createOxyChangeBlock(change, idx, file));
-    });
-  }
-  const groups = groupDiffRows(lineDiff(state.reviewBaseline, state.reviewCurrent), REVIEW_CONTEXT_SIZE);
-  const hasGitDiff = groups.some(g => g.type !== 'same');
-  if (oxyChanges.length && hasGitDiff) {
-    const gitHeader = document.createElement('div');
-    gitHeader.className = 'diff-section-header';
-    gitHeader.textContent = 'Git 工作区变更';
-    fragment.append(gitHeader);
-  }
-  groups.forEach((group, index) => {
-    if (group.type === 'same') {
-      const line = document.createElement('div');
-      line.className = 'diff-context';
-      line.textContent = group.rows.map(row => reviewRowLabel(row.text)).join(' · ');
-      fragment.append(line);
-      return;
-    }
-
-    changed += group.rows.length;
-    state.reviewGroups.set(index, group);
-    const decision = state.reviewDecisions.get(index);
-    const block = document.createElement('div');
-    block.className = `diff-block${decision ? ` decision-${decision}` : ''}`;
-    block.tabIndex = 0;
-    block.setAttribute('aria-label', `定位变更块 ${state.reviewGroups.size}`);
-    block.addEventListener('click', event => {
-      if (!event.target.closest('button')) focusReviewGroup(group);
-    });
-    block.addEventListener('keydown', event => {
-      if ((event.key === 'Enter' || event.key === ' ') && !event.target.closest('button')) {
-        event.preventDefault();
-        focusReviewGroup(group);
-      }
-    });
-    const blockHeader = document.createElement('div');
-    blockHeader.className = 'diff-block-header';
-    blockHeader.title = '点击定位到 Author 正文';
-    const blockTitle = document.createElement('span');
-    blockTitle.textContent = `变更块 ${state.reviewGroups.size}`;
-    const blockState = document.createElement('span');
-    blockState.className = 'diff-block-state';
-    blockState.textContent = decision === 'accept' ? '已接受' : decision === 'reject' ? '已拒绝' : '待审阅';
-    blockHeader.append(blockTitle, blockState);
-    block.append(blockHeader);
-    appendReviewRows(block, group.rows, decision);
-
-    const actions = document.createElement('div');
-    actions.className = 'diff-actions';
-    const accept = document.createElement('button');
-    accept.type = 'button';
-    accept.textContent = '接受此块';
-    accept.disabled = Boolean(decision);
-    accept.addEventListener('click', () => applyReviewedGroup(file, index, true));
-    const reject = document.createElement('button');
-    reject.type = 'button';
-    reject.textContent = '拒绝此块';
-    reject.disabled = Boolean(decision);
-    reject.addEventListener('click', () => applyReviewedGroup(file, index, false));
-    actions.append(accept, reject);
-    if (decision) {
-      const reset = document.createElement('button');
-      reset.type = 'button';
-      reset.className = 'reset-review';
-      reset.textContent = '撤销决定';
-      reset.addEventListener('click', () => resetReviewedGroup(file, index));
-      actions.append(reset);
-    }
-    block.append(actions);
-    fragment.append(block);
-  });
-
-  dom.diff.replaceChildren(fragment);
-  const decided = Array.from(state.reviewDecisions.values()).length;
-  const pending = Math.max(0, state.reviewGroups.size - decided);
-  dom.acceptAllButton.disabled = changed === 0;
-  dom.rejectAllButton.disabled = changed === 0;
-  const oxySummary = oxyCount ? oxyCount + ' 个 Oxygen 修订' : '';
-  const gitSummary = changed ? changed + ' 行变更，' + pending + ' 个待审块' : '';
-  const combinedSummary = [oxySummary, gitSummary].filter(Boolean).join('；') || '无变更';
-  dom.reviewMeta.textContent = `基线：${file.gitStatus || 'unknown'}；${combinedSummary}`;
-  setStatus(combinedSummary);
-}
-
-function renderMapReview(file) {
-  state.reviewGroups = new Map();
-  const topicFiles = Array.from(state.mapAuthorPaths || [])
-    .map(path => state.filesMap.get(path))
-    .filter(Boolean);
-  for (const topic of topicFiles) {
-    if (!mapReviewSnapshotCanReuse(topic)) {
-      topic.reviewBaseline = topic.baseline;
-      topic.reviewCurrent = topic.current;
-      for (const key of Array.from(state.reviewDecisions.keys())) {
-        if (typeof key === 'string' && key.startsWith(`${topic.path}::`)) state.reviewDecisions.delete(key);
-      }
-    }
-  }
-  if (file && !mapReviewSnapshotCanReuse(file)) {
-    file.reviewBaseline = file.baseline;
-    file.reviewCurrent = file.current;
-    for (const key of Array.from(state.reviewDecisions.keys())) {
-      if (typeof key === 'string' && key.startsWith(`${file.path}::`)) state.reviewDecisions.delete(key);
-    }
-  }
-  const changedFiles = topicFiles.filter(topic => topic.reviewCurrent !== topic.reviewBaseline);
-  if (file?.reviewCurrent !== file?.reviewBaseline && !changedFiles.includes(file)) changedFiles.unshift(file);
-  const fragment = document.createDocumentFragment();
-  let totalOxy = 0;
-  for (const topic of topicFiles) {
-    const changes = ditaCore.collectOxyTrackedChanges ? ditaCore.collectOxyTrackedChanges(topic.current) : [];
-    if (changes.length) {
-      totalOxy += changes.length;
-      const section = document.createElement('section');
-      section.className = 'map-review-topic';
-      const header = document.createElement('div');
-      header.className = 'map-review-topic-header';
-      header.textContent = topic.path;
-      section.append(header);
-      const oxyHeader = document.createElement('div');
-      oxyHeader.className = 'diff-section-header';
-      oxyHeader.textContent = 'Oxygen 修订标记（' + changes.length + '）';
-      section.append(oxyHeader);
-      changes.forEach((change, idx) => {
-        section.append(createOxyChangeBlock(change, idx, topic));
-      });
-      fragment.append(section);
-    }
-  }
-  if (!changedFiles.length && !totalOxy) {
-    const empty = document.createElement('div');
-    empty.className = 'map-review-empty';
-    empty.textContent = '完整 Map 没有待审阅的 topic 变更。';
-    fragment.append(empty);
-    dom.reviewMeta.textContent = '无变更';
-    dom.acceptAllButton.disabled = true;
-    dom.rejectAllButton.disabled = true;
-    dom.diff.replaceChildren(fragment);
-    setStatus('完整 Map 无变更');
-    return;
-  }
-  for (const topic of changedFiles) {
-    const section = document.createElement('section');
-    section.className = 'map-review-topic';
-    const header = document.createElement('div');
-    header.className = 'map-review-topic-header';
-    header.textContent = topic.path;
-    section.append(header);
-    const reviewBaseline = topic.reviewBaseline ?? topic.baseline;
-    const reviewCurrent = topic.reviewCurrent ?? topic.current;
-    const groups = groupDiffRows(lineDiff(reviewBaseline, reviewCurrent), REVIEW_CONTEXT_SIZE);
-    for (const [groupIndex, group] of groups.entries()) {
-      if (group.type === 'same') {
-        const context = document.createElement('div');
-        context.className = 'diff-context';
-        context.textContent = group.rows.map(row => reviewRowLabel(row.text)).join(' · ');
-        section.append(context);
-        continue;
-      }
-      const decisionKey = `${topic.path}::${groupIndex}`;
-      state.reviewGroups.set(decisionKey, { ...group, topicPath: topic.path });
-      const decision = state.reviewDecisions.get(decisionKey);
-      const block = document.createElement('div');
-      block.className = `diff-block${decision ? ` decision-${decision}` : ''}`;
-      block.tabIndex = 0;
-      block.setAttribute('aria-label', `定位 ${topic.path} 的变更`);
-      block.addEventListener('click', event => {
-        if (!event.target.closest('button')) focusReviewGroup(group, topic.path);
-      });
-      block.addEventListener('keydown', event => {
-        if ((event.key === 'Enter' || event.key === ' ') && !event.target.closest('button')) {
-          event.preventDefault();
-          focusReviewGroup(group, topic.path);
-        }
-      });
-      const blockHeader = document.createElement('div');
-      blockHeader.className = 'diff-block-header';
-      const blockTitle = document.createElement('span');
-      blockTitle.textContent = `变更块 ${groupIndex + 1}`;
-      const blockState = document.createElement('span');
-      blockState.className = 'diff-block-state';
-      blockState.textContent = decision === 'accept' ? '已接受' : decision === 'reject' ? '已拒绝' : '待审阅';
-      blockHeader.append(blockTitle, blockState);
-      block.append(blockHeader);
-      appendReviewRows(block, group.rows, decision);
-      const actions = document.createElement('div');
-      actions.className = 'diff-actions';
-      const accept = document.createElement('button');
-      accept.type = 'button';
-      accept.textContent = '接受此块';
-      accept.disabled = Boolean(decision);
-      accept.addEventListener('click', () => applyReviewedMapGroup(file, topic, decisionKey, groupIndex, true));
-      const reject = document.createElement('button');
-      reject.type = 'button';
-      reject.textContent = '拒绝此块';
-      reject.disabled = Boolean(decision);
-      reject.addEventListener('click', () => applyReviewedMapGroup(file, topic, decisionKey, groupIndex, false));
-      actions.append(accept, reject);
-      if (decision) {
-        const reset = document.createElement('button');
-        reset.type = 'button';
-        reset.className = 'reset-review';
-        reset.textContent = '撤销决定';
-        reset.addEventListener('click', () => resetReviewedMapGroup(file, topic, decisionKey, groupIndex));
-        actions.append(reset);
-      }
-      block.append(actions);
-      section.append(block);
-    }
-    fragment.append(section);
-  }
-  dom.diff.replaceChildren(fragment);
-  dom.acceptAllButton.disabled = changedFiles.length === 0;
-  dom.rejectAllButton.disabled = changedFiles.length === 0;
-  const oxySummary = totalOxy ? totalOxy + ' 个 Oxygen 修订' : '';
-  const gitSummary = changedFiles.length ? changedFiles.length + ' 个 topic 有变更' : '';
-  const combinedSummary = [oxySummary, gitSummary].filter(Boolean).join('；') || '无变更';
-  dom.reviewMeta.textContent = combinedSummary;
-  setStatus(combinedSummary);
-}
-
-function mapReviewDecisions(topicPath, exceptKey, replacement) {
-  const decisions = new Map();
-  for (const [key, decision] of state.reviewDecisions || []) {
-    if (typeof key === 'string' && key.startsWith(`${topicPath}::`) && key !== exceptKey) {
-      const index = Number(key.slice(topicPath.length + 2));
-      if (Number.isInteger(index)) decisions.set(index, decision);
-    }
-  }
-  if (replacement) decisions.set(replacement.index, replacement.decision);
-  return decisions;
-}
-
-function mapReviewSnapshotCanReuse(topic) {
-  if (!topic || typeof topic.reviewBaseline !== 'string' || typeof topic.reviewCurrent !== 'string') return false;
-  if (topic.reviewBaseline !== topic.baseline) return false;
-  if (topic.reviewCurrent === topic.current) return true;
-  return applyDiffGroups(
-    topic.reviewBaseline,
-    topic.reviewCurrent,
-    mapReviewDecisions(topic.path, '', null),
-    0
-  ) === topic.current;
-}
-
-function applyReviewedMapGroup(file, topic, decisionKey, groupIndex, accept) {
-  if (!file || !topic) return;
-  const previousDecisions = new Map(state.reviewDecisions || []);
-  const decisions = new Map(state.reviewDecisions || []);
-  decisions.set(decisionKey, accept ? 'accept' : 'reject');
-  state.reviewDecisions = decisions;
-  const local = mapReviewDecisions(topic.path, decisionKey, { index: groupIndex, decision: accept ? 'accept' : 'reject' });
-  const next = applyDiffGroups(topic.reviewBaseline ?? topic.baseline, topic.reviewCurrent ?? topic.current, local, REVIEW_CONTEXT_SIZE);
-  setFileContent(topic, next, {
-    historyMeta: {
-      reviewDecisionsBefore: previousDecisions,
-      reviewDecisionsAfter: new Map(decisions)
-    }
-  });
-  renderTabs();
-  updateHistoryButtons();
-  renderMapReview(file);
-  setStatus(accept ? `已接受 ${topic.path} 的所选变更块` : `已拒绝 ${topic.path} 的所选变更块`);
-}
-
-function resetReviewedMapGroup(file, topic, decisionKey, groupIndex) {
-  if (!file || !topic) return;
-  const previousDecisions = new Map(state.reviewDecisions || []);
-  const decisions = new Map(state.reviewDecisions || []);
-  decisions.delete(decisionKey);
-  state.reviewDecisions = decisions;
-  const local = mapReviewDecisions(topic.path, decisionKey, null);
-  const next = applyDiffGroups(topic.reviewBaseline ?? topic.baseline, topic.reviewCurrent ?? topic.current, local, REVIEW_CONTEXT_SIZE);
-  setFileContent(topic, next, {
-    historyMeta: {
-      reviewDecisionsBefore: previousDecisions,
-      reviewDecisionsAfter: new Map(decisions)
-    }
-  });
-  renderTabs();
-  updateHistoryButtons();
-  renderMapReview(file);
-  setStatus(`已撤销 ${topic.path} 的审阅决定`);
-}
-
-function applyReviewedGroup(file, groupIndex, accept) {
-  if (!file) return;
-  const previousDecisions = new Map(state.reviewDecisions || []);
-  const decisions = new Map(state.reviewDecisions || []);
-  decisions.set(groupIndex, accept ? 'accept' : 'reject');
-  state.reviewDecisions = decisions;
-  const next = applyDiffGroups(state.reviewBaseline, state.reviewCurrent, decisions, REVIEW_CONTEXT_SIZE);
-  setFileContent(file, next, {
-    historyMeta: {
-      reviewDecisionsBefore: previousDecisions,
-      reviewDecisionsAfter: new Map(decisions)
-    }
-  });
-  renderDiff(file, false);
-  setStatus(accept ? '已接受所选变更块' : '已拒绝所选变更块');
-}
-
-function resetReviewedGroup(file, groupIndex) {
-  if (!file) return;
-  const previousDecisions = new Map(state.reviewDecisions || []);
-  const decisions = new Map(state.reviewDecisions || []);
-  decisions.delete(groupIndex);
-  state.reviewDecisions = decisions;
-  const next = applyDiffGroups(state.reviewBaseline, state.reviewCurrent, decisions, REVIEW_CONTEXT_SIZE);
-  setFileContent(file, next, {
-    historyMeta: {
-      reviewDecisionsBefore: previousDecisions,
-      reviewDecisionsAfter: new Map(decisions)
-    }
-  });
-  renderDiff(file, false);
-  setStatus('已撤销该审阅决定');
-}
+const { resetReviewSnapshot, renderDiff, renderMapReview, reviewAll } = window.DitaReview.createReviewController({
+  state, dom, ditaCore, setFileContent, updateVisual, renderTabs, updateHistoryButtons, setStatus
+});
 
 function markDirty() {
   const file = state.filesMap.get(state.activePath);
@@ -1852,6 +1233,7 @@ function insertDitaElement() {
     setStatus('请先打开一个 DITA 文件', true);
     return;
   }
+  if (state.mode === 'preview' || state.mode === 'review') return;
   const tag = dom.insertElementSelect?.value || 'p';
   if (state.mode === 'visual' || state.mode === 'preview') {
     insertVisualElement(tag);
@@ -2069,27 +1451,7 @@ function validateXml(text) {
   return { valid: true, message: 'XML \u8BED\u6CD5\u6709\u6548' };
 }
 
-function formatContent(text) {
-  const source = text.replace(/\r\n/g, '\n').trim();
-  const withoutDocType = ditaCore.stripDocType(text);
-  const doc = ditaCore.parseXml(withoutDocType);
-  const doctypeMatch = source.match(/<!DOCTYPE[^>[]*(\[[\s\S]*?\])?[^>]*>/i);
-  const serializer = new XMLSerializer();
-  const xml = serializer.serializeToString(doc.documentElement)
-    .replace(/></g, '>\n<')
-    .split('\n')
-    .map(line => line.replace(/\s+/g, ' ').replace(/>\s+</g, '><').trim())
-    .filter(Boolean);
-  let indent = 0;
-  const pretty = xml.map(line => {
-    if (/^<\//.test(line)) indent = Math.max(0, indent - 1);
-    const result = '  '.repeat(indent) + line;
-    if (/^<[^!?/][^>]*[^\/]>$/.test(line) && !/^<(\?|!)/.test(line)) indent++;
-    return result;
-  }).join('\n');
-  const declaration = '<?xml version="1.0" encoding="UTF-8"?>';
-  return `${declaration}\n${doctypeMatch ? doctypeMatch[0] + '\n' : ''}${pretty}\n`;
-}
+const formatContent = window.DitaXmlSource.formatXml;
 
 const saveDocument = documentStore.createSaveCoordinator(async snapshot => {
   const response = await fetch('/api/file', {
@@ -2388,16 +1750,16 @@ dom.editor.addEventListener('input', markDirty);
 dom.visualEditor.addEventListener('input', syncVisualToModel);
 dom.visualEditor.addEventListener('click', event => {
   const element = selectedAuthorElement(event.target);
-  if (!element) return;
+  if (!element || state.mode !== 'visual') return;
   event.stopPropagation();
   renderInspector(element);
 });
 dom.visualEditor.addEventListener('keyup', event => {
   const element = selectedAuthorElement(event.target);
-  if (element) renderInspector(element);
+  if (element && state.mode === 'visual') renderInspector(element);
 });
 dom.visualEditor.addEventListener('focusout', () => {
-  if (!['visual', 'preview'].includes(state.mode)) renderInspector(null);
+  if (state.mode !== 'visual') renderInspector(null);
 });
 dom.search.addEventListener('input', () => updateTree(dom.search.value));
 for (const button of dom.viewTabs || []) button.addEventListener('click', () => setActiveView(button.dataset.view));
@@ -2422,12 +1784,13 @@ document.addEventListener('click', event => {
   if (!event.target.closest('.main-menu') && !event.target.closest('.menu-popup')) closeMenu();
   if (!event.target.closest('.export-dropdown')) A.closeExportMenu();
 });
-for (const button of dom.contextToolbar?.querySelectorAll('[data-context-action]') || []) {
-  button.addEventListener('click', () => applyContextAction(button.dataset.contextAction));
-}
+dom.contextToolbar?.addEventListener('click', event => {
+  const button = event.target.closest('[data-context-action]');
+  if (button && dom.contextToolbar.contains(button)) applyContextAction(button.dataset.contextAction);
+});
 dom.sourceButton.addEventListener('click', () => setMode('editor'));
 dom.visualButton.addEventListener('click', () => setMode('visual'));
-dom.previewButton.addEventListener('click', () => setMode(state.mode === 'preview' ? 'visual' : 'preview'));
+dom.previewButton.addEventListener('click', () => setMode('preview'));
 dom.newDocumentButton?.addEventListener('click', createNewDocument);
 dom.validateButton.addEventListener('click', () => {
   const file = state.filesMap.get(state.activePath);
@@ -2497,59 +1860,11 @@ dom.addTopicheadButton.addEventListener('click', () => {
 });
 dom.reviewButton.addEventListener('click', () => setMode('review'));
 dom.closeReviewButton.addEventListener('click', () => setMode('visual'));
-dom.acceptAllButton.addEventListener('click', async () => {
+dom.acceptAllButton.addEventListener('click', () => reviewAll(true));
+dom.rejectAllButton.addEventListener('click', () => reviewAll(false));
+dom.reviewScope.addEventListener('change', () => {
   const file = state.filesMap.get(state.activePath);
-  if (!file) return;
-  if (/\.ditamap$/i.test(file.path)) {
-    const saved = await saveFile();
-    if (!saved) return;
-    for (const path of state.mapAuthorPaths || []) {
-      const topic = state.filesMap.get(path);
-      if (topic) topic.baseline = topic.current;
-    }
-    file.baseline = file.current;
-    resetReviewSnapshot(file);
-    setMode('visual');
-    setStatus('完整 Map：已接受并保存全部 topic 变更');
-    return;
-  }
-  const decisions = new Map([...state.reviewGroups.keys()].map(index => [index, 'accept']));
-  setFileContent(file, applyDiffGroups(state.reviewBaseline, state.reviewCurrent, decisions, REVIEW_CONTEXT_SIZE));
-  const saved = await saveFile();
-  if (!saved) return;
-  file.baseline = file.current;
-  resetReviewSnapshot(file);
-  setMode('visual');
-});
-dom.rejectAllButton.addEventListener('click', async () => {
-  const file = state.filesMap.get(state.activePath);
-  if (!file) return;
-  if (/\.ditamap$/i.test(file.path)) {
-    for (const path of state.mapAuthorPaths || []) {
-      const topic = state.filesMap.get(path);
-      if (topic && topic.current !== topic.baseline) setFileContent(topic, topic.baseline);
-    }
-    if (file.current !== file.baseline) setFileContent(file, file.baseline);
-    const saved = await saveFile();
-    if (!saved) return;
-    for (const path of state.mapAuthorPaths || []) {
-      const topic = state.filesMap.get(path);
-      if (topic) topic.baseline = topic.current;
-    }
-    file.baseline = file.current;
-    resetReviewSnapshot(file);
-    setMode('visual');
-    setStatus('完整 Map：已拒绝并恢复全部 topic 变更');
-    return;
-  }
-  setFileContent(file, file.baseline);
-  const saved = await saveFile();
-  if (!saved) return;
-  file.baseline = file.current;
-  resetReviewSnapshot(file);
-  renderTabs();
-  setMode('visual');
-  setStatus('已恢复到 Git 基线');
+  if (file && /\.ditamap$/i.test(file.path)) renderMapReview(file); else renderDiff(file);
 });
 dom.repositorySelect.addEventListener('change', selectRepository);
 
@@ -2595,7 +1910,7 @@ async function initialize() {
       fetch('/api/repos')
     ]);
     if (!workspaceResponse.ok) throw new Error(await workspaceResponse.text());
-    if (!repositoriesResponse.ok) throw new Error(await workspaceResponse.text());
+    if (!repositoriesResponse.ok) throw new Error(await repositoriesResponse.text());
     const result = await workspaceResponse.json();
     const repositories = await repositoriesResponse.json();
     state.repositories = repositories.repositories;

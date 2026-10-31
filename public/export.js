@@ -105,7 +105,6 @@
         if (state.activePath !== source.path) return;
         dom.editorPane.classList.remove('active');
         dom.visualPane.classList.remove('active');
-        dom.previewPane.classList.remove('active');
         dom.htmlPreviewPane.classList.toggle('active', format === 'html');
         dom.mdPreviewPane.classList.toggle('active', format === 'md');
         if (format === 'html') {

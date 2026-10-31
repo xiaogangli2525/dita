@@ -15,7 +15,7 @@ The regression suite covers:
 
 Browser checklist:
 
-1. Open a topic; switch Source/Author/Reading and edit text.
+1. Open a topic; edit in Source/Author; confirm Reading is read-only.
 2. Save; verify the pending badge clears while Git review still shows the edit.
 3. Type during a delayed save; verify the newer input stays dirty.
 4. Open a Map, edit a topic and export without saving; verify current text and embedded local images.
@@ -24,10 +24,18 @@ Browser checklist:
 7. Open two tabs, switch workspace in one, and verify the old tab cannot write into it.
 8. Check desktop and a 390px iframe/viewport: navigation and inspector open/close, document content remains scrollable, and no horizontal page overflow appears.
 
-The GitHub Actions workflow runs the suite on Node 20 and 22. Browser checks are manual, not automated by this workflow.
+The GitHub Actions workflow runs the suite on Node 20 and 22. The browser workflow installs Chromium and runs `npm run test:browser` on Node 22.
 
 ## Checks performed for this change
 
 - All 67 automated tests passed locally (Node 24); CI is configured for Node 20 and 22.
 - Browser: desktop topic open, Source edit/save, Git diff review, Map Author, HTML preview and Map reorder/undo passed.
 - Responsive: 390 × 844 CSS-pixel iframe checked for document navigation, automatic drawer close and scrollable Author content. This is responsive layout verification, not a mobile-device compatibility certification.
+
+## Editor foundation regression checks
+
+- `npm test`: 84 passing tests, including invalid attributes/entities/root structure through the shared validator and HTTP write routes; code/mixed-content/GBK declaration/comment preservation; unified undo/redo.
+- `npm run test:browser`: 9 passing checks in real Chromium checks for Topic/Map read-only mode, Chinese text insertion, clipboard paste, table row/column insertion and undo, format/undo, Git and Oxygen bulk review, complete restoration of long Oxygen deletions, Map explicit-save behavior and a 390px viewport. Chinese insertion uses browser text input; operating-system IME composition is not simulated.
+- The duplicate hidden preview DOM and its separate renderer/loading pipeline were removed; reading uses the same rendering surface with editing disabled.
+- Bulk review scopes are separate: accepting Git changes retains them for comparison with HEAD; Oxygen acceptance resolves PI markers. Neither saves automatically.
+- Full DITA schema validation, external entity expansion, multi-file save transactions and multi-user collaboration remain outside this implementation.

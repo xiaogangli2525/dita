@@ -36,7 +36,7 @@
       <div class="toolbar-group mode-group" aria-label="编辑模式">
         <button id="sourceButton" type="button" class="tool-button" title="切换到源码编辑模式" aria-label="源码编辑模式">源码</button>
         <button id="visualButton" type="button" class="tool-button active" title="切换到 Author 可视化编辑模式" aria-label="Author 编辑模式">编写</button>
-        <button id="previewButton" type="button" class="tool-button" title="预览与编辑（可直接修改内容）">阅读</button>
+        <button id="previewButton" type="button" class="tool-button" title="阅读当前内容（只读）">阅读</button>
       </div>
       <span class="toolbar-divider" aria-hidden="true"></span>
       <details class="editing-tools">
@@ -69,10 +69,8 @@
       <span class="toolbar-divider" aria-hidden="true"></span>
       <div class="toolbar-group file-group" aria-label="文件操作">
         <button id="newDocumentButton" type="button" title="创建新的 DITA 文档或 Map">新建</button>
-        <button id="validateButton" type="button" title="校验当前 DITA 文档">校验</button>
+        <button id="validateButton" type="button" title="检查 XML 语法">XML 校验</button>
         <button id="saveButton" type="button" class="primary-action" title="保存当前文档 (Ctrl+S)">保存</button>
-        <button id="saveAsButton" type="button" title="将当前文档另存为新文件">另存为</button>
-        <button id="downloadButton" type="button" title="下载当前文档">下载</button>
         <div class="export-dropdown">
           <button id="exportMenuButton" type="button" class="dropdown-toggle" title="导出或预览 Map 文档" aria-haspopup="true" aria-expanded="false">导出 <span class="caret" aria-hidden="true">▾</span></button>
           <div id="exportMenu" class="dropdown-menu" hidden>
@@ -95,7 +93,7 @@
       <div class="view-tabs" role="tablist" aria-label="视图">
         <button type="button" class="view-tab active" data-view="map" role="tab" aria-selected="true" title="Map 视图">文档</button>
         <button type="button" class="view-tab" data-view="outline" role="tab" aria-selected="false" title="大纲视图">大纲</button>
-        <button type="button" class="view-tab" data-view="search" role="tab" aria-selected="false" title="搜索视图">搜索</button>
+        <button type="button" class="view-tab" data-view="search" role="tab" aria-selected="false" title="查找文件">文件查找</button>
       </div>
       <div id="mapView" class="view-panel active">
       <div class="panel-title">DITA Map</div>
@@ -120,9 +118,9 @@
         <div id="outline" class="outline"></div>
       </div>
       <div id="searchView" class="view-panel" hidden>
-        <div class="panel-title">搜索工作区</div>
+        <div class="panel-title">查找文件</div>
         <div class="workspace-search">
-          <input id="workspaceSearchInput" type="search" placeholder="搜索文件名或标题" autocomplete="off" aria-label="搜索文件名或标题" />
+          <input id="workspaceSearchInput" type="search" placeholder="搜索文件路径" autocomplete="off" aria-label="搜索文件路径" />
           <div id="workspaceSearchResults" class="workspace-search-results"></div>
         </div>
       </div>
@@ -159,9 +157,6 @@
       <div id="visualPane" class="visual-pane active">
         <div id="visualEditor" contenteditable="true" class="visual-editor dita-preview"></div>
       </div>
-      <div id="previewPane" class="preview-pane">
-        <article id="preview" class="dita-preview"></article>
-      </div>
       <div id="htmlPreviewPane" class="preview-pane html-preview-pane">
         <div class="html-preview-toolbar"><span>HTML 预览</span><button id="closeHtmlPreviewButton" type="button" title="关闭 HTML 预览">关闭</button></div>
         <iframe id="htmlPreviewFrame" sandbox="allow-same-origin" title="HTML 预览"></iframe>
@@ -188,6 +183,7 @@
       <div id="reviewPane" class="review-pane" aria-label="审阅变更">
         <div class="review-toolbar">
           <span class="review-title">审阅变更</span>
+          <label>全部操作范围 <select id="reviewScope"><option value="git">Git 工作区变更</option><option value="oxygen">Oxygen 修订标记</option></select></label>
           <button id="acceptAllButton" type="button" title="接受所有修订">接受全部</button>
           <button id="rejectAllButton" type="button" title="拒绝所有修订">拒绝全部</button>
           <button id="closeReviewButton" type="button" title="关闭审阅面板">关闭审阅</button>
@@ -205,6 +201,9 @@
 
   <div id="loadingOverlay" class="loading-overlay" role="status" aria-hidden="true"><span>正在准备导出文档…</span></div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="/vendor/sax.js"></script>
+  <script src="/xml-source.js"></script>
+  <script src="/review.js"></script>
   <script src="/document-store.js"></script>
   <script src="/workspace-client.js"></script>
   <script src="/app-core.js"></script>
