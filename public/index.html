@@ -135,7 +135,7 @@
 
     <section class="content" aria-label="文档编辑区">
       <div class="document-heading">
-        <div><div id="documentLocation" class="document-location">选择一个文档，开始专注写作</div><h1 id="documentTitle">你的文档工作台</h1></div>
+        <div><div id="documentLocation" class="document-location">选择一个文档，开始专注写作</div><h1 id="documentTitle">你的文档工作台</h1><button id="returnWritingPosition" type="button" class="return-writing-position" hidden>← 返回编写位置</button></div>
         <span id="documentSaveState" class="save-badge" data-state="saved" role="status">本地工作区</span>
       </div>
       <div id="tabs" class="tabs"></div>
@@ -292,6 +292,14 @@
     <h2 id="releaseHeading">交付记录</h2><p>记录下载发起时的型号、版本、源文件指纹与未保存状态。保留当前浏览器中此仓库最近 50 条记录；可下载 JSON 随交付归档。</p>
     <div id="releaseList" class="record-list"></div><div class="dialog-actions"><button id="releaseClose" type="button">关闭</button></div>
   </dialog>
+  <dialog id="newDocumentDialog" class="workspace-dialog" aria-labelledby="newDocumentHeading"><form id="newDocumentForm">
+    <h2 id="newDocumentHeading">新建功能文档</h2><p>选择模板后，在正文中继续编写。文件创建在当前仓库已有目录中。</p>
+    <label>文档模板<select id="newDocumentTemplate"></select></label>
+    <label>文档标题<input id="newDocumentTitle" required maxlength="200" placeholder="例如 MQTT 连接命令"/></label>
+    <label>文件路径<input id="newDocumentPath" required placeholder="例如 mqtt-connect.dita"/></label>
+    <p>新文档可通过目录结构工具加入当前功能手册。</p><p id="newDocumentError" class="form-error" role="alert"></p>
+    <div class="dialog-actions"><button id="newDocumentCancel" type="button">取消</button><button id="newDocumentSubmit" type="submit" class="primary-action">创建并编写</button></div>
+  </form></dialog>
   <dialog id="resourceDialog" class="workspace-dialog" aria-labelledby="resourceHeading"><form id="resourceForm">
     <h2 id="resourceHeading">插入图片或链接</h2><p id="resourceScope"></p>
     <label>资源类型<select id="resourceKind"><option value="image">图片</option><option value="link">手册内链接</option></select></label>
@@ -331,6 +339,7 @@
   <script src="/office-export.js"></script>
   <script src="/export.js"></script>
   <script src="/map-controller.js"></script>
+  <script src="/document-templates.js"></script>
   <script src="/documents.js"></script>
   <script src="/input-history.js"></script>
   <script src="/editor-controller.js"></script>
@@ -338,6 +347,11 @@
   <script src="/author-notes.js"></script>
   <script src="/author-selection.js"></script>
   <script src="/editor-tools.js"></script>
+  <script src="/table-core.js"></script>
+  <script src="/author-commands.js"></script>
+  <script src="/inspector.js"></script>
+  <script src="/clipboard.js"></script>
+  <script src="/body-navigation.js"></script>
   <script src="/app.js"></script>
 </body>
 </html>

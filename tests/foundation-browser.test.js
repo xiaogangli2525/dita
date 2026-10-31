@@ -76,7 +76,8 @@ test('foundation browser workflows', async t => {
     await open('topics/connect.dita'); working = (await current()).replace('</body>', '<p>临时搜索词 TCP <b>connection</b> &amp; MQTT</p></body>'); await source(working);
     await page.click('[data-view="search"]'); await page.selectOption('#contentSearchScope', 'repository'); await page.fill('#contentSearchInput', 'TCP connection'); await page.click('#contentSearchButton');
     const result = page.locator('.content-search-result').filter({ hasText: 'topics/connect.dita' }); await result.waitFor(); await result.click();
-    assert.equal(await page.evaluate(() => { const el = document.getElementById('editor'); return el.value.slice(el.selectionStart, el.selectionEnd); }), 'TCP <b>connection');
+    assert.equal(await page.evaluate(() => getSelection().toString()), 'TCP connection');
+    assert.equal(await page.evaluate(() => window.DitaApp.state.mode), 'visual');
     assert.doesNotMatch(await fs.readFile(path.join(repo, 'topics/connect.dita'), 'utf8'), /临时搜索词/);
   });
   await scenario('refresh recovery is undoable and refuses an externally changed disk base', async () => {
@@ -121,7 +122,7 @@ test('foundation browser workflows', async t => {
     await page.fill('#resourceLabel', '连接命令'); await page.click('#resourceForm button[type=submit]'); assert.match(await current(), /href="connect.dita#connect">连接命令/);
   });
   await scenario('document creation, GBK save-as and UTF-8 XML downloads retain text and declared encodings', async () => {
-    promptAnswers.push('topic', 'new-topic.dita', '新建基础文档'); await page.click('#newDocumentButton');
+    await page.click('#newDocumentButton'); await page.selectOption('#newDocumentTemplate', 'topic'); await page.fill('#newDocumentPath', 'new-topic.dita'); await page.fill('#newDocumentTitle', '新建基础文档'); await page.click('#newDocumentSubmit');
     await page.waitForFunction(() => window.DitaApp.state.activePath === 'new-topic.dita');
     const content = '<?xml version="1.0" encoding="GBK"?><topic id="new"><title>中文文档</title><body><p>编码下载</p></body></topic>';
     await source(content); await page.click('#saveButton'); await page.waitForFunction(() => !window.DitaApp.state.filesMap.get('new-topic.dita').dirty);

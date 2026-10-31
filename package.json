@@ -7,7 +7,7 @@
     "start": "node server.js",
     "test": "node tests/all.js",
     "dev": "node scripts/dev-server.js",
-    "test:browser": "node --test tests/browser.test.js tests/foundation-browser.test.js tests/office-browser.test.js tests/author-notes-browser.test.js tests/editor-tools-browser.test.js"
+    "test:browser": "node --test tests/browser.test.js tests/foundation-browser.test.js tests/office-browser.test.js tests/author-notes-browser.test.js tests/editor-tools-browser.test.js tests/writing-reliability-browser.test.js"
   },
   "keywords": [],
   "author": "",

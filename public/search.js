@@ -26,9 +26,12 @@
           const button = document.createElement('button'), title = document.createElement('strong'), excerpt = document.createElement('span');
           button.type = 'button'; button.className = 'content-search-result'; title.textContent = hit.path + ':' + hit.line; excerpt.textContent = hit.excerpt;
           button.append(title, excerpt); button.addEventListener('click', async () => {
-            try { await A.navigateToSource(hit.path, hit.start, hit.end, hit.matchedSource); }
+            try { await A.bodyNavigation.hit(hit.path, hit.start, hit.end, hit.matchedSource); }
             catch (error) { get('contentSearchMeta').textContent = error.message + '，请重新搜索'; }
-          }); list.append(button);
+          });
+          const source = document.createElement('button'); source.type = 'button'; source.className = 'search-source-action'; source.textContent = '源码'; source.title = '在源码中定位';
+          source.addEventListener('click', async () => { try { await A.navigateToSource(hit.path, hit.start, hit.end, hit.matchedSource); } catch (error) { get('contentSearchMeta').textContent = error.message; } });
+          const row = document.createElement('div'); row.className = 'search-result-row'; row.append(button, source); list.append(row);
         }
         for (const warning of warnings.slice(0, 10)) { const item = document.createElement('p'); item.textContent = warning.path + '：' + warning.message; list.append(item); }
       } catch (error) { if (current === generation) get('contentSearchMeta').textContent = error.message; }

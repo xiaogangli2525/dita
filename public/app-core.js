@@ -380,7 +380,7 @@ function updateCurrentFromVisual(state, dom, source) {
   const doc = parseXml(source);
   const root = doc.documentElement.cloneNode(true);
   const projected = doc.documentElement.cloneNode(true);
-  updateDitaBody(projected, createAuthorTopic(source, doc), doc);
+  updateDitaBody(projected, createAuthorTopic(source, doc, false, '', doc), doc);
   updateDitaBody(root, dom.visualEditor, doc);
   return serializeAuthorEdits(root, doc.documentElement, projected, xmlSourceRanges(source), source);
 }
@@ -402,10 +402,10 @@ function authorHeading(node, documentRef, tag = 'h3') {
   for (const child of node.childNodes) { const rendered = renderDitaNode(child, documentRef); if (rendered) heading.appendChild(rendered); }
   return heading;
 }
-function createAuthorTopic(source, documentRef = document, normalizeOxy = false, topicPath = '') {
+function createAuthorTopic(source, documentRef = document, normalizeOxy = false, topicPath = '', parsed = null) {
   _ctx.topicPath = topicPath;
   resetFnCounter();
-  const doc = parseXml(source);
+  const doc = parsed || parseXml(source);
   if (normalizeOxy) normalizeOxyPIs(doc, true);
   const root = doc.documentElement;
   const container = documentRef.createElement('article');
@@ -504,6 +504,18 @@ function renderAuthorNode(node, documentRef = document) {
     };
     collectRows(node);
     const htmlTable = documentRef.createElement('table');
+    const specs = Array.from(node.querySelectorAll('colspec')), names = specs.map(spec => spec.getAttribute('colname'));
+    if (specs.length) {
+      const colgroup = documentRef.createElement('colgroup');
+      const total = specs.reduce((sum, spec) => sum + (/^\d+(?:\.\d+)?\*$/.test(spec.getAttribute('colwidth') || '') ? parseFloat(spec.getAttribute('colwidth')) : 0), 0);
+      for (const spec of specs) {
+        const col = documentRef.createElement('col'), width = spec.getAttribute('colwidth') || '';
+        if (col.style && /^\d+(?:\.\d+)?(?:mm|cm|in|pt|pc|px)$/.test(width)) col.style.width = width;
+        else if (col.style && /^\d+(?:\.\d+)?\*$/.test(width) && total) col.style.width = (parseFloat(width) / total * 100) + '%';
+        colgroup.appendChild(col);
+      }
+      htmlTable.appendChild(colgroup);
+    }
     const htmlSections = new Map();
     for (const item of rows) {
       const row = item.node;
@@ -515,6 +527,9 @@ function renderAuthorNode(node, documentRef = document) {
         const cell = documentRef.createElement(item.section === 'thead' ? 'th' : 'td');
         cell.ditaSourcePath = xmlNodePath(entry);
         cell.setAttribute('data-dita-source', 'entry');
+        const first = names.indexOf(entry.getAttribute('namest')), last = names.indexOf(entry.getAttribute('nameend'));
+        if (first >= 0 && last > first) cell.setAttribute('colspan', String(last - first + 1));
+        if (/^\d+$/.test(entry.getAttribute('morerows') || '')) cell.setAttribute('rowspan', String(Number(entry.getAttribute('morerows')) + 1));
         cell.setAttribute('data-dita-entry-attrs', JSON.stringify(Object.fromEntries(Array.from(entry.attributes || []).map(attribute => [attribute.name, attribute.value]))));
         for (const child of entry.childNodes || []) {
           const rendered = child.nodeType === 3

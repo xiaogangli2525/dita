@@ -139,15 +139,15 @@ test('real browser editing, reading and review workflow', async t => {
     await page.waitForFunction(() => document.getElementById('footnoteCount').textContent === '3');
     await page.selectOption('#footnoteModel', '');
     await page.locator('.footnote-actions button').first().click();
-    await page.waitForFunction(() => window.DitaApp.state.activePath === 'a.dita');
+    await page.waitForFunction(() => window.DitaApp.state.activePath === 'main.ditamap');
     assert.equal(await page.locator('#footnoteScope').innerText(), 'main.ditamap');
-    assert.match(await page.locator('#editor').inputValue(), /Changed elsewhere/);
+    assert.match(await page.evaluate(() => window.DitaApp.state.filesMap.get('a.dita').current), /Changed elsewhere/);
     assert.match(await page.locator('.footnote-located').innerText(), /AT\+MQTTOPEN/);
     await page.locator('.footnote-edit-button').last().click();
     assert.match(await page.locator('#footnoteContentLabel').innerText(), /XML/);
     assert.match(await page.locator('#footnoteContent').inputValue(), /<xref href="a.dita">link<\/xref>/);
     await page.fill('#footnoteProducts', 'M200 M300'); await page.click('#footnoteEditForm button[type="submit"]');
-    assert.match(await current(), /product="M200 M300"/); assert.match(await current(), /<xref href="a.dita">link<\/xref>/);
+    assert.match(await page.evaluate(() => window.DitaApp.state.filesMap.get('a.dita').current), /product="M200 M300"/); assert.match(await page.evaluate(() => window.DitaApp.state.filesMap.get('a.dita').current), /<xref href="a.dita">link<\/xref>/);
     await open('main.ditamap'); await page.click('#exportMenuButton'); await page.locator('#exportModel:not(:disabled)').waitFor(); await page.selectOption('#exportModel', ''); await page.selectOption('#exportFormat', 'html'); await page.click('#modelExportForm button[value="preview"]');
     await page.waitForFunction(() => document.getElementById('htmlPreviewFrame').src.startsWith('blob:'));
     const frame = page.frameLocator('#htmlPreviewFrame');

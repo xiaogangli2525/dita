@@ -266,219 +266,8 @@ function selectedAuthorElement(target) {
   return element;
 }
 
-function buildContextToolbar(tag) {
-  if (!dom.contextToolbar) return;
-  const actions = [];
-  const add = (action, label, cls) => actions.push({ action, label, cls });
-  const tagLower = (tag || '').toLowerCase();
-  if (state.selectedVisualElement?.closest('td,th') || ['table'].includes(tagLower) || tagLower === 'div' && (state.selectedVisualElement?.getAttribute('data-dita-source') === 'table')) {
-    add('row-before', '上方插行');
-    add('row-after', '下方插行');
-    add('row-delete', '删除行');
-    add('col-before', '左侧插列');
-    add('col-after', '右侧插列');
-    add('col-delete', '删除列');
-    add('delete', '删除表格');
-  } else if (['code', 'codeph', 'filepath', 'span', 'a', 'b', 'i', 'u'].includes(tagLower)) {
-    add('bold', '加粗');
-    add('italic', '斜体');
-    add('code-inline', '行内代码');
-    add('delete', '删除元素');
-  } else if (['h2'].includes(tagLower)) {
-    add('delete', '删除标题');
-  } else {
-    add('before', '上方插入');
-    add('after', '下方插入');
-    add('delete', '删除元素');
-  }
-  dom.contextToolbar.replaceChildren();
-  const label = document.createElement('span');
-  label.className = 'context-label';
-  label.textContent = '<' + tag + '>';
-  dom.contextToolbar.append(label);
-  for (const item of actions) {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.dataset.contextAction = item.action;
-    btn.textContent = item.label;
-    dom.contextToolbar.append(btn);
-  }
-}
-function renderInspector(targetElement = state.selectedVisualElement) {
-  if (state.selectedVisualElement && state.selectedVisualElement.classList) state.selectedVisualElement.classList.remove('author-selected');
-  state.selectedVisualElement = targetElement && dom.visualEditor?.contains(targetElement) ? targetElement : null;
-  if (!dom.attributesPanel || !dom.inspectorElement) return;
-  dom.attributesPanel.replaceChildren();
-  if (!state.selectedVisualElement) {
-    dom.inspectorElement.textContent = '未选择元素';
-    if (dom.contextToolbar) dom.contextToolbar.hidden = true;
-    const empty = document.createElement('div');
-    empty.className = 'inspector-empty';
-    empty.textContent = '在 Author 视图中选择一个元素以查看属性。';
-    dom.attributesPanel.append(empty);
-    return;
-  }
-  const selectedElement = state.selectedVisualElement;
-  selectedElement.classList.add('author-selected');
-  const tag = selectedElement.getAttribute('data-dita-source') || (selectedElement.localName === 'h2' ? 'title' : selectedElement.localName);
-  dom.inspectorElement.textContent = `<${tag}>`;
-  dom.contextToolbar.hidden = state.mode !== 'visual';
-  if (!dom.contextToolbar.hidden) buildContextToolbar(tag);
-  const attributes = Array.from(selectedElement.attributes).filter(attr => !['class', 'style', 'contenteditable'].includes(attr.name) && !attr.name.startsWith('data-'));
-  if (!attributes.length) {
-    const empty = document.createElement('div');
-    empty.className = 'inspector-empty';
-    empty.textContent = '此元素没有可编辑属性。';
-    dom.attributesPanel.append(empty);
-  }
-  for (const attr of attributes) {
-    const row = document.createElement('div');
-    row.className = 'attribute-row';
-    const label = document.createElement('label');
-    label.textContent = attr.name;
-    label.title = attr.name;
-    const input = document.createElement('input');
-    input.value = attr.value;
-    input.dataset.attribute = attr.name;
-    input.addEventListener('change', () => {
-      selectedElement.setAttribute(attr.name, input.value);
-      syncVisualToModel();
-      setStatus(`已更新属性：${attr.name}`);
-    });
-    row.append(label, input);
-    dom.attributesPanel.append(row);
-  }
-  const ditaSource = selectedElement.getAttribute('data-dita-source') || selectedElement.localName;
-  if (['td', 'th'].includes(ditaSource) || selectedElement.closest('td,th')) {
-    const cell = selectedElement.closest('td,th') || selectedElement;
-    const tr = cell.closest('tr');
-    const table = cell.closest('table');
-    const groups = [];
-    if (tr && tr !== selectedElement) groups.push(['Row', tr]);
-    if (table) {
-      const tableWrapper = table.closest('[data-dita-source="table"]') || table;
-      if (tableWrapper !== selectedElement) groups.push(['Table', tableWrapper]);
-    }
-    for (const [label, el] of groups) {
-      const header = document.createElement('div');
-      header.className = 'attribute-group-header';
-      header.textContent = label + ' 属性';
-      dom.attributesPanel.append(header);
-      const attrs = Array.from(el.attributes).filter(a => !['class', 'style', 'contenteditable'].includes(a.name) && !a.name.startsWith('data-'));
-      if (!attrs.length) {
-        const none = document.createElement('div');
-        none.className = 'inspector-empty';
-        none.textContent = '无属性';
-        dom.attributesPanel.append(none);
-        continue;
-      }
-      for (const attr of attrs) {
-        const row = document.createElement('div');
-        row.className = 'attribute-row';
-        const label2 = document.createElement('label');
-        label2.textContent = attr.name;
-        const input2 = document.createElement('input');
-        input2.value = attr.value;
-        input2.readOnly = true;
-        row.append(label2, input2);
-        dom.attributesPanel.append(row);
-      }
-    }
-  }
-  const actions = document.createElement('div');
-  actions.className = 'attribute-actions';
-  const add = document.createElement('button');
-  add.type = 'button';
-  add.textContent = '添加属性';
-  add.addEventListener('click', () => {
-    const name = prompt('属性名：');
-    if (!name?.trim()) return;
-    selectedElement.setAttribute(name.trim(), '');
-    syncVisualToModel();
-    renderInspector(selectedElement);
-  });
-  actions.append(add);
-  dom.attributesPanel.append(actions);
-}
-
-function applyContextAction(action) {
-  const element = state.selectedVisualElement;
-  if (!element || state.mode !== 'visual') return;
-  const editSurface = element.closest('.map-topic-surface') || dom.visualEditor;
-  const table = element.closest('table');
-  const wrapper = table?.closest('[data-dita-source="table"]');
-  const originalTable = wrapper?.getAttribute('data-dita-original') || '';
-  if (/^(row|col)-/.test(action) && /\b(?:morerows|namest|nameend|spanname)\s*=/.test(originalTable)) {
-    setStatus('此表格包含合并单元格，请在源码中调整行列结构', true);
-    return;
-  }
-  if (/^col-/.test(action) && /<colspec\b/.test(originalTable)) {
-    setStatus('此表格包含列定义，请在源码中调整列结构', true);
-    return;
-  }
-
-  if (['bold', 'italic', 'code-inline'].includes(action)) return A.editorTools.format(({ bold: 'b', italic: 'i', 'code-inline': 'codeph' })[action]);
-  if (action === 'row-before' || action === 'row-after' || action === 'row-delete') {
-    const tr = element.closest('tr');
-    if (!tr) return;
-    if (action === 'row-delete') { tr.remove(); }
-    else {
-      const newRow = tr.cloneNode(true);
-      for (const node of [newRow, ...newRow.querySelectorAll('td,th')]) {
-        node.removeAttribute('id');
-        for (const name of ['data-dita-row-attrs', 'data-dita-entry-attrs']) {
-          if (!node.hasAttribute(name)) continue;
-          const attrs = JSON.parse(node.getAttribute(name)); delete attrs.id;
-          node.setAttribute(name, JSON.stringify(attrs));
-        }
-      }
-      newRow.querySelectorAll('td,th').forEach(td => { td.textContent = ''; });
-      action === 'row-before' ? tr.before(newRow) : tr.after(newRow);
-    }
-    syncVisualToModel({ target: editSurface });
-    return;
-  }
-  if (action === 'col-before' || action === 'col-after' || action === 'col-delete') {
-    const td = element.closest('td,th');
-    if (!td) return;
-    const cellIndex = Array.from(td.parentElement.children).indexOf(td);
-    if (action === 'col-delete' && td.parentElement.children.length <= 1) { setStatus('表格至少保留一列', true); return; }
-    table.querySelectorAll('tr').forEach(row => {
-      const cell = row.children[cellIndex];
-      if (!cell) return;
-      if (action === 'col-delete') cell.remove();
-      else {
-        const newCell = document.createElement(row.children[0]?.tagName || 'td');
-        newCell.textContent = '';
-        action === 'col-before' ? cell.before(newCell) : cell.after(newCell);
-      }
-    });
-    if (wrapper && originalTable) {
-      const doc = ditaCore.parseXml(originalTable);
-      const tgroup = doc.querySelector('tgroup');
-      if (tgroup) tgroup.setAttribute('cols', String(table.querySelector('tr')?.children.length || 1));
-      wrapper.setAttribute('data-dita-original', ditaCore.serializeXmlNode(doc.documentElement));
-    }
-    syncVisualToModel({ target: editSurface });
-    return;
-  }
-  if (action === 'delete') {
-    if (!element.parentElement || ['h2'].includes(element.localName)) return;
-    const parent = element.parentElement;
-    element.remove();
-    state.selectedVisualElement = null;
-    syncVisualToModel({ target: parent });
-    renderInspector(null);
-    return;
-  }
-  const paragraph = document.createElement('p');
-  paragraph.setAttribute('data-dita-source', 'p');
-  paragraph.textContent = '新段落';
-  if (action === 'before') element.before(paragraph);
-  else element.after(paragraph);
-  syncVisualToModel({ target: paragraph });
-  renderInspector(paragraph);
-}
+function renderInspector(element = state.selectedVisualElement) { A.inspector?.render(element); }
+function applyContextAction(action) { A.inspector?.context(action); }
 
 const menuDefinitions = {
   file: [['恢复草稿', () => A.drafts.show()], ['交付记录', () => document.getElementById('releasesButton').click()], ['新建文档', () => createNewDocument()], ['保存', () => saveFile(), 'Ctrl+S'], ['另存为', () => saveAsFile()], ['下载', () => downloadFile()]],
@@ -962,10 +751,17 @@ A.save = window.DitaSave.createSaveController(A);
 A.drafts = window.DitaDrafts.createDraftController(A);
 A.search = window.DitaSearch.createSearchController(A);
 A.authorSelection = window.DitaAuthorSelection.createController(A);
+A.bodyNavigation = window.DitaBodyNavigation.createController(A);
+A.authorCommands = window.DitaAuthorCommands.createController({ state, dom, core: ditaCore, selection: A.authorSelection, apply: editor.applyAuthorEdit, validate: validateXml });
+A.inspector = window.DitaInspector.createController({ state, dom, commands: A.authorCommands, format: tag => A.editorTools.format(tag), status: setStatus });
 A.resources = window.DitaResources.createResourceController(A);
 A.footnotes = window.DitaFootnotes.createPanel(A);
 A.authorNotes = window.DitaAuthorNotes.createController(A);
 A.editorTools = window.DitaEditorTools.createController(A);
+window.DitaClipboard.createController({ state, dom, core: ditaCore, selection: A.authorSelection, status: setStatus, toast });
+const measureHeader = () => document.documentElement.style.setProperty('--workspace-header-bottom', Math.ceil(document.querySelector('.app-header').getBoundingClientRect().bottom + 8) + 'px');
+new ResizeObserver(measureHeader).observe(document.querySelector('.app-header'));
+measureHeader();
 initialize();
 })();
 
