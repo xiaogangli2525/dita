@@ -19,6 +19,8 @@ Requires **Node.js 20+** and **Git**. `npm start` edits the repository configure
   with encoding="GBK" are read via TextDecoder and written back via
   iconv-lite.encode() so Chinese text is preserved on save. Without this
   dependency, GBK files would be silently converted to UTF-8 and corrupted.
+- **docx** — generates editable Word paragraphs, tables, images and internal links in the browser. The server serves only the three fixed UMD entry points; no CDN is required.
+- **playwright-core** — renders PDF with a local headless Chromium. Run `npx playwright-core install chromium` once, or set `DITA_CHROMIUM_EXECUTABLE` to an installed Chromium executable. On Linux install Chinese fonts, for example `fonts-noto-cjk`, to render Chinese correctly.
 
 The browser and server share a vendored copy of **sax 1.6.1** for XML validation. Its source, license and provenance are in `public/vendor/`. External DTDs/entities are not loaded.
 
@@ -30,6 +32,8 @@ The browser and server share a vendored copy of **sax 1.6.1** for XML validation
 - Map view: edit entire ditamap with all referenced topics
 - HTML export: single-file HTML with embedded images, TOC, notes
 - Markdown export: DITA to Markdown with syntax-highlighted preview
+- PDF export: searchable text, print layout, repeated table headers and page numbers
+- Word export: editable `.docx` with tables (including merged cells), embedded images and linked end-of-document notes
 - Image path resolution: resolves relative hrefs against topic directory
 - GBK encoding: preserves declared encoding on save
 - Reliability: conflict-aware atomic saves, protected branch switching, stale-tab rejection
@@ -41,6 +45,14 @@ The browser and server share a vendored copy of **sax 1.6.1** for XML validation
 - Project model registry, explicit confirmed-common notes, and source editing for reused notes
 - Cross-Topic plaintext search including unsaved buffers, plus image/Topic-link pickers
 - Unified delivery preflight, version/model selection and downloadable provenance records
+
+## PDF and Word delivery
+
+Open a functional manual's Map (or an individual Topic), choose **交付功能手册**, select the model, document version and **PDF** or **Word（.docx）**, then check, preview or export. Every format uses the same captured working buffers, local references and model-note rules. Each functional manual remains a separate deliverable. Notes are collected at the end with shared numbering and repeat links, matching HTML.
+
+Local PDF export downloads an actual `.pdf` and previews those same bytes. Word downloads a real Office Open XML `.docx`; its content preview uses HTML, and final pagination depends on Word and installed fonts. Text, headings and tables remain editable. SVG/WebP image assets alone are converted to PNG for Office compatibility. Unsupported conversions stop with a visible error instead of silently losing content. Word and PDF use Letter pages; corporate templates and page-size settings are not implemented.
+
+The static online demonstration has no PDF rendering server. Its **PDF（打印另存）** option opens a content preview. Click **打印 / 另存 PDF** above the preview, then choose **另存为 PDF** and a destination in the browser dialog. That action cannot verify whether a file was saved and does not create a delivery record. Word still downloads directly in the demo. Other real downloads record a SHA-256 of the exact output bytes in browser-local delivery history.
 
 ## Configuration
 

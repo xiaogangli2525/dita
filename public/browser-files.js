@@ -6,7 +6,8 @@
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
   async function sha256(content) {
-    const bytes = new TextEncoder().encode(content), hash = await root.crypto.subtle.digest('SHA-256', bytes);
+    const bytes = typeof content === 'string' ? new TextEncoder().encode(content) : typeof content?.arrayBuffer === 'function' ? await content.arrayBuffer() : content;
+    const hash = await root.crypto.subtle.digest('SHA-256', bytes);
     return Array.from(new Uint8Array(hash), byte => byte.toString(16).padStart(2, '0')).join('');
   }
   function downloadXML(content, name) {

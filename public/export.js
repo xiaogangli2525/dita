@@ -76,6 +76,13 @@
   const get = id => document.getElementById(id);
   let configuration = null, configuring = false, compiled = null, operation = 0, abortController = null;
   const service = () => A.manual || (A.manual = root.DitaManualService.createManualService(A));
+  const nativePdf = () => A.state.capabilities?.pdf === true;
+  function formatHint() {
+    const format = get('exportFormat').value;
+    get('exportFormatHint').textContent = format === 'docx' ? '导出可编辑的 Word 文档，注脚统一附在文末。预览显示内容，最终分页由 Word 决定。' : format === 'pdf' ? nativePdf() ? '生成可搜索文字的 PDF，注脚附在文末。' : '此在线演示将打开打印内容预览。点击预览上方“打印 / 另存 PDF”，在打印窗口选择“另存为 PDF”。打印不写入交付记录。' : '';
+    const option = get('exportFormat').querySelector('option[value="pdf"]'); if (option) option.textContent = nativePdf() ? 'PDF' : 'PDF（打印另存）';
+    const button = get('modelExportForm').querySelector('[value="download"]'); if (button) button.textContent = format === 'pdf' && !nativePdf() ? '打开打印预览' : '导出文件';
+  }
   function issue(error, snapshot) {
     if (error.issues) return error.issues.map(item => ({ ...item, severity: 'error' }));
     const path = snapshot ? [...snapshot.files.keys(), snapshot.path].find(path => error.message.startsWith(path + '：')) : '';
@@ -127,6 +134,7 @@
       models.forEach(model => get('exportModel').add(new Option(model, model)));
       const selected = get('footnoteModel')?.value || ''; if (models.includes(selected)) get('exportModel').value = selected;
       configuration = { snapshot, source };
+      formatHint();
       get('exportModel').disabled = false;
       get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = false; });
       get('modelExportScope').textContent = snapshot.map.title + ' · ' + snapshot.path;
@@ -138,10 +146,21 @@
   };
   async function convert(snapshot, model, format, version) {
     const failures = [], publicationData = service().prepare(snapshot, model);
-    const output = await (format === 'html' ? A.ditaCore.exportMapToHtml : A.ditaCore.exportMapToMarkdown)({ map: snapshot.map, files: snapshot.files, model, version, title: snapshot.map.title, publicationData,
+    let output = await (format === 'md' ? A.ditaCore.exportMapToMarkdown : A.ditaCore.exportMapToHtml)({ map: snapshot.map, files: snapshot.files, model, version, title: snapshot.map.title, publicationData,
       loadImageBytes: async path => { try { return await A.browserLoadImageBytes(path, abortController?.signal); } catch (error) { failures.push({ path, severity: 'error', message: '图片无法读取：' + path }); return null; } } });
     if (failures.length) throw Object.assign(new Error('图片无法读取，请检查问题清单'), { issues: failures });
-    return { output, report: publicationData.report };
+    let previewHtml;
+    if (format === 'pdf' || format === 'docx') {
+      previewHtml = root.DitaOfficeExport.printable(output);
+      if (abortController?.signal.aborted) throw new Error('已取消');
+      if (format === 'docx') output = await root.DitaOfficeExport.word(output, abortController?.signal);
+      else if (nativePdf()) {
+        const response = await A.api.request('/api/export/pdf', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ html: previewHtml }), signal: abortController?.signal });
+        if (!response.ok) throw new Error(await A.api.error(response));
+        output = await response.blob();
+      } else output = previewHtml;
+    }
+    return { output, previewHtml, report: publicationData.report };
   }
   function filename(snapshot, model, format, version = '') {
     const safe = value => value.replace(/[^\p{L}\p{N}_-]/gu, '-');
@@ -172,15 +191,37 @@
       if (!service().current(snapshot)) throw new Error('内容已变化，请重新打开交付设置以更新快照');
       compiled = { key, data }; A.lastExportReport = data.report;
       if (preview === 'check') { get('deliveryCheckStatus').textContent = '发布检查通过，图片和链接已核对。预览与下载将使用这份快照。'; return; }
-      if (preview) {
+      const printing = format === 'pdf' && !nativePdf();
+      if (preview || printing) {
         A.dom.editorPane.classList.remove('active'); A.dom.visualPane.classList.remove('active');
-        A.dom.htmlPreviewPane.classList.toggle('active', format === 'html'); A.dom.mdPreviewPane.classList.toggle('active', format === 'md');
-        if (format === 'html') { A.releaseExportPreview(); previewUrl = URL.createObjectURL(new Blob([data.output], { type: 'text/html;charset=utf-8' })); A.dom.htmlPreviewFrame.src = previewUrl; }
+        A.dom.htmlPreviewPane.classList.toggle('active', format !== 'md'); A.dom.mdPreviewPane.classList.toggle('active', format === 'md');
+        if (format !== 'md') {
+          A.releaseExportPreview();
+          const pdf = format === 'pdf' && nativePdf();
+          const title = format === 'docx' ? 'Word 内容预览（最终分页以 Word 为准）' : format === 'pdf' ? pdf ? 'PDF 预览' : 'PDF 打印内容预览' : 'HTML 预览';
+          if (get('deliveryPreviewTitle')) get('deliveryPreviewTitle').textContent = title;
+          const printButton = get('printDeliveryButton');
+          if (printButton) { printButton.hidden = !printing; printButton.disabled = true; }
+          A.dom.htmlPreviewFrame.title = title;
+          // Chromium's PDF viewer is blocked inside a sandboxed frame. Only
+          // our generated PDF bytes use the viewer; HTML stays sandboxed.
+          if (pdf) A.dom.htmlPreviewFrame.removeAttribute?.('sandbox');
+          else A.dom.htmlPreviewFrame.setAttribute?.('sandbox', printing ? 'allow-same-origin allow-modals' : 'allow-same-origin');
+          previewUrl = URL.createObjectURL(pdf ? data.output : new Blob([data.previewHtml || data.output], { type: 'text/html;charset=utf-8' }));
+          const expectedUrl = previewUrl;
+          A.dom.htmlPreviewFrame.onload = printing ? async () => {
+            const doc = A.dom.htmlPreviewFrame.contentDocument;
+            try { await doc.fonts.ready; await Promise.all(Array.from(doc.images, image => image.decode())); if (expectedUrl === previewUrl && printButton) printButton.disabled = false; }
+            catch { A.setStatus('打印图片加载失败，请重新打开交付设置', true); }
+          } : null;
+          A.dom.htmlPreviewFrame.src = previewUrl;
+        }
         else A.dom.mdPreviewContent.innerHTML = A.ditaCore.highlightMarkdown(data.output);
-        A.setStatus('交付预览已更新 · 包含当前未保存修改' + (model ? ' · ' + model : ''));
+        A.setStatus(printing ? '打印内容已准备，请点击预览上方“打印 / 另存 PDF”。' : '交付预览已更新 · 包含当前未保存修改' + (model ? ' · ' + model : ''));
       } else {
         const name = filename(snapshot, model, format, version);
-        (A.downloadText || root.DitaBrowserFiles.downloadText)(data.output, name, format === 'html' ? 'text/html;charset=utf-8' : 'text/markdown;charset=utf-8');
+        const mime = { html: 'text/html;charset=utf-8', md: 'text/markdown;charset=utf-8', pdf: 'application/pdf', docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' };
+        (A.downloadText || root.DitaBrowserFiles.downloadText)(data.output, name, mime[format]);
         let recorded = true;
         if (!legacy) try { await record(snapshot, source, data, model, format, version, name); } catch { recorded = false; }
         A.setStatus('已发起下载，请查看浏览器下载记录 · ' + name + (recorded ? '' : ' · 本地交付记录未能保存'));
@@ -200,7 +241,11 @@
   }
   A.previewMapHtml = () => legacyExport('html', true); A.exportMapToHtmlFile = () => legacyExport('html', false);
   A.previewMapMd = () => legacyExport('md', true); A.exportMapToMarkdownFile = () => legacyExport('md', false);
-  get('exportModel')?.addEventListener('change', summary); get('exportFormat')?.addEventListener('change', () => { compiled = null; get('deliveryCheckStatus').textContent = ''; });
+  get('exportModel')?.addEventListener('change', summary); get('exportFormat')?.addEventListener('change', () => { compiled = null; formatHint(); get('deliveryCheckStatus').textContent = ''; });
+  get('printDeliveryButton')?.addEventListener('click', () => {
+    A.dom.htmlPreviewFrame.contentWindow.focus(); A.dom.htmlPreviewFrame.contentWindow.print();
+    A.setStatus('已请求浏览器打印，请在打印窗口选择“另存为 PDF”。');
+  });
   function cancelDelivery() { operation++; abortController?.abort(); }
   get('modelExportCancel')?.addEventListener('click', () => { cancelDelivery(); get('modelExportDialog').close(); });
   get('modelExportDialog')?.addEventListener('cancel', cancelDelivery);

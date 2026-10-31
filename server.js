@@ -10,6 +10,7 @@ const { randomUUID } = require('crypto');
 const { createWorkspaceLock } = require('./lib/workspace-lock');
 const workspaceLock = createWorkspaceLock();
 const { handleWorkspaceTools } = require('./lib/workspace-tools');
+const { handlePdfExport } = require('./lib/pdf-export');
 let workspaceToken = randomUUID();
 
 const PORT = Number(process.env.PORT || 5050);
@@ -499,7 +500,7 @@ async function buildWorkspace() {
   const files = await walkFileTree();
   const maps = await buildMapTrees(files);
   const git = await listBranches();
-  return { root: DOCS_ROOT, workspaceToken, capabilities: { persistence: 'filesystem', git: true }, files, maps, currentBranch: git.current, branches: git.branches };
+  return { root: DOCS_ROOT, workspaceToken, capabilities: { persistence: 'filesystem', git: true, pdf: true }, files, maps, currentBranch: git.current, branches: git.branches };
 }
 
 async function handleApi(req, res, pathname, searchParams) {
@@ -522,6 +523,7 @@ async function handleApi(req, res, pathname, searchParams) {
     sendJson(res, 403, { error: 'Forbidden origin' });
     return;
   }
+  if (await handlePdfExport(req, res, pathname, { readJson })) return;
   if (await handleWorkspaceTools(req, res, pathname, searchParams, { root: DOCS_ROOT, readJson, sendJson, checkedResolve, readXmlFile, walkFileTree, runGit, gitWorktreeStatus })) return;
   if (req.method === 'GET' && pathname === '/api/repos') {
     const repositories = await listRepositories();
@@ -715,6 +717,11 @@ async function handleApi(req, res, pathname, searchParams) {
 }
 
 async function serveStatic(res, relative) {
+  const vendor = { '/vendor/docx/docx.js': 'index.umd.cjs', '/vendor/docx/math.js': 'math.umd.cjs', '/vendor/docx/html.js': 'html.umd.cjs' };
+  if (Object.hasOwn(vendor, relative)) {
+    sendText(res, 200, await fs.readFile(path.join(path.dirname(require.resolve('docx')), vendor[relative]), 'utf8'), 'text/javascript');
+    return true;
+  }
   const file = path.resolve(PUBLIC_ROOT, '.' + relative);
   const rootWithSep = PUBLIC_ROOT.endsWith(path.sep) ? PUBLIC_ROOT : PUBLIC_ROOT + path.sep;
   if (file !== PUBLIC_ROOT && !file.startsWith(rootWithSep)) return false;
@@ -733,7 +740,7 @@ const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
     if (url.pathname.startsWith('/api/')) {
-      await workspaceLock(req.method !== 'GET', () => handleApi(req, res, url.pathname, url.searchParams));
+      await workspaceLock(req.method !== 'GET' && url.pathname !== '/api/export/pdf', () => handleApi(req, res, url.pathname, url.searchParams));
       return;
     }
     if (await serveStatic(res, url.pathname === '/' ? '/index.html' : url.pathname)) return;

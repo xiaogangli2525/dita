@@ -163,7 +163,7 @@
         <div id="visualEditor" contenteditable="true" class="visual-editor dita-preview"></div>
       </div>
       <div id="htmlPreviewPane" class="preview-pane html-preview-pane">
-        <div class="html-preview-toolbar"><span>HTML 预览</span><button id="closeHtmlPreviewButton" type="button" title="关闭 HTML 预览">关闭</button></div>
+        <div class="html-preview-toolbar"><span id="deliveryPreviewTitle">HTML 预览</span><button id="printDeliveryButton" type="button" hidden>打印 / 另存 PDF</button><button id="closeHtmlPreviewButton" type="button" title="关闭交付预览">关闭</button></div>
         <iframe id="htmlPreviewFrame" sandbox="allow-same-origin" title="HTML 预览"></iframe>
       </div>
       <div id="mdPreviewPane" class="preview-pane md-preview-pane">
@@ -222,7 +222,8 @@
       <span class="section-kicker">MODEL PUBLICATION</span><h2 id="modelExportHeading">交付功能手册</h2>
       <p id="modelExportScope"></p><p id="deliverySource" class="muted"></p>
       <label>适用型号<select id="exportModel"><option value="">全部型号</option></select></label>
-      <label>文件格式<select id="exportFormat"><option value="html">HTML（推荐交付）</option><option value="md">Markdown</option></select></label>
+      <label>文件格式<select id="exportFormat"><option value="html">HTML（推荐交付）</option><option value="pdf">PDF</option><option value="docx">Word（.docx）</option><option value="md">Markdown</option></select></label>
+      <p id="exportFormatHint" class="muted"></p>
       <label>文档版本<input id="exportVersion" maxlength="80" placeholder="例如 V1.2，可留空"/></label>
       <p>按注脚及其 Topic 祖先的 product 条件筛选，正文保持完整。没有型号条件的注脚始终保留；不从文字推断支持范围。</p>
       <p id="modelExportSummary" role="status"></p><ul id="deliveryChecks" class="delivery-checks"></ul><p id="deliveryCheckStatus" role="status"></p><p id="modelExportError" class="footnote-edit-error" role="alert"></p>
@@ -299,6 +300,7 @@
   <script src="/asset-core.js"></script>
   <script src="/resources.js"></script>
   <script src="/release-store.js"></script>
+  <script src="/office-export.js"></script>
   <script src="/export.js"></script>
   <script src="/map-controller.js"></script>
   <script src="/documents.js"></script>

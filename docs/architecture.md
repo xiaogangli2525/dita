@@ -16,7 +16,7 @@ The application remains a local Node server and buildless browser client. This c
 
 `app.js` is the composition root and legacy editor UI coordinator. It creates one `DitaApp` facade, injects it into controllers and connects established editor operations. `app-core.js` fell from 1,800 to 842 lines; `app.js` fell from 1,931 to 1,593. Line counts describe extraction, not an architecture score. The remaining editor-specific UI can be split further when a concrete change requires it.
 
-The browser uses explicit script order and namespaced factories. Node tests import the same domain modules via CommonJS. There are no new runtime package dependencies or build requirements.
+The browser uses explicit script order and namespaced factories. Node tests import the same domain modules via CommonJS. No frontend build is required. Office delivery adds pinned `docx` and `playwright-core` runtime dependencies; only Word export lazily loads the browser conversion modules.
 
 ## Shared manual contract
 
@@ -29,6 +29,14 @@ The browser uses explicit script order and namespaced factories. Node tests impo
 - `saveCandidates(snapshot)`: return dirty opened files in this explicit scope, including referenced resources and excluding unrelated opened documents.
 
 The note panel lists publishable note definitions/occurrences with the same ancestor conditions as delivery. Repeated references to one definition share one publishing entry. Reused notes navigate/edit the original source; local conditions on including elements still apply. The save controller shows the file list for a Map, requires a user selection and writes frozen snapshots through the existing optimistic save coordinator. Unselected/newer edits stay dirty. A batch is validated before its first write, but is not a filesystem transaction; partial failures report the count saved.
+
+## Office delivery boundary
+
+`export.js` orchestrates snapshots, preflight, cancellation, download and records for all four formats. `office-export.js` receives the same prepared, self-contained HTML as HTML delivery; it owns shared print styles, editable Word conversion and the explicitly labelled browser-print fallback. It contains no DITA applicability or source-loading rules. Word uses native paragraphs/tables/bookmarks and embedded images. Notes remain linked end-of-document definitions to preserve one shared number for repeated references; they are not native page-bottom footnotes. The HTML importer's automatic per-reference footnote conversion is deliberately avoided.
+
+`lib/pdf-export.js` accepts only HTML via authenticated, same-origin `POST /api/export/pdf`, under the existing 5 MiB request limit. It launches a separate Chromium per job, with a 15-second launch timeout, 30-second render limit and one active PDF job. The renderer disables scripts/service workers and blocks all requests; an initial CSP allows only inline styles and data images. It cannot fetch remote or workspace files. Disconnects abort the renderer and cleanup closes Chromium. The route uses the workspace read lock so concurrent reads remain available. Fixed vendor routes serve only the three required `docx` UMD files from the installed package.
+
+`workspace.capabilities.pdf` distinguishes a native PDF backend from the static demonstration. The demo's print dialog produces no unverifiable PDF hash or download record. Binary Word/PDF records hash the actual Blob bytes, not a string representation. Preview blobs are revoked when replaced/closed. A corporate Word template, configurable paper size, native page-bottom footnotes and full DITA-OT processing remain separate future work.
 
 ## UI events
 

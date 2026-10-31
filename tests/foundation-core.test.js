@@ -108,6 +108,13 @@ test('XML downloads normalize their declaration to the browser UTF-8 bytes witho
   assert.match(source, /encoding="GBK"/);
 });
 
+test('delivery hashes use binary bytes for Blob, buffer and typed array outputs', async () => {
+  const { sha256 } = require('../public/browser-files'), { createHash } = require('node:crypto');
+  const bytes = new Uint8Array([0, 255, 128, 3, 65]), expected = createHash('sha256').update(bytes).digest('hex');
+  assert.equal(await sha256(bytes), expected); assert.equal(await sha256(bytes.buffer), expected); assert.equal(await sha256(new Blob([bytes])), expected);
+  assert.equal(await sha256('中文'), createHash('sha256').update('中文').digest('hex'));
+});
+
 test('manual capture waits for project identity before freezing its model rules', async () => {
   const A = app(); let release, requested = false;
   A.project.ready = () => new Promise(resolve => { release = resolve; });

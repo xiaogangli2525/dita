@@ -65,3 +65,11 @@ The GitHub Actions workflow runs the suite on Node 20 and 22. The browser workfl
 - New browser workflows verify shared note scope/source editing and explicit dependency saves, project model validation/common confirmation, unsaved cross-inline text search, refresh recovery with disk-conflict refusal, relative resource insertion/upload, document create/save-as and UTF-8 XML downloads, cancellation during delayed image IO, snapshot/output hashes and source issue navigation.
 - New real HTTP checks cover config conflicts/repair, GBK search offsets, image validation/create-only uploads, workspace/origin checks and symlink containment. Native preview QA also verified hosted layout, model preflight and content search.
 - Architecture, API/module boundaries, browser storage limits and remaining DITA/company-document validation limits are documented in [architecture.md](architecture.md).
+
+## PDF and Word delivery
+
+- `npm test`: 122 passing unit/HTTP tests. `npm run test:browser`: 30 passing Chromium checks, with no skipped cases.
+- Unit/HTTP regression adds binary Blob/ArrayBuffer/typed-array SHA-256 verification; the existing XML/text cases continue to pass.
+- Real Chromium checks download PDF and DOCX for M100 and M300 from a Map with unsaved Topic content, shared references, images and long merged-cell tables. Checks verify PDF signatures/page counts, editable OOXML tables/merges/text, embedded PNGs, one definition for repeated notes, model filtering and hashes of downloaded bytes.
+- Browser checks cover the actual PDF preview, restoration of HTML sandboxing, explicitly labelled static printing with no fabricated download record, workspace/origin rejection and blocked remote resources in the PDF renderer.
+- Representative multi-page PDF and Word files are rendered and inspected page by page, including Chinese text, images, table continuation/header repetition, merged cells, end notes and page numbering. Word QA uses LibreOffice with installed CJK fonts; pagination in Microsoft Word can vary with fonts.
