@@ -1,4 +1,5 @@
 'use strict';
+const xmlSource = typeof module !== 'undefined' ? require('./xml-source') : window.DitaXmlSource;
 
 const BODY_TAGS = new Set(['body', 'conbody', 'refbody', 'taskbody']);
 const INLINE_TAGS = new Set(['p', 'li', 'entry', 'dt', 'dd', 'note', 'title']);
@@ -30,6 +31,7 @@ function stripDocType(text) {
 }
 
 function parseXml(text) {
+  xmlSource.validateXml(text);
   const doc = new DOMParser().parseFromString(stripDocType(text), 'application/xml');
   const parserError = doc.querySelector('parsererror');
   if (parserError) throw new Error(parserError.textContent.replace(/\s+/g, ' ').trim());
@@ -685,7 +687,13 @@ function parseOxyPIAttrs(data) {
   const re = /(\w+)\s*=\s*"((?:[^"\\]|\\.)*)"/g;
   let m;
   while ((m = re.exec(data || ''))) {
-    attrs[m[1]] = m[2].replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&quot;/g, '"');
+    attrs[m[1]] = m[2].replace(/&(#x[0-9a-f]+|#\d+|amp|lt|gt|quot|apos);/gi, (entity, key) => {
+      if (key[0] === '#') {
+        const n = key[1].toLowerCase() === 'x' ? parseInt(key.slice(2), 16) : Number(key.slice(1));
+        return n > 0 && n <= 0x10ffff ? String.fromCodePoint(n) : entity;
+      }
+      return ({ amp: '&', lt: '<', gt: '>', quot: '"', apos: "'" })[key] ?? entity;
+    });
   }
   return attrs;
 }
@@ -780,7 +788,7 @@ function collectOxyTrackedChanges(text) {
   const deleteRe = /<\?oxy_delete\b([\s\S]*?)\?>/g;
   while ((m = deleteRe.exec(text))) {
     const attrs = parseOxyPIAttrs(m[1]);
-    changes.push({ type: 'delete', author: attrs.author || '', timestamp: attrs.timestamp || '', content: (attrs.content || '').trim().slice(0, 300), index: m.index, matchLength: m[0].length });
+    changes.push({ type: 'delete', deletedContent: attrs.content || '', author: attrs.author || '', timestamp: attrs.timestamp || '', content: (attrs.content || '').trim().slice(0, 300), index: m.index, matchLength: m[0].length });
   }
   const commentRe = /<\?oxy_comment_start\b([\s\S]*?)\?>([\s\S]*?)<\?oxy_comment_end\b[\s\S]*?\?>/g;
   while ((m = commentRe.exec(text))) {
@@ -789,154 +797,6 @@ function collectOxyTrackedChanges(text) {
   }
   changes.sort((a, b) => a.index - b.index);
   return changes;
-}
-
-function renderPreviewNode(node, documentRef = document) {
-  if (node.nodeType === 3) {
-    const text = node.data.replace(/\s+/g, ' ');
-    return text.trim() ? documentRef.createTextNode(text) : null;
-  }
-  if (node.nodeType !== 1) return null;
-
-  const tag = node.localName;
-  const appendChildren = target => {
-    for (const child of node.childNodes) {
-      const rendered = renderPreviewNode(child, documentRef);
-      if (rendered) target.appendChild(rendered);
-    }
-  };
-
-  if (['mainbooktitle', 'booklibrary'].includes(tag)) {
-    const heading = documentRef.createElement('h1');
-    heading.textContent = node.textContent.trim();
-    return heading;
-  }
-  if (tag === 'title') {
-    const heading = documentRef.createElement('h2');
-    heading.textContent = node.textContent.trim();
-    return heading;
-  }
-  if (tag === 'p') {
-    const paragraph = documentRef.createElement('p');
-    appendChildren(paragraph);
-    return paragraph;
-  }
-  if (tag === 'note') {
-    const note = documentRef.createElement('div');
-    note.className = ('note ' + (node.getAttribute('type') || '')).trim();
-    appendChildren(note);
-    return note;
-  }
-  if (tag === 'pre' || tag === 'codeblock') {
-    const pre = documentRef.createElement('pre');
-    pre.textContent = node.textContent;
-    return pre;
-  }
-  if (['ul', 'ol', 'sl'].includes(tag)) {
-    const list = documentRef.createElement(tag === 'sl' ? 'ul' : tag);
-    for (const child of node.children) {
-      if (!['li', 'sli'].includes(child.localName)) continue;
-      const item = documentRef.createElement('li');
-      for (const grandchild of child.childNodes) {
-        const rendered = renderPreviewNode(grandchild, documentRef);
-        if (rendered) item.appendChild(rendered);
-      }
-      list.appendChild(item);
-    }
-    return list;
-  }
-  if (tag === 'image') {
-    const image = documentRef.createElement('img');
-    const href = node.getAttribute('href') || '';
-    image.setAttribute('src', '/api/asset?path=' + encodeURIComponent(resolveAssetPath(href)));
-    image.setAttribute('alt', node.getAttribute('alt') || '');
-    return image;
-  }
-
-    if (tag === 'dl') {
-    const el = documentRef.createElement('dl');
-    for (const child of node.childNodes) {
-      if (child.nodeType !== 1) continue;
-      if (child.localName === 'dlentry') {
-        for (const entry of child.childNodes) {
-          if (entry.nodeType !== 1) continue;
-          if (entry.localName === 'dt') {
-            const dt = documentRef.createElement('dt');
-            dt.textContent = entry.textContent;
-            el.appendChild(dt);
-          } else if (entry.localName === 'dd') {
-            const dd = documentRef.createElement('dd');
-            dd.textContent = entry.textContent;
-            el.appendChild(dd);
-          }
-        }
-      }
-    }
-    return el;
-  }
-  if (tag === 'fn') {
-    _ctx.fnCounter++;
-    const sup = documentRef.createElement('sup');
-    sup.className = 'fn-ref';
-    sup.textContent = '[' + _ctx.fnCounter + ']';
-    sup.title = node.textContent.trim();
-    sup.dataset.fnText = node.textContent.trim();
-    return sup;
-  }
-  if (tag === 'filepath') {
-    const el = documentRef.createElement('code');
-    el.className = 'filepath';
-    el.textContent = node.textContent;
-    return el;
-  }
-if (tag === 'ins') {
-    const ins = documentRef.createElement('ins');
-    ins.className = 'oxy-insert';
-    if (node.hasAttribute('data-author')) ins.title = '插入 — ' + node.getAttribute('data-author');
-    appendChildren(ins);
-    return ins;
-  }
-  if (tag === 'del') {
-    const del = documentRef.createElement('del');
-    del.className = 'oxy-delete';
-    del.textContent = node.textContent;
-    if (node.hasAttribute('data-author')) del.title = '删除 — ' + node.getAttribute('data-author');
-    return del;
-  }
-  if (tag === 'span' && (node.getAttribute('class') || '').includes('oxy-comment')) {
-    const span = documentRef.createElement('span');
-    span.className = 'oxy-comment';
-    const comment = node.getAttribute('data-comment');
-    const author = node.getAttribute('data-author');
-    if (comment) span.dataset.comment = comment;
-    span.title = comment ? (author ? author + '：' + comment : comment) : (author || '批注');
-    appendChildren(span);
-    return span;
-  }
-  const wrapperTag = ['body', 'conbody', 'refbody', 'taskbody', 'section', 'example', 'fig', 'table'].includes(tag) ? 'div' : tag;
-  const wrapper = documentRef.createElement(wrapperTag);
-  appendChildren(wrapper);
-  return wrapper;
-}
-
-function renderPreviewContent(text, documentRef = document, topicPath = '') {
-  _ctx.topicPath = topicPath;
-  resetFnCounter();
-  const doc = parseXml(text);
-  normalizeOxyPIs(doc);
-  const topic = doc.documentElement;
-  const article = documentRef.createElement('article');
-  const title = Array.from(topic?.childNodes || []).find(node => node.localName === 'title');
-  const heading = documentRef.createElement('h1');
-  heading.textContent = title?.textContent?.trim() || '';
-  article.appendChild(heading);
-
-  for (const child of topic?.childNodes || []) {
-    if (child === title) continue;
-    const rendered = renderPreviewNode(child, documentRef);
-    if (rendered) article.appendChild(rendered);
-  }
-  return Array.from(article.childNodes);
 }
 
 const PREVIEW_TOPIC_EXTENSIONS = /\.(dita|xml)$/i;
@@ -951,48 +811,6 @@ function collectPreviewPaths(nodes, paths = [], seen = new Set()) {
   }
   return paths;
 }
-
-function createMapPreview({ map, files, document: documentRef = document }) {
-  const fragment = documentRef.createDocumentFragment();
-  const heading = documentRef.createElement('h1');
-  heading.textContent = map.title || map.name || map.path;
-  fragment.append(heading);
-
-  const entries = collectPreviewPaths(map.children || []);
-  const failures = [];
-  for (let index = 0; index < entries.length; index++) {
-    const entry = entries[index];
-    try {
-      const cached = files.get(entry.path);
-      if (!cached) throw new Error('not found');
-      const nodes = renderPreviewContent(cached.current, documentRef, entry.path);
-      if (index) fragment.append(documentRef.createElement('hr'));
-      fragment.append(...nodes);
-    } catch (error) {
-      failures.push(entry.path);
-      const message = documentRef.createElement('p');
-      message.className = 'preview-error';
-      message.textContent = '无法加载：' + entry.path + '（' + (error.message || 'load failed') + '）';
-      fragment.append(message);
-    }
-  }
-
-  if (!entries.length) {
-    const empty = documentRef.createElement('p');
-    empty.textContent = '此 map 不包含可预览的 topic 引用。';
-    fragment.append(empty);
-  }
-
-  if (failures.length) {
-    const summary = documentRef.createElement('p');
-    summary.className = 'preview-error';
-    summary.textContent = '加载失败：' + failures.length + ' 篇。';
-    fragment.append(summary);
-  }
-
-  return fragment;
-}
-
 
 function escapeHtmlAttr(text) {
   return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -1812,10 +1630,6 @@ function createVisualApi(state, dom) {
       const file = state.filesMap.get(state.activePath);
       const current = source ?? file.current;
       const next = updateCurrentFromVisual(state, dom, current);
-      if (file) {
-        file.current = next;
-        file.dirty = next !== file.disk;
-      }
       return next;
     }
   };
@@ -1826,7 +1640,7 @@ const _exports = {
   stripDocType, parseXml, serializeXmlNode, cloneDitaNode,
   visualElementToDita, updateDitaBody, updateCurrentFromVisual,
   updateVisualFromXml, createAuthorTopic, renderDitaNode,
-  renderPreviewContent, collectPreviewPaths, createMapPreview,
+  collectPreviewPaths,
   createVisualApi, lineDiff, inlineDiff, groupDiffRows,
   applyDiffGroups, normalizeOxyPIs, collectOxyTrackedChanges,
   exportMapToHtml, exportMapToMarkdown, ditaToMarkdown,

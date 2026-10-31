@@ -53,6 +53,16 @@ test('HTTP workflow protects edits, Git baselines, repository boundaries and wor
     assert.equal(result.status, 409);
     assert.match(await fs.readFile(file, 'utf8'), /Saved edit/);
   });
+  await t.test('invalid XML cannot be saved, created or used for Map operations', async () => {
+    const disk = await fs.readFile(file, 'utf8');
+    for (const content of ['<topic id=bad/>', '<topic id="a" id="b"/>', '<topic>A & B</topic>']) {
+      assert.equal((await request('/api/file', 'PUT', { path: 'topics/a.dita', content, expectedContent: disk })).status, 400);
+      assert.equal((await request('/api/file', 'POST', { path: 'topics/invalid.dita', content })).status, 400);
+      assert.equal((await request('/api/map/resolve', 'POST', { path: 'main.ditamap', content })).status, 400);
+    }
+    assert.equal(await fs.readFile(file, 'utf8'), disk);
+    await assert.rejects(fs.stat(path.join(repo, 'topics/invalid.dita')), { code: 'ENOENT' });
+  });
   await t.test('stale writes are refused and matching writes succeed', async () => {
     const stale = await request('/api/file', 'PUT', { path: 'topics/a.dita', content: '<topic/>', expectedContent: initial });
     assert.equal(stale.status, 409);

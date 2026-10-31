@@ -28,7 +28,12 @@ function createTestApp(source) {
     status: document.createElement('span')
   };
   const visual = createVisualApi(state, dom);
-  return { ...visual, state, dom, document };
+  return { ...visual, state, dom, document, visualToXml() {
+    const next = visual.visualToXml();
+    require('../public/document-store').editDocument(state.filesMap.get(state.activePath), next);
+    return next;
+  } };
 }
 
 module.exports = { createTestApp, buildMockDom };
+

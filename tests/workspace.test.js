@@ -80,3 +80,15 @@ test('workspace switching waits for reads and prevents later reads overtaking it
   await Promise.all([first, switcher, later]);
   assert.deepEqual(events, ['read', 'read complete', 'switch', 'next read']);
 });
+
+test('one document mutation boundary preserves disk/baseline through edit, undo and redo', () => {
+  const { editDocument, travelHistory } = require('../public/document-store');
+  const file = { current: '<old/>', disk: '<old/>', baseline: '<git/>' };
+  editDocument(file, '<new/>');
+  assert.equal(file.dirty, true);
+  travelHistory(file, 'undo'); assert.equal(file.current, '<old/>'); assert.equal(file.dirty, false);
+  travelHistory(file, 'redo'); assert.equal(file.current, '<new/>');
+  assert.equal(file.disk, '<old/>'); assert.equal(file.baseline, '<git/>');
+  editDocument(file, '<new/>', { historyMeta: { reviewDecisionsBefore: new Map(), reviewDecisionsAfter: new Map([[1, 'accept']]) } });
+  assert.equal(travelHistory(file, 'undo').reviewDecisionsAfter.get(1), 'accept');
+});

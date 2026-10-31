@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node server.js",
     "test": "node tests/all.js",
-    "dev": "node scripts/dev-server.js"
+    "dev": "node scripts/dev-server.js",
+    "test:browser": "node --test tests/browser.test.js"
   },
   "keywords": [],
   "author": "",
@@ -17,5 +18,8 @@
   },
   "engines": {
     "node": ">=20"
+  },
+  "devDependencies": {
+    "playwright-core": "1.62.1"
   }
 }
