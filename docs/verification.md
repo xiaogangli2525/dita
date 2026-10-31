@@ -73,3 +73,10 @@ The GitHub Actions workflow runs the suite on Node 20 and 22. The browser workfl
 - Real Chromium checks download PDF and DOCX for M100 and M300 from a Map with unsaved Topic content, shared references, images and long merged-cell tables. Checks verify PDF signatures/page counts, editable OOXML tables/merges/text, embedded PNGs, one definition for repeated notes, model filtering and hashes of downloaded bytes.
 - Browser checks cover the actual PDF preview, restoration of HTML sandboxing, explicitly labelled static printing with no fabricated download record, workspace/origin rejection and blocked remote resources in the PDF renderer.
 - Representative multi-page PDF and Word files are rendered and inspected page by page, including Chinese text, images, table continuation/header repetition, merged cells, end notes and page numbering. Word QA uses LibreOffice with installed CJK fonts; pagination in Microsoft Word can vary with fonts.
+
+## Editor and HTTP/Git boundary refactor
+
+- `npm test`: 126 passing checks. Added service-level cases verify independent Git instances, live root selection, committed baselines and dirty/invalid branch rejection. A real HTTP repository-switch case verifies file/Git roots move together, old workspace tokens are rejected and an invalid switch preserves the current root.
+- Editor coordination checks verify Map child edits, background edits and review decisions share the correct document's undo history; pending Map refreshes are discarded when workspace change begins.
+- `npm run test:browser`: 30 passing Chromium checks. Existing Source/Author input, read-only surfaces, Map editing, review/undo, saves, recovery, model publication and all four export formats remain covered.
+- Existing server exports and the browser facade retain their interfaces. This refactor adds no runtime dependencies or DITA behavior changes.

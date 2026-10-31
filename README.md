@@ -79,11 +79,14 @@ The light workspace separates document navigation, editing and the attribute/rev
 - `public/publication-core.js`: shared source-preserving model-footnote filtering and reference validation for both publication formats.
 - `public/publication-resolver.js`: bounded local dependency loading, common conref expansion and unsupported-feature checks.
 - `public/app-core.js`: source-preserving Author rendering/conversion.
+- `public/editor-controller.js`: Source/Topic/Map synchronization, document history, mode changes and review coordination, with injected view callbacks.
 - `public/delivery-core.js` / `public/diff-core.js`: publication rendering and pure diff algorithms.
 - `public/manual-core.js` / `public/manual-service.js`: shared applicability/configuration and immutable manual dependency snapshots.
 - `public/save.js`, `drafts.js`, `project.js`, `search.js`, `resources.js`: independent feature controllers.
 - `public/map-controller.js` / `public/documents.js`: directory and document lifecycle UI.
 - `lib/workspace-tools.js`: authenticated project config, search, provenance and image routes.
+- `lib/api-router.js` / `lib/http-utils.js`: common workspace/origin guard, API dispatch, bounded request decoding and response helpers.
+- `lib/git-service.js`: repository/branch operations and encoded Git baselines, using the live workspace root.
 - `lib/document-files.js`: encoding, real-path containment and atomic file writes.
 - `lib/workspace-lock.js`: concurrent reads with exclusive saves/workspace switches.
 

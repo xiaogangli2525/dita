@@ -2,15 +2,14 @@
 
 const http = require('http');
 const path = require('path');
-const os = require('os');
 const fs = require('fs/promises');
 const { existsSync, readdirSync, statSync } = require('fs');
-const { spawn } = require('child_process');
 const { randomUUID } = require('crypto');
 const { createWorkspaceLock } = require('./lib/workspace-lock');
 const workspaceLock = createWorkspaceLock();
-const { handleWorkspaceTools } = require('./lib/workspace-tools');
-const { handlePdfExport } = require('./lib/pdf-export');
+const { createGitService } = require('./lib/git-service');
+const { createApiHandler } = require('./lib/api-router');
+const { sendJson, sendText } = require('./lib/http-utils');
 let workspaceToken = randomUUID();
 
 const PORT = Number(process.env.PORT || 5050);
@@ -19,168 +18,7 @@ let DOCS_ROOT = path.resolve(process.env.DOCS_ROOT || path.join(__dirname, '..',
 const DEFAULT_DOCS_ROOT = DOCS_ROOT;
 const REPOSITORIES_ROOT = path.resolve(process.env.REPOSITORIES_ROOT || path.dirname(DEFAULT_DOCS_ROOT));
 const PUBLIC_ROOT = path.join(__dirname, 'public');
-const MAX_BODY_SIZE = 5 * 1024 * 1024;
-
-function cleanGitError(error) {
-  const detail = String(error.stderr || error.stdout || error.message || '').trim();
-  return detail || error.message || 'Git command failed';
-}
-
-function gitError(message, status = 400) {
-  return Object.assign(new Error(message), { status });
-}
-
-async function runGitOnce(executable, args, options) {
-  const output = path.join(os.tmpdir(), `dita-git-${process.pid}-${Date.now()}-${Math.random().toString(16).slice(2)}.tmp`);
-  let handle;
-  try {
-    handle = await fs.open(output, 'w');
-    await new Promise((resolve, reject) => {
-      const child = spawn(executable, args, {
-        cwd: options.cwd,
-        windowsHide: true,
-        stdio: ['ignore', handle.fd, 'pipe']
-      });
-      let stderr = '';
-      child.stderr.on('data', chunk => { stderr = (stderr + chunk).slice(-8192); });
-      const timer = setTimeout(() => { child.kill(); reject(new Error('Git command timed out')); }, 30000);
-      child.once('error', error => { clearTimeout(timer); reject(error); });
-      child.once('exit', code => {
-        clearTimeout(timer);
-        if (code === 0) resolve();
-        else reject(Object.assign(new Error(`Git command failed with exit code ${code}`), { code, stderr }));
-      });
-    });
-    return await fs.readFile(output, options.binary ? undefined : 'utf8');
-  } finally {
-    await handle?.close().catch(() => {});
-    await fs.rm(output, { force: true }).catch(() => {});
-  }
-}
-
-async function runGit(args, options = {}) {
-  try {
-    const git = await findGitExecutable();
-    return await runGitOnce(git, args, { cwd: options.cwd || DOCS_ROOT, binary: options.binary });
-  } catch (error) {
-    throw Object.assign(new Error(cleanGitError(error)), { status: Number(options.errorStatus || 500) });
-  }
-}
-
-
-async function findGitExecutable() {
-  if (process.env.GIT_EXECUTABLE) return process.env.GIT_EXECUTABLE;
-  const candidates = process.platform === 'win32'
-    ? [path.join(process.env.ProgramFiles || 'C:\\Program Files', 'Git', 'cmd', 'git.exe'), 'C:\\Program Files\\Git\\cmd\\git.exe', 'git.exe', 'git']
-    : ['git'];
-  for (const candidate of candidates) {
-    const available = await new Promise(resolve => {
-      const child = spawn(candidate, ['--version'], { windowsHide: true, stdio: 'ignore' });
-      child.once('error', () => resolve(false));
-      child.once('spawn', () => {
-        child.kill();
-        resolve(true);
-      });
-    });
-    if (available) return candidate;
-  }
-  throw gitError('Git executable not available', 500);
-}
-async function gitRoot(target = DOCS_ROOT) {
-  const stdout = await runGit(['rev-parse', '--show-toplevel'], { cwd: target, errorStatus: 404 });
-  return path.resolve(stdout.trim());
-}
-
-async function isGitRepository(directory) {
-  try {
-    const root = await gitRoot(directory);
-    return { ok: true, root };
-  } catch {
-    return { ok: false, root: null };
-  }
-}
-
-async function resolveSelectedRepository(value) {
-  const target = await fs.realpath(path.resolve(String(value || '')));
-  const repositoriesRoot = await fs.realpath(REPOSITORIES_ROOT);
-  const parent = path.dirname(target);
-  if (target !== repositoriesRoot && parent !== repositoriesRoot) {
-    throw gitError('Repository must be a direct child of the repositories root', 403);
-  }
-  const stat = await fs.stat(target).catch(() => null);
-  if (!stat?.isDirectory()) throw gitError('Repository directory not found', 404);
-  const info = await isGitRepository(target);
-  if (!info.ok) throw gitError('Selected directory is not a Git repository', 400);
-  return target;
-}
-
-async function listRepositories() {
-  const entries = await fs.readdir(REPOSITORIES_ROOT, { withFileTypes: true });
-  const repositories = [];
-  for (const entry of entries) {
-    if (!entry.isDirectory() || entry.isSymbolicLink()) continue;
-    const absolute = path.join(REPOSITORIES_ROOT, entry.name);
-    const info = await isGitRepository(absolute);
-    if (info.ok) repositories.push({ path: absolute, name: path.basename(absolute) });
-  }
-  repositories.sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'));
-  return repositories;
-}
-
-async function listBranches() {
-  let current = '';
-  try {
-    current = (await runGit(['branch', '--show-current'])).trim();
-  } catch {
-    current = '';
-  }
-  const stdout = await runGit(['for-each-ref', '--format=%(refname:short)%09%(objectname:short)%09%(committerdate:iso8601)', 'refs/heads']);
-  const branches = stdout.split(/\r?\n/).filter(Boolean).map(line => {
-    const [name, commit, date = ''] = line.split('\t');
-    return { name, commit, date, current: name === current };
-  });
-  return { current: current || '(detached)', branches };
-}
-
-async function gitWorktreeStatus() {
-  const stdout = await runGit(['status', '--porcelain']);
-  return { clean: !stdout.trim(), changes: stdout.trim() ? stdout.trim().split(/\r?\n/) : [] };
-}
-
-function sendJson(res, status, value) {
-  const body = JSON.stringify(value);
-  res.writeHead(status, {
-    'content-type': 'application/json; charset=utf-8',
-    'cache-control': 'no-store'
-  });
-  res.end(body);
-}
-
-function sendText(res, status, body, type = 'text/plain') {
-  res.writeHead(status, {
-    'content-type': `${type}; charset=utf-8`,
-    'cache-control': 'no-store'
-  });
-  res.end(body);
-}
-
-async function readJson(req) {
-  const declared = Number(req.headers['content-length'] || 0);
-  if (declared > MAX_BODY_SIZE) {
-    throw Object.assign(new Error('Request body is too large'), { status: 413 });
-  }
-  const chunks = [];
-  let total = 0;
-  for await (const chunk of req) {
-    total += chunk.length;
-    if (total > MAX_BODY_SIZE) {
-      throw Object.assign(new Error('Request body is too large'), { status: 413 });
-    }
-    chunks.push(chunk);
-  }
-  const raw = Buffer.concat(chunks);
-  return JSON.parse(raw.toString('utf8'));
-}
+const gitError = (message, status = 400) => Object.assign(new Error(message), { status });
 
 function safeResolve(relativePath) {
   const clean = String(relativePath || '').replace(/\\/g, '/').replace(/^\/+/, '');
@@ -199,11 +37,14 @@ function relativePath(absolutePath) {
   return path.relative(DOCS_ROOT, absolutePath).replace(/\\/g, '/');
 }
 
-const { readXmlFile, writeXmlFile, decodeXmlBuffer, resolveWorkspacePath } = require('./lib/document-files');
+const { readXmlFile, writeXmlFile, resolveWorkspacePath } = require('./lib/document-files');
 async function checkedResolve(relative, options) {
   safeResolve(relative);
   return resolveWorkspacePath(DOCS_ROOT, relative, options);
 }
+
+const git = createGitService({ getRoot: () => DOCS_ROOT, repositoriesRoot: REPOSITORIES_ROOT, checkedResolve });
+const { runGit, gitInfo, listRepositories, listBranches, gitWorktreeStatus, resolveSelectedRepository } = git;
 
 const MAP_REFERENCE_TAGS = new Set(["map", "bookmap", "topicref", "topichead", "topicgroup", "chapter", "appendix", "notices", "preface", "part", "frontmatter", "backmatter", "booklists"]);
 
@@ -474,28 +315,6 @@ async function buildMapTrees(files) {
   return trees;
 }
 
-async function gitInfo(relativeFilePath) {
-  try {
-    const absolute = await checkedResolve(relativeFilePath);
-    const root = await gitRoot(path.dirname(absolute));
-    const gitRelative = path.relative(root, absolute).replace(/\\/g, '/');
-    let status = 'unknown';
-    try {
-      const statusResult = await runGit(['status', '--porcelain', '--', gitRelative], { cwd: root });
-      status = statusResult.trim() ? statusResult.trim().slice(0, 2) : 'clean';
-    } catch {
-      status = 'unknown';
-    }
-    try {
-      const content = decodeXmlBuffer(await runGit(['show', `HEAD:${gitRelative}`], { cwd: root, binary: true }));
-      return { available: true, status, content };
-    } catch {
-      return { available: false, status, content: '' };
-    }
-  } catch {
-    return null;
-  }
-}
 async function buildWorkspace() {
   const files = await walkFileTree();
   const maps = await buildMapTrees(files);
@@ -503,218 +322,25 @@ async function buildWorkspace() {
   return { root: DOCS_ROOT, workspaceToken, capabilities: { persistence: 'filesystem', git: true, pdf: true }, files, maps, currentBranch: git.current, branches: git.branches };
 }
 
-async function handleApi(req, res, pathname, searchParams) {
-  const suppliedToken = req.headers['x-workspace-token'];
-  const bootstrap = pathname === '/api/repos' || pathname === '/api/workspace' || pathname === '/api/asset';
-  if ((suppliedToken && suppliedToken !== workspaceToken) || (!suppliedToken && !bootstrap)) {
-    res.setHeader('x-workspace-stale', '1');
-    throw gitError('Workspace changed. Reload before continuing.', 409);
-  }
-  const origin = req.headers.origin;
-  const allowed = ['http://127.0.0.1:' + PORT, 'http://localhost:' + PORT];
-  if (process.env.PUBLIC_ORIGIN) allowed.push(process.env.PUBLIC_ORIGIN);
-  // The demo contains only disposable sample documents and supports a preview proxy.
-  if (process.env.DITA_DEMO_MODE === '1' && origin) {
-    try { if (new URL(origin).host === req.headers.host) allowed.push(origin); } catch {}
-  }
-  // Same-origin browser requests (especially GET) often omit the Origin header.
-  // Reject only when Origin IS present but does not match (cross-origin CSRF).
-  if (origin && !allowed.includes(origin)) {
-    sendJson(res, 403, { error: 'Forbidden origin' });
-    return;
-  }
-  if (await handlePdfExport(req, res, pathname, { readJson })) return;
-  if (await handleWorkspaceTools(req, res, pathname, searchParams, { root: DOCS_ROOT, readJson, sendJson, checkedResolve, readXmlFile, walkFileTree, runGit, gitWorktreeStatus })) return;
-  if (req.method === 'GET' && pathname === '/api/repos') {
-    const repositories = await listRepositories();
-    sendJson(res, 200, { root: REPOSITORIES_ROOT, repositories, current: DOCS_ROOT });
-    return;
-  }
-
-  if (req.method === 'GET' && pathname === '/api/branches') {
-    const git = await listBranches();
-    sendJson(res, 200, { root: DOCS_ROOT, current: git.current, branches: git.branches });
-    return;
-  }
-
-  if (req.method === 'POST' && (pathname === '/api/repository' || pathname === '/api/branch')) {
-    const body = await readJson(req);
-    if (pathname === '/api/repository') {
-      const nextRoot = await resolveSelectedRepository(body.repository);
-      const previousRoot = DOCS_ROOT;
-      DOCS_ROOT = nextRoot;
-      let workspace;
-      try { workspace = await buildWorkspace(); }
-      catch (error) { DOCS_ROOT = previousRoot; throw error; }
-      workspaceToken = randomUUID();
-      workspace.workspaceToken = workspaceToken;
-      sendJson(res, 200, workspace);
-      return;
-    }
-
-    const branch = String(body.branch || '').trim();
-    if (!branch || /[\r\n\0^:?*[\\]/.test(branch) || branch.startsWith('-') || branch === '.' || branch === '..') {
-      throw gitError('Invalid branch name');
-    }
-    const branches = await listBranches();
-    if (!branches.branches.some(item => item.name === branch)) throw gitError('Branch not found', 404);
-    const status = await gitWorktreeStatus();
-    if (!status.clean) {
-      throw gitError('工作区有尚未提交的修改。请先提交或暂存（git stash），再切换分支；当前内容已保留。', 409);
-    }
-    await runGit(['switch', branch]);
-    workspaceToken = randomUUID();
-    sendJson(res, 200, await buildWorkspace());
-    return;
-  }
-
-  if (req.method === 'GET' && pathname === '/api/workspace') {
-    sendJson(res, 200, await buildWorkspace());
-    return;
-  }
-
-  if (req.method === 'GET' && pathname === '/api/tree') {
-    const files = await walkFileTree();
-    sendJson(res, 200, { root: DOCS_ROOT, tree: files });
-    return;
-  }
-
-  if (req.method === 'GET' && pathname === '/api/git') {
-    const info = await gitInfo(searchParams.get('path'));
-    sendJson(res, 200, info || { available: false, status: 'no-git', content: '' });
-    return;
-  }
-
-  if (req.method === 'GET' && pathname === '/api/attributes') {
-    const files = await walkFileTree();
-    const attrValues = new Map();
-    const PROFILING_ATTRS = ['platform', 'audience', 'product', 'otherprops', 'rev'];
-    const collectAttrs = async nodes => {
-      for (const node of nodes) {
-        if (node.type === 'file' && /\.(dita|xml)$/i.test(node.path)) {
-          try {
-            const content = await fs.readFile(path.join(DOCS_ROOT, node.path), 'utf8');
-            for (const attr of PROFILING_ATTRS) {
-              const re = new RegExp(attr + '="([^"]*)"', 'g');
-              let m;
-              while ((m = re.exec(content))) {
-                if (!attrValues.has(attr)) attrValues.set(attr, new Set());
-                m[1].split(/\s+/).forEach(v => { if (v.trim()) attrValues.get(attr).add(v.trim()); });
-              }
-            }
-          } catch (e) { console.warn('api error:', e.message); }
-        }
-        if (node.children) await collectAttrs(node.children);
-      }
-    };
-    await collectAttrs(files);
-    const result = {};
-    for (const [attr, values] of attrValues) result[attr] = [...values].sort();
-    sendJson(res, 200, { attributes: result });
-    return;
-  }
-  if (req.method === 'GET' && pathname === '/api/asset') {
-    const asset = await checkedResolve(searchParams.get('path'));
-    const stat = await fs.stat(asset);
-    if (!stat.isFile()) throw Object.assign(new Error('Asset not found'), { status: 404 });
-    const ext = path.extname(asset).toLowerCase();
-    const allowedExts = ['.svg', '.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp'];
-    if (!allowedExts.includes(ext)) throw Object.assign(new Error('Unsupported asset type'), { status: 403 });
-    const type = ext === '.svg' ? 'image/svg+xml' : ext === '.png' ? 'image/png' : ext === '.jpg' || ext === '.jpeg' ? 'image/jpeg' : ext === '.gif' ? 'image/gif' : ext === '.bmp' ? 'image/bmp' : ext === '.webp' ? 'image/webp' : 'application/octet-stream';
-    res.writeHead(200, { 'content-type': type, 'cache-control': 'no-store', 'x-content-type-options': 'nosniff', 'content-security-policy': "sandbox; default-src 'none'; style-src 'unsafe-inline'" });
-    res.end(await fs.readFile(asset));
-    return;
-  }
-
-  if (req.method === 'POST' && pathname === '/api/map/resolve') {
-    const body = await readJson(req);
-    const file = await checkedResolve(body.path);
-    if (!/\.ditamap$/i.test(file)) throw gitError('Not a DITA map');
-    const parsed = parseXml(String(body.content ?? ''));
-    if (!['map', 'bookmap'].includes(parsed.root.name)) throw gitError('Not a DITA map');
-    sendJson(res, 200, { path: body.path, name: path.basename(file),
-      title: textOf(childElement(childElement(parsed.root, 'booktitle'), 'mainbooktitle')).trim() || textOf(childElement(parsed.root, 'title')).trim() || path.basename(file),
-      children: mapNodeToTree(parsed.root, body.path) });
-    return;
-  }
-
-  if (req.method === 'POST' && pathname === '/api/map/operation') {
-    const body = await readJson(req);
-    const mapFile = await checkedResolve(body.path);
-    const stat = await fs.stat(mapFile);
-    if (!stat.isFile() || !/\.ditamap$/i.test(mapFile)) throw Object.assign(new Error('Not a DITA map file'), { status: 404 });
-    const content = body.content == null ? await readXmlFile(mapFile) : String(body.content);
-    const result = await applyMapOperation(content, relativePath(mapFile), {
-      operation: body.operation,
-      sourcePath: body.sourcePath,
-      href: body.href,
-      title: body.title
-    });
-    sendJson(res, 200, result);
-    return;
-  }
-
-  if (req.method === 'GET' && pathname === '/api/file') {
-    const file = await checkedResolve(searchParams.get('path'));
-    const stat = await fs.stat(file);
-    if (!stat.isFile() || !isDitaLike(file)) throw Object.assign(new Error('Not a DITA/XML file'), { status: 404 });
-    sendText(res, 200, await readXmlFile(file), 'application/xml');
-    return;
-  }
-
-  // Save As creates a new DITA/XML document in the configured workspace.  The
-  // client can opt into replacing an existing file after confirming with the
-  // user; by default an existing path is rejected to prevent accidental data
-  // loss.
-  if (req.method === 'POST' && pathname === '/api/file') {
-    const body = await readJson(req);
-    const requestedPath = String(body.path || '').replace(/\\/g, '/');
-    if (!isDitaLike(requestedPath)) {
-      throw Object.assign(new Error('Save As path must end with .dita, .ditamap, or .xml'), { status: 400 });
-    }
-    const file = await checkedResolve(requestedPath, { create: true });
-    const parent = await fs.stat(path.dirname(file)).catch(() => null);
-    if (!parent?.isDirectory()) {
-      throw Object.assign(new Error('Save As directory does not exist'), { status: 400 });
-    }
-    const existing = await fs.stat(file).catch(() => null);
-    if (existing?.isDirectory()) {
-      throw Object.assign(new Error('Save As target is a directory'), { status: 400 });
-    }
-    if (existing?.isFile() && body.overwrite !== true) {
-      throw Object.assign(new Error('File already exists'), { status: 409 });
-    }
-    const content = String(body.content ?? '');
-    const parsed = parseXml(content);
-    if (!parsed.root) throw Object.assign(new Error('XML has no root element'), { status: 400 });
-    if (existing?.isFile() && (typeof body.expectedContent !== 'string' || body.expectedContent !== await readXmlFile(file))) {
-      throw gitError('File changed since it was read. Reopen before overwriting.', 409);
-    }
-    await writeXmlFile(file, content, { createOnly: !existing });
-    const saved = await readXmlFile(file);
-    sendJson(res, 201, { saved: true, created: !existing, path: relativePath(file), content: saved });
-    return;
-  }
-
-  if (req.method === 'PUT' && pathname === '/api/file') {
-    const body = await readJson(req);
-    const file = await checkedResolve(body.path);
-    const stat = await fs.stat(file);
-    if (!stat.isFile() || !isDitaLike(file)) throw Object.assign(new Error('Not a DITA/XML file'), { status: 404 });
-    const content = String(body.content ?? '');
-    const parsed = parseXml(content);
-    if (!parsed.root) throw Object.assign(new Error('XML has no root element'), { status: 400 });
-    if (typeof body.expectedContent !== 'string' || body.expectedContent !== await readXmlFile(file)) {
-      throw gitError('文件已在磁盘上变化。请下载保留当前修改，再重新打开文件进行比较。', 409);
-    }
-    await writeXmlFile(file, content);
-    const saved = await readXmlFile(file);
-    sendJson(res, 200, { saved: true, content: saved });
-    return;
-  }
-
-  sendJson(res, 404, { error: 'Not found' });
+async function selectRepository(value) {
+  const nextRoot = await resolveSelectedRepository(value), previousRoot = DOCS_ROOT;
+  DOCS_ROOT = nextRoot;
+  let result;
+  try { result = await buildWorkspace(); }
+  catch (error) { DOCS_ROOT = previousRoot; throw error; }
+  workspaceToken = randomUUID(); result.workspaceToken = workspaceToken;
+  return result;
 }
+const handleApi = createApiHandler({
+  workspace: {
+    get root() { return DOCS_ROOT; }, get token() { return workspaceToken; }, repositoriesRoot: REPOSITORIES_ROOT,
+    snapshot: buildWorkspace, selectRepository, rotateToken: () => { workspaceToken = randomUUID(); }
+  },
+  git,
+  documents: { checkedResolve, walkFileTree, readXmlFile, writeXmlFile, relativePath, isDitaLike },
+  maps: { parseXml, childElement, textOf, mapNodeToTree, applyMapOperation },
+  port: PORT, publicOrigin: process.env.PUBLIC_ORIGIN, demoMode: process.env.DITA_DEMO_MODE === '1'
+});
 
 async function serveStatic(res, relative) {
   const vendor = { '/vendor/docx/docx.js': 'index.umd.cjs', '/vendor/docx/math.js': 'math.umd.cjs', '/vendor/docx/html.js': 'html.umd.cjs' };
