@@ -221,7 +221,7 @@
       <p id="modelExportScope"></p>
       <label>适用型号<select id="exportModel"><option value="">全部型号</option></select></label>
       <label>文件格式<select id="exportFormat"><option value="html">HTML</option><option value="md">Markdown</option></select></label>
-      <p>仅按注脚自身的 product 属性筛选，正文保持完整。未标注型号的注脚始终保留；不从文字推断支持范围。</p>
+      <p>按注脚及其 Topic 祖先的 product 条件筛选，正文保持完整。没有型号条件的注脚始终保留；不从文字推断支持范围。</p>
       <p id="modelExportSummary" role="status"></p><p id="modelExportError" class="footnote-edit-error" role="alert"></p>
       <div class="footnote-dialog-actions"><button id="modelExportCancel" type="button">取消</button><button type="submit" value="preview">预览</button><button type="submit" value="download" class="primary-action">导出文件</button></div>
     </form>
@@ -246,6 +246,7 @@
   <script src="/review.js"></script>
   <script src="/document-store.js"></script>
   <script src="/workspace-client.js"></script>
+  <script src="/publication-resolver.js"></script>
   <script src="/publication-core.js"></script>
   <script src="/app-core.js"></script>
   <script src="/export.js"></script>

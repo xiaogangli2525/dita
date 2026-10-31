@@ -18,6 +18,10 @@ test('real browser editing, reading and review workflow', async t => {
   await fs.writeFile(path.join(root, 'a.dita'), initial);
   await fs.writeFile(path.join(root, 'oxy.dita'), oxygen);
   await fs.writeFile(path.join(root, 'main.ditamap'), '<map><title>Map</title><topicref href="a.dita"/><topicref href="oxy.dita"/></map>');
+  await fs.cp(path.join(__dirname, 'fixtures/manual'), path.join(root, 'manual'), { recursive: true });
+  await fs.rename(path.join(root, 'manual/main.ditamap'), path.join(root, 'manual/mqtt-acceptance.ditamap'));
+  const gbkPath = path.join(root, 'manual/topics/publish.dita');
+  await fs.writeFile(gbkPath, require('iconv-lite').encode(await fs.readFile(gbkPath, 'utf8'), 'gbk'));
   const git = (...args) => execFileSync('git', args, { cwd: root, stdio: 'ignore' });
   git('init'); git('-c', 'user.name=Test', '-c', 'user.email=test@example.invalid', 'add', '.');
   git('-c', 'user.name=Test', '-c', 'user.email=test@example.invalid', 'commit', '-m', 'fixture');
@@ -186,6 +190,58 @@ test('real browser editing, reading and review workflow', async t => {
     await open('a.dita'); await source(initial);
     } catch (error) { console.error('Publication flow:', error); throw error; }
     finally { await page.locator('dialog[open]').evaluateAll(dialogs => dialogs.forEach(dialog => dialog.close())); await open('a.dita'); await source(initial); }
+  });
+  await t.test('MQTT delivery acceptance: GBK save, dependency buffers, three models and real HTML/MD downloads', async () => {
+    const resourcePath = 'manual/shared/notes.dita';
+    const resourceOriginal = await fs.readFile(path.join(root, resourcePath), 'utf8');
+    try {
+      await open('manual/topics/publish.dita');
+      assert.match(await current(), /发布消息/);
+      await source((await current()).replace('C_ONLY', 'C_EDITED'));
+      await page.click('#saveButton');
+      await page.waitForFunction(() => !window.DitaApp.state.filesMap.get('manual/topics/publish.dita').dirty);
+      const saved = require('iconv-lite').decode(await fs.readFile(gbkPath), 'gbk');
+      assert.match(saved, /encoding="GBK"/); assert.match(saved, /发布消息/); assert.match(saved, /C_EDITED/);
+      await open(resourcePath); await source(resourceOriginal.replace('AB_SHARED', 'AB_WORKING'));
+      await open('manual/mqtt-acceptance.ditamap');
+      for (const model of ['M100', 'M200', 'M300']) {
+        await page.click('#exportMenuButton'); await page.click('#modelExportButton');
+        await page.selectOption('#exportModel', model); await page.selectOption('#exportFormat', 'html');
+        await page.click('#modelExportForm button[value="preview"]');
+        const frame = page.frameLocator('#htmlPreviewFrame'); await frame.locator('.export-footnotes').waitFor();
+        const text = await frame.locator('body').innerText();
+        assert.equal(text.includes('A_CONREF'), model === 'M100');
+        assert.equal(text.includes('AB_WORKING'), model !== 'M300');
+        assert.equal(text.includes('C_EDITED'), model === 'M300');
+        assert.match(text, /COMMON_CONREF/); assert.match(text, /UNMARKED/);
+        assert.doesNotMatch(text, /UNUSED_RESOURCE_BODY|ANCESTOR_EXCLUDED/);
+        assert.equal(await frame.locator('a[href="#sec-1-node-publish%2Fparameters"]').count(), 1);
+        assert.equal(await frame.locator('#sec-1-node-publish\\%2Fparameters').count(), 1);
+        assert.equal(await frame.locator('table').count(), 2);
+        assert.equal(await frame.locator('img').evaluateAll(images => images.every(image => image.complete && image.naturalWidth > 0)), true);
+        await page.click('#closeHtmlPreviewButton');
+        for (const format of ['html', 'md']) {
+          await page.click('#exportMenuButton'); await page.click('#modelExportButton');
+          await page.selectOption('#exportModel', model); await page.selectOption('#exportFormat', format);
+          const downloadPromise = page.waitForEvent('download');
+          await page.click('#modelExportForm button[value="download"]');
+          const download = await downloadPromise;
+          assert.equal(download.suggestedFilename(), 'mqtt-acceptance-' + model + '.' + format);
+          const output = await fs.readFile(await download.path(), 'utf8');
+          assert.equal(output.includes('AB_WORKING'), model !== 'M300');
+          assert.equal(output.includes('C_EDITED'), model === 'M300');
+          assert.match(output, /COMMON_CONREF/); assert.match(output, /data:image\/svg\+xml/);
+          assert.doesNotMatch(output, /UNUSED_RESOURCE_BODY|ANCESTOR_EXCLUDED/);
+        }
+      }
+      assert.equal(await fs.readFile(path.join(root, resourcePath), 'utf8'), resourceOriginal);
+      assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.get('manual/shared/notes.dita').current.includes('AB_WORKING')), true);
+    } finally {
+      await page.locator('dialog[open]').evaluateAll(dialogs => dialogs.forEach(dialog => dialog.close()));
+      if (await page.locator('#htmlPreviewPane.active').count()) await page.click('#closeHtmlPreviewButton');
+      await open(resourcePath); await source(resourceOriginal);
+      await open('a.dita'); await source(initial);
+    }
   });
   await t.test('Git bulk rejection stays unsaved, undoable and keeps the Git baseline', async () => {
     const changed = initial.replace('Original', 'Saved change');

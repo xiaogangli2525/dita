@@ -60,6 +60,7 @@ The light workspace separates document navigation, editing and the attribute/rev
 - `public/workspace-client.js`: workspace identity and stale-response handling.
 - `public/export.js`: export snapshots, resource loading and preview/download orchestration.
 - `public/publication-core.js`: shared source-preserving model-footnote filtering and reference validation for both publication formats.
+- `public/publication-resolver.js`: bounded local dependency loading, common conref expansion and unsupported-feature checks.
 - `public/app-core.js`: Author rendering, source conversion, diff algorithms and HTML/Markdown export.
 - `lib/document-files.js`: encoding, real-path containment and atomic file writes.
 - `lib/workspace-lock.js`: concurrent reads with exclusive saves/workspace switches.
@@ -82,7 +83,7 @@ Run browser regression tests with `npx playwright-core install chromium` followe
 
 Click **型号注脚** while a Topic or function Map is open. The panel indexes actual `fn` elements, shows their surrounding command/context and supports model/keyword filtering, source navigation and editing. A Map scope stays selected while navigating to its individual Topics.
 
-Explicit model associations are stored in each footnote's standard `product` attribute (space-separated model names). Existing prose is never used to infer support. Unlabelled footnotes remain visible under every filter; ancestor profiling conditions are not interpreted. The panel filter only affects its list. Use the export menu's model publication action to filter published footnotes.
+Explicit model associations are stored in each footnote's standard `product` attribute (space-separated model names). Existing prose is never used to infer support. Unlabelled footnotes remain visible under every panel filter. Publication also evaluates product conditions on Topic ancestors. The panel filter only affects its list. Use the export menu's model publication action to filter published footnotes.
 
 Plain notes use a text editor with safe XML escaping; notes with inline markup use an XML-preserving editor. Updates retain identifiers, links, encoding declarations and surrounding source, use the shared undo history and require explicit Save. Outdated edits are refused. Content-reference footnotes require editing their source. HTML exports include a linked footnote list with return links; Markdown includes complete numbered footnote definitions.
 
@@ -97,7 +98,7 @@ Open the function's Map, then choose **导出 → 按型号预览／导出…**.
 <p>Shared limit<fn product="M100 M200">Check the firmware release notes.</fn></p>
 ```
 
-Only the explicit `product` on an `fn` controls this filtering. Notes without it are retained, and the body is retained. This is not a complete DITA conditional-processing pipeline: inherited profiling conditions and grouped product expressions are not evaluated; grouped expressions stop model export with an error.
+Publication evaluates `product` on the footnote and its Topic ancestors. A note must match every applicable ancestor condition; a child cannot restore a note excluded by its parent. Notes with no conditions are retained, and body content is retained. This is footnote-scoped publication, not a complete DITA conditional-processing pipeline. Grouped product expressions and Map-level profiling stop model export explicitly.
 
 An `fn` with an `id` is a reusable definition. Reference it with `xref type="fn"`; unreferenced definitions are omitted, repeated references share one number, and HTML callouts link to one footnote entry and back. The MQTT publishing sample demonstrates repeated references:
 
@@ -107,6 +108,8 @@ An `fn` with an `id` is a reusable definition. Reference it with `xref type="fn"
 <fn id="note-id" product="M100">Model-specific detail.</fn>
 ```
 
-References must target a note in the same file. Broken references, duplicate note IDs, nested notes and unresolved `conref`/`conkeyref` notes stop export explicitly. Content references are not expanded. HTML and Markdown use the same prepared publication snapshot and filtering rules.
+Footnote references may target another local workspace file, including a resource file outside the published Map. Repeated references share one definition and number across chapters. Local same-element `conref` chains are expanded in the publication copy, keeping local attributes/IDs and rebasing relative image paths. Dependency reads include current unsaved buffers and participate in stale-snapshot checks. Resource-only Map references supply reusable content without adding chapters. HTML and Markdown use the same prepared publication snapshot and filtering rules.
+
+Local DITA links are rewritten to explicit document anchors. Missing targets stop export. CALS column/row spans are retained in HTML; Markdown rejects merged cells explicitly instead of flattening them into misleading columns. Simple tables and footnotes in tables/lists use the same publication context. See [compatibility verification and supported boundaries](docs/publication-compatibility.md).
 
 ![Model footnotes workspace](docs/assets/model-footnotes-preview.png)

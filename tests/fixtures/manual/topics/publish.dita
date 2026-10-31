@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="GBK"?>
+<topic id="publish"><title>发布消息</title><body>
+<section id="parameters"><title>参数</title><table><tgroup cols="2"><thead><row><entry>参数</entry><entry>说明</entry></row></thead><tbody><row><entry>payload</entry><entry>负载大小<fn product="M300">C_ONLY</fn></entry></row></tbody></tgroup></table></section>
+<ul><li>重试策略<xref href="../shared/notes.dita#notes/retry" type="fn"/></li></ul>
+<simpletable><sthead><stentry>QoS</stentry><stentry>说明</stentry></sthead><strow><stentry>0</stentry><stentry>最多一次</stentry></strow></simpletable>
+<codeblock outputclass="language-text">AT+MQTTPUB=0,"demo/topic","hello"</codeblock>
+</body></topic>

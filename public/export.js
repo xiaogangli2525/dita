@@ -44,6 +44,24 @@
     return { files, failures };
   };
 
+  A.loadPublicationFiles = async function (map, snapshot = A.state.filesMap) {
+    const workspace = A.api.token;
+    const buffers = new Map(Array.from(snapshot, ([path, file]) => [path, file.current]));
+    const { files, failures } = await A.loadTopicFiles(map, snapshot);
+    if (failures.length) throw new Error('文档读取失败：' + failures.map(item => item.path).join('、'));
+    const loaded = await window.DitaPublicationResolver.loadDependencies(files, async path => {
+      if (workspace !== A.api.token) throw new Error('工作区已切换，请重新导出');
+      if (buffers.has(path)) return buffers.get(path);
+      const response = await A.api.request('/api/file?path=' + encodeURIComponent(path));
+      if (!response.ok) throw new Error(await A.api.error(response));
+      const content = await response.text();
+      if (workspace !== A.api.token) throw new Error('工作区已切换，请重新导出');
+      return content;
+    });
+    if (workspace !== A.api.token) throw new Error('工作区已切换，请重新导出');
+    return loaded;
+  };
+
   A.toggleExportMenu = function () {
     const { dom } = A;
     if (!dom.exportMenu) return;
@@ -90,7 +108,8 @@
         });
         if (!response.ok) throw new Error(await A.api.error(response));
         map = await response.json();
-        ({ files, failures } = await A.loadTopicFiles(map, snapshot));
+        map.source = source.current;
+        files = await A.loadPublicationFiles(map, snapshot);
       }
       if (failures.length) throw new Error(`导出已停止，${failures.length} 个主题无法读取：${failures.map(item => item.path).join('、')}`);
       const imageFailures = [];
@@ -162,10 +181,10 @@
       const response = await A.api.request('/api/map/resolve', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ path: file.path, content }) });
       if (!response.ok) throw new Error(await A.api.error(response));
       const map = await response.json();
-      const { files, failures } = await A.loadTopicFiles(map);
-      if (failures.length) throw new Error('文档读取失败：' + failures.map(item => item.path).join('、'));
+      map.source = content;
+      const files = await A.loadPublicationFiles(map);
       if (workspace !== A.api.token || file.current !== content || A.state.activePath !== file.path) throw new Error('文档或工作区已变化，请重新打开导出设置');
-      const models = [...new Set(Array.from(files.values()).flatMap(item => window.DitaFootnotesCore.listFootnotes(item.current).flatMap(note => note.products)))].sort();
+      const models = window.DitaPublication.listModels(files);
       get('exportModel').replaceChildren(new Option('全部型号', ''));
       models.forEach(model => get('exportModel').add(new Option(model, model)));
       const selected = get('footnoteModel')?.value || '';

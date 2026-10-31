@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<topic id="notes"><title>复用资源（不作为章节发布）</title><body>
+<fn id="limit" product="M100">A_CONREF <image href="../assets/network.svg" alt="连接示意"/></fn>
+<fn id="retry" product="M100 M200">AB_SHARED <b>示例重试策略</b><image href="../assets/network.svg" alt="重试示意"/></fn>
+<p id="intro">COMMON_CONREF <image href="../assets/network.svg" alt="流程图"/></p>
+<p>UNUSED_RESOURCE_BODY <image href="missing.svg"/></p>
+</body></topic>

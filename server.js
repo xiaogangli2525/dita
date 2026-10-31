@@ -275,7 +275,8 @@ function mapRefTitle(node, fallback) {
   return (navtitle && textOf(navtitle).trim()) || (title && textOf(title).trim()) || node.attrs.navtitle || fallback;
 }
 
-function mapNodeToTree(node, mapPath, sourcePath = '') {
+function mapNodeToTree(node, mapPath, sourcePath = '', processingRole = 'normal') {
+  processingRole = node.attrs['processing-role'] || processingRole;
   const tree = [];
   let childIndex = -1;
   for (const child of node.children) {
@@ -284,7 +285,8 @@ function mapNodeToTree(node, mapPath, sourcePath = '') {
       const refNames = ['topicref', 'topichead', 'topicgroup', 'chapter', 'appendix', 'notices', 'preface', 'part', 'frontmatter', 'backmatter', 'booklists'];
       if (refNames.includes(child.name)) {
         const childSourcePath = sourcePath ? `${sourcePath}.${childIndex}` : String(childIndex);
-        const children = mapNodeToTree(child, mapPath, childSourcePath);
+        const childRole = child.attrs['processing-role'] || processingRole;
+        const children = mapNodeToTree(child, mapPath, childSourcePath, childRole);
         const href = child.attrs.href ? resolveHref(mapPath, child.attrs.href) : null;
         const fallback = href ? path.basename(href) : (children.length ? child.name : child.name);
         const entry = {
@@ -292,6 +294,7 @@ function mapNodeToTree(node, mapPath, sourcePath = '') {
           title: mapRefTitle(child, fallback),
           path: href || child.attrs.href || '',
           sourcePath: childSourcePath,
+          processingRole: childRole,
           children
         };
         if (href || children.length || !child.attrs.href) tree.push(entry);

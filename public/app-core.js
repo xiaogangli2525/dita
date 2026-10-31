@@ -810,7 +810,7 @@ const PREVIEW_TOPIC_EXTENSIONS = /\.(dita|xml)$/i;
 
 function collectPreviewPaths(nodes, paths = [], seen = new Set()) {
   for (const node of nodes || []) {
-    if (node.type === 'file' && PREVIEW_TOPIC_EXTENSIONS.test(node.path) && !seen.has(node.path)) {
+    if (node.type === 'file' && node.processingRole !== 'resource-only' && PREVIEW_TOPIC_EXTENSIONS.test(node.path) && !seen.has(node.path)) {
       seen.add(node.path);
       paths.push({ path: node.path, title: node.title || node.path });
     }
@@ -832,6 +832,7 @@ const DITA_HTML_MAP = {
   'varname': 'code', 'parmname': 'code', 'msgph': 'code',
   'sl': 'ul', 'sli': 'li', 'ul': 'ul', 'ol': 'ol', 'li': 'li',
   'dl': 'dl', 'dlentry': 'div', 'dt': 'dt', 'dd': 'dd',
+  'simpletable': 'table', 'sthead': 'tr', 'strow': 'tr', 'stentry': 'td',
   'table': 'table', 'tgroup': 'div', 'thead': 'thead', 'tbody': 'tbody',
   'row': 'tr', 'entry': 'td',
   'xref': 'a', 'cite': 'cite', 'keyword': 'span', 'term': 'span',
@@ -855,20 +856,62 @@ function topicIdOf(node) {
   }
   return '';
 }
-function prepareFootnoteDefinitions(doc, ctx) {
-  ctx.noteDefinitions = new Map(Array.from(doc.querySelectorAll('fn')).filter(node => node.getAttribute('id')).map(node => [topicIdOf(node) + '/' + node.getAttribute('id'), node]));
+function publicationAnchors(prepared, entries) {
+  const anchors = new Map();
+  entries.forEach((entry, index) => {
+    const base = 'sec-' + index;
+    anchors.set(entry.path + '#', base);
+    const doc = parseXml(prepared.files.get(entry.path).current);
+    const nodes = [];
+    const visit = node => { if (node.localName === 'fn') return; if (node.nodeType === 1 && node.getAttribute('id')) nodes.push(node); Array.from(node.childNodes || []).forEach(visit); };
+    visit(doc);
+    for (const node of nodes) {
+      if (node.localName === 'fn') continue;
+      const id = node.getAttribute('id');
+      const isTopic = ['topic', 'concept', 'task', 'reference'].includes(node.localName);
+      const fragment = isTopic ? id : topicIdOf(node) + '/' + id;
+      anchors.set(entry.path + '#' + fragment, node === doc.documentElement || node.localName === 'title' && node.parentNode === doc.documentElement ? base : base + '-node-' + encodeURIComponent(fragment));
+    }
+  });
+  return anchors;
+}
+function publicationAnchor(node, ctx) {
+  if (node.nodeType !== 1 || !node.getAttribute('id')) return '';
+  const id = node.getAttribute('id');
+  const fragment = ['topic', 'concept', 'task', 'reference'].includes(node.localName) ? id : topicIdOf(node) + '/' + id;
+  return ctx.anchors?.get(ctx.topicPath + '#' + fragment) || '';
+}
+function publicationLink(node, ctx) {
+  const href = node.getAttribute('href') || '';
+  if (/^(https?:|mailto:|tel:|ftp:)/i.test(href)) return href;
+  if (!href) return '';
+  const resolver = typeof module !== 'undefined' ? require('./publication-resolver') : window.DitaPublicationResolver;
+  const target = resolver.localTarget(href, ctx.topicPath);
+  if (!/\.(dita|xml)$/i.test(target.path)) throw new Error('链接资源无法打包进单文件手册：' + href);
+  const anchor = ctx.anchors?.get(target.path + '#' + target.fragment);
+  if (!anchor) throw new Error('链接目标未包含在当前手册或不存在：' + href);
+  ctx.linkedAnchors = ctx.linkedAnchors || new Map();
+  ctx.linkedAnchors.set(anchor, ctx.topicPath + '：' + href);
+  return '#' + anchor;
+}
+function validatePublicationLinks(output, ctx) {
+  for (const [anchor, source] of ctx.linkedAnchors || []) if (!output.includes('id="' + escapeHtmlAttr(anchor) + '"')) throw new Error('链接目标无法在所选格式中定位（可尝试 HTML）：' + source);
+}
+function publicationDefinitions(prepared) {
+  return new Map(Array.from(prepared.noteDefinitions, ([key, note]) => [key, { node: parseXml(note.xml).documentElement, path: note.path }]));
 }
 function footnoteReference(node, ctx) {
-  let target = node;
+  let target = node, origin = ctx.topicPath;
   if (node.localName === 'fn' && node.getAttribute('id')) return null;
   if (node.localName === 'xref') {
     const key = publication.referenceKey(node.getAttribute('href') || '', ctx.topicPath, topicIdOf(node));
-    target = ctx.noteDefinitions?.get(key);
+    const definition = ctx.noteDefinitions?.get(key);
+    target = definition?.node; origin = definition?.path;
     if (!target) throw new Error('找不到注脚引用：' + key);
   }
   ctx.noteNumbers = ctx.noteNumbers || new Map();
   let entry = ctx.noteNumbers.get(target);
-  if (!entry) { entry = { node: target, number: ctx.noteNumbers.size + 1, refs: 0 }; ctx.noteNumbers.set(target, entry); }
+  if (!entry) { entry = { node: target, path: origin, number: ctx.noteNumbers.size + 1, refs: 0 }; ctx.noteNumbers.set(target, entry); }
   entry.refs++;
   return entry;
 }
@@ -902,7 +945,9 @@ function ditaToHtml(node, ctx) {
       const models = target.getAttribute('product');
       const label = models ? '<small>适用型号：' + escapeHtmlAttr(models) + '</small> ' : '';
       ctx.htmlFootnotes.push('');
-      ctx.htmlFootnotes[n - 1] = label + Array.from(target.childNodes).map(child => ditaToHtml(child, ctx)).join('');
+      const origin = ctx.topicPath; ctx.topicPath = entry.path;
+      try { ctx.htmlFootnotes[n - 1] = label + Array.from(target.childNodes).map(child => ditaToHtml(child, ctx)).join(''); }
+      finally { ctx.topicPath = origin; }
     }
     const callout = target.getAttribute('callout') || String(n);
     return '<sup class="fn-ref" id="fnref-' + n + '-' + refs + '"><a href="#fn-' + n + '">[' + escapeHtmlAttr(callout) + ']</a></sup>';
@@ -912,14 +957,31 @@ function ditaToHtml(node, ctx) {
     const alt = node.getAttribute('alt') || '';
     const resolved = resolveAssetPath(href, ctx);
     const src = ctx.imageDataCache.has(resolved) ? ctx.imageDataCache.get(resolved) : /^(https?:|data:)/i.test(resolved) ? resolved : '/api/asset?path=' + encodeURIComponent(resolved);
-    return '<img src="' + escapeHtmlAttr(src) + '" alt="' + escapeHtmlAttr(alt) + '" style="max-width:100%;"/>';
+    const anchor = publicationAnchor(node, ctx);
+    return '<img' + (anchor ? ' id="' + escapeHtmlAttr(anchor) + '"' : '') + ' src="' + escapeHtmlAttr(src) + '" alt="' + escapeHtmlAttr(alt) + '" style="max-width:100%;"/>';
   }
   if (tag === 'xref') {
-    const href = node.getAttribute('href') || '';
-    return '<a href="' + escapeHtmlAttr(href) + '">' + Array.from(node.childNodes).map(function(n) { return ditaToHtml(n, ctx); }).join('') + '</a>';
+    const href = publicationLink(node, ctx);
+    const anchor = publicationAnchor(node, ctx);
+    return '<a' + (anchor ? ' id="' + escapeHtmlAttr(anchor) + '"' : '') + ' href="' + escapeHtmlAttr(href) + '">' + Array.from(node.childNodes).map(function(n) { return ditaToHtml(n, ctx); }).join('') + '</a>';
   }
+  if (tag === 'tgroup' || tag === 'colspec') return tag === 'tgroup' ? Array.from(node.childNodes).map(child => ditaToHtml(child, ctx)).join('') : '';
   const htmlTag = DITA_HTML_MAP[tag] || 'div';
   const attrs = [];
+  const anchor = publicationAnchor(node, ctx);
+  if (anchor) attrs.push('id="' + escapeHtmlAttr(anchor) + '"');
+  if (tag === 'entry') {
+    const rows = Number(node.getAttribute('morerows'));
+    if (rows > 0) attrs.push('rowspan="' + (rows + 1) + '"');
+    const start = node.getAttribute('namest'), end = node.getAttribute('nameend');
+    if (start || end) {
+      let group = node.parentNode; while (group && group.localName !== 'tgroup') group = group.parentNode;
+      const cols = Array.from(group?.childNodes || []).filter(n => n.localName === 'colspec').map(n => n.getAttribute('colname'));
+      const a = cols.indexOf(start), b = cols.indexOf(end);
+      if (a < 0 || b < a) throw new Error('表格列跨度无效');
+      attrs.push('colspan="' + (b - a + 1) + '"');
+    }
+  }
   if (tag === 'codeblock') {
     const lang = (node.getAttribute('outputclass') || '').replace('language-', '');
     if (lang) attrs.push('data-lang="' + escapeHtmlAttr(lang) + '"');
@@ -938,15 +1000,18 @@ async function exportMapToHtml({ map, files, title, loadImageBytes, model = '', 
   const prepared = publicationData || publication.preparePublication({ map, files, model }, collectPreviewPaths);
   files = prepared.files;
   const ctx = { topicPath: '', imageDataCache: new Map(), fnCounter: 0, mdFnCounter: 0, mdFootnotes: [] };
+  ctx.noteDefinitions = publicationDefinitions(prepared);
   const entries = collectPreviewPaths(map.children || []);
+  ctx.anchors = publicationAnchors(prepared, entries);
   const sections = [];
   const failures = [];
   ctx.imageDataCache = new Map();
   if (loadImageBytes) {
     const imagePaths = new Set();
-    for (const entry of entries) {
+    const imageEntries = [...entries.map(entry => ({ path: entry.path, current: files.get(entry.path)?.current })), ...Array.from(prepared.noteDefinitions.values(), note => ({ path: note.path, current: note.xml }))];
+    for (const entry of imageEntries) {
       try {
-        const cached = files.get(entry.path);
+        const cached = entry;
         if (!cached) throw new Error('not loaded');
         const preDoc = parseXml(cached.current);
         ctx.topicPath = entry.path;
@@ -970,7 +1035,6 @@ async function exportMapToHtml({ map, files, title, loadImageBytes, model = '', 
       ctx.topicPath = entry.path;
       const doc = parseXml(cached.current);
       normalizeOxyPIs(doc);
-      prepareFootnoteDefinitions(doc, ctx);
       const topic = doc.documentElement;
       const topicTitle = Array.from(topic?.childNodes || []).find(n => n.localName === 'title');
       let inner = '';
@@ -1059,6 +1123,7 @@ async function exportMapToHtml({ map, files, title, loadImageBytes, model = '', 
     failuresHtml,
     '</body></html>'
   ].join('\n');
+  validatePublicationLinks(html, ctx);
   return html;
 }
 
@@ -1073,13 +1138,21 @@ function markdownFootnote(node, ctx) {
   ctx.mdFootnotes = ctx.mdFootnotes || [];
   if (refs === 1) {
     const models = target.getAttribute('product');
-    const content = (models ? '**适用型号：' + mdEscape(models) + '。** ' : '') + Array.from(target.childNodes).map(child => mdInline(child, ctx)).join('');
+    const origin = ctx.topicPath; ctx.topicPath = entry.path;
+    let content;
+    try { content = (models ? '**适用型号：' + mdEscape(models) + '。** ' : '') + Array.from(target.childNodes).map(child => mdInline(child, ctx)).join(''); }
+    finally { ctx.topicPath = origin; }
     ctx.mdFootnotes.push('[^' + index + ']: ' + content.trim().replace(/\n/g, '\n    '));
   }
   return '[^' + index + ']';
 }
 
 function mdInline(node, ctx) {
+  ctx = ctx || _ctx;
+  const anchor = publicationAnchor(node, ctx);
+  return (anchor ? '<a id="' + escapeHtmlAttr(anchor) + '"></a>' : '') + renderMdInline(node, ctx);
+}
+function renderMdInline(node, ctx) {
   ctx = ctx || _ctx;
   if (node.nodeType === 3) return node.data;
   if (node.nodeType !== 1) return '';
@@ -1092,7 +1165,7 @@ function mdInline(node, ctx) {
   if (tag === 'sub') return '<sub>' + inner() + '</sub>';
   if (['codeph', 'filepath', 'varname', 'parmname', 'msgph'].includes(tag)) return '`' + node.textContent + '`';
   if (tag === 'xref' && node.getAttribute('type') === 'fn') return markdownFootnote(node, ctx);
-  if (tag === 'xref') { const h = node.getAttribute('href') || ''; return '[' + inner() + '](' + h + ')'; }
+  if (tag === 'xref') { const h = publicationLink(node, ctx); return '[' + inner() + '](' + h + ')'; }
   if (tag === 'image') { const resolved = resolveAssetPath(node.getAttribute('href') || '', ctx); const a = node.getAttribute('alt') || ''; const src = ctx.imageDataCache.has(resolved) ? ctx.imageDataCache.get(resolved) : resolved; return '![' + a + '](' + src + ')'; }
   if (tag === 'fn') return markdownFootnote(node, ctx);
   if (tag === 'ins' && (node.getAttribute('class') || '').includes('oxy-insert')) return '**' + inner() + '**';
@@ -1106,6 +1179,11 @@ function mdInline(node, ctx) {
 
 function ditaToMarkdown(node, ctx) {
   ctx = ctx || _ctx;
+  const anchor = publicationAnchor(node, ctx);
+  return (anchor ? '<a id="' + escapeHtmlAttr(anchor) + '"></a>\n' : '') + renderDitaMarkdown(node, ctx);
+}
+function renderDitaMarkdown(node, ctx) {
+  ctx = ctx || _ctx;
   if (node.nodeType === 3) { const t = node.data.replace(/\s+/g, ' '); return t; }
   if (node.nodeType === 7 || node.nodeType === 8) return '';
   if (node.nodeType !== 1) return '';
@@ -1117,8 +1195,8 @@ function ditaToMarkdown(node, ctx) {
   if (tag === 'p') { const t = Array.from(node.childNodes).map(function(n) { return mdInline(n, ctx); }).join('').trim(); return t ? t + '\n\n' : ''; }
   if (tag === 'shortdesc') { const t = Array.from(node.childNodes).map(function(n) { return mdInline(n, ctx); }).join('').trim(); return t ? '> ' + t + '\n\n' : ''; }
 
-  if (tag === 'ul' || tag === 'sl') return mdList(node, false);
-  if (tag === 'ol') return mdList(node, true);
+  if (tag === 'ul' || tag === 'sl') return mdList(node, false, ctx);
+  if (tag === 'ol') return mdList(node, true, ctx);
 
   if (tag === 'codeblock') {
     const lang = (node.getAttribute('outputclass') || '').replace('language-', '');
@@ -1142,7 +1220,7 @@ function ditaToMarkdown(node, ctx) {
   }
 
   if (tag === 'xref' && node.getAttribute('type') === 'fn') return markdownFootnote(node, ctx);
-  if (tag === 'xref') { const h = node.getAttribute('href') || ''; return '[' + Array.from(node.childNodes).map(function(n) { return mdInline(n, ctx); }).join('') + '](' + h + ')'; }
+  if (tag === 'xref') { const h = publicationLink(node, ctx); return '[' + Array.from(node.childNodes).map(function(n) { return mdInline(n, ctx); }).join('') + '](' + h + ')'; }
 
   if (tag === 'fig') {
     let r = '\n';
@@ -1154,14 +1232,14 @@ function ditaToMarkdown(node, ctx) {
     return r;
   }
 
-  if (tag === 'table') return mdTable(node);
-  if (tag === 'dl') return mdDl(node);
+  if (tag === 'table' || tag === 'simpletable') return mdTable(node, ctx);
+  if (tag === 'dl') return mdDl(node, ctx);
 
   if (tag === 'fn') return markdownFootnote(node, ctx);
 
   if (tag === 'section' || tag === 'example') {
     const tEl = Array.from(node.childNodes).find(n => n.localName === 'title');
-    return (tEl ? '\n### ' + tEl.textContent.trim() + '\n\n' : '\n') + children();
+    return (tEl ? '\n### ' + tEl.textContent.trim() + '\n\n' : '\n') + Array.from(node.childNodes).filter(child => child !== tEl).map(child => ditaToMarkdown(child, ctx)).join('');
   }
 
   if (['body', 'conbody', 'refbody', 'taskbody', 'topic', 'concept', 'reference', 'task'].includes(tag)) return children();
@@ -1178,12 +1256,13 @@ function mdList(node, ordered, ctx) {
   let r = '';
   items.forEach((li, i) => {
     const prefix = ordered ? (i + 1) + '. ' : '- ';
-    const text = Array.from(li.childNodes).map(function(n) { return mdInline(n, ctx); }).join('').trim();
-    r += prefix + text + '\n';
+    const text = Array.from(li.childNodes).filter(n => !['ul', 'ol'].includes(n.localName)).map(function(n) { return mdInline(n, ctx); }).join('').trim();
+    const anchor = publicationAnchor(li, ctx);
+    r += prefix + (anchor ? '<a id="' + escapeHtmlAttr(anchor) + '"></a>' : '') + text + '\n';
     // nested lists
     for (const c of li.childNodes) {
-      if (c.localName === 'ul') r += mdList(c, false).split('\n').filter(Boolean).map(l => '  ' + l).join('\n') + '\n';
-      if (c.localName === 'ol') r += mdList(c, true).split('\n').filter(Boolean).map(l => '  ' + l).join('\n') + '\n';
+      if (c.localName === 'ul') r += ditaToMarkdown(c, ctx).split('\n').filter(Boolean).map(l => '  ' + l).join('\n') + '\n';
+      if (c.localName === 'ol') r += ditaToMarkdown(c, ctx).split('\n').filter(Boolean).map(l => '  ' + l).join('\n') + '\n';
     }
   });
   return r + '\n';
@@ -1194,11 +1273,12 @@ function mdTable(node, ctx) {
   const tgroup = Array.from(node.childNodes).find(n => n.localName === 'tgroup') || node;
   const thead = Array.from(tgroup.childNodes).find(n => n.localName === 'thead');
   const tbody = Array.from(tgroup.childNodes).find(n => n.localName === 'tbody') || tgroup;
-  const headRows = thead ? Array.from(thead.childNodes).filter(n => n.localName === 'row') : [];
-  const bodyRows = Array.from(tbody.childNodes).filter(n => n.localName === 'row');
+  const headRows = node.localName === 'simpletable' ? Array.from(node.childNodes).filter(n => n.localName === 'sthead') : thead ? Array.from(thead.childNodes).filter(n => n.localName === 'row') : [];
+  const bodyRows = Array.from(tbody.childNodes).filter(n => n.localName === 'row' || n.localName === 'strow');
   const allRows = [...headRows, ...bodyRows];
   if (!allRows.length) return '';
-  const matrix = allRows.map(row => Array.from(row.childNodes).filter(n => n.localName === 'entry').map(e => Array.from(e.childNodes).map(function(n) { return mdInline(n, ctx); }).join('').trim().replace(/\|/g, '\\\|')));
+  if (allRows.some(row => Array.from(row.childNodes).some(cell => Number(cell.getAttribute?.('morerows')) > 0 || cell.getAttribute?.('namest') || cell.getAttribute?.('nameend')))) throw new Error('Markdown 表格不支持合并单元格，请选择 HTML 导出');
+  const matrix = allRows.map(row => Array.from(row.childNodes).filter(n => n.localName === 'entry' || n.localName === 'stentry').map(e => Array.from(e.childNodes).map(function(n) { return mdInline(n, ctx); }).join('').trim().replace(/\|/g, '\\\|')));
   const cols = Math.max(...matrix.map(r => r.length));
   let r = '\n';
   matrix.forEach((row, i) => {
@@ -1229,14 +1309,17 @@ async function exportMapToMarkdown({ map, files, title, loadImageBytes, model = 
   const ctx = { topicPath: '', imageDataCache: new Map(), fnCounter: 0, mdFnCounter: 0, mdFootnotes: [] };
   ctx.mdFnCounter = 0;
   ctx.mdFootnotes = [];
+  ctx.noteDefinitions = publicationDefinitions(prepared);
   const entries = collectPreviewPaths(map.children || []);
+  ctx.anchors = publicationAnchors(prepared, entries);
   const sections = [];
   const failures = [];
     if (loadImageBytes) {
     const imagePaths = new Set();
-    for (const entry of entries) {
+    const imageEntries = [...entries.map(entry => ({ path: entry.path, current: files.get(entry.path)?.current })), ...Array.from(prepared.noteDefinitions.values(), note => ({ path: note.path, current: note.xml }))];
+    for (const entry of imageEntries) {
       try {
-        const cached = files.get(entry.path);
+        const cached = entry;
         if (!cached) throw new Error('not loaded');
         const preDoc = parseXml(cached.current);
         ctx.topicPath = entry.path;
@@ -1260,7 +1343,6 @@ async function exportMapToMarkdown({ map, files, title, loadImageBytes, model = 
       ctx.topicPath = entry.path;
       const doc = parseXml(cached.current);
       normalizeOxyPIs(doc);
-      prepareFootnoteDefinitions(doc, ctx);
       const topic = doc.documentElement;
       const topicTitle = Array.from(topic?.childNodes || []).find(n => n.localName === 'title');
       let body = '';
@@ -1276,14 +1358,15 @@ async function exportMapToMarkdown({ map, files, title, loadImageBytes, model = 
   let md = '# ' + (title || map.title || map.path) + '\n\n';
   if (model) md += '> 适用型号：' + mdEscape(model) + '。\n\n';
   md += '**目录**\n\n';
-  sections.forEach((sec, i) => { md += (i + 1) + '. [' + sec.title + '](#' + sec.title.toLowerCase().replace(/[^a-z0-9\u4e00-\u9fff]+/g, '-') + ')\n'; });
+  sections.forEach((sec, i) => { md += (i + 1) + '. [' + sec.title + '](#sec-' + i + ')\n'; });
   md += '\n---\n\n';
-  sections.forEach(sec => { md += '## ' + sec.title + '\n\n' + sec.body + '\n'; });
+  sections.forEach((sec, i) => { md += '<a id="sec-' + i + '"></a>\n\n## ' + sec.title + '\n\n' + sec.body + '\n'; });
   if (ctx.mdFootnotes.length) {
     md += '\n---\n\n**脚注**\n\n';
     ctx.mdFootnotes.forEach(f => { md += f + '\n'; });
   }
   if (failures.length) md += '\n> 以下 topic 加载失败：' + failures.join(', ') + '\n';
+  validatePublicationLinks(md, ctx);
   return md;
 }
 function highlightMarkdown(md) {

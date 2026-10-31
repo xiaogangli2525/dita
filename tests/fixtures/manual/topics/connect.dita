@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="connect"><title>连接 MQTT</title><body>
+<p id="command">AT+MQTTOPEN<fn conref="../shared/notes.dita#notes/limit"/></p>
+<section product="M100 M200"><title>连接说明</title><p>正文始终保留<fn>INHERITED_AB</fn><fn product="M200">INHERITED_B</fn><fn product="M300">ANCESTOR_EXCLUDED</fn></p></section>
+<p>通用错误说明<fn>UNMARKED</fn></p>
+<p><xref href="publish.dita#publish/parameters">查看发布参数</xref>；<xref href="../shared/notes.dita#notes/retry" type="fn"/></p>
+<p conref="../shared/notes.dita#notes/intro"/>
+</body></topic>
