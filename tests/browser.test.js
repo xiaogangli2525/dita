@@ -106,7 +106,7 @@ test('real browser editing, reading and review workflow', async t => {
     await undo(); assert.equal(await current(), table);
   });
   await t.test('model footnotes support filtering, exact-source edits, undo, stale protection and full export', async () => {
-    const notes = '<topic id="a"><title>MQTT</title><body><p>AT+MQTTOPEN<fn id="limit" product="M100">Limit &amp; retry.</fn></p><p>AT+MQTTPUB<fn id="unknown">Legacy unassigned.</fn></p><p>AT+MQTTSUB<fn product="M200">Keep <xref href="a.dita">link</xref>.</fn></p></body></topic>';
+    const notes = '<topic id="a"><title>MQTT</title><body><p>AT+MQTTOPEN<fn product="M100">Limit &amp; retry.</fn></p><p>AT+MQTTPUB<fn>Legacy unassigned.</fn></p><p>AT+MQTTSUB<fn product="M200">Keep <xref href="a.dita">link</xref>.</fn></p></body></topic>';
     await source(notes); await page.click('#footnotesButton');
     await page.waitForFunction(() => document.getElementById('footnoteCount').textContent === '3');
     await page.selectOption('#footnoteModel', 'M100');
@@ -151,6 +151,41 @@ test('real browser editing, reading and review workflow', async t => {
     assert.match(await frame.locator('.export-footnotes').innerText(), /Changed elsewhere/);
     await page.click('#closeHtmlPreviewButton');
     await page.click('#propertiesTab'); await open('a.dita'); await source(initial);
+  });
+  await t.test('model HTML preview and MD download use one scope, valid references and unchanged sources', async () => {
+    try {
+    const publication = '<topic id="a"><title>Publication</title><body><p>Body<fn product="M100">A ONLY</fn><fn product="M200">B ONLY</fn><fn>UNKNOWN NOTE</fn></p><fn id="n" product="M100">SHARED NOTE</fn><p>One<xref href="#a/n" type="fn"/> Two<xref href="#a/n" type="fn"/></p></body></topic>';
+    await open('a.dita'); await source(publication); await open('main.ditamap');
+    await page.click('#exportMenuButton'); await page.click('#modelExportButton');
+    await page.selectOption('#exportModel', 'M100');
+    assert.match(await page.locator('#modelExportSummary').innerText(), /包含 3 条.*排除 1 条.*保留 1 条/);
+    await page.click('#modelExportForm button[value="preview"]');
+    const frame = page.frameLocator('#htmlPreviewFrame'); await frame.locator('.export-footnotes').waitFor();
+    const html = await frame.locator('body').innerText();
+    assert.match(html, /A ONLY/); assert.match(html, /UNKNOWN NOTE/); assert.doesNotMatch(html, /B ONLY/);
+    assert.equal(await frame.locator('#fn-3').count(), 1);
+    assert.equal(await frame.locator('a[href="#fn-3"]').count(), 2);
+    assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.get('a.dita').current), publication);
+    await page.click('#closeHtmlPreviewButton');
+    await page.click('#exportMenuButton'); await page.click('#modelExportButton');
+    await page.selectOption('#exportModel', 'M100'); await page.selectOption('#exportFormat', 'md');
+    const downloadPromise = page.waitForEvent('download');
+    await page.click('#modelExportForm button[value="download"]');
+    const download = await downloadPromise;
+    assert.equal(download.suggestedFilename(), 'main-M100.md');
+    const md = await fs.readFile(await download.path(), 'utf8');
+    assert.match(md, /A ONLY/); assert.match(md, /UNKNOWN NOTE/); assert.doesNotMatch(md, /B ONLY/);
+    assert.match(md, /One\[\^3\] Two\[\^3\]/);
+    // A buffered edit after the dialog has captured its snapshot must invalidate it.
+    await page.click('#exportMenuButton'); await page.click('#modelExportButton');
+    await page.locator('#modelExportDialog').waitFor({ state: 'visible' });
+    await page.evaluate(() => { const a = window.DitaApp, f = a.state.filesMap.get('a.dita'); a.setFileContent(f, f.current.replace('A ONLY', 'NEWER')); });
+    await page.click('#modelExportForm button[value="preview"]');
+    assert.match(await page.locator('#modelExportError').innerText(), /内容已变化/);
+    await page.click('#modelExportCancel');
+    await open('a.dita'); await source(initial);
+    } catch (error) { console.error('Publication flow:', error); throw error; }
+    finally { await page.locator('dialog[open]').evaluateAll(dialogs => dialogs.forEach(dialog => dialog.close())); await open('a.dita'); await source(initial); }
   });
   await t.test('Git bulk rejection stays unsaved, undoable and keeps the Git baseline', async () => {
     const changed = initial.replace('Original', 'Saved change');

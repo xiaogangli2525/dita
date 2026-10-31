@@ -1,4 +1,5 @@
 'use strict';
+const publication = typeof module !== 'undefined' ? require('./publication-core') : window.DitaPublication;
 const xmlSource = typeof module !== 'undefined' ? require('./xml-source') : window.DitaXmlSource;
 
 const BODY_TAGS = new Set(['body', 'conbody', 'refbody', 'taskbody']);
@@ -847,6 +848,31 @@ const DITA_INLINE_TAGS = new Set([
   'menucascade', 'uicontrol', 'wintitle', 'fn', 'abbreviated-form'
 ]);
 
+function topicIdOf(node) {
+  while (node?.nodeType === 1) {
+    if (['topic', 'concept', 'task', 'reference'].includes(node.localName)) return node.getAttribute('id') || '';
+    node = node.parentNode;
+  }
+  return '';
+}
+function prepareFootnoteDefinitions(doc, ctx) {
+  ctx.noteDefinitions = new Map(Array.from(doc.querySelectorAll('fn')).filter(node => node.getAttribute('id')).map(node => [topicIdOf(node) + '/' + node.getAttribute('id'), node]));
+}
+function footnoteReference(node, ctx) {
+  let target = node;
+  if (node.localName === 'fn' && node.getAttribute('id')) return null;
+  if (node.localName === 'xref') {
+    const key = publication.referenceKey(node.getAttribute('href') || '', ctx.topicPath, topicIdOf(node));
+    target = ctx.noteDefinitions?.get(key);
+    if (!target) throw new Error('找不到注脚引用：' + key);
+  }
+  ctx.noteNumbers = ctx.noteNumbers || new Map();
+  let entry = ctx.noteNumbers.get(target);
+  if (!entry) { entry = { node: target, number: ctx.noteNumbers.size + 1, refs: 0 }; ctx.noteNumbers.set(target, entry); }
+  entry.refs++;
+  return entry;
+}
+
 function ditaToHtml(node, ctx) {
   ctx = ctx || _ctx;
   if (node.nodeType === 3) return node.data.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -867,14 +893,19 @@ function ditaToHtml(node, ctx) {
     const title = author ? author + ': ' + comment : comment;
     return '<span class="oxy-comment" title="' + escapeHtmlAttr(title) + '">' + Array.from(node.childNodes).map(function(n) { return ditaToHtml(n, ctx); }).join('') + '</span>';
   }
-  if (tag === 'fn') {
+  if (tag === 'fn' || tag === 'xref' && node.getAttribute('type') === 'fn') {
+    const entry = footnoteReference(node, ctx);
+    if (!entry) return '';
+    const { node: target, number: n, refs } = entry;
     ctx.htmlFootnotes = ctx.htmlFootnotes || [];
-    const n = ctx.htmlFootnotes.length + 1;
-    ctx.htmlFootnotes.push('');
-    const models = node.getAttribute('product');
-    const label = models ? '<small>适用型号：' + escapeHtmlAttr(models) + '</small> ' : '';
-    ctx.htmlFootnotes[n - 1] = label + Array.from(node.childNodes).map(child => ditaToHtml(child, ctx)).join('');
-    return '<sup class="fn-ref" id="fnref-' + n + '"><a href="#fn-' + n + '">[' + n + ']</a></sup>';
+    if (refs === 1) {
+      const models = target.getAttribute('product');
+      const label = models ? '<small>适用型号：' + escapeHtmlAttr(models) + '</small> ' : '';
+      ctx.htmlFootnotes.push('');
+      ctx.htmlFootnotes[n - 1] = label + Array.from(target.childNodes).map(child => ditaToHtml(child, ctx)).join('');
+    }
+    const callout = target.getAttribute('callout') || String(n);
+    return '<sup class="fn-ref" id="fnref-' + n + '-' + refs + '"><a href="#fn-' + n + '">[' + escapeHtmlAttr(callout) + ']</a></sup>';
   }
   if (tag === 'image') {
     const href = node.getAttribute('href') || '';
@@ -903,7 +934,9 @@ function serializeOxyNode(node, ctx) {
   return ditaToHtml(node, ctx);
 }
 
-async function exportMapToHtml({ map, files, title, loadImageBytes }) {
+async function exportMapToHtml({ map, files, title, loadImageBytes, model = '', publicationData }) {
+  const prepared = publicationData || publication.preparePublication({ map, files, model }, collectPreviewPaths);
+  files = prepared.files;
   const ctx = { topicPath: '', imageDataCache: new Map(), fnCounter: 0, mdFnCounter: 0, mdFootnotes: [] };
   const entries = collectPreviewPaths(map.children || []);
   const sections = [];
@@ -937,6 +970,7 @@ async function exportMapToHtml({ map, files, title, loadImageBytes }) {
       ctx.topicPath = entry.path;
       const doc = parseXml(cached.current);
       normalizeOxyPIs(doc);
+      prepareFootnoteDefinitions(doc, ctx);
       const topic = doc.documentElement;
       const topicTitle = Array.from(topic?.childNodes || []).find(n => n.localName === 'title');
       let inner = '';
@@ -958,7 +992,7 @@ async function exportMapToHtml({ map, files, title, loadImageBytes }) {
       inner = inner.replace(/<pre class="code-block"\u200b/g, '<pre class="code-block"');
       sections.push({ path: entry.path, title: topicTitle?.textContent?.trim() || entry.title || entry.path, body: inner });
     } catch (error) {
-      failures.push(entry.path);
+      throw new Error(entry.path + '：' + error.message);
     }
   }
   const css = [
@@ -1009,7 +1043,7 @@ async function exportMapToHtml({ map, files, title, loadImageBytes }) {
     body += '<h2 id="sec-' + i + '" style="scroll-margin-top: 20px;">' + escapeHtmlAttr(sec.title) + '</h2>\n' + sec.body + '\n';
     if (i < sections.length - 1) body += '<hr>\n';
   });
-  if (ctx.htmlFootnotes?.length) body += '<section class="export-footnotes"><h2>注脚</h2><ol>' + ctx.htmlFootnotes.map((text, i) => '<li id="fn-' + (i + 1) + '">' + text + ' <a href="#fnref-' + (i + 1) + '" aria-label="返回正文">↩</a></li>').join('') + '</ol></section>';
+  if (ctx.htmlFootnotes?.length) body += '<section class="export-footnotes"><h2>注脚</h2><ol>' + ctx.htmlFootnotes.map((text, i) => '<li id="fn-' + (i + 1) + '">' + text + ' <a href="#fnref-' + (i + 1) + '-1" aria-label="返回正文">↩</a></li>').join('') + '</ol></section>';
   let failuresHtml = '';
   if (failures.length) failuresHtml = '<p class="error">\u4ee5\u4e0b topic \u52a0\u8f7d\u5931\u8d25\uff1a' + failures.map(escapeHtmlAttr).join(', ') + '</p>';
   const html = [
@@ -1019,6 +1053,7 @@ async function exportMapToHtml({ map, files, title, loadImageBytes }) {
     '<title>' + escapeHtmlAttr(title || map.title || map.path) + '</title>',
     '<style>' + css + '</style></head><body>',
     '<h1>' + escapeHtmlAttr(title || map.title || map.path) + '</h1>',
+    model ? '<p class="publication-scope">适用型号：' + escapeHtmlAttr(model) + '。</p>' : '',
     toc,
     body,
     failuresHtml,
@@ -1032,12 +1067,15 @@ function mdEscape(text) {
 }
 
 function markdownFootnote(node, ctx) {
+  const entry = footnoteReference(node, ctx);
+  if (!entry) return '';
+  const { node: target, number: index, refs } = entry;
   ctx.mdFootnotes = ctx.mdFootnotes || [];
-  const index = (ctx.mdFnCounter || 0) + 1;
-  ctx.mdFnCounter = index;
-  const models = node.getAttribute('product');
-  const content = (models ? '**适用型号：' + mdEscape(models) + '。** ' : '') + Array.from(node.childNodes).map(child => mdInline(child, ctx)).join('');
-  ctx.mdFootnotes.push('[^' + index + ']: ' + content.trim().replace(/\n/g, '\n    '));
+  if (refs === 1) {
+    const models = target.getAttribute('product');
+    const content = (models ? '**适用型号：' + mdEscape(models) + '。** ' : '') + Array.from(target.childNodes).map(child => mdInline(child, ctx)).join('');
+    ctx.mdFootnotes.push('[^' + index + ']: ' + content.trim().replace(/\n/g, '\n    '));
+  }
   return '[^' + index + ']';
 }
 
@@ -1053,6 +1091,7 @@ function mdInline(node, ctx) {
   if (tag === 'sup') return '<sup>' + inner() + '</sup>';
   if (tag === 'sub') return '<sub>' + inner() + '</sub>';
   if (['codeph', 'filepath', 'varname', 'parmname', 'msgph'].includes(tag)) return '`' + node.textContent + '`';
+  if (tag === 'xref' && node.getAttribute('type') === 'fn') return markdownFootnote(node, ctx);
   if (tag === 'xref') { const h = node.getAttribute('href') || ''; return '[' + inner() + '](' + h + ')'; }
   if (tag === 'image') { const resolved = resolveAssetPath(node.getAttribute('href') || '', ctx); const a = node.getAttribute('alt') || ''; const src = ctx.imageDataCache.has(resolved) ? ctx.imageDataCache.get(resolved) : resolved; return '![' + a + '](' + src + ')'; }
   if (tag === 'fn') return markdownFootnote(node, ctx);
@@ -1102,6 +1141,7 @@ function ditaToMarkdown(node, ctx) {
     return '![' + a + '](' + src + ')\n\n';
   }
 
+  if (tag === 'xref' && node.getAttribute('type') === 'fn') return markdownFootnote(node, ctx);
   if (tag === 'xref') { const h = node.getAttribute('href') || ''; return '[' + Array.from(node.childNodes).map(function(n) { return mdInline(n, ctx); }).join('') + '](' + h + ')'; }
 
   if (tag === 'fig') {
@@ -1183,7 +1223,9 @@ function mdDl(node, ctx) {
   return r;
 }
 
-async function exportMapToMarkdown({ map, files, title, loadImageBytes }) {
+async function exportMapToMarkdown({ map, files, title, loadImageBytes, model = '', publicationData }) {
+  const prepared = publicationData || publication.preparePublication({ map, files, model }, collectPreviewPaths);
+  files = prepared.files;
   const ctx = { topicPath: '', imageDataCache: new Map(), fnCounter: 0, mdFnCounter: 0, mdFootnotes: [] };
   ctx.mdFnCounter = 0;
   ctx.mdFootnotes = [];
@@ -1218,6 +1260,7 @@ async function exportMapToMarkdown({ map, files, title, loadImageBytes }) {
       ctx.topicPath = entry.path;
       const doc = parseXml(cached.current);
       normalizeOxyPIs(doc);
+      prepareFootnoteDefinitions(doc, ctx);
       const topic = doc.documentElement;
       const topicTitle = Array.from(topic?.childNodes || []).find(n => n.localName === 'title');
       let body = '';
@@ -1227,10 +1270,11 @@ async function exportMapToMarkdown({ map, files, title, loadImageBytes }) {
       }
       sections.push({ path: entry.path, title: topicTitle?.textContent?.trim() || entry.title || entry.path, body });
     } catch (error) {
-      failures.push(entry.path);
+      throw new Error(entry.path + '：' + error.message);
     }
   }
   let md = '# ' + (title || map.title || map.path) + '\n\n';
+  if (model) md += '> 适用型号：' + mdEscape(model) + '。\n\n';
   md += '**目录**\n\n';
   sections.forEach((sec, i) => { md += (i + 1) + '. [' + sec.title + '](#' + sec.title.toLowerCase().replace(/[^a-z0-9\u4e00-\u9fff]+/g, '-') + ')\n'; });
   md += '\n---\n\n';

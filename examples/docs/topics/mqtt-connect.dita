@@ -2,10 +2,10 @@
 <topic id="mqtt-connect"><title>建立 MQTT 连接</title><body>
 <p>通过 <codeph>AT+MQTTOPEN</codeph> 创建服务器连接，然后使用连接标识完成登录与订阅。</p>
 <section><title>连接参数</title><table><tgroup cols="3"><thead><row><entry>参数</entry><entry>说明</entry><entry>示例</entry></row></thead><tbody><row><entry>client_id</entry><entry>客户端标识</entry><entry>device-demo-01</entry></row><row><entry>keepalive</entry><entry>心跳间隔</entry><entry>60 秒</entry></row></tbody></tgroup></table>
-<p><codeph>AT+MQTTOPEN</codeph>：连接数限制<fn id="connection-limit" product="M100">M100 最多支持 2 个 MQTT 连接；复用连接前应先关闭旧连接。此数值仅用于演示。</fn>。</p>
-<p><codeph>AT+MQTTOPEN</codeph>：安全连接说明<fn id="tls-profile" product="M200 M300">M200 与 M300 的安全连接流程请参见 <xref href="mqtt-publish.dita">消息收发注意事项</xref>。此差异仅用于演示。</fn>。</p>
+<p><codeph>AT+MQTTOPEN</codeph>：连接数限制<fn product="M100">M100 最多支持 2 个 MQTT 连接；复用连接前应先关闭旧连接。此数值仅用于演示。</fn>。</p>
+<p><codeph>AT+MQTTOPEN</codeph>：安全连接说明<fn product="M200 M300">M200 与 M300 的安全连接流程请参见 <xref href="mqtt-publish.dita">消息收发注意事项</xref>。此差异仅用于演示。</fn>。</p>
 </section>
 <section><title>操作示例</title><codeblock>AT+MQTTOPEN=0,"broker.example.invalid",1883
 OK
-+MQTTOPEN: 0,0</codeblock><p>登录前检查连接返回值<fn id="legacy-note">部分型号的错误码存在差异，请以对应固件的发布说明为准。本注脚尚未明确标注适用型号。</fn>。</p></section>
++MQTTOPEN: 0,0</codeblock><p>登录前检查连接返回值<fn>部分型号的错误码存在差异，请以对应固件的发布说明为准。本注脚尚未明确标注适用型号。</fn>。</p></section>
 </body></topic>
