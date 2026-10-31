@@ -65,6 +65,7 @@
             <option value="ph">短语 ph</option>
             <option value="b">粗体 b</option>
             <option value="i">斜体 i</option>
+            <option value="codeph">行内代码 codeph</option>
           </select>
         </label>
         <button id="insertElementButton" type="button" title="在编辑器光标处插入所选 DITA 元素">插入</button>
@@ -139,6 +140,7 @@
       </div>
       <div id="tabs" class="tabs"></div>
       <div id="editSearchPanel" class="edit-search-panel" hidden>
+        <span id="editSearchKind" class="edit-search-kind">正文</span><select id="editSearchTopic" aria-label="查找范围：当前 Topic" title="替换仅作用于选定的 Topic"></select>
         <label>查找 <input id="editFindInput" type="search" autocomplete="off" /></label>
         <label>替换为 <input id="editReplaceInput" type="text" autocomplete="off" /></label>
         <label class="edit-search-case"><input id="editFindCase" type="checkbox" /> 区分大小写</label>
@@ -163,7 +165,10 @@
       <div id="visualPane" class="visual-pane active">
         <div id="authoringToolbar" class="authoring-toolbar" hidden>
           <div class="authoring-context"><span class="writing-dot" aria-hidden="true"></span><strong>正文编写</strong><span id="authoringHint">在正文放好光标，新增注脚</span></div>
-          <div class="authoring-actions"><button id="authorUndoButton" type="button" title="撤销 Ctrl/Cmd+Z" disabled>撤销</button><button id="authorRedoButton" type="button" title="重做 Ctrl/Cmd+Y" disabled>重做</button><button id="newFootnoteButton" type="button" class="note-create-action" title="新增注脚 Ctrl/Cmd+Alt+N">＋ 新增注脚</button></div>
+          <div class="authoring-actions">
+            <div class="author-format-actions" role="group" aria-label="选中文字格式"><button id="authorBoldButton" type="button" title="加粗／取消粗体 Ctrl/Cmd+B" aria-label="加粗／取消粗体"><strong>B</strong></button><button id="authorItalicButton" type="button" title="斜体／取消斜体 Ctrl/Cmd+I" aria-label="斜体／取消斜体"><em>I</em></button><button id="authorCodeButton" type="button" title="行内代码／取消行内代码" aria-label="行内代码／取消行内代码">&lt;/&gt;</button></div>
+            <select id="authorInsertSelect" aria-label="在当前块后插入" title="块元素插在当前段落之后，选区文字会保留"><option value="">插入…</option><option value="p">段落</option><option value="ul">无序列表</option><option value="ol">有序列表</option><option value="table">表格</option><option value="section">节</option><option value="note">说明</option><option value="codeblock">代码块</option></select><button id="authorFindButton" type="button" title="正文查找与替换 Ctrl/Cmd+F">查找</button>
+            <button id="authorUndoButton" type="button" title="撤销 Ctrl/Cmd+Z" disabled>撤销</button><button id="authorRedoButton" type="button" title="重做 Ctrl/Cmd+Y" disabled>重做</button><button id="newFootnoteButton" type="button" class="note-create-action" title="新增注脚 Ctrl/Cmd+Alt+N">＋ 新增注脚</button></div>
         </div>
         <div id="visualEditor" contenteditable="true" class="visual-editor dita-preview"></div>
       </div>
@@ -328,6 +333,8 @@
   <script src="/documents.js"></script>
   <script src="/editor-controller.js"></script>
   <script src="/author-notes.js"></script>
+  <script src="/author-selection.js"></script>
+  <script src="/editor-tools.js"></script>
   <script src="/app.js"></script>
 </body>
 </html>

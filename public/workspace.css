@@ -318,3 +318,31 @@ kbd { display: inline-block; border: 1px solid #dde4e8; border-radius: 4px; back
   .footnotes-panel { padding-top:10px; }
   .footnote-panel-title h2 { font-size:16px; }
 }
+
+/* Common writing tools stay visible; XML-only tools keep their own menu. */
+.author-format-actions { display:flex; border-right:1px solid var(--border); padding-right:5px; margin-right:3px; }
+.author-format-actions button { min-width:28px; }
+.author-format-actions button[aria-pressed="true"] { color:#126950; background:#e2f1e9; border-color:#bfd8ca; }
+.authoring-actions select { max-width:100px; border:1px solid #dce6e0; border-radius:6px; padding:6px; color:#365d4b; background:#fff; font-size:12px; }
+.edit-search-kind { color:#246555; font-weight:600; }
+#editSearchTopic { max-width:240px; min-width:0; padding:5px 7px; background:#fff; border:1px solid var(--border); border-radius:5px; color:#496453; }
+.visual-editor [data-dita-source="b"] { font-weight:700; }
+.visual-editor [data-dita-source="i"] { font-style:italic; }
+.visual-editor [data-dita-source="codeph"] { font-family:ui-monospace,SFMono-Regular,Consolas,monospace; padding:1px 4px; border-radius:4px; background:#e8efec; color:#31534b; font-size:.94em; }
+::highlight(dita-find-all) { background:#f8e7a8; color:#384b3e; }
+::highlight(dita-find-current) { background:#e7af4b; color:#25382c; }
+@media(max-width:900px) {
+  .authoring-toolbar { flex-wrap:wrap; gap:5px; }
+  .authoring-actions { flex-wrap:wrap; justify-content:flex-end; }
+  .authoring-context { flex:1; }
+  .edit-search-panel { gap:6px; }
+  #editSearchTopic { max-width:100%; }
+}
+@media(max-width:500px) {
+  .authoring-toolbar { align-items:flex-start; }
+  .authoring-context { flex-basis:100%; }
+  .authoring-actions { justify-content:flex-start; gap:3px; }
+  .authoring-actions button { padding:6px; }
+  .authoring-actions select { padding:5px; font-size:11px; }
+  .edit-search-panel input[type="search"], .edit-search-panel input[type="text"] { width:135px; }
+}

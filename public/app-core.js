@@ -142,12 +142,9 @@ function convertVisualElement(node, documentRef, preserveAttributes = false) {
     }
     const visualTitle = Array.from(node.children || []).find(child => child.localName === 'h3');
     if (visualTitle) {
-      let title = Array.from(table.childNodes).find(child => child.localName === 'title');
-      if (!title) {
-        title = documentRef.createElement('title');
-        table.insertBefore(title, table.firstChild);
-      }
-      title.textContent = visualTitle.textContent || '';
+      const title = Array.from(table.childNodes).find(child => child.localName === 'title');
+      const converted = visualElementToDita(visualTitle, documentRef, true);
+      if (title) title.replaceWith(converted); else table.insertBefore(converted, table.firstChild);
     }
     return table;
   }
@@ -393,10 +390,18 @@ function updateVisualFromXml(state, dom, source, documentRef = document, normali
   const root = doc.documentElement;
   const container = createAuthorTopic(source, documentRef, normalizeOxy, topicPath);
   dom.visualEditor.replaceChildren(...container.childNodes);
+  dom.visualEditor.ditaSourceContent = source;
 }
 
 
 function resetFnCounter() { _ctx.fnCounter = 0; }
+function authorHeading(node, documentRef, tag = 'h3') {
+  const heading = documentRef.createElement(tag);
+  heading.ditaSourcePath = xmlNodePath(node);
+  for (const attr of Array.from(node.attributes || [])) heading.setAttribute(attr.name, attr.value);
+  for (const child of node.childNodes) { const rendered = renderDitaNode(child, documentRef); if (rendered) heading.appendChild(rendered); }
+  return heading;
+}
 function createAuthorTopic(source, documentRef = document, normalizeOxy = false, topicPath = '') {
   _ctx.topicPath = topicPath;
   resetFnCounter();
@@ -404,13 +409,9 @@ function createAuthorTopic(source, documentRef = document, normalizeOxy = false,
   if (normalizeOxy) normalizeOxyPIs(doc, true);
   const root = doc.documentElement;
   const container = documentRef.createElement('article');
-  const title = documentRef.createElement('h2');
+  container.ditaSourceContent = source;
   const sourceTitle = Array.from(root.childNodes).find(node => node.localName === 'title');
-  title.textContent = sourceTitle ? sourceTitle.textContent : '';
-  if (sourceTitle) {
-    title.ditaSourcePath = xmlNodePath(sourceTitle);
-    for (const attr of Array.from(sourceTitle.attributes || [])) title.setAttribute(attr.name, attr.value);
-  }
+  const title = sourceTitle ? authorHeading(sourceTitle, documentRef, 'h2') : documentRef.createElement('h2');
   container.appendChild(title);
   const body = Array.from(root.childNodes).find(node => BODY_TAGS.has(node.localName));
   const bodyContainer = documentRef.createElement('div');
@@ -491,11 +492,7 @@ function renderAuthorNode(node, documentRef = document) {
     wrapper.setAttribute('data-dita-original', serializeXmlNode(node));
     for (const attribute of Array.from(node.attributes || [])) wrapper.setAttribute(attribute.name, attribute.value);
     const sourceTitle = Array.from(node.childNodes).find(child => child.localName === 'title');
-    if (sourceTitle) {
-      const heading = documentRef.createElement('h3');
-      heading.textContent = sourceTitle.textContent || '';
-      wrapper.appendChild(heading);
-    }
+    if (sourceTitle) wrapper.appendChild(authorHeading(sourceTitle, documentRef));
     const rows = [];
     const collectRows = (current, section = 'tbody') => {
       for (const child of Array.from(current.childNodes || [])) {
@@ -540,11 +537,15 @@ function renderAuthorNode(node, documentRef = document) {
   }
   if (['ul', 'ol', 'sl'].includes(tag)) {
     const element = documentRef.createElement(tag === 'sl' ? 'ul' : tag);
+    element.setAttribute('data-dita-source', tag);
+    for (const attr of Array.from(node.attributes || [])) element.setAttribute(attr.name, attr.value);
     for (const child of node.childNodes) {
       if (child.nodeType !== 1) continue;
       if (['li', 'sli'].includes(child.localName)) {
         const item = documentRef.createElement('li');
+        item.ditaSourcePath = xmlNodePath(child);
         item.setAttribute('data-dita-source', child.localName === 'sli' ? 'sli' : 'li');
+        for (const attr of Array.from(child.attributes || [])) item.setAttribute(attr.name, attr.value);
         for (const nested of child.childNodes) {
           const rendered = renderDitaNode(nested, documentRef);
           if (rendered) item.appendChild(rendered);
@@ -567,10 +568,7 @@ function renderAuthorNode(node, documentRef = document) {
         // heading in the visual tree also lets the source serializer map it
         // back to the original DITA <title> without forcing source editing.
         if (tag !== 'p') {
-          const heading = documentRef.createElement('h3');
-          heading.textContent = child.textContent || '';
-          for (const attribute of Array.from(child.attributes || [])) heading.setAttribute(attribute.name, attribute.value);
-          element.appendChild(heading);
+          element.appendChild(authorHeading(child, documentRef));
         }
         continue;
       }
@@ -603,10 +601,14 @@ function renderAuthorNode(node, documentRef = document) {
           if (entry.nodeType !== 1) continue;
           if (entry.localName === 'dt') {
             const dt = documentRef.createElement('dt');
+            dt.ditaSourcePath = xmlNodePath(entry);
+            for (const attr of Array.from(entry.attributes || [])) dt.setAttribute(attr.name, attr.value);
             dt.textContent = entry.textContent;
             el.appendChild(dt);
           } else if (entry.localName === 'dd') {
             const dd = documentRef.createElement('dd');
+            dd.ditaSourcePath = xmlNodePath(entry);
+            for (const attr of Array.from(entry.attributes || [])) dd.setAttribute(attr.name, attr.value);
             dd.setAttribute('data-dita-source', 'dd');
             for (const dc of entry.childNodes) {
               const r = renderDitaNode(dc, documentRef);
@@ -678,10 +680,7 @@ function renderAuthorNode(node, documentRef = document) {
   for (const attribute of Array.from(node.attributes || [])) element.setAttribute(attribute.name, attribute.value);
   for (const child of node.childNodes) {
     if (child.localName === 'title') {
-      const heading = documentRef.createElement('h3');
-      heading.textContent = child.textContent || '';
-      for (const attribute of Array.from(child.attributes || [])) heading.setAttribute(attribute.name, attribute.value);
-      element.appendChild(heading);
+      element.appendChild(authorHeading(child, documentRef));
       continue;
     }
     const rendered = renderDitaNode(child, documentRef);

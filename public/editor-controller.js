@@ -60,7 +60,14 @@
 
     function refreshFileViews(file, { updateEditor = true } = {}) {
       if (file) scheduleMapRefresh(file);
-      if (!file || state.activePath !== file.path) return;
+      if (!file) return;
+      if (state.activePath !== file.path) {
+        if (state.mode === 'visual' && state.mapAuthorPaths?.has(file.path)) {
+          const surface = Array.from(dom.visualEditor.querySelectorAll('.map-topic-surface')).find(node => node.dataset.mapTopicPath === file.path);
+          if (surface) renderAuthorSurface(file, surface);
+        }
+        return;
+      }
       if (updateEditor) dom.editor.value = file.current;
       if (state.mode === 'visual' || state.mode === 'preview' || state.mode === 'review') {
         state.suppressVisualInput = true;
@@ -320,13 +327,15 @@
       const surface = target?.classList.contains('map-topic-surface') ? target : target?.querySelector('.map-topic-surface');
       if (!topicFile || !surface) return true;
       try {
+        if (surface.ditaSourceContent !== topicFile.current) throw new Error('正文已由其他操作更新，请重新打开此 Topic 后继续编写');
         const next = ditaCore.updateCurrentFromVisual(null, { visualEditor: surface }, topicFile.current);
         if (next !== topicFile.current) {
-          setFileContent(topicFile, next, { updateEditor: false });
+          setFileContent(topicFile, next, { updateEditor: false, render: false });
           topicFile.gitStatus = topicFile.gitStatus === 'unknown' ? 'modified' : topicFile.gitStatus;
           renderTabs();
           updateHistoryButtons();
         }
+        surface.ditaSourceContent = topicFile.current;
         setStatus(`Map Author：已修改 ${path}${topicFile.dirty ? '（待保存）' : ''}`);
       } catch (error) {
         setStatus(`Map Author 同步失败：${error.message}`, true);
@@ -386,10 +395,12 @@
       }
       try {
         const previous = file.current;
+        if (dom.visualEditor.ditaSourceContent !== previous) throw new Error('正文已由其他操作更新，请重新打开后继续编写');
         const next = visualCore.visualToXml();
         if (next !== previous) {
           setFileContent(file, next, { updateEditor: false, render: false });
         }
+        dom.visualEditor.ditaSourceContent = file.current;
         // Keep the live Author DOM in place while the user is typing. Rebuilding
         // it on every input would move the caret and drop the current selection;
         // Oxygen updates the source model separately from the editor surface.
@@ -426,6 +437,7 @@
       }
       rendered ||= ditaCore.createAuthorTopic(file.current, document, false, file.path);
       surface.replaceChildren(...rendered.childNodes);
+      surface.ditaSourceContent = file.current;
       renderInspector(null); renderTabs(); updateHistoryButtons(); renderOutline();
       if (bookmark) {
         const block = bookmark.path === undefined ? surface : Array.from(surface.querySelectorAll('*')).find(node => node.ditaSourcePath === bookmark.path) || surface;

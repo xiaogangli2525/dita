@@ -68,7 +68,7 @@ The static online demonstration has no PDF rendering server. Its **PDF（打印�
 
 ## Workflow and architecture
 
-The light workspace separates document navigation, editing and the attribute/review panel. Advanced editing tools are grouped in a dropdown; narrow screens use navigation and inspector drawers.
+The light workspace separates document navigation, editing and the attribute/review panel. Frequent selection formatting, body search and block insertion stay beside the document. XML-oriented tools remain in the advanced dropdown; narrow screens use navigation and inspector drawers.
 
 - `public/document-store.js`: shared document mutations, undo/redo, save coordination and edit proposals.
 - `public/xml-source.js`: shared browser/server XML validation and source-preserving formatting.
@@ -80,7 +80,8 @@ The light workspace separates document navigation, editing and the attribute/rev
 - `public/publication-resolver.js`: bounded local dependency loading, common conref expansion and unsupported-feature checks.
 - `public/app-core.js`: source-preserving Author rendering/conversion.
 - `public/editor-controller.js`: Source/Topic/Map synchronization, document history, mode changes and review coordination, with injected view callbacks.
-- `public/author-notes.js`: guarded Author selections, cancellable note insertion and direct marker editing, using the same source and history rules.
+- `public/author-notes.js`: cancellable note insertion and direct marker editing, using the same source and history rules.
+- `public/author-selection.js` / `public/editor-tools.js`: source-aware selections and detached edits; Author formatting, current-Topic plaintext search/replace, block insertion and explicit Source tools.
 - `public/delivery-core.js` / `public/diff-core.js`: publication rendering and pure diff algorithms.
 - `public/manual-core.js` / `public/manual-service.js`: shared applicability/configuration and immutable manual dependency snapshots.
 - `public/save.js`, `drafts.js`, `project.js`, `search.js`, `resources.js`: independent feature controllers.
@@ -96,6 +97,16 @@ Branch switching refuses a dirty Git worktree, including changes already saved b
 The HTTP API requires the `workspaceToken` returned by `/api/workspace` in the `x-workspace-token` header for document operations. Updates also require `expectedContent`, the last-read disk content. This is a local single-workspace application, not a shared multi-user server. `PUBLIC_ORIGIN` can explicitly allow a trusted reverse-proxy origin; default access remains localhost.
 
 See [architecture and extension boundaries](docs/architecture.md), [verification](docs/verification.md) and the [AI authoring integration plan](docs/ai-editing.md). AI proposal primitives are implemented; no AI provider or generation UI is connected yet.
+
+## Writing in Author mode
+
+Select text inside one paragraph, title, list item or table cell, then use **B**, **I** or **</>** beside the document. Ctrl/Cmd+B and Ctrl/Cmd+I use the same operation; repeat to remove that format. Empty, cross-block and protected note/reuse/revision selections are refused. Removing a format retains existing identifiers and applicability attributes on a neutral `ph` over the original extent.
+
+**查找** (Ctrl/Cmd+F) stays in Author or Reading mode and highlights rendered text, including matches spanning inline elements. It searches one explicitly selected Topic at a time; the selector makes Map scope visible. Attributes, footnote markers/content, reused content and revision marks are excluded. Replacement keeps existing inline elements/IDs, escapes XML and is one undo step per action. Reading allows search but disables replacement. A limit of 2,000 matches disables Replace All until the query is narrowed. In explicit Source mode, the same panel is labelled **XML 源码** and searches serialized XML instead.
+
+Use **插入…** for paragraphs, lists, tables, sections, notes and code blocks. Selected text is retained; a new block follows the current block and its first placeholder is selected so you can immediately type. Paragraphs inside list items stay inside that item; tables inserted from a cell follow the enclosing table; new sections follow the containing body block. These structural choices avoid nesting blocks inside inline text. Save remains explicit, and current buffers participate in delivery before save.
+
+![Author formatting and body search](docs/assets/writing-tools-preview.jpg)
 
 ## Editing and review behavior
 

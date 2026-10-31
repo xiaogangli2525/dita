@@ -174,7 +174,7 @@ Object.assign(A, { state, dom, ditaCore, setStatus, toast, api: workspaceClient,
 
 const editor = window.DitaEditorController.createEditorController(A, {
   renderTabs, renderOutline, renderInspector, updateTree, refreshChrome: updateDocumentChrome,
-  beforeModeChange: () => A.releaseExportPreview?.(), modeChanged: () => { A.footnotes?.syncMode(); A.authorNotes?.syncMode(); }
+  beforeModeChange: () => A.releaseExportPreview?.(), modeChanged: () => { A.footnotes?.syncMode(); A.authorNotes?.syncMode(); A.editorTools?.syncMode(); }
 });
 const { setFileContent, setMode, updateHistoryButtons, updateActivePanes, ensureMapAuthorFile,
   undoFile, redoFile, syncVisualToModel, markDirty, renderDiff, renderMapReview, reviewAll } = editor;
@@ -417,15 +417,7 @@ function applyContextAction(action) {
     return;
   }
 
-  if (action === 'bold') { document.execCommand('bold'); syncVisualToModel({ target: element }); return; }
-  if (action === 'italic') { document.execCommand('italic'); syncVisualToModel({ target: element }); return; }
-  if (action === 'code-inline') {
-    const code = document.createElement('code');
-    code.setAttribute('data-dita-source', 'codeph');
-    code.textContent = String(window.getSelection() || '');
-    if (code.textContent) { window.getSelection().getRangeAt(0).surroundContents(code); syncVisualToModel({ target: element }); }
-    return;
-  }
+  if (['bold', 'italic', 'code-inline'].includes(action)) return A.editorTools.format(({ bold: 'b', italic: 'i', 'code-inline': 'codeph' })[action]);
   if (action === 'row-before' || action === 'row-after' || action === 'row-delete') {
     const tr = element.closest('tr');
     if (!tr) return;
@@ -729,249 +721,11 @@ function closeFile(path) {
   updateTree();
 }
 
-// These templates cover the most common DITA authoring actions. Author mode
-// inserts visual nodes directly; Source mode uses the serialized templates.
-const DITA_INSERT_TEMPLATES = Object.freeze({
-  p: '<p>{{selection}}</p>',
-  section: '<section>\n  <title>新节</title>\n  <p>{{selection}}</p>\n</section>',
-  ul: '<ul>\n  <li>{{selection}}</li>\n  <li>列表项</li>\n</ul>',
-  ol: '<ol>\n  <li>{{selection}}</li>\n  <li>列表项</li>\n</ol>',
-  note: '<note>{{selection}}</note>',
-  codeblock: '<codeblock>在此输入代码</codeblock>',
-  table: '<table>\n  <title>表格标题</title>\n  <tgroup cols="2">\n    <tbody>\n      <row><entry>单元格</entry><entry>单元格</entry></row>\n    </tbody>\n  </tgroup>\n</table>',
-  image: '<image href="image.png" alt="图片说明"/>',
-  xref: '<xref href="topic.dita">链接文字</xref>',
-  ph: '<ph>{{selection}}</ph>',
-  b: '<b>{{selection}}</b>',
-  i: '<i>{{selection}}</i>'
-});
-
-function insertionIndent(text, position) {
-  const lineStart = text.lastIndexOf('\n', Math.max(0, position - 1)) + 1;
-  const linePrefix = text.slice(lineStart, position);
-  return { linePrefix, indent: (linePrefix.match(/^\s*/) || [''])[0] };
-}
-
-function insertDitaElement() {
-  const file = state.filesMap.get(state.activePath);
-  if (!file) {
-    setStatus('请先打开一个 DITA 文件', true);
-    return;
-  }
-  if (state.mode === 'preview' || state.mode === 'review') return;
-  const tag = dom.insertElementSelect?.value || 'p';
-  if (tag === 'fn') { A.authorNotes.show(); return; }
-  if (tag === 'image' || tag === 'xref') { A.resources.show(tag === 'image' ? 'image' : 'link'); return; }
-  if (state.mode === 'visual' || state.mode === 'preview') {
-    insertVisualElement(tag);
-    return;
-  }
-  if (state.mode !== 'editor') setMode('editor');
-  const template = DITA_INSERT_TEMPLATES[tag];
-  if (!template) return;
-  const text = file.current || '';
-  const start = Number.isInteger(dom.editor.selectionStart) ? dom.editor.selectionStart : text.length;
-  const end = Number.isInteger(dom.editor.selectionEnd) ? dom.editor.selectionEnd : start;
-  const selected = text.slice(start, end);
-  const body = selected || '在此输入内容';
-  let snippet = template.replace(/\{\{selection\}\}/g, body);
-  const { linePrefix, indent } = insertionIndent(text, start);
-  // Preserve the indentation of the current source line for multiline
-  // snippets, and avoid adding a leading newline when the caret is on an
-  // otherwise empty line.
-  snippet = snippet.split('\n').map((line, index) => index ? indent + line : line).join('\n');
-  const insertion = linePrefix.trim() ? `\n${indent}${snippet}` : snippet;
-  const next = text.slice(0, start) + insertion + text.slice(end);
-  setFileContent(file, next, { updateEditor: false });
-  dom.editor.value = file.current;
-  const caret = start + insertion.length;
-  dom.editor.focus();
-  dom.editor.setSelectionRange(caret, caret);
-  setStatus(`已插入 <${tag}> 元素`);
-}
-
-function createVisualInsertion(tag) {
-  let element = document.createElement(
-    tag === 'image' ? 'img'
-      : tag === 'xref' ? 'a'
-        : tag === 'ph' || tag === 'b' || tag === 'i' ? 'span'
-          : tag === 'codeblock' ? 'pre'
-            : tag
-  );
-  const sourceTag = tag === 'image' ? 'image' : tag;
-  element.setAttribute('data-dita-source', sourceTag);
-  if (tag === 'p') element.textContent = '在此输入内容';
-  else if (tag === 'section') {
-    element.setAttribute('data-dita-source', 'section');
-    const paragraph = document.createElement('p');
-    paragraph.setAttribute('data-dita-source', 'p');
-    paragraph.textContent = '新节内容';
-    element.append(paragraph);
-  } else if (tag === 'ul' || tag === 'ol') {
-    for (const text of ['列表项', '列表项']) {
-      const item = document.createElement('li');
-      item.setAttribute('data-dita-source', 'li');
-      item.textContent = text;
-      element.append(item);
-    }
-  } else if (tag === 'note') {
-    element.className = 'note';
-    element.textContent = '在此输入说明';
-  } else if (tag === 'codeblock') {
-    element.textContent = '在此输入代码';
-  } else if (tag === 'table') {
-    const wrapper = document.createElement('div');
-    wrapper.setAttribute('data-dita-source', 'table');
-    wrapper.append(element);
-    element = wrapper;
-    const row = document.createElement('tr');
-    for (let index = 0; index < 2; index++) {
-      const cell = document.createElement('td');
-      cell.textContent = '单元格';
-      row.append(cell);
-    }
-    element.firstElementChild.append(row);
-  } else if (tag === 'image') {
-    element.alt = '图片说明';
-    element.setAttribute('href', 'image.png');
-    element.src = '/api/asset?path=image.png';
-  } else if (tag === 'xref') {
-    element.setAttribute('href', 'topic.dita');
-    element.textContent = '链接文字';
-  } else {
-    element.textContent = '在此输入内容';
-  }
-  return element;
-}
-
-function insertVisualElement(tag) {
-  const file = state.filesMap.get(state.activePath);
-  if (!file || !dom.visualEditor.querySelector('[data-dita-body]')) {
-    setStatus('当前文档没有可编辑的 Author 内容区', true);
-    return;
-  }
-  const element = createVisualInsertion(tag);
-  const selection = window.getSelection?.();
-  const anchor = selection?.anchorNode?.nodeType === 1 ? selection.anchorNode : selection?.anchorNode?.parentElement;
-  const selected = selectedAuthorElement(anchor);
-  const inline = ['ph', 'b', 'i', 'xref'].includes(tag);
-  if (inline && selection?.rangeCount && dom.visualEditor.contains(selection.anchorNode)) {
-    selection.getRangeAt(0).deleteContents();
-    selection.getRangeAt(0).insertNode(element);
-  } else if (selected && selected !== dom.visualEditor && !['h2', 'img'].includes(selected.localName)) {
-    selected.after(element);
-  } else {
-    const activeSurface = document.activeElement?.closest?.('.map-topic-surface');
-    const body = activeSurface?.querySelector('[data-dita-body]') || dom.visualEditor.querySelector('[data-dita-body]');
-    body.append(element);
-  }
-  syncVisualToModel({ target: element });
-  renderInspector(element);
-  element.focus?.();
-  setStatus(`已在 Author 视图插入 <${tag}> 元素`);
-}
-
-function openFindReplace() {
-  if (!dom.editSearchPanel) return;
-  if (!state.filesMap.has(state.activePath)) {
-    setStatus('请先打开一个 DITA 文件', true);
-    return;
-  }
-  // Find/replace works on serialized XML, so switching to Source is explicit
-  // and visible instead of silently editing hidden source text.
-  if (state.mode !== 'editor') setMode('editor');
-  dom.editSearchPanel.hidden = false;
-  const selected = dom.editor.value.slice(dom.editor.selectionStart || 0, dom.editor.selectionEnd || 0);
-  if (!dom.editFindInput.value && selected) dom.editFindInput.value = selected;
-  dom.editFindInput.focus();
-  dom.editFindInput.select();
-}
-
-function closeFindReplace() {
-  if (!dom.editSearchPanel) return;
-  dom.editSearchPanel.hidden = true;
-  dom.editFindMeta.textContent = '';
-}
-
-function findNextEditMatch() {
-  const query = dom.editFindInput?.value || '';
-  const text = dom.editor.value || '';
-  if (!query) {
-    if (dom.editFindMeta) dom.editFindMeta.textContent = '请输入查找内容';
-    return -1;
-  }
-  const caseSensitive = Boolean(dom.editFindCase?.checked);
-  const haystack = caseSensitive ? text : text.toLocaleLowerCase();
-  const needle = caseSensitive ? query : query.toLocaleLowerCase();
-  let from = Number.isInteger(dom.editor.selectionEnd) ? dom.editor.selectionEnd : 0;
-  let index = haystack.indexOf(needle, from);
-  let wrapped = false;
-  if (index < 0 && from > 0) {
-    index = haystack.indexOf(needle, 0);
-    wrapped = index >= 0;
-  }
-  if (index < 0) {
-    if (dom.editFindMeta) dom.editFindMeta.textContent = '未找到';
-    setStatus(`未找到“${query}”`);
-    return -1;
-  }
-  dom.editor.focus();
-  dom.editor.setSelectionRange(index, index + query.length);
-  const before = haystack.slice(0, index);
-  const matchNumber = before.split(needle).length;
-  const total = haystack.split(needle).length - 1;
-  if (dom.editFindMeta) dom.editFindMeta.textContent = `${wrapped ? '已从头查找；' : ''}${matchNumber}/${total}`;
-  setStatus(`找到“${query}”`);
-  return index;
-}
-
-function replaceCurrentEditMatch() {
-  const file = state.filesMap.get(state.activePath);
-  const query = dom.editFindInput?.value || '';
-  if (!file || !query) return findNextEditMatch();
-  const start = dom.editor.selectionStart || 0;
-  const end = dom.editor.selectionEnd || start;
-  const selected = dom.editor.value.slice(start, end);
-  const matches = dom.editFindCase?.checked ? selected === query : selected.toLocaleLowerCase() === query.toLocaleLowerCase();
-  if (!matches) {
-    findNextEditMatch();
-    return;
-  }
-  const replacement = dom.editReplaceInput?.value || '';
-  const next = dom.editor.value.slice(0, start) + replacement + dom.editor.value.slice(end);
-  setFileContent(file, next, { updateEditor: false });
-  dom.editor.value = file.current;
-  dom.editor.focus();
-  dom.editor.setSelectionRange(start, start + replacement.length);
-  setStatus('已替换当前匹配');
-  findNextEditMatch();
-}
-
-function replaceAllEditMatches() {
-  const file = state.filesMap.get(state.activePath);
-  const query = dom.editFindInput?.value || '';
-  if (!file || !query) {
-    if (dom.editFindMeta) dom.editFindMeta.textContent = '请输入查找内容';
-    return;
-  }
-  const replacement = dom.editReplaceInput?.value || '';
-  const flags = dom.editFindCase?.checked ? 'g' : 'gi';
-  const expression = new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), flags);
-  let count = 0;
-  const next = file.current.replace(expression, () => {
-    count += 1;
-    return replacement;
-  });
-  if (!count) {
-    if (dom.editFindMeta) dom.editFindMeta.textContent = '未找到';
-    setStatus(`未找到“${query}”`);
-    return;
-  }
-  setFileContent(file, next);
-  dom.editor.focus();
-  if (dom.editFindMeta) dom.editFindMeta.textContent = `已替换 ${count} 处`;
-  setStatus(`已替换 ${count} 处匹配`);
-}
+// Tool behavior lives in its controller; menus and global shortcuts keep a
+// narrow delegation boundary at the composition root.
+function insertDitaElement() { return A.editorTools.insert(); }
+function openFindReplace() { return A.editorTools.openFind(); }
+function closeFindReplace() { return A.editorTools.closeFind(); }
 
 function validateXml(text) {
   ditaCore.parseXml(text);
@@ -1111,24 +865,6 @@ dom.undoButton?.addEventListener('click', undoFile);
 dom.redoButton?.addEventListener('click', redoFile);
 dom.authorUndoButton?.addEventListener('click', undoFile);
 dom.authorRedoButton?.addEventListener('click', redoFile);
-dom.findReplaceButton?.addEventListener('click', () => {
-  if (dom.editSearchPanel?.hidden) openFindReplace();
-  else closeFindReplace();
-});
-dom.insertElementButton?.addEventListener('click', insertDitaElement);
-dom.editFindNextButton?.addEventListener('click', findNextEditMatch);
-dom.editReplaceButton?.addEventListener('click', replaceCurrentEditMatch);
-dom.editReplaceAllButton?.addEventListener('click', replaceAllEditMatches);
-dom.editFindCloseButton?.addEventListener('click', closeFindReplace);
-dom.editFindInput?.addEventListener('keydown', event => {
-  if (event.key === 'Enter') {
-    event.preventDefault();
-    findNextEditMatch();
-  }
-});
-dom.editFindInput?.addEventListener('input', () => {
-  if (dom.editFindMeta) dom.editFindMeta.textContent = '';
-});
 dom.formatButton.addEventListener('click', () => {
   const file = state.filesMap.get(state.activePath);
   if (!file) return;
@@ -1228,6 +964,8 @@ A.search = window.DitaSearch.createSearchController(A);
 A.resources = window.DitaResources.createResourceController(A);
 A.footnotes = window.DitaFootnotes.createPanel(A);
 A.authorNotes = window.DitaAuthorNotes.createController(A);
+A.authorSelection = window.DitaAuthorSelection.createController(A);
+A.editorTools = window.DitaEditorTools.createController(A);
 initialize();
 })();
 

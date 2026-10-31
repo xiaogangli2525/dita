@@ -11,12 +11,12 @@ The application remains a local Node server and buildless browser client. This c
 | Manual service | `manual-service.js` | Freeze buffers, resolve a Map or Topic and its direct local dependencies, check snapshot identity and provide save/note/publication views of that same scope |
 | Editor/rendering | `app-core.js`, `delivery-core.js`, `diff-core.js` | Author/source conversion, stateless HTML/Markdown rendering, and pure diff algorithms respectively |
 | Editor coordination | `editor-controller.js` | One document history across Source, Topic/Map Author and review; surface/mode updates and pending Map-render lifecycle |
-| Feature controllers | `save.js`, `drafts.js`, `project.js`, `search.js`, `resources.js`, `export.js`, `map-controller.js`, `documents.js`, `author-notes.js` | Bind DOM to domain/services; do not implement independent applicability or dependency rules |
+| Feature controllers | `save.js`, `drafts.js`, `project.js`, `search.js`, `resources.js`, `export.js`, `map-controller.js`, `documents.js`, `author-notes.js`, `editor-tools.js` | Bind DOM to domain/services; do not implement independent applicability or dependency rules |
 | Persistence adapters | `workspace-client.js`, `draft-store.js`, `release-store.js`, `browser-files.js` | Workspace identity on requests, browser-local recovery/history, download and hashing |
 | Server tools | `lib/workspace-tools.js` | Model config, bounded plaintext search, source provenance and image IO; receives the current root and existing IO/response helpers from the authenticated router |
 | HTTP and Git boundaries | `lib/api-router.js`, `lib/http-utils.js`, `lib/git-service.js` | Shared request guard and API dispatch, bounded JSON/response helpers, and repository/branch/Git baseline operations |
 
-`app.js` creates the `DitaApp` facade, assembles controllers and owns the remaining navigation, inspector, insertion/find tools and DOM bindings. Editor history, mode changes, Topic/Map surface synchronization and review coordination are now owned by `editor-controller.js`. This round reduces `app.js` from 1,593 to 1,221 lines and `server.js` from 763 to 389; the moved code remains in explicit modules. Line counts describe extraction, not a reduction in total application complexity.
+`app.js` creates the `DitaApp` facade, assembles controllers and owns remaining navigation, inspector/table actions and DOM bindings. `editor-controller.js` owns document history, modes, Topic/Map synchronization and review coordination. `editor-tools.js` owns Author selection formatting, body find/replace, structural insertion and explicit Source find/insertion; `author-selection.js` owns guarded ranges and detached-clone commits. The current entry point is 971 lines, down from 1,233 before this tool extraction; `server.js` remains 389 lines. These counts describe boundaries, not total application complexity. Independent controllers still use the existing facade and domain contracts.
 
 ## Assembly and lifecycle
 
@@ -56,7 +56,7 @@ The note panel lists publishable note definitions/occurrences with the same ance
 
 | Event | Emitted for | Consumers |
 | --- | --- | --- |
-| `document:changed` | Edit, undo/redo, or save acknowledgement | Draft backup and active content-search refresh |
+| `document:changed` | Edit, undo/redo, or save acknowledgement | Draft backup, active content-search refresh and current-Topic writing search |
 | `file:opened` / `file:closed` | Document lifecycle | Recovery availability and explicit closed-file draft disposal |
 | `workspace:willChange` | Before replacing root/branch state | Flush pending recovery drafts under the old identity |
 | `workspace:changed` | After adopting workspace/config | Recovery list and stale search clearing |
@@ -81,7 +81,7 @@ The static hosted demonstration is a separate persistence adapter. It reuses the
 
 ## Verified and bounded scope
 
-126 unit/HTTP checks and 30 Chromium checks cover editor/review/export behavior and the model, draft, search, upload, save-scope and delivery workflows. Added boundary checks cover independent Git service instances, live repository roots, real repository switches with stale-tab rejection, Map child undo/review identity and disposal of pending Map refreshes. Real company documentation was not accessible; integration uses the fictional MQTT fixture. Existing supported/unsupported DITA boundaries remain documented in `publication-compatibility.md`.
+128 unit/HTTP checks and 56 Chromium checks cover editor/review/export behavior and the model, draft, search, upload, save-scope and delivery workflows. Added boundary checks cover independent Git service instances, live repository roots, real repository switches with stale-tab rejection, Map child undo/review identity and disposal of pending Map refreshes. Real company documentation was not accessible; integration uses the fictional MQTT fixture. Existing supported/unsupported DITA boundaries remain documented in `publication-compatibility.md`.
 
 Repository search scans at most 2,000 documents / 10 MiB per request, skips files above 1 MiB and returns at most 100 hits (30 per file), with truncation/warning indicators. It decodes actual XML text and entities, maps hits back to source ranges and overlays unsaved buffers in the client. This is bounded on-demand search, not a persistent large-corpus index. Draft and release storage is limited to the current browser and is not a backup service or server-side release archive.
 
@@ -90,3 +90,11 @@ Repository search scans at most 2,000 documents / 10 MiB per request, skips file
 `author-notes.js` remembers a live caret only inside an editable Topic body, including the actual child surface in a Map. A detached clone retains source-path metadata and receives a temporary footnote placeholder; the existing Author serializer captures its exact XML position. No live DOM or buffer changes occur while the form is open. The controller checks workspace, file identity, active path, source and model configuration again on submit. `footnotes-core.completeInsertion` reuses the existing escaping/applicability rules and removes the temporary identifier so the result is an inline occurrence, not an unused reusable definition. Explicit common scope is unavailable inside inherited product conditions.
 
 `editor-controller.applyAuthorEdit` validates and commits through document-store before replacing only the affected surface. Author undo/redo also refreshes the affected Topic, keeping other Map chapters mounted and retaining scroll and a text-position bookmark when its source block is still available. Bookmarks are best-effort caret positions rather than a semantic editing history. Paragraph splits remove only newly cloned duplicate IDs; existing source identities stay intact. Composition key events are excluded from application undo/save shortcuts. Source, review and Map structure histories continue to use their existing paths.
+
+## Writing tools and rendered-source identity
+
+`author-selection.js` records a live range together with its Topic surface, source buffer, workspace and active path. Detached copies retain source-node metadata. Formatting, insertion and replacement serialize with the existing Author converter, validate XML and apply exactly once through `applyAuthorEdit`; they never write files. The rendered surface records its exact source buffer in a JavaScript property, not XML. A buffer/surface mismatch refuses edits rather than serializing stale DOM over a newer buffer. Normal Map buffer updates refresh only that child; live input records its new rendered-source identity without rebuilding the DOM.
+
+Formatting wraps selected text runs rather than extracting mixed XML. Removing partial formatting retains the original attribute extent as `ph`, with emphasis retained on unselected runs. This preserves identifiers, product applicability and links without duplicating attributes. Editable list items and headings now retain source paths, and rich heading content stays editable through render/serialize cycles.
+
+The writing find panel builds a read-only rendered-text index per selected Topic. It joins inline text within a block, stops at protected content/block boundaries and maps matches back to text nodes. CSS Custom Highlights do not add XML nodes; browsers without that API use the active DOM selection. Replace edits only text-node portions on a detached copy, retains surrounding elements/IDs and applies all chosen matches as one undo entry. Source search remains an explicitly labelled alternative in Source mode. Multi-Topic replacement and a full schema-aware rich-text engine remain outside this iteration.
