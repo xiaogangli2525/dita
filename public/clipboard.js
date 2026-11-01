@@ -52,7 +52,12 @@
         const html = event.clipboardData?.getData('text/html') || '', text = event.clipboardData?.getData('text/plain') || '';
         if (html.length + text.length > 1024 * 1024) throw new Error('粘贴内容过大，请分段插入');
         if (!html && !text) throw new Error('请先上传图片，再插入文档');
-        const target = selection.capture(), { copy, range } = selection.clone(target), block = selection.validateRange(range, copy, { body: true });
+        const target = selection.capture(), cloned = selection.clone(target), copy = cloned.copy;
+        let range = cloned.range, block;
+        if (selection.blockOf(range.startContainer) !== selection.blockOf(range.endContainer)) {
+          selection.paragraphs(range, copy);
+          ({ block, range } = selection.deleteRange(range, copy));
+        } else block = selection.validateRange(range, copy, { body: true });
         if (block.matches('pre')) { range.deleteContents(); const node = document.createTextNode(text); range.insertNode(node); selection.commit(target, copy, block, selection.offset(block, node, node.length)); return; }
         const { body, warnings } = normalize(html, text, core), blocks = Array.from(body.children), hasBlocks = blocks.some(node => ['p', 'ul', 'ol', 'table', 'codeblock'].includes(node.localName));
         const fragment = document.createDocumentFragment();

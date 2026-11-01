@@ -6,7 +6,8 @@ const INLINE_TAGS = new Set(['p', 'li', 'entry', 'dt', 'dd', 'note', 'title']);
 const SKIP_TAGS = new Set(['topic', 'concept', 'reference', 'task', 'body', 'conbody', 'refbody', 'taskbody', 'shortdesc', 'section', 'example', 'fig', 'dl', 'dli']);
 const VISUAL_TO_DITA = new Map(Object.entries({
   h1: 'title', h2: 'title', h3: 'title', h4: 'title', h5: 'title', h6: 'title',
-  p: 'p', ol: 'ol', ul: 'ul', li: 'li', pre: 'pre', table: 'table', image: 'image'
+  p: 'p', ol: 'ol', ul: 'ul', li: 'li', pre: 'pre', table: 'table', image: 'image',
+  span: 'ph', div: 'p', a: 'xref', strong: 'b', em: 'i'
 }));
 
 let _ctx = { topicPath: '', imageDataCache: new Map(), fnCounter: 0, mdFnCounter: 0, mdFootnotes: [] };
@@ -74,8 +75,19 @@ function convertVisualElement(node, documentRef, preserveAttributes = false) {
   const sourceTag = node.localName.toLowerCase();
   const ditaTag = VISUAL_TO_DITA.get(sourceTag) || sourceTag;
   const sourceTagAttribute = node.getAttribute?.('data-dita-source');
+  if (!sourceTagAttribute && sourceTag === 'br') return documentRef.createTextNode('\n');
   if (sourceTagAttribute === 'fn' && node.getAttribute('data-dita-original')) {
     return parseXml(node.getAttribute('data-dita-original')).documentElement;
+  }
+  if (sourceTagAttribute === 'image' && node.getAttribute('data-dita-original')) {
+    const image = parseXml(node.getAttribute('data-dita-original')).documentElement;
+    const alt = Array.from(image.children).find(child => child.localName === 'alt');
+    for (const attr of Array.from(node.attributes)) {
+      if (attr.name === 'data-dita-href') image.setAttribute('href', attr.value);
+      else if (attr.name === 'alt') { if (alt) { if (alt.textContent !== attr.value) alt.textContent = attr.value; } else image.setAttribute('alt', attr.value); }
+      else if (!['src', 'class', 'style', 'contenteditable'].includes(attr.name) && !attr.name.startsWith('data-')) image.setAttribute(attr.name, attr.value);
+    }
+    return image;
   }
   if (sourceTagAttribute === 'table' && sourceTag === 'div') {
     let table = null;
@@ -196,6 +208,7 @@ function updateDitaBody(root, visualContainer, document) {
   const visualTitle = Array.from(visualContainer.childNodes).find(node => node.localName === 'h2');
   const bodyContent = Array.from(visualContainer.childNodes).find(node => node.localName === 'div' && node.hasAttribute('data-dita-body'));
   if (!visualTitle || !bodyContent) throw new Error('Visual editor is missing its editable title or body');
+  if (Array.from(visualContainer.childNodes).filter(node => node.localName === 'h2').length !== 1) throw new Error('标题不能拆成多行，请撤销此操作后继续编辑');
 
   const titleElement = visualElementToDita(visualTitle, document, true);
   if (sourceTitle) sourceTitle.replaceWith(titleElement);
@@ -475,8 +488,9 @@ function renderAuthorNode(node, documentRef = document) {
     const element = documentRef.createElement('img');
     const href = node.getAttribute('href') || '';
     element.src = '/api/asset?path=' + encodeURIComponent(resolveAssetPath(href));
-    element.alt = node.getAttribute('alt') || '';
+    element.alt = Array.from(node.children).find(child => child.localName === 'alt')?.textContent || node.getAttribute('alt') || '';
     element.setAttribute('data-dita-source', 'image');
+    element.setAttribute('data-dita-original', serializeXmlNode(node));
     element.setAttribute('data-dita-href', href);
     for (const attribute of Array.from(node.attributes || [])) {
       if (!['href', 'alt'].includes(attribute.name)) element.setAttribute(attribute.name, attribute.value);

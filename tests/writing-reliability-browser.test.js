@@ -76,7 +76,7 @@ test('reliable writing commands, clipboard, templates and body navigation', asyn
     const xml = await current(); assert.match(xml, /<p product="M100">新增段落<\/p>/); assert.match(xml, /<p product="M100">另一段落<\/p>/); await undo(); assert.equal(await current(), source);
     await select('#text', 0, await page.locator('#text').evaluate(node => node.textContent.length)); await paste('', '禁止覆盖注脚'); assert.equal(await current(), source); assert.match(await page.locator('#status').innerText(), /注脚/);
     await page.evaluate(() => { const range = document.createRange(); range.setStart(document.querySelector('#text').firstChild, 0); range.setEnd(document.querySelector('#tail').firstChild, 2); getSelection().removeAllRanges(); getSelection().addRange(range); });
-    await paste('', '跨段落'); assert.equal(await current(), source); assert.match(await page.locator('#status').innerText(), /同一个/);
+    await paste('', '跨段落'); assert.equal(await current(), source); assert.match(await page.locator('#status').innerText(), /适用条件|注脚/);
   });
   await t.test('search and note location retain Map surfaces, highlights and a return position', async () => {
     await select('#second', 2); await page.evaluate(() => { window.originalSurface = document.querySelector('.map-topic-surface[data-map-topic-path="b.dita"]'); });

@@ -156,6 +156,7 @@
         <div id="authoringToolbar" class="authoring-toolbar" hidden>
           <div class="authoring-context"><span class="writing-dot" aria-hidden="true"></span><strong>正文编写</strong><span id="authoringHint">在正文放好光标，新增注脚</span></div>
           <div class="authoring-actions">
+            <select id="authorBlockSelect" aria-label="转换当前正文类型" title="转换当前段落；列表中用 Tab / Shift+Tab 调整层级"><option value="">转换…</option><option value="p">正文段落</option><option value="ul">无序列表</option><option value="ol">有序列表</option><option value="note">说明</option><option value="note:tip">提示</option><option value="note:important">重要</option><option value="note:caution">注意</option><option value="note:warning">警告</option><option value="codeblock">代码块</option></select>
             <div class="author-format-actions" role="group" aria-label="选中文字格式"><button id="authorBoldButton" type="button" title="加粗／取消粗体 Ctrl/Cmd+B" aria-label="加粗／取消粗体"><strong>B</strong></button><button id="authorItalicButton" type="button" title="斜体／取消斜体 Ctrl/Cmd+I" aria-label="斜体／取消斜体"><em>I</em></button><button id="authorCodeButton" type="button" title="行内代码／取消行内代码" aria-label="行内代码／取消行内代码">&lt;/&gt;</button></div>
             <select id="authorInsertSelect" aria-label="插入正文内容" title="块元素插在当前块之后；图片和链接使用正文光标或选区"><option value="">插入…</option><option value="p">段落</option><option value="ul">无序列表</option><option value="ol">有序列表</option><option value="table">表格</option><option value="section">节</option><option value="note">说明</option><option value="codeblock">代码块</option><optgroup label="光标／选区处"><option value="image">图片</option><option value="xref">链接</option></optgroup></select><button id="authorFindButton" type="button" title="正文查找与替换 Ctrl/Cmd+F">查找</button>
             <button id="authorUndoButton" type="button" title="撤销 Ctrl/Cmd+Z" disabled>撤销</button><button id="authorRedoButton" type="button" title="重做 Ctrl/Cmd+Y" disabled>重做</button><button id="newFootnoteButton" type="button" class="note-create-action" title="新增注脚 Ctrl/Cmd+Alt+N">＋ 新增注脚</button></div>
@@ -330,12 +331,22 @@
     <p>新文档可通过目录结构工具加入当前功能手册。</p><p id="newDocumentError" class="form-error" role="alert"></p>
     <div class="dialog-actions"><button id="newDocumentCancel" type="button">取消</button><button id="newDocumentSubmit" type="submit" class="primary-action">创建并编写</button></div>
   </form></dialog>
+  <dialog id="tableInsertDialog" class="workspace-dialog" aria-labelledby="tableInsertHeading"><form id="tableInsertForm">
+    <h2 id="tableInsertHeading">插入表格</h2><p>设置参数表大小，插入后可增删行列。Tab 切换单元格，末格 Tab 新增一行。</p>
+    <label>正文行数<input id="tableRows" type="number" min="1" max="100" value="3" required/></label>
+    <label>列数<input id="tableCols" type="number" min="1" max="20" value="3" required/></label>
+    <label class="table-header-option"><input id="tableHeader" type="checkbox" checked/>包含表头</label>
+    <p id="tableInsertError" class="form-error" role="alert"></p><div class="dialog-actions"><button id="tableInsertCancel" type="button">取消</button><button type="submit" class="primary-action">插入表格</button></div>
+  </form></dialog>
   <dialog id="resourceDialog" class="workspace-dialog" aria-labelledby="resourceHeading"><form id="resourceForm">
     <h2 id="resourceHeading">插入图片或链接</h2><p id="resourceScope"></p>
     <label>资源类型<select id="resourceKind"><option value="image">图片</option><option value="link">手册内链接</option></select></label>
     <label>查找资源<input id="resourceFilter" type="search" placeholder="过滤文件或章节"/></label>
     <label>目标<select id="resourceTarget" size="7"></select></label>
     <label>图片说明／链接文字<input id="resourceLabel" placeholder="可填写给读者看的说明"/></label>
+    <label id="resourceAddressRow" hidden>链接地址<input id="resourceHref" placeholder="例如 topic.dita#topic-id 或 https://…"/></label>
+    <div id="resourceDimensions" class="resource-dimensions"><label>图片宽度<input id="resourceWidth" placeholder="自适应，例如 80mm 或 50%"/></label><label>图片高度<input id="resourceHeight" placeholder="留空保持比例"/></label></div>
+    <img id="resourcePreview" class="resource-preview" alt="所选图片预览" hidden/>
     <label id="resourceUploadRow">上传图片<input id="resourceUpload" type="file" accept=".png,.jpg,.jpeg,.gif,.bmp,.svg,.webp"/></label>
     <p id="resourceMessage" class="muted"></p><p id="resourceError" class="form-error" role="alert"></p>
     <div class="dialog-actions"><button id="resourceClose" type="button">取消</button><button type="submit" class="primary-action">应用到文档</button></div>
@@ -377,6 +388,8 @@
   <script src="/note-scope.js"></script>
   <script src="/author-notes.js"></script>
   <script src="/author-selection.js"></script>
+  <script src="/author-input.js"></script>
+  <script src="/author-blocks.js"></script>
   <script src="/editor-tools.js"></script>
   <script src="/table-core.js"></script>
   <script src="/author-commands.js"></script>

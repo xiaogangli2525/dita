@@ -3,6 +3,10 @@
   const BLOCKS = 'p,li,td,th,pre,h2,h3,h4,[data-dita-source="note"],[data-dita-source="cmd"],[data-dita-source="dd"]';
   const PROTECTED = '[data-dita-source="fn"],[data-dita-source="foreign"],[conref],.oxy-delete,.oxy-insert,.oxy-comment';
   const elementOf = node => node?.nodeType === 1 ? node : node?.parentElement;
+  // Compare authored attributes, not transient selection classes or DOM metadata.
+  function attributes(node) {
+    return JSON.stringify(Array.from(node.attributes).filter(a => !['id', 'class', 'style', 'contenteditable'].includes(a.name) && !a.name.startsWith('data-')).map(a => [a.name, a.value]).sort());
+  }
   function textParts(range, container) {
     const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT), parts = []; let node;
     while ((node = walker.nextNode())) {
@@ -69,6 +73,34 @@
           Array.from(first.querySelectorAll(PROTECTED)).some(node => range.intersectsNode(node))) throw new Error('选区包含注脚、引用内容或修订标记，请缩小选区后操作');
       return first;
     }
+    function paragraphs(range, surface) {
+      const first = blockOf(range.startContainer), last = blockOf(range.endContainer);
+      if (!first?.matches('p[data-dita-source="p"]') || !last?.matches('p[data-dita-source="p"]') || first.parentNode !== last.parentNode || !surface.contains(first) || !first.closest('[data-dita-body]')) throw new Error('跨段落操作仅支持同一容器中的连续正文段落');
+      const siblings = Array.from(first.parentElement.children), blocks = siblings.slice(siblings.indexOf(first), siblings.indexOf(last) + 1);
+      if (!blocks.length || blocks.some(node => !node.matches('p[data-dita-source="p"]') || attributes(node) !== attributes(first))) throw new Error('这些段落的结构或适用条件不同，请分别编辑');
+      if (elementOf(range.startContainer).closest(PROTECTED) || elementOf(range.endContainer).closest(PROTECTED) || Array.from(surface.querySelectorAll(PROTECTED)).some(node => range.intersectsNode(node))) throw new Error('选区包含注脚、引用内容或修订标记，请缩小选区后操作');
+      return blocks;
+    }
+    function deleteRange(range, surface) {
+      if (blockOf(range.startContainer) === blockOf(range.endContainer)) { const block = validateRange(range, surface); range.deleteContents(); return { block, range }; }
+      const blocks = paragraphs(range, surface), first = blocks[0], last = blocks.at(-1), start = offset(first, range.startContainer, range.startOffset);
+      const tail = range.cloneRange(); tail.setEnd(last, last.childNodes.length); tail.setStart(range.endContainer, range.endOffset);
+      const remaining = tail.extractContents(), cut = range.cloneRange(); cut.setEnd(first, first.childNodes.length); cut.deleteContents();
+      const caret = document.createRange(); caret.selectNodeContents(first); caret.collapse(false);
+      // Retain an existing anchor on the surviving tail of the last paragraph.
+      if (last.id && remaining.hasChildNodes()) { const phrase = document.createElement('span'); phrase.dataset.ditaSource = 'ph'; phrase.id = last.id; phrase.append(remaining); first.append(phrase); }
+      else first.append(remaining);
+      blocks.slice(1).forEach(node => node.remove());
+      return { block: first, range: caret, start };
+    }
+    function deduplicateIds(surface) {
+      const groups = new Map();
+      for (const node of surface.querySelectorAll('[id]')) { if (!groups.has(node.id)) groups.set(node.id, []); groups.get(node.id).push(node); }
+      for (const nodes of groups.values()) {
+        const original = nodes.find(node => node.ditaSourcePath !== undefined) || nodes[0];
+        for (const node of nodes) if (node !== original && node.ditaSourcePath === undefined) node.removeAttribute('id');
+      }
+    }
     function offset(block, node, offset) { const range = document.createRange(); range.selectNodeContents(block); range.setEnd(node, offset); return range.toString().length; }
     function bookmark(surface, range = root.getSelection()?.rangeCount ? root.getSelection().getRangeAt(0) : null) {
       if (!range || !surface.contains(range.startContainer) || !surface.contains(range.endContainer)) return null;
@@ -116,6 +148,7 @@
     }
     function commit(target, copy, focusNode, start = 0, end = start) {
       check(target);
+      deduplicateIds(copy);
       const content = A.ditaCore.updateCurrentFromVisual(null, { visualEditor: copy }, target.current);
       A.validateXml(content); check(target);
       const path = focusNode?.ditaSourcePath;
@@ -150,7 +183,7 @@
     A.dom.visualEditor.addEventListener('compositionend', () => { composing = false; remember(); });
     A.events.on('workspace:willChange', () => { remembered = null; });
     A.events.on('file:opened', () => { remembered = null; });
-    return { capture, clone, check, commit, insertInline, bookmark, restore, restoreTarget, afterNode, focus, offset, validateRange, blockOf, textParts, surfaceOf, connected, remember, BLOCKS, PROTECTED };
+    return { capture, clone, check, commit, insertInline, bookmark, restore, restoreTarget, afterNode, focus, offset, validateRange, paragraphs, deleteRange, attributes, blockOf, textParts, surfaceOf, connected, remember, BLOCKS, PROTECTED };
   }
   root.DitaAuthorSelection = { createController };
 })(window);
