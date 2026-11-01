@@ -20,7 +20,7 @@
  * @property {EditorMode} mode
  * @property {Map<string, DocumentState>} filesMap
  * @property {Set<string>} mapAuthorPaths
- * @property {{persistence:string, git:boolean, pdf?:boolean}} capabilities
+ * @property {{persistence:string, git:boolean, pdf?:boolean, remoteGit?:boolean}} capabilities
  *
  * @typedef {Object} WorkspaceApi
  * @property {string} token Live workspace identity; do not cache across awaits.
