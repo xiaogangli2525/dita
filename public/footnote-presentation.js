@@ -19,8 +19,8 @@
           const definition = marker.dataset.fnDefinition === 'true';
           const caption = definition ? calls.length ? '定义 ' + label : fresh ? '未引用定义' : '定义 ?' : label;
           const text = '[' + caption + ']'; if (marker.textContent !== text) marker.textContent = text;
-          marker.setAttribute('aria-label', (definition ? '注脚定义 ' : '注脚 ') + (label === '?' ? '编号待确认' : label) + '，双击或按 Enter 编辑');
-          if (calls.length) { marker.dataset.fnNumber = calls.map(call => call.number).join(','); marker.title = calls[0].note.text + ' · 双击编辑'; }
+          marker.setAttribute('aria-label', (definition ? '注脚定义 ' : '注脚 ') + (label === '?' ? '编号待确认' : label) + '，单击查看详情，双击或按 Enter 编辑');
+          if (calls.length) { marker.dataset.fnNumber = calls.map(call => call.number).join(','); marker.title = calls[0].note.text + ' · ' + (calls[0].note.common ? '已确认通用' : calls[0].note.conditions.join(' ∩ ') || '待确认范围') + ' · 单击查看详情，双击编辑'; }
           else { delete marker.dataset.fnNumber; marker.title = label === '定义' ? '未引用的注脚定义，不参与编号' : '编号暂未确认，请检查手册或引用'; }
         }
       }

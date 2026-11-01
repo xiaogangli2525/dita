@@ -175,7 +175,7 @@ Object.assign(A, { state, dom, ditaCore, setStatus, toast, api: workspaceClient,
 
 const editor = window.DitaEditorController.createEditorController(A, {
   documentLabel: window.DitaDocumentLabel.documentLabel, renderTabs, renderOutline, renderInspector, updateTree, refreshChrome: updateDocumentChrome,
-  beforeModeChange: () => A.releaseExportPreview?.(), modeChanged: () => { A.shell?.syncMode(); A.footnotes?.syncMode(); A.authorNotes?.syncMode(); A.editorTools?.syncMode(); }
+  beforeModeChange: () => A.releaseExportPreview?.(), modeChanged: () => { A.shell?.syncMode(); A.footnotes?.syncMode(); A.authorNotes?.syncMode(); A.editorTools?.syncMode(); A.authorContext?.hide(); A.footnotes?.hidePeek(); }
 });
 const { setFileContent, setMode, updateHistoryButtons, updateActivePanes, ensureMapAuthorFile,
   undoFile, redoFile, syncVisualToModel, markDirty, renderDiff, renderMapReview, reviewAll } = editor;

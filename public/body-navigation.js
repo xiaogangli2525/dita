@@ -63,7 +63,7 @@
       } catch (error) { A.setStatus(error.message, true); }
     });
     A.events.on('workspace:willChange', () => { previous = lastWriting = null; button.hidden = true; });
-    return { node, hit };
+    return { node, hit, remember };
   }
   root.DitaBodyNavigation = { createController };
 })(window);

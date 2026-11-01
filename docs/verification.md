@@ -154,3 +154,12 @@ The GitHub Actions workflow runs the suite on Node 20 and 22. The browser workfl
 - New tests use real Git repositories and a local bare origin behind an injected test-only transport, with the same validated HTTPS fixture URL. They verify branch discovery/selection, clone collision/symlink refusal, failed-clone cleanup, check-without-document-mutation, fast-forward/no-op updates, dirty/untracked/ignored-file preservation, remote movement after checking, local-ahead/divergent histories, input validation/redaction, API origin/token protection and token rotation.
 - Browser cases run the actual app from a missing initial document directory through clone, Map selection, update inspection, unsaved-buffer protection and reloaded Map content. They also cover disk changes, invalid paths, capability-disabled static previews and 390px dialog containment. The production HTTP API exposes no local-file transport option.
 - HTTPS/SSH private-provider authentication and company-specific credentials were not available for a live provider test. Existing machine-side Git credentials/SSH configuration are required; these tests do not claim provider SSO/LFS/submodule coverage or Windows runtime certification.
+
+
+## Contextual authoring and note details
+
+- Domain coverage checks repeated xref use counts without definition inflation, block reuse and one source reused under distinct model conditions.
+- Chromium coverage exercises nearby formatting with exact undo, caret insertion/cancellation of footnotes/links/tables, keyboard focus and Escape restoration, IME and protected selection dismissal, single-click note previews, shared source navigation and return, live inherited model intersections, and 390px viewport bounds.
+- Shared-source usage counts cover the currently captured functional manual; other manuals/repositories are not scanned. Applicability feedback describes the existing note filtering rules and does not add full DITA profiling support.
+
+本轮完整回归：164 项单元／HTTP 检查和 137 项 Chromium 检查全部通过，包含旧有四种格式交付、远程 Git、编码和保存／草稿流程。

@@ -183,3 +183,12 @@ Clone runs in a hidden sibling staging directory and cleans failures before publ
 `api-router.js` places the routes behind the existing workspace identity/origin guard and server mutation lock. Clone returns a local path; the existing repository-selection route adopts it. Actual updates rotate identity before rebuilding workspace state, so old tabs cannot save against the previous checkout. A missing initial document directory yields an empty loadable workspace.
 
 `remote-libraries.js` is a feature with declared state/API/event/status ports and injected workspace-reload/navigation callbacks. It prevents buffer loss on import/update, invalidates checks on workspace change, separates check from update, and offers an explicit Map chooser. Capability metadata disables it in the static browser-local adapter. Public hosting of the local filesystem/Git server is outside the current single-user deployment model.
+
+
+## Contextual writing and note applicability
+
+`author-context.js` owns a small selection/caret toolbar outside the editable DOM. It delegates commands to `editor-tools`, which already owns validation, detached projections, history and resource dialogs. It checks source/workspace/selection freshness before restoring a selection and executing; input, IME, scrolling, mode changes and document events dismiss the UI. No second editor or command implementation is introduced.
+
+`manual-service.listNotes` attaches deduplicated visible usages grouped by source identity in one pass, retaining inherited conditions per occurrence. Synthetic origin entries and named definitions do not count as uses; block conrefs count even without separately editable fn markers. The source-preserving publication graph remains authoritative. Counts are explicitly scoped to the current manual.
+
+`footnotes` owns single-click detail previews, the shared source/impact view and the existing editor. `note-scope` supplies live applicability feedback from the original ancestor restrictions, current selection and project registry. Mounted public sources edit in place and restore the original call selection on apply/cancel. Other public-source navigation uses `bodyNavigation.remember` to preserve a return location. All popovers stay outside the XML projection and cannot create document/history changes.

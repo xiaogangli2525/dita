@@ -160,7 +160,7 @@
             <select id="authorBlockSelect" aria-label="转换当前正文类型" title="转换当前段落；列表中用 Tab / Shift+Tab 调整层级"><option value="">转换…</option><option value="p">正文段落</option><option value="ul">无序列表</option><option value="ol">有序列表</option><option value="note">说明</option><option value="note:tip">提示</option><option value="note:important">重要</option><option value="note:caution">注意</option><option value="note:warning">警告</option><option value="codeblock">代码块</option></select>
             <div class="author-format-actions" role="group" aria-label="选中文字格式"><button id="authorBoldButton" type="button" title="加粗／取消粗体 Ctrl/Cmd+B" aria-label="加粗／取消粗体"><strong>B</strong></button><button id="authorItalicButton" type="button" title="斜体／取消斜体 Ctrl/Cmd+I" aria-label="斜体／取消斜体"><em>I</em></button><button id="authorCodeButton" type="button" title="行内代码／取消行内代码" aria-label="行内代码／取消行内代码">&lt;/&gt;</button></div>
             <select id="authorInsertSelect" aria-label="插入正文内容" title="块元素插在当前块之后；图片和链接使用正文光标或选区"><option value="">插入…</option><option value="p">段落</option><option value="ul">无序列表</option><option value="ol">有序列表</option><option value="table">表格</option><option value="section">节</option><option value="note">说明</option><option value="codeblock">代码块</option><optgroup label="光标／选区处"><option value="image">图片</option><option value="xref">链接</option></optgroup></select><button id="authorFindButton" type="button" title="正文查找与替换 Ctrl/Cmd+F">查找</button>
-            <button id="authorUndoButton" type="button" title="撤销 Ctrl/Cmd+Z" disabled>撤销</button><button id="authorRedoButton" type="button" title="重做 Ctrl/Cmd+Y" disabled>重做</button><button id="newFootnoteButton" type="button" class="note-create-action" title="新增注脚 Ctrl/Cmd+Alt+N">＋ 新增注脚</button></div>
+            <button id="authorUndoButton" type="button" title="撤销 Ctrl/Cmd+Z" disabled>撤销</button><button id="authorRedoButton" type="button" title="重做 Ctrl/Cmd+Y" disabled>重做</button><button id="newFootnoteButton" type="button" class="note-create-action" title="新增注脚 Ctrl/Cmd+Alt+N；正文快捷工具 Alt+/">＋ 新增注脚</button></div>
         </div>
         <div id="visualEditor" contenteditable="true" class="visual-editor dita-preview"></div>
       </div>
@@ -222,6 +222,14 @@
     <span class="statusbar-hint">Ctrl/Cmd+S 保存 · Ctrl/Cmd+F 查找</span>
   </footer>
 
+  <div id="authorQuickTools" class="author-quick-tools" role="toolbar" aria-label="正文快捷工具" hidden>
+    <button type="button" data-quick-format="b" aria-label="快捷加粗" title="加粗 / 取消粗体"><strong>B</strong></button><button type="button" data-quick-format="i" aria-label="快捷斜体" title="斜体 / 取消斜体"><em>I</em></button><button type="button" data-quick-format="codeph" aria-label="快捷行内代码" title="行内代码">&lt;/&gt;</button>
+    <button type="button" data-quick-insert="fn">＋ 注脚</button><button type="button" data-quick-insert="xref">链接</button><button type="button" data-quick-insert="table">表格</button><button type="button" data-quick-insert="image">图片</button>
+  </div>
+  <section id="footnotePeek" class="footnote-peek" role="region" aria-label="注脚详情" hidden>
+    <div class="note-peek-heading"><strong id="footnotePeekHeading"></strong><button id="footnotePeekClose" type="button" aria-label="关闭注脚详情">×</button></div>
+    <div id="footnotePeekDetails"></div><button id="footnotePeekEdit" type="button" class="note-create-action">编辑注脚</button>
+  </section>
   <dialog id="modelExportDialog" class="footnote-dialog" aria-labelledby="modelExportHeading">
     <form id="modelExportForm">
       <h2 id="modelExportHeading">交付功能手册</h2>
@@ -256,9 +264,11 @@
       <span class="section-kicker">编写 · 编辑注脚</span><h2 id="footnoteEditHeading">编辑注脚</h2>
       <p>将型号差异保留在原文位置，便于审阅与追溯。</p>
       <label><span id="footnoteContentLabel">注脚内容</span><textarea id="footnoteContent" rows="6" required></textarea></label>
+      <div id="footnoteEditDetails" class="note-edit-details"></div>
       <p id="footnoteSourceHint" class="footnote-form-hint"></p>
       <fieldset class="note-scope-options"><legend>适用范围</legend><label><input type="radio" name="scope" value="models"/>指定型号</label><label><input id="footnoteCommon" type="radio" name="scope" value="common"/>已确认通用</label><label><input type="radio" name="scope" value="unresolved"/>待确认</label></fieldset>
       <div id="footnoteModelPicker"><div id="footnoteModels" class="note-model-choices"></div><label id="footnoteCustomModels">补充型号<input id="footnoteProducts" list="projectModelOptions" placeholder="多个型号用空格分隔"/></label></div>
+      <p id="footnoteScopeSummary" class="note-scope-summary" aria-live="polite"></p>
       <p id="footnoteInheritance" class="note-inheritance"></p>
       <p class="footnote-form-hint">待确认注脚仍保留在交付中。Ctrl/Cmd+Enter 应用修改；保存后写入工作区。</p>
       <p id="footnoteEditError" class="footnote-edit-error" role="alert"></p>
@@ -274,6 +284,7 @@
         <label><input type="radio" name="scope" value="models" checked/>指定型号</label><label><input id="newFootnoteCommon" type="radio" name="scope" value="common"/>已确认通用</label><label><input type="radio" name="scope" value="unresolved"/>待确认</label>
       </fieldset>
       <div id="newFootnoteModelPicker"><div id="newFootnoteModels" class="note-model-choices"></div><label id="newFootnoteCustomModels">补充型号<input id="newFootnoteProductInput" placeholder="多个型号用空格分隔"/></label></div>
+      <p id="newFootnoteScopeSummary" class="note-scope-summary" aria-live="polite"></p>
       <p id="newFootnoteInheritance" class="note-inheritance"></p>
       <p class="note-save-hint">Ctrl/Cmd+Enter 插入，Esc 取消。插入后可撤销；点击保存后写入工作区。待确认注脚仍会保留在交付中。</p>
       <p id="newFootnoteError" class="footnote-edit-error" role="alert"></p>
@@ -389,6 +400,7 @@
   <script src="/author-input.js"></script>
   <script src="/author-blocks.js"></script>
   <script src="/editor-tools.js"></script>
+  <script src="/author-context.js"></script>
   <script src="/table-core.js"></script>
   <script src="/author-commands.js"></script>
   <script src="/inspector.js"></script>
