@@ -283,6 +283,7 @@
         fragment.append(topic);
       }
       dom.visualEditor.replaceChildren(fragment);
+      events.emit('author:rendered');
       renderTabs(); updateTree();
       renderInspector(null);
       // setMode('review') starts the async Map Author load and can render the
@@ -360,6 +361,7 @@
       try {
         dom.visualEditor.classList.remove('map-author-editor');
         visualCore.updateVisualFromXml(file.current, reviewMode);
+        events.emit('author:rendered');
         renderInspector(null);
       } catch (error) {
         dom.visualEditor.replaceChildren(document.createTextNode(`\u53EF\u89C6\u5316\u7F16\u8F91\u4E0D\u53EF\u7528\uFF1A${error.message}`));
@@ -437,6 +439,7 @@
       rendered ||= ditaCore.createAuthorTopic(file.current, document, false, file.path);
       surface.replaceChildren(...rendered.childNodes);
       surface.ditaSourceContent = file.current;
+      events.emit('author:rendered');
       renderInspector(null); renderTabs(); updateHistoryButtons(); renderOutline();
       if (bookmark) {
         const block = bookmark.path === undefined ? surface : Array.from(surface.querySelectorAll('*')).find(node => node.ditaSourcePath === bookmark.path) || surface;
@@ -449,7 +452,7 @@
         }
         const range = document.createRange();
         node ||= last;
-        const marker = node?.parentElement.closest('[data-dita-source="fn"]');
+        const marker = node?.parentElement.closest('.fn-ref,[data-dita-source="fn"]');
         if (marker) range.setStartAfter(marker);
         else if (node) range.setStart(node, Math.min(remaining, node.length));
         else { range.selectNodeContents(block); range.collapse(false); }

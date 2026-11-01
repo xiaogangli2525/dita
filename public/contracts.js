@@ -43,9 +43,17 @@
  * @property {(path?:string)=>Promise<ManualSnapshot>} capture
  * @property {(snapshot:ManualSnapshot)=>boolean} current
  * @property {(snapshot:ManualSnapshot, model?:string)=>Object} prepare
+ * @property {(snapshot:ManualSnapshot, model?:string)=>{notes:Object[],calls:Object[],models:string[],report:Object}} listNotes First-use labels plus source-scoped occurrences.
  * @property {(snapshot:ManualSnapshot)=>DocumentSnapshot[]} saveCandidates
  * @property {(snapshot:ManualSnapshot)=>string[]} listModels
  * @property {()=>string} scopePath
+ *
+ * @typedef {Object} FootnotePresentation
+ * @property {string} scope Current functional-manual or independent-Topic path.
+ * @property {(path:string)=>void} setScope
+ * @property {()=>Promise<Object>} ready Shared, guarded presentation snapshot.
+ * @property {()=>void} apply Update protected display markers without editing XML.
+ * @property {(path:string,xmlPath:string)=>Promise<Object|null>} resolve
  *
  * @typedef {Object} ProjectService
  * @property {ProjectConfig} value

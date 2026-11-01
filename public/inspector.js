@@ -36,7 +36,7 @@
       if (!state.selectedVisualElement || state.mode !== 'visual') {
         dom.inspectorElement.textContent = '未选择内容'; hint('在正文中选择段落、表格、图片或链接，查看对应设置。'); return;
       }
-      const marker = element.closest('[data-dita-source="fn"]');
+      const marker = element.closest('.fn-ref,[data-dita-source="fn"]');
       if (marker) {
         dom.inspectorElement.textContent = '型号注脚'; dom.contextToolbar.hidden = false;
         actionButton('open-notes', '打开型号注脚'); hint('注脚内容和适用型号统一在型号注脚面板中修改，也可以双击正文中的注脚标记。'); return;

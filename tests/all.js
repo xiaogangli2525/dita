@@ -26,6 +26,7 @@ require('./document-templates.test');
 require('./application.test');
 require('./document-loader.test');
 require('./reference-paths.test');
+require('./footnote-numbering.test');
 
 require('./remote-repositories.test');
 require('./remote-api.test');

@@ -1,5 +1,11 @@
 # Verification
 
+## Consistent footnote presentation
+
+- Full suites: **163 unit/HTTP checks** and **130 Chromium checks**, zero failures/skips. Five new domain cases cover first-use order, repeated/local/cross-file references, identical text/IDs in different files, conref occurrence/source identity, unused definitions, custom callouts and model-specific delivery numbering.
+- Six new browser scenarios cover Map/body/list/dialog correspondence, filtered list labels, insertion/deletion and undo/redo across chapters, retained sibling DOM/history/caret, reference-source edits with exact GBK/CRLF XML and xref roundtrips, failed-reference labels, independent manual/Topic scopes, readonly numbers, late snapshot rejection, and directly opening a chapter before any Map tab exists.
+- Existing HTML/Markdown/PDF/DOCX, remote Git, Save As, clipboard, formatting, tables, draft and responsive-shell regressions remain green. Hosted browser QA confirms body `[4]`, list `4`, and edit dialog `4` for the same fictional MQTT note. This does not certify an arbitrary DITA corpus or full DTD processing.
+
 ## Navigation layout and responsive polish
 
 - Full suites: **158 unit/HTTP checks** and **123 Chromium checks**, zero failures/skips. Four added shell scenarios exercise actual pointer dragging, keyboard bounds/reset, persistence and viewport restoration, unavailable storage, long six-level titles and empty filters, short-window tree/search/workspace reachability, and mobile close/backdrop/focus cycling.

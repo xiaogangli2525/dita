@@ -477,7 +477,11 @@ async function openFile(path, { preserveFootnotesScope = false } = {}) {
   if (revision !== openRevision || workspace !== workspaceClient.token || state.filesMap.get(path) !== file) return null;
   A.shell?.sidebar(false);
   state.activePath = path;
-  if (!preserveFootnotesScope) A.footnotes?.setScope(path);
+  if (!preserveFootnotesScope) {
+    const manual = state.maps.find(map => map.path === state.selectedMap);
+    const inManual = manual && ditaCore.collectPreviewPaths(manual.children || []).some(entry => entry.path === path);
+    A.footnotes?.setScope(inManual ? manual.path : path);
+  }
   state.historyTargetPath = path;
   const reviewableModes = ['visual', 'preview', 'review'];
   setMode(reviewableModes.includes(state.mode) ? state.mode : 'visual');
