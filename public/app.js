@@ -317,6 +317,7 @@ function fillSelect(select, items, selectedValue, renderOption) {
     select.append(option);
   }
   select.value = selectedValue;
+  select.title = select.selectedOptions[0]?.textContent || '';
 }
 
 function renderWorkspaceSwitches() {
@@ -360,6 +361,7 @@ async function reloadWorkspace(result) {
   state.reviewCurrent = '';
   state.mapAuthorPaths = new Set();
   dom.rootPath.textContent = result.root;
+  dom.rootPath.title = result.root;
   dom.repositorySelect.value = result.root;
   dom.branchSelect.value = result.currentBranch;
   dom.editor.value = '';

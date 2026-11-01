@@ -7,9 +7,10 @@
     A.events.on('workspace:willChange', () => { operationGeneration++; busy = false; });
 function renderMapPicker() {
   dom.mapPicker.replaceChildren();
-  const label = document.createElement('label');
+  const label = document.createElement('div');
   label.className = 'map-label';
-  label.append('当前手册');
+  const heading = document.createElement('div'), caption = document.createElement('label');
+  heading.className = 'map-picker-heading'; caption.htmlFor = 'mapSelect'; caption.textContent = '当前手册';
   const select = document.createElement('select');
   select.id = 'mapSelect';
   for (const map of state.maps) {
@@ -21,7 +22,10 @@ function renderMapPicker() {
     select.append(option);
   }
   select.value = state.selectedMap;
+  const describeSelection = () => { select.title = select.selectedOptions[0]?.textContent || ''; };
+  describeSelection();
   select.addEventListener('change', () => {
+    describeSelection();
     operationGeneration++; busy = false;
     state.selectedMap = select.value;
     state.selectedMapSourcePath = '';
@@ -33,7 +37,8 @@ function renderMapPicker() {
   openButton.textContent = '打开全文';
   openButton.title = '在 Author 编辑区打开整个 DITA Map';
   openButton.addEventListener('click', () => openFile(select.value));
-  label.append(select, openButton);
+  heading.append(caption, openButton);
+  label.append(heading, select);
   dom.mapPicker.append(label);
 }
 
@@ -52,7 +57,7 @@ function renderTree(nodes, filter = '') {
       nodeButton.type = 'button';
       nodeButton.className = 'map-node';
       nodeButton.dataset.sourcePath = node.sourcePath || '';
-      nodeButton.textContent = title;
+      const text = document.createElement('span'); text.className = 'map-node-label'; text.textContent = title; nodeButton.append(text);
       nodeButton.title = node.path || title;
       nodeButton.dataset.path = node.path || '';
       nodeButton.dataset.kind = node.type;
@@ -82,10 +87,16 @@ function updateTree(filter = dom.search.value) {
   const searched = Boolean(filter && filter.trim()) && !state.selectedMap;
   const source = searched ? state.files : (state.maps.find(map => map.path === state.selectedMap)?.children || state.files);
   dom.tree.replaceChildren(...renderTree(source, filter));
+  if (!dom.tree.childElementCount) {
+    const empty = document.createElement('p'); empty.className = 'sidebar-empty'; empty.setAttribute('role', 'status');
+    empty.textContent = filter.trim() ? '没有匹配的文档，试试标题或文件路径。' : state.selectedMap ? '当前手册暂无章节，可在目录结构工具中添加引用。' : '暂无文档，可新建文档或加载文档库。';
+    dom.tree.append(empty);
+  }
   for (const button of dom.tree.querySelectorAll('button')) {
     const selected = state.selectedMapSourcePath ? button.dataset.sourcePath === state.selectedMapSourcePath : Boolean(state.activePath && button.dataset.path === state.activePath);
     button.classList.toggle('selected', selected);
-    if (selected) button.scrollIntoView({ block: 'nearest' });
+    if (state.activePath && button.dataset.path === state.activePath) button.setAttribute('aria-current', 'page');
+    if (selected) button.scrollIntoView({ block: 'nearest', inline: 'nearest' });
   }
   updateMapToolbar();
 }

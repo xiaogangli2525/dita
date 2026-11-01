@@ -1,5 +1,11 @@
 # Verification
 
+## Navigation layout and responsive polish
+
+- Full suites: **158 unit/HTTP checks** and **123 Chromium checks**, zero failures/skips. Four added shell scenarios exercise actual pointer dragging, keyboard bounds/reset, persistence and viewport restoration, unavailable storage, long six-level titles and empty filters, short-window tree/search/workspace reachability, and mobile close/backdrop/focus cycling.
+- Existing panel/history checks now verify the auxiliary panel overlays at 1101px while writing commands remain reachable. Source/Author/Map, remote library, protected Save As, drafts and all export-format regressions remain green.
+- Browser-local hosted preview was inspected with default and adjusted navigation widths and the notes panel open. Responsive checks use the fictional MQTT fixture, not a real company manual or an assistive-technology certification.
+
 ## Document transitions and reference paths
 
 - Full suites: **158 unit/HTTP checks** and **119 Chromium checks**, zero failures/skips. New domain cases verify shared load identity, preservation of newer buffers, closed/workspace invalidation and retry, byte-preserving URI rebasing, explicit self/Map/conref targets, encoded names, workspace escapes and unsupported `xml:base`.

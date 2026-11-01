@@ -33,7 +33,7 @@
 
   <main class="layout">
     <aside id="workspaceSidebar" class="sidebar" aria-label="文档导航">
-      <div class="sidebar-heading"><span>文档导航</span><button id="newDocumentButton" type="button" title="新建文档" aria-label="新建文档">＋</button></div>
+      <div class="sidebar-heading"><span>文档导航</span><div class="sidebar-heading-actions"><button id="newDocumentButton" type="button" title="新建文档" aria-label="新建文档">＋</button><button id="sidebarCloseButton" class="sidebar-close" type="button" title="关闭文档导航" aria-label="关闭文档导航">×</button></div></div>
       <div class="view-tabs" role="tablist" aria-label="视图">
         <button type="button" class="view-tab active" data-view="map" role="tab" aria-selected="true" title="Map 视图">文档</button>
         <button type="button" class="view-tab" data-view="outline" role="tab" aria-selected="false" title="大纲视图">大纲</button>
@@ -80,13 +80,14 @@
       <div class="toolbar-group workspace-group">
         <label class="workspace-switch"><span>仓库</span><select id="repositorySelect"></select></label>
         <label class="workspace-switch"><span>分支</span><select id="branchSelect"></select></label>
-        <button id="projectButton" type="button" title="维护当前仓库的型号清单">型号清单</button>
       </div>
-        <div class="remote-library-actions"><button id="remoteImportButton" type="button">加载远程库</button><button id="remoteUpdateButton" type="button">远程更新</button></div>
+        <div class="workspace-tool-actions"><button id="projectButton" type="button" title="维护当前仓库的型号清单">型号清单</button><div class="remote-library-actions"><button id="remoteImportButton" type="button">加载远程库</button><button id="remoteUpdateButton" type="button">远程更新</button></div></div>
         <span id="rootPath" class="workspace-path">未加载</span>
         <div class="workspace-actions"><button id="draftsButton" type="button">恢复草稿</button><button id="releasesButton" type="button">交付记录</button></div>
       </div>
+      <div id="sidebarResize" class="sidebar-resize" role="separator" tabindex="0" aria-label="调整文档导航宽度" aria-controls="workspaceSidebar" aria-orientation="vertical" aria-valuemin="260" aria-valuemax="400" aria-valuenow="296" title="拖动调整宽度；双击恢复默认，也可使用方向键"></div>
     </aside>
+    <button id="sidebarBackdrop" class="sidebar-backdrop" type="button" tabindex="-1" aria-label="关闭文档导航遮罩" hidden></button>
 
     <section class="content" aria-label="文档编辑区">
       <div class="document-heading">
