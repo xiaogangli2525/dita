@@ -247,3 +247,16 @@
 .note-usage-list { margin:10px 0; font-size:12px; color:#58705e; }
 .note-usage-list summary { cursor:pointer; }
 .note-usage-list ul { max-height:130px; overflow:auto; padding-left:20px; line-height:1.8; overflow-wrap:anywhere; }
+
+.authoring-context kbd { margin-left:5px; border:1px solid #d7e3db; border-radius:4px; padding:1px 4px; font-family:inherit; font-size:11px; color:#65776e; font-weight:400; }
+.shortcut-help-dialog { width:640px; max-width:calc(100vw - 32px); max-height:calc(100dvh - 32px); overflow:auto; box-sizing:border-box; }
+.shortcut-help-heading { position:sticky; top:0; display:flex; align-items:center; justify-content:space-between; gap:16px; padding:8px 0; background:#fff; z-index:1; }
+.shortcut-help-heading h2 { margin:0; }
+.shortcut-help-heading button { flex:none; }
+.shortcut-help-dialog h3 { margin:22px 0 10px; color:#315641; font-size:14px; }
+.shortcut-help-dialog table { width:100%; table-layout:fixed; border-collapse:collapse; font-size:12px; line-height:1.65; }
+.shortcut-help-dialog th, .shortcut-help-dialog td { padding:8px 10px; text-align:left; border-bottom:1px solid #e5ece7; overflow-wrap:anywhere; }
+.shortcut-help-dialog th { background:#f1f6f3; color:#4f6959; font-weight:600; }
+.shortcut-help-dialog kbd { font:inherit; color:#285c43; }
+.shortcut-help-dialog p { color:#64776b; font-size:12px; line-height:1.8; }
+.shortcut-help-note { padding:10px 12px; border-radius:7px; background:#f1f6f3; }

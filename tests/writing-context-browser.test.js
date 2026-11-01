@@ -32,15 +32,27 @@ test('contextual writing and model note details preserve source and editing cont
   const ready = page => page.evaluate(() => window.DitaApp.notePresentation.ready());
   const cards = page => page.locator('#footnoteList .footnote-number').allTextContents();
 
-  async function select(page, selector, start, end = start) {
+  async function select(page, selector, start, end = start, { summon = true } = {}) {
     await page.locator(selector).evaluate((node, positions) => {
       node.closest('[contenteditable=true]').focus();
       const range = document.createRange(); range.setStart(node.firstChild, positions.start); range.setEnd(node.firstChild, positions.end);
       getSelection().removeAllRanges(); getSelection().addRange(range);
       node.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }));
     }, { start, end });
-    await page.waitForSelector('#authorQuickTools:not([hidden])');
+    if (summon) { await page.keyboard.press('Alt+Slash'); await page.waitForSelector('#authorQuickTools:not([hidden])'); }
   }
+  await t.test('clicks, text selections and arrow movement never summon the tools automatically', async subtest => {
+    const page = await fresh(subtest);
+    await page.locator('#first').click(); await page.evaluate(() => new Promise(requestAnimationFrame));
+    assert.equal(await page.locator('#authorQuickTools').isVisible(), false);
+    await select(page, '#first', 0, 3, { summon: false }); await page.evaluate(() => new Promise(requestAnimationFrame));
+    assert.equal(await page.locator('#authorQuickTools').isVisible(), false);
+    await page.keyboard.press('ArrowLeft'); await page.keyboard.press('ArrowRight');
+    assert.equal(await page.locator('#authorQuickTools').isVisible(), false);
+    await page.keyboard.press('Alt+Slash'); assert.equal(await page.locator('#authorQuickTools').isVisible(), true);
+    await page.keyboard.press('Alt+Slash'); assert.equal(await page.locator('#authorQuickTools').isVisible(), false);
+    assert.equal(await page.evaluate(() => [...window.DitaApp.state.filesMap.values()].some(f => f.dirty)), false);
+  });
   await t.test('nearby formatting keeps the exact selection and supports undo without editing XML metadata', async subtest => {
     const page = await fresh(subtest);
     await select(page, '#first', 0, 3);
@@ -66,14 +78,14 @@ test('contextual writing and model note details preserve source and editing cont
   });
   await t.test('keyboard access, composition, protected selections and mode changes dismiss tools safely', async subtest => {
     const page = await fresh(subtest);
-    await select(page, '#first', 0, 3); await page.keyboard.press('Alt+Slash');
+    await select(page, '#first', 0, 3);
     assert.equal(await page.evaluate(() => document.activeElement.getAttribute('aria-label')), '快捷加粗');
     await page.keyboard.press('Escape'); assert.equal(await page.locator('#authorQuickTools').isVisible(), false); assert.equal(await page.evaluate(() => getSelection().toString()), 'A_C');
     await select(page, '#first', 1);
     await page.locator('#first').dispatchEvent('compositionstart'); assert.equal(await page.locator('#authorQuickTools').isVisible(), false);
     await page.locator('#first').dispatchEvent('compositionend');
     await page.locator('#first').evaluate(node => { const range = document.createRange(); range.selectNodeContents(node); getSelection().removeAllRanges(); getSelection().addRange(range); node.dispatchEvent(new PointerEvent('pointerup', { bubbles:true })); });
-    await page.evaluate(() => new Promise(requestAnimationFrame)); assert.equal(await page.locator('#authorQuickTools').isVisible(), false, 'selection crossing protected fn has no tools');
+    await page.keyboard.press('Alt+Slash'); assert.equal(await page.locator('#authorQuickTools').isVisible(), false, 'selection crossing protected fn has no tools');
     await select(page, '#first', 1); await page.evaluate(() => window.DitaApp.setMode('editor')); assert.equal(await page.locator('#authorQuickTools').isVisible(), false);
     assert.equal(await page.evaluate(() => [...window.DitaApp.state.filesMap.values()].some(f => f.dirty)), false);
   });
@@ -109,6 +121,26 @@ test('contextual writing and model note details preserve source and editing cont
     await page.waitForFunction(() => { const r = document.getElementById('footnotePeek').getBoundingClientRect(); return r.y >= 0 && r.bottom <= innerHeight; });
     bounds = await page.locator('#footnotePeek').boundingBox(); assert.ok(bounds.x >= 0 && bounds.x + bounds.width <= 390 && bounds.y >= 0 && bounds.y + bounds.height <= 760);
     await page.evaluate(() => window.DitaApp.openFile('c.dita')); await ready(page); assert.equal(await page.locator('#footnotePeek').isVisible(), false); assert.equal(await page.locator('#authorQuickTools').isVisible(), false);
+  });
+  await t.test('Help opens a real shortcut dialog with focus, modal isolation and a compact layout', async subtest => {
+    const page = await fresh(subtest); await page.click('#footnotesButton'); await page.waitForSelector('.footnote-card');
+    const pending = original['a.dita'] + '<!--pending-->';
+    await page.evaluate(source => { const a = window.DitaApp; a.setFileContent(a.state.filesMap.get('a.dita'), source); }, pending);
+    await page.click('[data-menu=help]'); await page.locator('#menuPopup button').filter({ hasText: '快捷键' }).click();
+    await page.waitForSelector('#shortcutHelpDialog[open]');
+    assert.match(await page.locator('#shortcutHelpDialog').innerText(), /Alt \+ \//);
+    assert.equal(await page.locator('#menuPopup').isVisible(), false);
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'shortcutHelpClose');
+    await page.keyboard.press('Control+z');
+    assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.get('a.dita').current), pending, 'modal help must not undo document edits');
+    await page.keyboard.press('Tab'); assert.equal(await page.evaluate(() => document.getElementById('shortcutHelpDialog').contains(document.activeElement)), true);
+    await page.keyboard.press('Escape'); assert.equal(await page.locator('#shortcutHelpDialog').isVisible(), false); assert.equal(await page.locator('#footnotesPanel').isVisible(), true);
+    await page.waitForFunction(() => document.activeElement.dataset.menu === 'help');
+    await page.click('[data-menu=help]'); await page.locator('#menuPopup button').filter({ hasText: '快捷键' }).click();
+    await page.setViewportSize({ width:390, height:760 });
+    assert.equal(await page.locator('#shortcutHelpDialog').evaluate(node => node.scrollWidth <= node.clientWidth), true);
+    const bounds = await page.locator('#shortcutHelpClose').boundingBox(); assert.ok(bounds.y >= 0 && bounds.y + bounds.height <= 760);
+    await page.click('#shortcutHelpClose'); assert.equal(await page.locator('#shortcutHelpDialog').isVisible(), false);
   });
   assert.deepEqual(errors, []);
 });

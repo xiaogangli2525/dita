@@ -187,8 +187,10 @@ Clone runs in a hidden sibling staging directory and cleans failures before publ
 
 ## Contextual writing and note applicability
 
-`author-context.js` owns a small selection/caret toolbar outside the editable DOM. It delegates commands to `editor-tools`, which already owns validation, detached projections, history and resource dialogs. It checks source/workspace/selection freshness before restoring a selection and executing; input, IME, scrolling, mode changes and document events dismiss the UI. No second editor or command implementation is introduced.
+`author-context.js` owns a small selection/caret toolbar outside the editable DOM. It opens only through Alt+/, never from pointer or selection movement. It delegates commands to `editor-tools`, which already owns validation, detached projections, history and resource dialogs. It checks source/workspace/selection freshness before restoring a selection and executing; input, IME, scrolling, mode changes and document events dismiss the UI. No second editor or command implementation is introduced.
 
 `manual-service.listNotes` attaches deduplicated visible usages grouped by source identity in one pass, retaining inherited conditions per occurrence. Synthetic origin entries and named definitions do not count as uses; block conrefs count even without separately editable fn markers. The source-preserving publication graph remains authoritative. Counts are explicitly scoped to the current manual.
 
 `footnotes` owns single-click detail previews, the shared source/impact view and the existing editor. `note-scope` supplies live applicability feedback from the original ancestor restrictions, current selection and project registry. Mounted public sources edit in place and restore the original call selection on apply/cancel. Other public-source navigation uses `bodyNavigation.remember` to preserve a return location. All popovers stay outside the XML projection and cannot create document/history changes.
+
+Shortcut help is a native dialog owned by `workspace-shell`; the menu delegates to that controller rather than writing an unobtrusive status line. Dialog focus and Escape stay within the native modal boundary; application-level document shortcuts defer while a dialog is open.
