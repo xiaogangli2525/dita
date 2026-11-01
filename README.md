@@ -24,6 +24,16 @@ npm run dev        # disposable sample workspace for trying the UI
 
 Requires **Node.js 20+** and **Git**. `npm start` edits the repository configured by `DOCS_ROOT`; `npm run dev` uses temporary sample documents and deletes them when the demo stops.
 
+## Remote document libraries
+
+Run the local Node service with Git installed. In the left workspace settings, choose **加载远程库**, enter an HTTPS or SSH Git address and a new local name, optionally read/select a remote branch, then **克隆并选择手册**. Select an available `.ditamap` to begin writing. Libraries are stored under `REPOSITORIES_ROOT`; existing directories are never replaced. An empty/missing initial `DOCS_ROOT` can load the workbench so the first library can be imported.
+
+**远程更新** first checks origin's tracked branch without changing working documents. **拉取更新** rechecks the exact local and remote commits and permits fast-forward only. Unsaved editor buffers, dirty/untracked Git files, local-ahead commits, divergent histories and changed remote checks block updating. Ignored files are also protected against checkout overwrite. A successful update rotates the workspace token, reloads files and reopens the active manual when it still exists.
+
+Private repositories use existing Git credentials/SSH keys on the machine running the service. Configure credentials and host trust there first; the app never requests passwords or tokens. Addresses containing credentials, query parameters, file paths or Git helper protocols are refused. Git commands run without interactive prompts, with bounded timeouts and hooks/submodule recursion disabled. LFS objects and submodules are not downloaded automatically. Only the chosen branch is cloned; publishing/committing/pushing changes remains an external Git operation.
+
+The static hosted demonstration has no filesystem Git backend. Its remote controls are explicitly disabled. The GitHub connector used to develop this project is separate from the application's repository credentials.
+
 ## Dependencies
 
 - **iconv-lite** — used for GBK/GB2312/GB18030 encoding round-trip. DITA files

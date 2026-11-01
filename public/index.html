@@ -82,6 +82,7 @@
         <label class="workspace-switch"><span>分支</span><select id="branchSelect"></select></label>
         <button id="projectButton" type="button" title="维护当前仓库的型号清单">型号清单</button>
       </div>
+        <div class="remote-library-actions"><button id="remoteImportButton" type="button">加载远程库</button><button id="remoteUpdateButton" type="button">远程更新</button></div>
         <span id="rootPath" class="workspace-path">未加载</span>
         <div class="workspace-actions"><button id="draftsButton" type="button">恢复草稿</button><button id="releasesButton" type="button">交付记录</button></div>
       </div>
@@ -303,6 +304,24 @@
     <h2 id="releaseHeading">交付记录</h2><p>记录下载发起时的型号、版本、源文件指纹与未保存状态。保留当前浏览器中此仓库最近 50 条记录；可下载 JSON 随交付归档。</p>
     <div id="releaseList" class="record-list"></div><div class="dialog-actions"><button id="releaseClose" type="button">关闭</button></div>
   </dialog>
+  <dialog id="remoteImportDialog" class="workspace-dialog" aria-labelledby="remoteImportHeading"><form id="remoteImportForm">
+    <h2 id="remoteImportHeading">加载远程文档库</h2><p>将仓库克隆到服务所在机器的工作区，再选择要编写的功能手册。</p>
+    <label>Git 地址<input id="remoteUrl" required maxlength="2048" placeholder="https://github.com/company/manual.git 或 git@host:team/manual.git"/></label>
+    <p>私有库使用运行服务机器已有的 Git 凭据或 SSH 配置，请勿在地址中填写密码或 Token。</p>
+    <label>本地名称<input id="remoteName" required maxlength="64" pattern="[A-Za-z0-9][A-Za-z0-9._-]*" placeholder="例如 mqtt-manual"/></label>
+    <label>远程分支<select id="remoteBranch"><option value="">默认分支</option></select></label><button id="remoteBranchesButton" type="button">读取远程分支</button>
+    <p id="remoteImportStatus" role="status"></p><p id="remoteImportError" class="form-error" role="alert"></p>
+    <div class="dialog-actions"><button id="remoteImportCancel" type="button">取消</button><button type="submit" class="primary-action">克隆并选择手册</button></div>
+  </form></dialog>
+  <dialog id="remoteUpdateDialog" class="workspace-dialog" aria-labelledby="remoteUpdateHeading">
+    <h2 id="remoteUpdateHeading">远程更新</h2><p id="remoteRepositoryInfo" class="remote-repository-info"></p><p>检查更新会读取远程版本。拉取仅执行快进更新；本地改动和分叉需先在 Git 中处理。</p>
+    <p id="remoteUpdateStatus" role="status"></p><p id="remoteUpdateError" class="form-error" role="alert"></p>
+    <div class="dialog-actions"><button id="remoteUpdateCancel" type="button">关闭</button><button id="remoteCheckButton" type="button">检查远程更新</button><button id="remotePullButton" type="button" class="primary-action" disabled>拉取更新</button></div>
+  </dialog>
+  <dialog id="remoteManualDialog" class="workspace-dialog" aria-labelledby="remoteManualHeading"><form id="remoteManualForm">
+    <h2 id="remoteManualHeading">选择功能手册</h2><label>手册入口<select id="remoteManual" required></select></label>
+    <div class="dialog-actions"><button id="remoteManualCancel" type="button">稍后打开</button><button type="submit" class="primary-action">打开手册</button></div>
+  </form></dialog>
   <dialog id="newDocumentDialog" class="workspace-dialog" aria-labelledby="newDocumentHeading"><form id="newDocumentForm">
     <h2 id="newDocumentHeading">新建功能文档</h2><p>选择模板后，在正文中继续编写。文件创建在当前仓库已有目录中。</p>
     <label>文档模板<select id="newDocumentTemplate"></select></label>
@@ -366,6 +385,7 @@
   <script src="/body-navigation.js"></script>
   <script src="/document-label.js"></script>
   <script src="/workspace-shell.js"></script>
+  <script src="/remote-libraries.js"></script>
   <script src="/application.js"></script>
   <script src="/app.js"></script>
 </body>
