@@ -208,3 +208,8 @@
   .authoring-toolbar { flex-wrap:wrap; padding:8px 12px; }
   .authoring-actions { flex:1 1 100%; min-width:0; max-width:100%; flex-wrap:wrap; justify-content:flex-start; }
 }
+
+.remote-library-actions { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+.remote-library-actions button { border:1px solid var(--border); border-radius:6px; padding:6px 8px; background:var(--surface,white); color:var(--text); font:inherit; font-size:12px; }
+.remote-repository-info { white-space:pre-wrap; overflow-wrap:anywhere; }
+#remoteUpdateStatus, #remoteImportStatus { color:var(--muted); font-size:12px; line-height:1.7; }

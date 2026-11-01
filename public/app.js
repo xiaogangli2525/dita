@@ -723,7 +723,8 @@ async function initialize() {
 
 window.DitaApplication.start(A, {
   maps: { ensureMapAuthorFile, renderTabs, documentLabel: window.DitaDocumentLabel.documentLabel },
-  documents: { renderTabs, updateActivePanes, updateTree, refreshWorkspaceTree }
+  documents: { renderTabs, updateActivePanes, updateTree, refreshWorkspaceTree },
+  remoteLibraries: { reloadWorkspace, loadRepositories, openManual: async path => { state.selectedMap = path; renderMapPicker(); updateTree(''); await openFile(path); } }
 });
 initialize();
 })();

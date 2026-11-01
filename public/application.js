@@ -49,6 +49,7 @@
       feature('save', 'DitaSave', 'createSaveController', 'state api events manual saving refreshChrome refreshFiles validateXml setStatus toast', ['manual'], { writable: ['saving'] }),
       feature('maps', 'DitaMapController', 'createMapController', 'state dom api setStatus setFileContent openFile', [], { views: views.maps }),
       feature('documents', 'DitaDocuments', 'createDocumentController', 'state api events setMode setStatus save footnotes validateXml downloadXML', ['save'], { views: views.documents }),
+      feature('remoteLibraries', 'DitaRemoteLibraries', 'createController', 'state api events setStatus', [], { views: views.remoteLibraries }),
       feature('drafts', 'DitaDrafts', 'createDraftController', 'state api events openFile setFileContent setStatus toast downloadXML'),
       feature('authorSelection', 'DitaAuthorSelection', 'createController', 'state dom api events ditaCore applyAuthorEdit validateXml'),
       feature('bodyNavigation', 'DitaBodyNavigation', 'createController', 'state dom api events authorSelection openFile setMode setStatus', ['authorSelection']),
