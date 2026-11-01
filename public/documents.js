@@ -51,16 +51,9 @@ async function saveAsFile() {
     }
     if (!response.ok) throw new Error(await responseError(response));
     const result = await response.json();
-    A.clearTopicCache();
     const savedPath = result.path || target;
-    state.filesMap.set(savedPath, {
-      path: savedPath,
-      disk: result.content,
-      baseline: result.content,
-      gitStatus: result.created ? 'untracked' : 'modified',
-      current: result.content,
-      dirty: false
-    });
+    state.filesMap.set(savedPath, root.DitaDocumentStore.createDocument({ path: savedPath,
+      content: result.content, gitStatus: result.created ? 'untracked' : 'modified' }));
     state.activePath = savedPath; A.footnotes?.setScope(savedPath); A.events.emit('file:opened', state.filesMap.get(savedPath));
     if (!state.files.some(entry => entry.path === savedPath)) {
       state.files.push({ type: 'file', path: savedPath, name: fileNameFromPath(savedPath) });
@@ -104,8 +97,8 @@ get('newDocumentForm').addEventListener('submit', async event => {
     const response = await fetch('/api/file', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ path: target, content, overwrite: false }) });
     if (response.status === 409) throw new Error('文件已存在，请换一个文件名');
     if (!response.ok) throw new Error(await responseError(response));
-    const result = await response.json(); await refreshWorkspaceTree(); A.clearTopicCache();
-    const savedPath = result.path || target, file = { path: savedPath, disk: result.content, baseline: result.content, gitStatus: 'untracked', current: result.content, dirty: false };
+    const result = await response.json(); await refreshWorkspaceTree();
+    const savedPath = result.path || target, file = root.DitaDocumentStore.createDocument({ path: savedPath, content: result.content, gitStatus: 'untracked' });
     state.filesMap.set(savedPath, file); state.activePath = savedPath; A.footnotes?.setScope(savedPath); A.events.emit('file:opened', file);
     renderTabs(); setMode('visual'); updateActivePanes(); updateTree(); get('newDocumentDialog').close(); setStatus('已创建：' + savedPath);
   } catch (error) { get('newDocumentError').textContent = error.message; }

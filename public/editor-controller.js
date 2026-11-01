@@ -223,14 +223,8 @@
       if (!fileResponse.ok) throw new Error(`${path}: ${(await fileResponse.text()).trim()}`);
       const disk = await fileResponse.text();
       const git = await gitResponse.json().catch(() => ({}));
-      const file = {
-        path,
-        disk,
-        baseline: git.available ? git.content : disk,
-        gitStatus: git.status || 'unknown',
-        current: disk,
-        dirty: false
-      };
+      const file = documentStore.createDocument({ path, content: disk,
+        baseline: git.available ? git.content : disk, gitStatus: git.status || 'unknown' });
       state.filesMap.set(path, file);
       return file;
     }

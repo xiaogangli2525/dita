@@ -1,5 +1,6 @@
 'use strict';
 (function (root) {
+  /** @param {import('./contracts').SavePorts} A */
   function createSaveController(A) {
     const get = id => document.getElementById(id);
     let configuration = null, preparing = false;
@@ -21,7 +22,7 @@
           await persist(file, { path: snapshot.path, content: snapshot.current, expectedContent: snapshot.disk });
           saved++; A.events.emit('document:changed', file);
         }
-        A.clearTopicCache(); A.refreshFiles();
+        A.refreshFiles();
         const pending = Array.from(A.state.filesMap.values()).filter(file => file.dirty).length;
         A.setStatus(`已保存 ${saved} 个文档到${A.state.capabilities.persistence === 'browser' ? '浏览器' : '磁盘'}${A.state.capabilities.git ? ' · 尚未提交 Git' : ''}` + (pending ? ` · 仍有 ${pending} 个文档待保存` : ''));
         return true;
@@ -34,7 +35,7 @@
       if (preparing || A.saving || get('saveScopeDialog').open) return;
       const file = A.state.filesMap.get(A.state.activePath);
       if (!file) return false;
-      if (!/\.ditamap$/i.test(file.path)) return write([{ ...file }], A.api.token);
+      if (!/\.ditamap$/i.test(file.path)) return write([root.DitaDocumentStore.snapshotDocument(file)], A.api.token);
       preparing = true;
       try {
         const snapshot = await A.manual.capture(file.path), candidates = A.manual.saveCandidates(snapshot);

@@ -29,7 +29,11 @@ function harness() {
   };
   vm.runInNewContext(fs.readFileSync(require.resolve('../public/browser-files.js'), 'utf8'), sandbox);
   vm.runInNewContext(fs.readFileSync(require.resolve('../public/export.js'), 'utf8'), sandbox);
-  A.browserLoadImageBytes = async () => 'data:image/png;base64,AAAA';
+  A.manual = require('../public/manual-service').createManualService(A);
+  let imageLoader = async () => 'data:image/png;base64,AAAA';
+  const exporter = sandbox.window.DitaExport.createExportController(A, { loadImageBytes: (...args) => imageLoader(...args) });
+  Object.assign(A, exporter);
+  A.setImageLoader = loader => { imageLoader = loader; };
   return { A, output: async () => blob?.text() };
 }
 test('HTML download uses working buffers and embeds images just like preview', async () => {
@@ -51,7 +55,7 @@ test('non-Map export does not leave the loading overlay active', async () => {
 });
 test('an unreadable image stops the download with a visible error', async () => {
   const { A, output } = harness();
-  A.browserLoadImageBytes = async () => { throw new Error('image missing'); };
+  A.setImageLoader(async () => { throw new Error('image missing'); });
   await A.exportMapToHtmlFile();
   assert.equal(await output(), undefined);
   assert.equal(A.failed, true);

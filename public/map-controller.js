@@ -1,6 +1,6 @@
 'use strict';
 (function (root) {
-  function createMapController(A, { ensureMapAuthorFile, renderTabs }) {
+  function createMapController(A, { ensureMapAuthorFile, renderTabs, documentLabel }) {
     const { state, dom, setStatus, setFileContent, openFile } = A;
     const fetch = A.api.request, responseError = A.api.error;
 function renderMapPicker() {
@@ -40,7 +40,7 @@ function renderTree(nodes, filter = '') {
   function walk(items, parentMatched = false, output = result) {
     for (const node of Array.from(items || [])) {
       const file = state.filesMap.get(node.path);
-      const title = file ? root.DitaWorkspaceShell.documentLabel(file) : node.title || node.name || '';
+      const title = file ? documentLabel(file) : node.title || node.name || '';
       const matched = !term || title.toLowerCase().includes(term) || node.path?.toLowerCase().includes(term);
       const children = node.children ? walk(node.children, parentMatched || matched, []) : [];
       if (!matched && !parentMatched && !children.length) continue;
