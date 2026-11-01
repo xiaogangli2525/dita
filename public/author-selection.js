@@ -1,7 +1,7 @@
 'use strict';
 (function (root) {
   const BLOCKS = 'p,li,td,th,pre,h2,h3,h4,[data-dita-source="note"],[data-dita-source="cmd"],[data-dita-source="dd"]';
-  const PROTECTED = '[data-dita-source="fn"],[data-dita-source="foreign"],[conref],.oxy-delete,.oxy-insert,.oxy-comment';
+  const PROTECTED = '.fn-ref,[data-dita-source="fn"],[data-dita-source="foreign"],[conref],.oxy-delete,.oxy-insert,.oxy-comment';
   const elementOf = node => node?.nodeType === 1 ? node : node?.parentElement;
   // Compare authored attributes, not transient selection classes or DOM metadata.
   function attributes(node) {
@@ -125,7 +125,7 @@
         while ((node = walker.nextNode())) {
           last = node;
           if (remaining <= node.length) {
-            const marker = node.parentElement.closest('[data-dita-source="fn"]');
+            const marker = node.parentElement.closest('.fn-ref,[data-dita-source="fn"]');
             if (marker) return [marker.parentNode, Array.from(marker.parentNode.childNodes).indexOf(marker) + (remaining ? 1 : 0)];
             return [node, remaining];
           }

@@ -77,7 +77,7 @@ function convertVisualElement(node, documentRef, preserveAttributes = false) {
   const ditaTag = VISUAL_TO_DITA.get(sourceTag) || sourceTag;
   const sourceTagAttribute = node.getAttribute?.('data-dita-source');
   if (!sourceTagAttribute && sourceTag === 'br') return documentRef.createTextNode('\n');
-  if (sourceTagAttribute === 'fn' && node.getAttribute('data-dita-original')) {
+  if ((sourceTagAttribute === 'fn' || sourceTagAttribute === 'xref' && node.getAttribute('type') === 'fn') && node.getAttribute('data-dita-original')) {
     return parseXml(node.getAttribute('data-dita-original')).documentElement;
   }
   if (sourceTagAttribute === 'image' && node.getAttribute('data-dita-original')) {
@@ -440,6 +440,19 @@ function createAuthorTopic(source, documentRef = document, normalizeOxy = false,
   return container;
 }
 
+function renderFootnoteMarker(node, documentRef, inline) {
+  const marker = documentRef.createElement('sup'); marker.className = 'fn-ref';
+  marker.setAttribute('data-dita-source', node.localName);
+  marker.setAttribute('data-dita-original', serializeXmlNode(node));
+  if (node.localName === 'xref') marker.setAttribute('type', 'fn');
+  else if (!inline) marker.setAttribute('data-fn-definition', 'true');
+  marker.setAttribute('contenteditable', 'false'); marker.setAttribute('role', 'button'); marker.setAttribute('tabindex', '0');
+  const label = inline ? String(++_ctx.fnCounter) : node.localName === 'fn' ? '定义' : '?';
+  marker.setAttribute('aria-label', '注脚 ' + label + '，双击或按 Enter 编辑'); marker.textContent = '[' + label + ']';
+  marker.title = node.textContent.trim() + ' · 双击编辑'; marker.setAttribute('data-fn-text', node.textContent.trim());
+  return marker;
+}
+
 function renderDitaNode(node, documentRef = document) {
   const rendered = renderAuthorNode(node, documentRef);
   if (rendered && node.nodeType === 1) rendered.ditaSourcePath = xmlNodePath(node);
@@ -610,6 +623,7 @@ function renderAuthorNode(node, documentRef = document) {
     }
     return element;
   }
+  if (tag === 'xref' && node.getAttribute('type') === 'fn') return renderFootnoteMarker(node, documentRef, false);
   if (tag === 'xref' || ['ph', 'b', 'i', 'u', 'codeph', 'keyword', 'term', 'cite'].includes(tag)) {
     const element = documentRef.createElement(tag === 'xref' ? 'a' : 'span');
     element.setAttribute('data-dita-source', tag);
@@ -655,19 +669,7 @@ function renderAuthorNode(node, documentRef = document) {
     return el;
   }
   if (tag === 'fn') {
-    _ctx.fnCounter++;
-    const sup = documentRef.createElement('sup');
-    sup.className = 'fn-ref';
-    sup.setAttribute('data-dita-source', 'fn');
-    sup.setAttribute('data-dita-original', serializeXmlNode(node));
-    sup.setAttribute('contenteditable', 'false');
-    sup.setAttribute('role', 'button');
-    sup.setAttribute('tabindex', '0');
-    sup.setAttribute('aria-label', '注脚 ' + _ctx.fnCounter + '，双击或按 Enter 编辑');
-    sup.textContent = '[' + _ctx.fnCounter + ']';
-    sup.title = node.textContent.trim() + ' · 双击编辑';
-    sup.setAttribute('data-fn-text', node.textContent.trim());
-    return sup;
+    return renderFootnoteMarker(node, documentRef, !node.hasAttribute('id'));
   }
   if (tag === 'filepath') {
     const el = documentRef.createElement('code');

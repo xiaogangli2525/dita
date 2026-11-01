@@ -18,7 +18,7 @@
     const report = { model, excluded: 0, unmarked: 0, included: 0, unused: 0 };
     for (const path of published) if (!expanded.has(path)) throw new Error('无法读取：' + path);
     for (const [path, file] of expanded) {
-      const notes = [], refs = [], removals = [], source = file.current;
+      const notes = [], refs = [], sequence = [], removals = [], source = file.current;
       const tree = xml.inspectSource(source);
       try {
         walk(tree, (node, ancestors) => {
@@ -35,14 +35,16 @@
               conditions, common: manual.common(node.attrs), origin: resolved.origins.get(path)[notes.length],
               allowed: manual.matches(conditions, model), unmarked: !conditions.length && !manual.common(node.attrs) };
             notes.push(note);
+            sequence.push({ note, site: resolved.sites.get(path)[sequence.length], definition: Boolean(note.key) });
             if (note.key) { if (definitions.has(note.key)) throw new Error('重复的注脚 ID：' + note.key); definitions.set(note.key, note); }
           }
           if (node.name === 'xref' && decode(node.attrs.type) === 'fn') {
             if (insideNote) throw new Error('暂不支持注脚内再次引用注脚');
-            refs.push({ node, key: referenceKey(decode(node.attrs.href), path) });
+            const ref = { node, key: referenceKey(decode(node.attrs.href), path) };
+            refs.push(ref); sequence.push({ ref, site: resolved.sites.get(path)[sequence.length] });
           }
         });
-        records.set(path, { file, source, notes, refs, removals });
+        records.set(path, { file, source, notes, refs, sequence, removals });
       } catch (e) { throw new Error(path + '：' + e.message); }
     }
     const remove = (record, node) => record.removals.push([node.start, node.close?.end ?? node.end]);
@@ -55,7 +57,7 @@
         if (!target.allowed) remove(record, ref.node); else used.add(ref.key);
       }
     }
-    const noteDefinitions = new Map(), prepared = new Map(), publicationNotes = [];
+    const noteDefinitions = new Map(), prepared = new Map(), publicationNotes = new Map();
     for (const [path, record] of records) {
       const visible = published.has(path);
       for (const note of record.notes) {
@@ -63,7 +65,7 @@
         else if (note.key && !used.has(note.key)) { remove(record, note.node); if (visible) report.unused++; }
         else if (visible || used.has(note.key)) {
           report.included++; if (note.unmarked) report.unmarked++;
-          publicationNotes.push({ path, origin: note.origin, conditions: note.conditions, common: note.common, unmarked: note.unmarked, key: note.key, xml: record.source.slice(note.node.start, note.node.close?.end ?? note.node.end) });
+          publicationNotes.set(note, { path, origin: note.origin, conditions: note.conditions, common: note.common, unmarked: note.unmarked, key: note.key, xml: record.source.slice(note.node.start, note.node.close?.end ?? note.node.end) });
           if (note.key) noteDefinitions.set(note.key, { path, xml: record.source.slice(note.node.start, note.node.close?.end ?? note.node.end) });
         }
       }
@@ -71,7 +73,23 @@
       for (const [start, end] of record.removals.sort((a, b) => b[0] - a[0])) content = content.slice(0, start) + content.slice(end);
       xml.validateXml(content); prepared.set(path, { ...record.file, current: content });
     }
-    return { files: prepared, report, noteDefinitions, notes: publicationNotes };
+    // First use owns the automatic number, as in HTML/Markdown delivery. A named
+    // definition is numbered at its first xref, and all of its calls share it.
+    const ordered = [], numbered = new Map(), occurrences = [];
+    for (const path of published) for (const call of records.get(path).sequence) {
+      const note = call.note || definitions.get(call.ref.key);
+      if (!publicationNotes.has(note)) continue;
+      if (!call.definition && !numbered.has(note)) {
+        const item = { ...publicationNotes.get(note), number: ordered.length + 1 };
+        item.label = decode(note.node.attrs.callout) || String(item.number);
+        ordered.push(item); numbered.set(note, item);
+      }
+      occurrences.push({ ...call, target: note });
+    }
+    const calls = occurrences.filter(call => numbered.has(call.target)).map(call => ({ site: call.site, number: numbered.get(call.target).number, definition: Boolean(call.definition) }));
+    // Source editors can open a resource-only definition while retaining Map scope.
+    for (const item of ordered) calls.push({ site: { ...item.origin, name: 'fn' }, number: item.number, definition: Boolean(item.key), origin: true });
+    return { files: prepared, report, noteDefinitions, notes: ordered, calls };
   }
   function prepareTopic(source, path, model = '') {
     const map = { children: [{ path }] }, files = new Map([[path, { current: source }]]);

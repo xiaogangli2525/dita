@@ -68,10 +68,20 @@
         const source = originals.get(origin.path).find(note => note.start === origin.start);
         if (!source) throw new Error('无法定位引用源：' + origin.path);
         const rendered = notesCore.listFootnotes(published.xml)[0];
-        return { ...source, sourceNote: source, index, text: rendered.text, conditions: published.conditions, common: published.common,
+        return { ...source, sourceNote: source, index, number: published.number, label: published.label, text: rendered.text, conditions: published.conditions, common: published.common,
           unmarked: published.unmarked, reused: Boolean(published.key) || published.path !== origin.path || source.referenced, publicationPath: published.path };
       });
-      return { notes, report: data.report };
+      const locations = new Map(), models = new Set();
+      for (const [path, file] of snapshot.files) {
+        const nodes = new Map();
+        const visit = (node, indexes) => { nodes.set(node.start, { xmlPath: indexes.join('/'), name: node.name }); const product = domain.decode(node.attrs.product || ''); if (!/[()]/.test(product)) product.split(/\s+/).filter(Boolean).forEach(model => models.add(model)); node.children.filter(child => child.kind === 'element').forEach((child, index) => visit(child, [...indexes, index])); };
+        visit(xml.inspectSource(file.current), []); locations.set(path, nodes);
+      }
+      const calls = data.calls.flatMap(call => {
+        const location = locations.get(call.site.path)?.get(call.site.start), note = notes[call.number - 1];
+        return location && location.name === call.site.name && ['fn', 'xref'].includes(location.name) ? [{ ...call, path: call.site.path, xmlPath: location.xmlPath, note }] : [];
+      });
+      return { notes, calls, models: [...models], report: data.report };
     }
     function saveCandidates(snapshot) {
       return [...new Set([snapshot.path, ...snapshot.files.keys()])].map(path => snapshot.buffers.get(path)).filter(file => file?.dirty);

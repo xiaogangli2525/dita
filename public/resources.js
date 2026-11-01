@@ -169,7 +169,7 @@
       } catch (error) { get('resourceError').textContent = error.message; }
     });
     A.events.on('workspace:willChange', () => { snapshot = null; loadGeneration++; get('resourceDialog').close(); });
-    A.dom.visualEditor.addEventListener('dblclick', event => { const node = event.target.closest('[data-dita-source="image"],[data-dita-source="xref"]'); if (node && A.state.mode === 'visual') { event.preventDefault(); show('image', node); } });
+    A.dom.visualEditor.addEventListener('dblclick', event => { const node = event.target.closest('[data-dita-source="image"],[data-dita-source="xref"]'); if (node && !node.matches('.fn-ref') && A.state.mode === 'visual') { event.preventDefault(); show('image', node); } });
     return { show, edit: element => show('image', element) };
   }
   root.DitaResources = { createResourceController };

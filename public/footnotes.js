@@ -10,6 +10,7 @@
     function setScope(path) {
       const changed = scopePath !== path;
       scopePath = path; revision = ''; generation++;
+      A.notePresentation.setScope(path);
       if (changed) {
         // Do not leave actionable notes from the previous document on screen
         // while the new manual is being captured by the debounced refresh.
@@ -42,7 +43,7 @@
       for (const note of matches) {
         const card = el('article', 'footnote-card');
         const header = el('div', 'footnote-card-heading');
-        header.append(el('span', 'footnote-number', String(note.index + 1).padStart(2, '0')),
+        header.append(el('span', 'footnote-number', note.label || String(note.index + 1)),
           el('span', !note.unmarked ? 'footnote-model-badge' : 'footnote-unassigned', note.common ? '已确认通用' : note.conditions.join(' ∩ ') || '待确认适用范围'));
         card.append(header, el('p', 'footnote-context', note.context || '文档注脚'), el('p', 'footnote-text', note.text || (note.referenced ? '引用注脚，请在引用源中维护。' : '（空注脚）')));
         const path = el('small', 'footnote-path', note.path); path.title = note.path; card.append(path);
@@ -64,6 +65,7 @@
       } catch (e) { error(e.message); }
     }
     async function beginEdit(note) {
+      const displayLabel = note.displayLabel || note.label || '编号待确认';
       const reused = note.reused; note = note.sourceNote || note;
       try {
         if (editing && $('footnoteEditDialog').open && !confirm('放弃当前注脚编辑，打开另一条注脚？')) return;
@@ -75,7 +77,7 @@
         if (surface.ditaSourceContent !== file.current) throw new Error('正文已变化，请重新打开后编辑注脚');
         editing = { note, file, workspace: A.api.token, activePath: A.state.activePath, surface, project: A.project.expectedContent,
           beforeSelection: A.authorSelection.bookmark(surface) || A.authorSelection.afterNode(note.xmlPath) };
-        $('footnoteEditHeading').textContent = '编辑注脚 ' + (note.index + 1);
+        $('footnoteEditHeading').textContent = '编辑注脚 ' + displayLabel;
         $('footnoteContentLabel').textContent = note.rich ? '注脚内容（保留行内 XML 标记）' : '注脚内容';
         $('footnoteContent').value = note.rich ? note.inner : note.text;
         picker.draw(note);
@@ -89,24 +91,23 @@
     }
     async function refresh(force = false) {
       if (!shown || A.state.mode === 'review') return;
-      if (scopePath && !A.state.filesMap.has(scopePath)) scopePath = A.state.activePath;
+      if (scopePath && !A.state.filesMap.has(scopePath) && !A.state.maps.some(map => map.path === scopePath)) { scopePath = A.state.activePath; A.notePresentation.setScope(scopePath); }
       const key = signature();
       if (!force && key === revision) { syncMode(); return; }
       revision = key;
       const token = ++generation, workspace = A.api.token;
       const activePath = scopePath || A.state.activePath;
-      const active = A.state.filesMap.get(activePath);
+      const active = A.state.filesMap.get(activePath) || A.state.maps.find(map => map.path === activePath);
       $('footnoteScope').textContent = activePath || '当前功能文档';
       error(active ? '正在读取注脚…' : '先从左侧打开一份功能手册。');
       try {
         if (!active) { notes = []; draw(); return; }
-        const snapshot = await A.manual.capture(activePath);
-        const data = A.manual.listNotes(snapshot);
+        const data = await A.notePresentation.ready();
         if (token !== generation || workspace !== A.api.token || activePath !== (scopePath || A.state.activePath)) return;
         notes = data.notes;
         const previous = $('footnoteModel').value;
         $('footnoteModel').replaceChildren(new Option('全部型号', ''));
-        const models = new Set([...(A.project?.value.models || []), ...A.manual.listModels(snapshot)]);
+        const models = new Set([...(A.project?.value.models || []), ...data.models]);
         for (const model of [...models].sort()) $('footnoteModel').add(new Option(model, model));
         if (Array.from($('footnoteModel').options).some(option => option.value === previous)) $('footnoteModel').value = previous;
         draw();
@@ -146,9 +147,12 @@
       } catch (e) { $('footnoteEditError').textContent = e.message; }
     });
     A.events.on('project:changed', () => { revision = ''; scheduleRefresh(); });
+    A.events.on('footnotes:numbered', () => { revision = ''; scheduleRefresh(); });
     async function editAt(path, xmlPath) {
       try {
-        const file = A.state.filesMap.get(path), note = file && core.listFootnotes(file.current, path).find(note => note.xmlPath === xmlPath);
+        const file = A.state.filesMap.get(path);
+        let note = await A.notePresentation.resolve(path, xmlPath).catch(() => null);
+        note ||= file && core.listFootnotes(file.current, path).find(note => note.xmlPath === xmlPath);
         if (!note) throw new Error('注脚位置已变化，请重新点击正文标记');
         if (note.referenced) { show(true); error('这条注脚引用公共内容，请在列表中选择“编辑引用源”。'); return; }
         await beginEdit(note);

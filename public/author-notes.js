@@ -94,12 +94,12 @@
     });
     document.addEventListener('selectionchange', remember);
     function editMarker(event) {
-      const marker = event.target.closest?.('[data-dita-source="fn"]');
+      const marker = event.target.closest?.('.fn-ref');
       if (!marker || A.state.mode !== 'visual' || !A.dom.visualEditor.contains(marker)) return;
       event.preventDefault(); A.footnotes.editAt(filePath(surfaceOf(marker)), marker.ditaSourcePath);
     }
     A.dom.visualEditor.addEventListener('dblclick', editMarker);
-    A.dom.visualEditor.addEventListener('keydown', event => { if (event.key === 'Enter' && event.target.matches?.('[data-dita-source="fn"]')) editMarker(event); });
+    A.dom.visualEditor.addEventListener('keydown', event => { if (event.key === 'Enter' && event.target.matches?.('.fn-ref')) editMarker(event); });
     A.events.on('workspace:willChange', () => { pending = null; get('newFootnoteDialog').close(); syncMode(); });
     A.events.on('file:opened', syncMode); A.events.on('file:closed', syncMode);
     syncMode();

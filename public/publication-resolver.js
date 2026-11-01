@@ -51,8 +51,8 @@
     });
   }
   function resolveConrefsDetailed(files) {
-    const documents = new Map(), output = new Map(), origins = new Map();
-    let activeOrigins = [];
+    const documents = new Map(), output = new Map(), origins = new Map(), sites = new Map();
+    let activeOrigins = [], activeSites = [];
     function indexIds(tree, path) {
       const ids = new Map();
       walk(tree, (node, ancestors) => {
@@ -90,7 +90,11 @@
         if (!targetDoc) throw new Error(origin + '：无法读取内容引用：' + target.path);
         const targetNode = target.fragment ? targetDoc.ids.get(target.fragment) : targetDoc.tree;
         if (!targetNode || targetNode.name !== node.name) throw new Error(origin + '：内容引用目标不存在或元素类型不匹配：' + key);
+        const firstSite = activeSites.length;
         const resolved = render(targetNode, target.path, destination, [...chain, key]);
+        // Keep the visible source occurrence separate from the reused definition.
+        // A block conref has no individually editable child markers in Author.
+        for (let i = firstSite; i < activeSites.length; i++) activeSites[i] = { path: origin, start: node.start, name: node.name };
         const resolvedNode = xml.inspectSource(resolved);
         attrs = { ...resolvedNode.attrs };
         delete attrs.id;
@@ -102,6 +106,7 @@
         return start + (resolvedNode.close ? resolved.slice(resolvedNode.end, resolvedNode.close.start) : '') + '</' + node.name + '>';
       }
       if (node.name === 'fn') activeOrigins.push({ path: origin, start: node.start });
+      if (node.name === 'fn' || node.name === 'xref' && decode(node.attrs.type) === 'fn') activeSites.push({ path: origin, start: node.start, name: node.name });
       let opening = source.slice(node.start, node.end);
       if (origin !== destination && attrs.href) {
         if (node.name === 'xref' && decode(attrs.href).startsWith('#')) throw new Error(origin + '：复用片段中的同文件链接需先显式展开，避免目标 ID 重定位错误');
@@ -119,14 +124,15 @@
     for (const [path, file] of files) {
       const doc = documents.get(path);
       activeOrigins = [];
+      activeSites = [];
       try {
         const content = doc.source.slice(0, doc.tree.start) + render(doc.tree, path, path) + doc.source.slice(doc.tree.close?.end ?? doc.tree.end);
         if (content.length > 4 * 1024 * 1024) throw new Error('展开后的 Topic 超过 4 MiB');
         indexIds(xml.inspectSource(content), path);
-        output.set(path, { ...file, current: content }); origins.set(path, activeOrigins);
+        output.set(path, { ...file, current: content }); origins.set(path, activeOrigins); sites.set(path, activeSites);
       } catch (e) { throw new Error(path + '：' + e.message); }
     }
-    return { files: output, origins };
+    return { files: output, origins, sites };
   }
   function resolveConrefs(files) { return resolveConrefsDetailed(files).files; }
   const api = { decode, escape, walk, localTarget, dependencies, loadDependencies, resolveConrefs, resolveConrefsDetailed, validateMap };

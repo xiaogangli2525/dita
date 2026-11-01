@@ -43,6 +43,7 @@
     return compose(host, [
       feature('manual', 'DitaManualService', 'createManualService', 'state api ditaCore project'),
       feature('project', 'DitaProject', 'createProjectController', 'state api events manual setStatus', ['manual']),
+      feature('notePresentation', 'DitaFootnotePresentation', 'createController', 'state dom events manual', ['manual']),
       feature('delivery', 'DitaExport', 'createExportController', 'state dom api manual ditaCore setStatus toast navigateToSource downloadText showLoading hideLoading', ['manual'], {
         expose: ['openModelExport', 'releaseExportPreview', 'previewMapHtml', 'previewMapMd', 'exportMapToHtmlFile', 'exportMapToMarkdownFile', 'lastDeliveryRecord', 'lastExportReport']
       }),
@@ -61,7 +62,7 @@
         create: typeof catalog.DitaInspector?.createController === 'function' ? c => catalog.DitaInspector.createController({ state: c.state, dom: c.dom, commands: c.authorCommands, editResource: element => c.resources.edit(element), openNotes: () => c.shell.openPanel('notes'), status: c.setStatus }) : undefined
       }),
       feature('resources', 'DitaResources', 'createResourceController', 'state dom api events ditaCore manual authorSelection authorCommands setFileContent setStatus', ['manual', 'authorSelection', 'authorCommands']),
-      feature('footnotes', 'DitaFootnotes', 'createPanel', 'state dom api events manual project authorSelection authorNotes bodyNavigation shell openFile setFileContent setMode setStatus applyAuthorEdit', ['manual', 'project', 'authorSelection', 'bodyNavigation']),
+      feature('footnotes', 'DitaFootnotes', 'createPanel', 'state dom api events manual notePresentation project authorSelection authorNotes bodyNavigation shell openFile setFileContent setMode setStatus applyAuthorEdit', ['manual', 'project', 'notePresentation', 'authorSelection', 'bodyNavigation']),
       feature('authorNotes', 'DitaAuthorNotes', 'createController', 'state dom events ditaCore project authorSelection footnotes shell applyAuthorEdit setStatus toast', ['project', 'authorSelection', 'footnotes']),
       feature('authorBlocks', 'DitaAuthorBlocks', 'createController', 'state dom events authorSelection setStatus toast', ['authorSelection']),
       feature('editorTools', 'DitaEditorTools', 'createController', 'state dom api events authorSelection authorNotes resources authorBlocks setStatus setFileContent setMode toast', ['authorSelection', 'authorNotes', 'resources', 'authorBlocks']),
