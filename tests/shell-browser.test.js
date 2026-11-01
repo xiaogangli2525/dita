@@ -51,8 +51,9 @@ test('workspace shell preserves editing state across panels and delivery steps',
     const width = (await page.locator('#inspector').boundingBox()).width;
     await page.locator('#inspectorResize').focus(); await page.keyboard.press('ArrowLeft');
     assert.equal((await page.locator('#inspector').boundingBox()).width, width + 16);
-    await page.setViewportSize({ width: 1101, height: 768 });
     await page.locator('#inspectorResize').focus(); await page.keyboard.press('End');
+    await page.setViewportSize({ width: 1101, height: 768 });
+    assert.equal(await page.locator('#inspector').evaluate(node => getComputedStyle(node).position), 'fixed');
     const pane = await page.locator('#visualPane').boundingBox();
     const action = await page.locator('#newFootnoteButton').boundingBox();
     assert.ok(action.x + action.width <= pane.x + pane.width, 'resizing must keep writing actions reachable');
@@ -124,6 +125,86 @@ test('workspace shell preserves editing state across panels and delivery steps',
     assert.ok((await page.locator('#inspector').boundingBox()).width <= 340);
     await page.click('#inspectorCloseButton');
     assert.equal(await page.locator('#footnotesButton').getAttribute('aria-expanded'), 'false');
+  });
+  await t.test('navigation width supports dragging and keyboard adjustment, persists and adapts to the viewport', async () => {
+    const nav = await browser.newPage({ viewport: { width: 1366, height: 768 } });
+    try {
+      nav.on('pageerror', error => errors.push(error.message));
+      await nav.goto('http://127.0.0.1:' + port); await nav.waitForFunction(() => window.DitaApp?.state.root);
+      const handle = nav.locator('#sidebarResize'), width = async () => (await nav.locator('#workspaceSidebar').boundingBox()).width;
+      const initial = await width(); assert.ok(initial >= 280, 'default navigation should have room for document titles');
+      await handle.focus(); await nav.keyboard.press('ArrowRight'); assert.equal(await width(), initial + 16);
+      const box = await handle.boundingBox(); await nav.mouse.move(box.x + box.width / 2, box.y + 70); await nav.mouse.down(); await nav.mouse.move(box.x + box.width / 2 + 32, box.y + 70); await nav.mouse.up();
+      const preferred = await width(); assert.equal(preferred, initial + 48);
+      assert.equal(await nav.locator('body').evaluate(node => node.classList.contains('resizing-navigation')), false);
+      await nav.reload(); await nav.waitForFunction(() => window.DitaApp?.state.root); assert.equal(await width(), preferred);
+      await nav.setViewportSize({ width: 760, height: 768 }); await nav.waitForFunction(() => Number(document.getElementById('sidebarResize').getAttribute('aria-valuenow')) <= Math.floor(innerWidth * .42)); assert.ok(await width() <= Math.floor(760 * .42));
+      assert.ok((await nav.locator('.content').boundingBox()).width >= 380);
+      await nav.setViewportSize({ width: 1366, height: 768 }); await nav.waitForFunction(value => Number(document.getElementById('sidebarResize').getAttribute('aria-valuenow')) === value, preferred); assert.equal(await width(), preferred, 'restore the preferred width after a temporary small viewport');
+      await handle.focus(); await nav.keyboard.press('Home'); assert.equal(await width(), Number(await handle.getAttribute('aria-valuemin')));
+      await nav.keyboard.press('End'); assert.equal(await width(), Number(await handle.getAttribute('aria-valuemax')));
+      await handle.dblclick(); assert.equal(await width(), initial);
+      await nav.addInitScript(() => { Object.defineProperty(window, 'localStorage', { get() { throw new Error('Storage is disabled'); } }); });
+      await nav.reload(); await nav.waitForFunction(() => window.DitaApp?.state.root);
+      await handle.focus(); await nav.keyboard.press('ArrowRight'); assert.equal(await width(), initial + 16, 'resizing should work when preference storage is unavailable');
+    } finally { await nav.close(); }
+  });
+  await t.test('long nested document titles wrap and filters explain empty results', async () => {
+    await page.setViewportSize({ width: 1366, height: 768 });
+    const original = await page.evaluate(() => window.DitaApp.state.maps.find(map => map.path === window.DitaApp.state.selectedMap).children);
+    try {
+      await page.evaluate(() => {
+        const a = window.DitaApp, title = '通信模组 MQTT 建立安全连接与多型号固件兼容性说明 '.repeat(4);
+        let node = { type: 'file', title, path: 'topics/long-title-compatibility.dita', sourcePath: 'test.leaf' };
+        for (let i = 0; i < 6; i++) node = { type: 'container', title: '功能分组 ' + i, sourcePath: 'test.' + i, children: [node] };
+        a.state.maps.find(map => map.path === a.state.selectedMap).children = [node]; a.maps.updateTree();
+      });
+      const label = page.locator('#tree .map-node-label').last();
+      assert.ok((await label.boundingBox()).height > 40, 'long titles should wrap rather than disappear into an ellipsis');
+      assert.equal(await page.locator('#tree').evaluate(node => node.scrollWidth <= node.clientWidth + 1), true);
+      await page.fill('#search', 'no_such_manual_ui_audit'); assert.match(await page.locator('#tree [role=status]').innerText(), /没有匹配/);
+      await page.fill('#search', '兼容性'); assert.equal(await label.isVisible(), true);
+      assert.equal(await page.locator('#mapSelect').getAttribute('title'), await page.locator('#mapSelect option:checked').innerText());
+    } finally {
+      await page.evaluate(children => { const a = window.DitaApp; a.state.maps.find(map => map.path === a.state.selectedMap).children = children; a.maps.updateTree(''); }, original);
+      await page.fill('#search', '');
+    }
+  });
+  await t.test('short windows keep tree, file search and workspace controls reachable', async () => {
+    await page.setViewportSize({ width: 1100, height: 520 });
+    await page.click('.map-structure-tools summary');
+    await page.locator('#tree button').last().scrollIntoViewIfNeeded();
+    const tree = await page.locator('#tree button').last().boundingBox(), view = await page.locator('#mapView').boundingBox();
+    assert.ok(tree.y + tree.height <= view.y + view.height + 1, 'scroll the navigation rather than clipping its last row');
+    const settings = await page.locator('.workspace-settings').boundingBox(), aside = await page.locator('#workspaceSidebar').boundingBox();
+    assert.ok(settings.y >= aside.y && settings.y + settings.height <= aside.y + aside.height + 1);
+    assert.ok((await page.locator('#repositorySelect').boundingBox()).width >= 180, 'workspace names use a full row');
+    await page.getByRole('tab', { name: '文件查找', exact: true }).click();
+    await page.fill('#contentSearchInput', 'MQTT'); await page.click('#contentSearchButton');
+    await page.waitForFunction(() => /个结果/.test(document.getElementById('contentSearchMeta').textContent));
+    assert.ok(await page.locator('.content-search-result').count() > 0);
+    assert.equal(await page.locator('#searchView').evaluate(node => node.scrollHeight > node.clientHeight), true);
+    await page.locator('#contentSearchMeta').scrollIntoViewIfNeeded();
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+    await page.getByRole('tab', { name: '文档', exact: true }).click(); await page.click('.map-structure-tools summary');
+  });
+  await t.test('mobile navigation has an explicit close control, backdrop and contained keyboard focus', async () => {
+    await page.setViewportSize({ width: 390, height: 600 });
+    await page.click('#sidebarToggleButton');
+    assert.equal(await page.locator('#sidebarCloseButton').isVisible(), true);
+    assert.equal(await page.locator('#sidebarResize').isVisible(), false);
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'sidebarCloseButton');
+    await page.locator('#newDocumentButton').focus(); await page.keyboard.press('Shift+Tab'); assert.equal(await page.evaluate(() => document.activeElement.id), 'releasesButton');
+    await page.keyboard.press('Tab'); assert.equal(await page.evaluate(() => document.activeElement.id), 'newDocumentButton');
+    await page.click('#sidebarCloseButton'); assert.equal(await page.evaluate(() => document.activeElement.id), 'sidebarToggleButton');
+    assert.equal(await page.locator('#workspaceSidebar').isVisible(), false);
+    await page.click('#sidebarToggleButton'); const box = await page.locator('#workspaceSidebar').boundingBox();
+    await page.mouse.click(box.x + box.width + 10, box.y + 70); assert.equal(await page.locator('#workspaceSidebar').isVisible(), false);
+    await page.click('#sidebarToggleButton'); await page.keyboard.press('Escape'); assert.equal(await page.locator('#sidebarToggleButton').getAttribute('aria-expanded'), 'false');
+    assert.equal(await page.locator('#sidebarBackdrop').isVisible(), false);
+    await page.setViewportSize({ width: 1366, height: 768 });
+    assert.equal(await page.locator('#workspaceSidebar').isVisible(), true);
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
   });
   assert.deepEqual(errors, []);
 });
