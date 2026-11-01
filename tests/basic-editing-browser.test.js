@@ -80,11 +80,15 @@ test('basic writing commands preserve content, structure, applicability and undo
     await select('#different', 0); await page.keyboard.press('Backspace'); assert.equal(await current(), original); assert.match(await page.locator('#status').textContent(), /适用条件/);
     await select('#tail', 0); await page.keyboard.press('Backspace'); assert.match(await current(), /<p id="plain">ABCDEF<ph id="tail"\/>GHIJKL<\/p>/); await undo(); assert.equal(await current(), original);
     await select('#notes', 0, 8); await page.keyboard.insertText('不能覆盖'); assert.equal(await current(), original);
+    await select('#notes', 3); await page.keyboard.press('Delete'); assert.equal(await current(), original); assert.match(await page.locator('#status').textContent(), /受保护/);
+    await page.evaluate(() => { const A = window.DitaApp, file = A.state.filesMap.get('a.dita'); A.setFileContent(file, file.current.replace('<p id="plain">', '<p id="plain" conref="b.dita#b/other">')); });
+    const referenced = await current(); await select('#plain', 3); await page.keyboard.insertText('不得改写引用'); assert.equal(await current(), referenced); await reset();
   });
   await t.test('cross-paragraph paste and typing are atomic and retain unselected prefix and tail', async () => {
     await select('#plain', 3, 3, '#tail'); await paste('替换'); assert.match(await current(), /<p id="plain">ABC替换<ph id="tail">JKL<\/ph><\/p>/); await undo(); assert.equal(await current(), original);
     await select('#plain', 3, 3, '#tail'); await page.keyboard.insertText('键入'); assert.match(await current(), /ABC键入<ph id="tail">JKL/); await undo(); assert.equal(await current(), original);
     await select('#conditioned', 1, 2, '#different'); await paste('拒绝'); assert.equal(await current(), original); assert.match(await page.locator('#status').textContent(), /适用条件/);
+    await select('#plain', 3, 3, '#tail'); await paste('外部\n文字', '<p><strong>外部</strong></p><p>文字</p>'); assert.match(await current(), /<p><b>外部<\/b><\/p>/); assert.match(await current(), /<ph id="tail">JKL<\/ph>/); await undo(); assert.equal(await current(), original);
   });
   await t.test('table dialog sets header and dimensions; Tab navigates cells and appends one undoable row', async () => {
     await select('#plain', 3); await page.selectOption('#authorInsertSelect', 'table'); await page.fill('#tableRows', '2'); await page.fill('#tableCols', '3'); await page.click('#tableInsertForm button[type=submit]');
@@ -100,9 +104,11 @@ test('basic writing commands preserve content, structure, applicability and undo
     await select('#plain', 1); await page.selectOption('#authorBlockSelect', 'codeblock'); assert.match(await current(), /<codeblock id="plain">ABCDEF<\/codeblock>/); await undo(); assert.equal(await current(), original);
   });
   await t.test('double-click image edits file, alt and size while retaining child XML and undo', async () => {
-    assert.equal(await page.locator('#pic').getAttribute('alt'), '原图说明'); await page.locator('#pic').dblclick(); await page.waitForFunction(() => document.getElementById('resourceTarget').options.length > 1);
+    assert.equal(await page.locator('#pic').getAttribute('alt'), '原图说明');
+    await require('./browser-ui').openProperties(page); await page.locator('#pic').click(); await page.click('[data-context-action="edit-resource"]'); await page.waitForFunction(() => document.getElementById('resourceTarget').options.length > 1); await page.click('#resourceClose'); await require('./browser-ui').closePanel(page);
+    await page.locator('#pic').dblclick(); await page.waitForFunction(() => document.getElementById('resourceTarget').options.length > 1);
     assert.equal(await page.inputValue('#resourceLabel'), '原图说明'); await page.selectOption('#resourceTarget', { label: 'assets/two.svg' }); await page.fill('#resourceLabel', '替换后的图'); await page.fill('#resourceWidth', '50%'); await page.click('#resourceForm button[type=submit]');
-    assert.match(await current(), /<image id="pic" href="assets\/two.svg" width="50%"><alt id="alt-id">替换后的图<\/alt><longdescref href="b.dita"\/><\/image>/); const edited = await current(); await undo(); assert.equal(await current(), original); await redo(); assert.equal(await current(), edited); await undo();
+    assert.match(await current(), /<image id="pic" href="assets\/two.svg" width="50%"><alt id="alt-id">替换后的图<\/alt><longdescref href="b.dita"\/><\/image>/); assert.equal(await page.locator('#pic').evaluate(node => node.style.width), '50%'); const edited = await current(); await undo(); assert.equal(await current(), original); await redo(); assert.equal(await current(), edited); await undo();
     await select('#plain', 3); await page.keyboard.insertText('X'); await preserved(); assert.match(await current(), /<alt id="alt-id">原图说明<\/alt><longdescref href="b.dita"\/>/); await undo(); assert.equal(await current(), original);
   });
   await t.test('double-click links edits address and label without deleting inline identities', async () => {
@@ -113,6 +119,12 @@ test('basic writing commands preserve content, structure, applicability and undo
   await t.test('stale dialogs do not overwrite newer content; compact screens keep controls reachable', async () => {
     await select('#plain', 1); await page.selectOption('#authorInsertSelect', 'table'); await page.evaluate(() => { const A = window.DitaApp, file = A.state.filesMap.get('a.dita'); A.setFileContent(file, file.current.replace('ABCDEF', 'NEWER')); }); await page.click('#tableInsertForm button[type=submit]'); assert.match(await page.locator('#tableInsertError').textContent(), /变化/); assert.match(await current(), /NEWER/); await page.click('#tableInsertCancel'); await reset();
     await page.setViewportSize({ width: 390, height: 844 }); await select('#plain', 1); await page.selectOption('#authorInsertSelect', 'table'); assert.ok(await page.locator('#tableInsertForm button[type=submit]').isVisible()); assert.ok(await page.locator('#tableCols').isVisible()); await page.click('#tableInsertCancel'); await page.setViewportSize({ width: 1440, height: 1000 });
+  });
+  await t.test('Shift+Enter stays in DITA paragraphs, Escape releases Tab, and failed native edits restore the acknowledged view', async () => {
+    await select('#plain', 3); await page.keyboard.press('Shift+Enter'); assert.match(await current(), /<p id="plain">ABC<\/p>\s*<p>DEF<\/p>/); await undo(); assert.equal(await current(), original);
+    await select('#code', 2); await page.keyboard.press('Escape'); await page.keyboard.press('Tab'); assert.notEqual(await page.evaluate(() => document.activeElement.id), 'visualEditor');
+    await page.evaluate(() => { const host = document.getElementById('visualEditor'); host.insertBefore(document.createElement('h2'), host.firstChild); host.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertParagraph' })); });
+    assert.equal(await current(), original); assert.equal(await page.locator('#visualEditor h2').count(), 1); assert.equal(await page.locator('#visualEditor h2').textContent(), '手册标题');
   });
   await t.test('Map keystrokes target only the current Topic and saving/reopening retains exact content', async () => {
     await open('main.ditamap'); await page.locator('.map-topic-surface #other').waitFor();

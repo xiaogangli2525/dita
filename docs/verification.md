@@ -1,5 +1,12 @@
 # Verification
 
+## Basic authoring improvements
+
+- Full suites: **151 unit/HTTP checks** and **102 Chromium checks**, no failures or skipped cases. Existing HTML/Markdown/PDF/DOCX, Source/Author/Map, IME history, draft, remote Git and workspace regressions remain covered.
+- New real-browser cases exercise title Enter through filesystem save and mode changes; paragraph splits with inherited conditions, mixed inline content and unique IDs; code newlines/indentation; empty-list exit and list hierarchy; attribute-aware merging and protected-content deletion; atomic cross-paragraph paste/typing; configurable tables, Tab navigation and undoable last-cell row insertion; paragraph/list/note/code conversions; image/xref editing with preserved children/anchors; stale dialogs, narrow screens, failed-projection recovery and Map isolation through saving/reopening.
+- Image delivery checks verify standard child `alt` text in HTML/Markdown, legacy alt compatibility, authored HTML dimensions and rejection of invalid dimension styles.
+- Cross-paragraph replacement is limited to compatible sibling paragraphs, and complex CALS tables remain protected from structural changes. Validation uses temporary fictional manuals, not a real company corpus, full DTD validation or physical IME/multi-browser certification.
+
 Run `npm ci --ignore-scripts` and `npm test` with Node 20 or later and Git installed.
 
 The regression suite covers:

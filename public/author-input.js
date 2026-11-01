@@ -130,6 +130,7 @@
       if (!['insertText', 'insertReplacementText', 'deleteContentBackward', 'deleteContentForward', 'deleteByCut'].includes(type)) return;
       const live = selected.getRangeAt(0), first = selection.blockOf(live.startContainer), last = selection.blockOf(live.endContainer);
       if (!first || !last) { event.preventDefault(); fail(new Error('请在正文段落中输入，跨结构修改请使用对应工具')); return; }
+      if (element(live.startContainer).closest(selection.PROTECTED) || element(live.endContainer).closest(selection.PROTECTED)) { event.preventDefault(); fail(new Error('此处是受保护的引用、注脚或修订内容，请使用对应工具')); return; }
       if (type.startsWith('delete')) for (const target of event.getTargetRanges?.() || []) {
         const affected = document.createRange(); affected.setStart(target.startContainer, target.startOffset); affected.setEnd(target.endContainer, target.endOffset);
         if (Array.from(host.querySelectorAll(selection.PROTECTED)).some(node => affected.intersectsNode(node))) { event.preventDefault(); fail(new Error('请使用注脚、引用或修订工具修改受保护内容')); return; }
@@ -162,6 +163,7 @@
     });
     host.addEventListener('compositionstart', () => { composing = true; }); host.addEventListener('compositionend', () => { composing = false; });
     host.addEventListener('pointerdown', () => { escapeTab = false; });
+    for (const event of ['workspace:willChange', 'file:opened']) A.events.on(event, () => { composing = false; escapeTab = false; });
     return {};
   }
   root.DitaAuthorInput = { createController };

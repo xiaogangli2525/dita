@@ -71,7 +71,7 @@ test('reliable writing commands, clipboard, templates and body navigation', asyn
     await select('#tail', 1); await paste('<table><tr><td colspan="2">复杂表格</td></tr></table>', '复杂表格'); assert.match(await current(), /复杂表格/); assert.match(await page.locator('#toast').innerText(), /纯文本/); await undo(); assert.equal(await current(), source);
     await select('#tail', 1, 2); await paste('', '新文本 & 内容'); assert.match(await current(), /新文本 &amp; 内容/); await undo(); assert.equal(await current(), source);
   });
-  await t.test('paste retains paragraph applicability and refuses protected or cross-block selections', async () => {
+  await t.test('paste retains paragraph applicability and refuses protected or incompatible paragraph selections', async () => {
     await select('#text', 1); await paste('<p>新增段落</p><p>另一段落</p>', '新增段落\n另一段落');
     const xml = await current(); assert.match(xml, /<p product="M100">新增段落<\/p>/); assert.match(xml, /<p product="M100">另一段落<\/p>/); await undo(); assert.equal(await current(), source);
     await select('#text', 0, await page.locator('#text').evaluate(node => node.textContent.length)); await paste('', '禁止覆盖注脚'); assert.equal(await current(), source); assert.match(await page.locator('#status').innerText(), /注脚/);

@@ -200,3 +200,14 @@ The sidebar offers repository/manual plaintext search with exact source navigati
 ## Architecture maintenance
 
 Feature startup is declared in `public/application.js`, including factories, dependency ports, initialization requirements and compatibility APIs. Delivery is an explicitly constructed controller; it no longer initializes through script-load side effects. New document state and save/manual snapshots use the shared `document-store` constructors. Shared JSDoc interfaces are in `public/contracts.js`; current runtime checks and dependency constraints are described in [architecture](docs/architecture.md).
+
+## 日常编写
+
+- 标题内按 Enter 保留完整标题，并进入正文。正文 Enter / Shift+Enter 新建段落；空列表项 Enter 退出列表。代码块 Enter 使用真实换行并沿用本行缩进。
+- 列表 Tab / Shift+Tab 调整层级；代码块 Tab 插入四个空格，选中多行后可整体缩进或反缩进。按 Esc 后再按 Tab 可离开编辑区。
+- 表格插入窗口可设置正文行数、列数和表头。表格内 Tab / Shift+Tab 切换单元格；最后一个单元格 Tab 新增正文行。合并或不规则表格继续保留原结构，结构编辑仍使用源码。
+- 工具栏“转换…”可将当前段落改为列表、说明、提示、警告或代码块。连续正文段落可一起转为列表；嵌套复杂结构和带注脚的纯文本转换会给出具体提示。
+- 相同适用条件的连续正文段落支持跨段落粘贴、输入替换和删除，保留未选中的前后文字；不同条件、注脚、引用和修订内容会阻止跨范围替换。退格合并段落也检查属性。
+- 双击已有图片或链接，或在元素工具中选择“编辑图片／编辑链接”，可原位修改。图片支持替换、说明和尺寸；链接支持地址、文字及手册内目标。修改保留其他属性、图片子元素和已有行内锚点，可撤销；点击保存后才写入文件。
+
+这些操作复用同一文档历史，在 Map 编写中仅修改当前 Topic。跨段落操作目前限同一容器中的连续普通段落；表格、列表与复杂 DITA 结构之间的跨范围替换仍需分别编辑。尺寸预览和 HTML 保留有效尺寸值，Markdown 使用标准图片语法。

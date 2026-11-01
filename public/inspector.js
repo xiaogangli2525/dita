@@ -1,6 +1,6 @@
 'use strict';
 (function (root) {
-  function createController({ state, dom, commands, format, status }) {
+  function createController({ state, dom, commands, format, editResource, status }) {
     let target = null;
     const el = (tag, text, cls) => { const node = document.createElement(tag); if (text) node.textContent = text; if (cls) node.className = cls; return node; };
     function attempt(action) { try { action(); } catch (error) { status(error.message, true); } }
@@ -16,6 +16,7 @@
       let blocked = '';
       if (table) try { root.DitaTableCore.inspect(table); } catch (error) { blocked = error.message; }
       const addAction = (action, label, reason = '') => { const button = el('button', label); button.type = 'button'; button.dataset.contextAction = action; button.disabled = Boolean(reason); if (reason) button.title = reason; dom.contextToolbar.append(button); };
+      if (['image', 'xref'].includes(node.localName)) addAction('edit-resource', node.localName === 'image' ? '编辑图片' : '编辑链接');
       if (table) {
         const reason = blocked || (!cell ? '请先选择一个单元格' : '');
         for (const [action, label] of [['row-before', '上方插行'], ['row-after', '下方插行'], ['row-delete', '删除行'], ['col-before', '左侧插列'], ['col-after', '右侧插列'], ['col-delete', '删除列'], ['header', cell?.parentElement.parentElement.localName === 'thead' ? '改为正文行' : '设为表头']]) addAction(action, label, reason);
@@ -43,6 +44,7 @@
     }
     function context(action, value) {
       if (!target) return;
+      if (action === 'edit-resource') return editResource(target.element);
       if (['bold', 'italic', 'code-inline'].includes(action)) return format(({ bold: 'b', italic: 'i', 'code-inline': 'codeph' })[action]);
       attempt(() => { commands.context(target, action, value); status('修改已应用，可撤销；保存后写入工作区'); });
     }

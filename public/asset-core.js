@@ -2,6 +2,11 @@
 (function (root) {
   const xml = typeof module !== 'undefined' ? require('./xml-source') : root.DitaXmlSource;
   const domain = typeof module !== 'undefined' ? require('./manual-core') : root.DitaManualCore;
+  function imagePresentation(node) {
+    const alt = Array.from(node.children || []).find(child => child.localName === 'alt')?.textContent ?? node.getAttribute('alt') ?? '';
+    const size = name => { const value = node.getAttribute(name) || ''; return /^\d+(?:\.\d+)?(?:px|pt|pc|mm|cm|in|em|%)?$/.test(value) && parseFloat(value) > 0 ? value + (/\d$/.test(value) ? 'px' : '') : ''; };
+    return { alt, width: size('width'), height: size('height') };
+  }
   function validateImage(name, bytes) {
     const invalid = message => { throw Object.assign(new Error(message), { code: 'INVALID_IMAGE' }); };
     if (typeof name !== 'string' || !name || name.length > 150 || /[\/\\:*?"<>|\x00-\x1f]/.test(name) || name.startsWith('.')) invalid('图片文件名无效');
@@ -32,6 +37,6 @@
     }
     if (!valid) invalid('图片格式或内容无效');
   }
-  const api = { validateImage };
+  const api = { validateImage, imagePresentation };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaAssetCore = api;
 })(typeof window === 'undefined' ? globalThis : window);

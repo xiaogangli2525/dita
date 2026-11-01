@@ -1,5 +1,15 @@
 # Workspace architecture
 
+## Author input and structural commands
+
+`author-input.js` owns structural `beforeinput` operations and context-sensitive Tab behavior. It edits detached DOM copies through `author-selection`, then uses `applyAuthorEdit` and the shared document store for one undo transaction. Ordinary text/IME input continues through `input-history` and the source-preserving projection. A rejected projection restores the acknowledged Topic surface rather than leaving unsaved visual-only content in place.
+
+`author-blocks.js` owns the table insertion dialog and paragraph/list/note/code conversions. `editor-tools` delegates visual table creation to it; source snippets remain separate. `author-selection` centralizes source-aware range capture, contiguous-paragraph validation, applicability comparisons, cross-paragraph deletion and duplicate-ID cleanup. Clipboard conversion uses the same range boundary rather than implementing a second cross-paragraph editor.
+
+`resources` uses `author-commands.replace` for existing image/xref edits, retaining the command's source identity and stale-buffer checks. It preserves XML children and inline anchors; `asset-core.imagePresentation` supplies shared alt/dimension interpretation to Author and delivery views. The composition manifest declares all new ports explicitly.
+
+This remains a lightweight source-preserving editor, with bounded structural commands rather than a complete DITA schema editor. It does not implement DTD validation, arbitrary complex-table editing or cross-Topic range mutations.
+
 The application remains a local Node server and buildless browser client. This change extracts domain logic and feature controllers instead of replacing the framework or rewriting the source-preserving editor. New features have explicit boundaries; the existing XML/encoding, conflict checks, review behavior and undo model remain shared.
 
 ## Boundaries

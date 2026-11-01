@@ -4,6 +4,13 @@
     const get = id => document.getElementById(id), xml = root.DitaXmlSource;
     const escape = value => value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
     let snapshot = null, targets = [], loadGeneration = 0;
+    function setLabel(node, label) {
+      if (node.textContent === label) return;
+      if (node.querySelector('fn,foreign,[conref]')) throw new Error('说明包含受保护内容，请仅修改地址');
+      const walker = node.ownerDocument.createTreeWalker(node, NodeFilter.SHOW_TEXT), texts = []; let text;
+      while ((text = walker.nextNode())) texts.push(text);
+      if (!texts.length) node.textContent = label; else texts.forEach((text, i) => { text.data = i === 0 ? label : ''; });
+    }
     function hrefOf(target) { return target?.existing ? target.href : target ? root.DitaManualCore.relativeHref(snapshot.path, target.path, target.fragment) : ''; }
     function updatePreview() {
       const image = get('resourceKind').value === 'image', target = targets[Number(get('resourceTarget').value)], preview = get('resourcePreview');
@@ -59,7 +66,7 @@
       } else {
         let manual;
         try { manual = await A.manual.capture(A.manual.scopePath()); }
-        catch (error) { if (!snapshot.edit) throw error; get('resourceMessage').textContent = '可直接修改链接地址；选择功能手册后可浏览其章节。'; }
+        catch (error) { if (!active.edit) throw error; get('resourceMessage').textContent = '可直接修改链接地址；选择功能手册后可浏览其章节。'; }
         nextTargets = [];
         if (manual) {
         for (const entry of A.ditaCore.collectPreviewPaths(manual.map.children)) {
@@ -88,7 +95,7 @@
         get('resourceHeading').textContent = snapshot.edit ? snapshot.label : '插入图片或链接';
         get('resourceKind').disabled = Boolean(snapshot.edit); get('resourceKind').value = kind; get('resourceFilter').value = '';
         const node = snapshot.edit?.node;
-        get('resourceLabel').value = node ? kind === 'image' ? Array.from(node.children).find(child => child.localName === 'alt')?.textContent || node.getAttribute('alt') || '' : node.textContent : kind === 'link' && snapshot.author ? snapshot.range.toString() : '';
+        get('resourceLabel').value = node ? kind === 'image' ? root.DitaAssetCore.imagePresentation(node).alt : node.textContent : kind === 'link' && snapshot.author ? snapshot.range.toString() : '';
         get('resourceWidth').value = node?.getAttribute('width') || ''; get('resourceHeight').value = node?.getAttribute('height') || '';
         get('resourceHref').value = ''; get('resourcePreview').hidden = true;
         get('resourceError').textContent = ''; get('resourceScope').textContent = snapshot.path + ' · ' + snapshot.label;
@@ -128,7 +135,7 @@
         if (!file || snapshot.workspace !== A.api.token || file.current !== snapshot.current || snapshot.activePath !== A.state.activePath) throw new Error('内容已变化，请重新打开资源选择器');
         if (snapshot.author && A.state.mode !== 'visual' || !snapshot.author && A.state.mode !== 'editor') throw new Error('编辑模式已变化，请重新打开资源选择器');
         const href = kind === 'link' ? get('resourceHref').value.trim() : hrefOf(target);
-        if (!href || /[\u0000-\u0020\\]/.test(href) || href.startsWith('//') || /^(?!https?:|mailto:)[a-z][a-z\d+.-]*:/i.test(href)) throw new Error('请输入有效的文档相对地址、锚点或 HTTP / HTTPS / mailto 链接');
+        if (!href || /[\u0000-\u001f\u007f\\]/.test(href) || href.startsWith('//') || /^(?!https?:|mailto:)[a-z][a-z\d+.-]*:/i.test(href)) throw new Error('请输入有效的文档相对地址、锚点或 HTTP / HTTPS / mailto 链接');
         const label = get('resourceLabel').value.trim() || (snapshot.edit ? '' : target?.label || href), dimensions = {};
         if (kind === 'image') for (const name of ['width', 'height']) {
           const value = get(name === 'width' ? 'resourceWidth' : 'resourceHeight').value.trim();
@@ -139,15 +146,10 @@
           const edited = snapshot.edit.node.cloneNode(true); edited.setAttribute('href', href);
           if (kind === 'image') {
             const alt = Array.from(edited.children).find(child => child.localName === 'alt');
-            if (alt) { if (alt.textContent !== label) alt.textContent = label; } else edited.setAttribute('alt', label);
+            if (alt) setLabel(alt, label); else edited.setAttribute('alt', label);
             for (const [name, value] of Object.entries(dimensions)) { if (value) edited.setAttribute(name, value); else edited.removeAttribute(name); }
           } else {
-            if (label !== edited.textContent) {
-              if (edited.querySelector('fn,foreign,[conref]')) throw new Error('链接包含受保护内容，请仅修改地址');
-              const walker = edited.ownerDocument.createTreeWalker(edited, NodeFilter.SHOW_TEXT), texts = []; let text;
-              while ((text = walker.nextNode())) texts.push(text);
-              if (!texts.length) edited.textContent = label; else texts.forEach((node, i) => { node.data = i === 0 ? label : ''; });
-            }
+            setLabel(edited, label);
             if (/^(?:https?:|mailto:)/i.test(href)) edited.setAttribute('scope', 'external');
             else if (edited.getAttribute('scope') === 'external') edited.removeAttribute('scope');
           }

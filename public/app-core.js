@@ -1,5 +1,6 @@
 'use strict';
 const xmlSource = typeof module !== 'undefined' ? require('./xml-source') : window.DitaXmlSource;
+const assetCore = typeof module !== 'undefined' ? require('./asset-core') : window.DitaAssetCore;
 
 const BODY_TAGS = new Set(['body', 'conbody', 'refbody', 'taskbody']);
 const INLINE_TAGS = new Set(['p', 'li', 'entry', 'dt', 'dd', 'note', 'title']);
@@ -488,7 +489,10 @@ function renderAuthorNode(node, documentRef = document) {
     const element = documentRef.createElement('img');
     const href = node.getAttribute('href') || '';
     element.src = '/api/asset?path=' + encodeURIComponent(resolveAssetPath(href));
-    element.alt = Array.from(node.children).find(child => child.localName === 'alt')?.textContent || node.getAttribute('alt') || '';
+    const presentation = assetCore.imagePresentation(node);
+    element.alt = presentation.alt;
+    const dimensions = ['width', 'height'].filter(name => presentation[name]).map(name => name + ':' + presentation[name] + ';').join('');
+    if (dimensions) element.setAttribute('style', dimensions);
     element.setAttribute('data-dita-source', 'image');
     element.setAttribute('data-dita-original', serializeXmlNode(node));
     element.setAttribute('data-dita-href', href);
