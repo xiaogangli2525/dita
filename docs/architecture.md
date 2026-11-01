@@ -2,6 +2,8 @@
 
 ## Author input and structural commands
 
+The inspector presents context-specific content settings and collapsed advanced XML attributes. It delegates image/xref editing to the existing resource controller and note applicability to the existing notes panel. It no longer depends on formatting tools or owns duplicate paragraph-insertion commands. A targeted `remove` command removes the selected content; the explicit table-delete path still removes its complete table. Advanced edits reselect the acknowledged source node after commit and retain disclosure state only for that selection.
+
 `author-input.js` owns structural `beforeinput` operations and context-sensitive Tab behavior. It edits detached DOM copies through `author-selection`, then uses `applyAuthorEdit` and the shared document store for one undo transaction. Ordinary text/IME input continues through `input-history` and the source-preserving projection. A rejected projection restores the acknowledged Topic surface rather than leaving unsaved visual-only content in place.
 
 `author-blocks.js` owns the table insertion dialog and paragraph/list/note/code conversions. `editor-tools` delegates visual table creation to it; source snippets remain separate. `author-selection` centralizes source-aware range capture, contiguous-paragraph validation, applicability comparisons, cross-paragraph deletion and duplicate-ID cleanup. Clipboard conversion uses the same range boundary rather than implementing a second cross-paragraph editor.

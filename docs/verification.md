@@ -1,5 +1,11 @@
 # Verification
 
+## Contextual content settings
+
+- Full suites: **151 unit/HTTP checks** and **106 Chromium checks**, zero failures/skips. Four new browser scenarios cover collapsed advanced fields and compatible sequential edits/undo, contextual table controls and deleting only an image inside a cell, changing note type without losing child markup and delegating footnotes, plus narrow-screen fit and readonly mode.
+- Existing image/link dialogs, precise Map edits and filesystem save, stale edit rejection, table history, drafting, remote Git and HTML/MD/PDF/DOCX regressions remain covered. Legacy advanced-attribute regression tests now explicitly expand the advanced disclosure.
+- Settings for text within rich links and notes target their owning link/note; nested tables retain their table controls. Raw XML capabilities remain advanced and do not add complete DTD validation.
+
 ## Basic authoring improvements
 
 - Full suites: **151 unit/HTTP checks** and **102 Chromium checks**, no failures or skipped cases. Existing HTML/Markdown/PDF/DOCX, Source/Author/Map, IME history, draft, remote Git and workspace regressions remain covered.

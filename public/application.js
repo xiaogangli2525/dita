@@ -57,8 +57,8 @@
       feature('authorCommands', 'DitaAuthorCommands', 'createController', 'state dom ditaCore authorSelection applyAuthorEdit validateXml', ['authorSelection'], {
         create: typeof catalog.DitaAuthorCommands?.createController === 'function' ? c => catalog.DitaAuthorCommands.createController({ state: c.state, dom: c.dom, core: c.ditaCore, selection: c.authorSelection, apply: c.applyAuthorEdit, validate: c.validateXml }) : undefined
       }),
-      feature('inspector', 'DitaInspector', 'createController', 'state dom authorCommands editorTools resources setStatus', ['authorCommands'], {
-        create: typeof catalog.DitaInspector?.createController === 'function' ? c => catalog.DitaInspector.createController({ state: c.state, dom: c.dom, commands: c.authorCommands, format: tag => c.editorTools.format(tag), editResource: element => c.resources.edit(element), status: c.setStatus }) : undefined
+      feature('inspector', 'DitaInspector', 'createController', 'state dom authorCommands resources shell setStatus', ['authorCommands'], {
+        create: typeof catalog.DitaInspector?.createController === 'function' ? c => catalog.DitaInspector.createController({ state: c.state, dom: c.dom, commands: c.authorCommands, editResource: element => c.resources.edit(element), openNotes: () => c.shell.openPanel('notes'), status: c.setStatus }) : undefined
       }),
       feature('resources', 'DitaResources', 'createResourceController', 'state dom api events ditaCore manual authorSelection authorCommands setFileContent setStatus', ['manual', 'authorSelection', 'authorCommands']),
       feature('footnotes', 'DitaFootnotes', 'createPanel', 'state dom api events manual project authorSelection authorNotes bodyNavigation shell openFile setFileContent setMode setStatus applyAuthorEdit', ['manual', 'project', 'authorSelection', 'bodyNavigation']),

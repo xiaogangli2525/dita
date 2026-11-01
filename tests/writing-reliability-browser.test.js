@@ -31,17 +31,17 @@ test('reliable writing commands, clipboard, templates and body navigation', asyn
   const paste = async (html, text) => { await page.evaluate(async ({ html, text }) => { const data = { 'text/plain': new Blob([text], { type: 'text/plain' }) }; if (html) data['text/html'] = new Blob([html], { type: 'text/html' }); await navigator.clipboard.write([new ClipboardItem(data)]); }, { html, text }); await page.keyboard.press('Control+v'); };
   await open('main.ditamap');
   await t.test('Map property edits reach the right buffer, undo/redo and filesystem save', async () => {
-    await page.locator('#text').click(); await ui.openProperties(page); const input = page.locator('input[data-attribute="product"]'); await input.fill('M200'); await input.press('Tab');
+    await page.locator('#text').click(); await ui.openAdvancedProperties(page); const input = page.locator('input[data-attribute="product"]'); await input.fill('M200'); await input.press('Tab');
     assert.match(await current(), /id="text" product="M200"/); assert.equal(await page.evaluate(() => window.DitaApp.state.activePath), 'main.ditamap');
     await undo(); assert.equal(await current(), source); await page.click('#authorRedoButton'); assert.match(await current(), /product="M200"/);
     await page.click('#saveButton'); await page.waitForSelector('#saveScopeDialog[open]'); await page.click('#saveScopeForm button[type=submit]');
     await page.waitForFunction(() => !window.DitaApp.saving); assert.equal(await fs.readFile(path.join(repo, 'a.dita'), 'utf8'), await current()); await reset();
   });
   await t.test('cell source attributes and new attributes use exact XML nodes; bad or stale edits are refused', async () => {
-    await page.locator('#params td').first().click(); assert.equal(await page.inputValue('input[data-attribute="colname"]'), 'left');
+    await page.locator('#params td').first().click(); await ui.openAdvancedProperties(page); assert.equal(await page.inputValue('input[data-attribute="colname"]'), 'left');
     await page.fill('input[data-attribute="id"]', 'renamed-cell'); await page.locator('input[data-attribute="id"]').press('Tab'); assert.match(await current(), /entry id="renamed-cell" colname="left"/); await undo();
-    await page.locator('#text').click(); await page.fill('[aria-label="新属性名"]', 'outputclass'); await page.fill('[aria-label="新属性值"]', 'a & b'); await page.click('.attribute-add-form button'); assert.match(await current(), /outputclass="a &amp; b"/); await undo();
-    await page.locator('#text').click(); await page.fill('[aria-label="新属性名"]', 'invalid name'); await page.click('.attribute-add-form button'); assert.equal(await current(), source);
+    await page.locator('#text').click(); await ui.openAdvancedProperties(page); await page.fill('[aria-label="新属性名"]', 'outputclass'); await page.fill('[aria-label="新属性值"]', 'a & b'); await page.click('.attribute-add-form button'); assert.match(await current(), /outputclass="a &amp; b"/); await undo();
+    await page.locator('#text').click(); await ui.openAdvancedProperties(page); await page.fill('[aria-label="新属性名"]', 'invalid name'); await page.click('.attribute-add-form button'); assert.equal(await current(), source);
     await page.evaluate(() => { const a = window.DitaApp; window.staleTarget = a.authorCommands.capture(document.querySelector('#text')); });
     await page.locator('#tail').click(); await page.keyboard.press('End'); await page.keyboard.insertText('更新'); const newer = await current();
     assert.equal(await page.evaluate(() => { try { window.DitaApp.authorCommands.attribute(window.staleTarget, 'product', 'BAD'); return false; } catch { return true; } }), true); assert.equal(await current(), newer); await reset();
