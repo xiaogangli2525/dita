@@ -155,7 +155,7 @@
       </div>
       <div id="visualPane" class="visual-pane active">
         <div id="authoringToolbar" class="authoring-toolbar" hidden>
-          <div class="authoring-context"><span class="writing-dot" aria-hidden="true"></span><strong>正文编写</strong><span id="authoringHint">在正文放好光标，新增注脚</span></div>
+          <div class="authoring-context"><span class="writing-dot" aria-hidden="true"></span><strong>正文编写 <kbd title="唤出正文快捷工具">Alt+/</kbd></strong><span id="authoringHint">在正文放好光标，新增注脚</span></div>
           <div class="authoring-actions">
             <select id="authorBlockSelect" aria-label="转换当前正文类型" title="转换当前段落；列表中用 Tab / Shift+Tab 调整层级"><option value="">转换…</option><option value="p">正文段落</option><option value="ul">无序列表</option><option value="ol">有序列表</option><option value="note">说明</option><option value="note:tip">提示</option><option value="note:important">重要</option><option value="note:caution">注意</option><option value="note:warning">警告</option><option value="codeblock">代码块</option></select>
             <div class="author-format-actions" role="group" aria-label="选中文字格式"><button id="authorBoldButton" type="button" title="加粗／取消粗体 Ctrl/Cmd+B" aria-label="加粗／取消粗体"><strong>B</strong></button><button id="authorItalicButton" type="button" title="斜体／取消斜体 Ctrl/Cmd+I" aria-label="斜体／取消斜体"><em>I</em></button><button id="authorCodeButton" type="button" title="行内代码／取消行内代码" aria-label="行内代码／取消行内代码">&lt;/&gt;</button></div>
@@ -222,7 +222,35 @@
     <span class="statusbar-hint">Ctrl/Cmd+S 保存 · Ctrl/Cmd+F 查找</span>
   </footer>
 
-  <div id="authorQuickTools" class="author-quick-tools" role="toolbar" aria-label="正文快捷工具" hidden>
+  <dialog id="shortcutHelpDialog" class="workspace-dialog shortcut-help-dialog" aria-labelledby="shortcutHelpHeading" aria-describedby="shortcutHelpIntro">
+    <div class="shortcut-help-heading"><h2 id="shortcutHelpHeading">快捷键</h2><button id="shortcutHelpClose" type="button" aria-label="关闭快捷键帮助" autofocus>关闭</button></div>
+    <p id="shortcutHelpIntro">Mac 使用 ⌘ 代替 Ctrl，Option 代替 Alt。正文工具仅在编写模式生效。</p>
+    <h3>常用编辑</h3>
+    <table><thead><tr><th scope="col">操作</th><th scope="col">快捷键</th></tr></thead><tbody>
+      <tr><td>保存当前文档</td><td><kbd>Ctrl / ⌘ + S</kbd></td></tr>
+      <tr><td>查找与替换</td><td><kbd>Ctrl / ⌘ + F</kbd> 或 <kbd>Ctrl / ⌘ + H</kbd></td></tr>
+      <tr><td>撤销</td><td><kbd>Ctrl / ⌘ + Z</kbd></td></tr>
+      <tr><td>重做</td><td><kbd>Ctrl / ⌘ + Y</kbd> 或 <kbd>Ctrl / ⌘ + Shift + Z</kbd></td></tr>
+    </tbody></table>
+    <h3>正文编写</h3>
+    <table><thead><tr><th scope="col">操作</th><th scope="col">快捷键</th></tr></thead><tbody>
+      <tr><td>唤出／收起光标旁的快捷工具</td><td><kbd>Alt + /</kbd></td></tr>
+      <tr><td>在快捷工具间移动</td><td><kbd>←</kbd> <kbd>→</kbd>，<kbd>Enter</kbd> 执行</td></tr>
+      <tr><td>收起快捷工具并返回原选区</td><td><kbd>Esc</kbd></td></tr>
+      <tr><td>加粗／斜体（先选中文字）</td><td><kbd>Ctrl / ⌘ + B</kbd> / <kbd>Ctrl / ⌘ + I</kbd></td></tr>
+      <tr><td>在正文光标处新增注脚</td><td><kbd>Ctrl / ⌘ + Alt + N</kbd></td></tr>
+      <tr><td>列表调整层级、代码缩进、表格切换单元格</td><td><kbd>Tab</kbd> / <kbd>Shift + Tab</kbd></td></tr>
+      <tr><td>离开正文编辑区</td><td>先按 <kbd>Esc</kbd>，再按 <kbd>Tab</kbd></td></tr>
+    </tbody></table>
+    <h3>注脚与窗口</h3>
+    <table><thead><tr><th scope="col">操作</th><th scope="col">快捷键</th></tr></thead><tbody>
+      <tr><td>编辑已聚焦的注脚标记</td><td><kbd>Enter</kbd>（<kbd>空格</kbd> 查看详情）</td></tr>
+      <tr><td>注脚窗口中应用修改／插入</td><td><kbd>Ctrl / ⌘ + Enter</kbd></td></tr>
+      <tr><td>关闭当前窗口或取消</td><td><kbd>Esc</kbd></td></tr>
+    </tbody></table>
+    <p class="shortcut-help-note">先在普通正文、列表或表格文字中放置光标或选择文字，再按 Alt+/。鼠标点击和移动光标不会自动弹出工具；顶部工具栏也可直接使用。</p>
+  </dialog>
+  <div id="authorQuickTools" class="author-quick-tools" role="toolbar" aria-label="正文快捷工具" aria-keyshortcuts="Alt+/" hidden>
     <button type="button" data-quick-format="b" aria-label="快捷加粗" title="加粗 / 取消粗体"><strong>B</strong></button><button type="button" data-quick-format="i" aria-label="快捷斜体" title="斜体 / 取消斜体"><em>I</em></button><button type="button" data-quick-format="codeph" aria-label="快捷行内代码" title="行内代码">&lt;/&gt;</button>
     <button type="button" data-quick-insert="fn">＋ 注脚</button><button type="button" data-quick-insert="xref">链接</button><button type="button" data-quick-insert="table">表格</button><button type="button" data-quick-insert="image">图片</button>
   </div>

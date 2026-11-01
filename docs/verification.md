@@ -163,3 +163,10 @@ The GitHub Actions workflow runs the suite on Node 20 and 22. The browser workfl
 - Shared-source usage counts cover the currently captured functional manual; other manuals/repositories are not scanned. Applicability feedback describes the existing note filtering rules and does not add full DITA profiling support.
 
 本轮完整回归：164 项单元／HTTP 检查和 137 项 Chromium 检查全部通过，包含旧有四种格式交付、远程 Git、编码和保存／草稿流程。
+
+
+## Keyboard-only contextual tools and help
+
+Browser coverage verifies that clicking, selecting and arrow movement do not open contextual tools; Alt+/ opens/toggles them and Escape restores selection. The Help menu opens a visible shortcut dialog, traps focus, closes with Escape/button, preserves the underlying notes panel and fits a 390px viewport. Document shortcuts do not run behind modal help.
+
+Final regression for the keyboard/help change: 164 unit/HTTP checks and 139 Chromium checks passed, with no skips.

@@ -6,6 +6,17 @@
     const layout = document.querySelector('.layout');
     const mobileNavigation = root.matchMedia('(max-width:700px)');
     let panel = null, opener = null;
+    const shortcutHelp = get('shortcutHelpDialog');
+    function showShortcuts() {
+      if (document.querySelector('dialog[open]')) return;
+      shortcutHelp.showModal(); shortcutHelp.scrollTop = 0; get('shortcutHelpClose').focus();
+    }
+    get('shortcutHelpClose').addEventListener('click', () => shortcutHelp.close());
+    shortcutHelp.addEventListener('keydown', event => {
+      if (event.key === 'Tab' && !event.ctrlKey && !event.metaKey && !event.altKey) { event.preventDefault(); get('shortcutHelpClose').focus(); }
+    });
+    shortcutHelp.addEventListener('close', () => document.querySelector('[data-menu="help"]')?.focus({ preventScroll: true }));
+    A.events.on('workspace:willChange', () => shortcutHelp.close());
     function renderPanel() {
       dom.inspector.hidden = !panel;
       layout.classList.toggle('panel-open', Boolean(panel));
@@ -141,7 +152,7 @@
     };
     const observer = new ResizeObserver(measure); observer.observe(header); observer.observe(footer);
     measure(); renderNavigationWidth(); renderPanel();
-    return { openPanel, closePanel, syncMode, sidebar };
+    return { openPanel, closePanel, syncMode, sidebar, showShortcuts };
   }
   root.DitaWorkspaceShell = { createController };
 })(window);

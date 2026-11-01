@@ -2,9 +2,10 @@
 (function (root) {
   function createController(A) {
     const toolbar = document.getElementById('authorQuickTools'), selection = A.authorSelection;
-    let target = null, composing = false, frame = 0;
-    function hide() { toolbar.hidden = true; target = null; cancelAnimationFrame(frame); }
-    function show({ keyboard = false } = {}) {
+    let target = null, composing = false;
+    const shortcut = event => event.altKey && event.code === 'Slash' && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.isComposing && event.keyCode !== 229;
+    function hide() { toolbar.hidden = true; target = null; }
+    function show() {
       if (composing || A.state.mode !== 'visual' || document.querySelector('dialog[open]')) return hide();
       const live = root.getSelection();
       if (!live?.rangeCount || !A.dom.visualEditor.contains(live.anchorNode) || !A.dom.visualEditor.contains(live.focusNode)) return hide();
@@ -29,10 +30,9 @@
         toolbar.style.left = Math.max(8, Math.min(root.innerWidth - width - 8, anchor.left)) + 'px';
         const above = anchor.top - height - 8;
         toolbar.style.top = Math.max(bounds.top + 4, Math.min(root.innerHeight - height - 8, above >= bounds.top ? above : anchor.bottom + 8)) + 'px';
-        if (keyboard) toolbar.querySelector('button:not([hidden])').focus({ preventScroll: true });
+        toolbar.querySelector('button:not([hidden])').focus({ preventScroll: true });
       } catch { hide(); }
     }
-    function schedule() { cancelAnimationFrame(frame); frame = requestAnimationFrame(() => show()); }
     toolbar.addEventListener('mousedown', event => { if (event.button === 0) event.preventDefault(); });
     toolbar.addEventListener('click', event => {
       const button = event.target.closest('button'); if (!button || !target) return;
@@ -44,16 +44,14 @@
       } catch (error) { hide(); A.setStatus(error.message, true); }
     });
     toolbar.addEventListener('keydown', event => {
-      if (event.key === 'Escape') { event.preventDefault(); const saved = target; hide(); try { if (saved) selection.restoreTarget(saved); } catch { /* stale selection */ } }
+      if (event.key === 'Escape' || shortcut(event)) { event.preventDefault(); if (event.repeat) return; const saved = target; hide(); try { if (saved) selection.restoreTarget(saved); } catch { /* stale selection */ } }
       if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) {
         event.preventDefault(); const buttons = [...toolbar.querySelectorAll('button:not([hidden])')], index = buttons.indexOf(document.activeElement);
         buttons[event.key === 'Home' ? 0 : event.key === 'End' ? buttons.length - 1 : (index + (event.key === 'ArrowRight' ? 1 : -1) + buttons.length) % buttons.length]?.focus();
       }
     });
-    A.dom.visualEditor.addEventListener('pointerup', schedule);
-    A.dom.visualEditor.addEventListener('keyup', event => { if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(event.key)) schedule(); });
     A.dom.visualEditor.addEventListener('keydown', event => {
-      if (event.altKey && event.code === 'Slash' && !event.isComposing) { event.preventDefault(); show({ keyboard: true }); }
+      if (shortcut(event)) { event.preventDefault(); if (!event.repeat) show(); }
       else hide();
     });
     A.dom.visualEditor.addEventListener('compositionstart', () => { composing = true; hide(); });

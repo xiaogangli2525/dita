@@ -275,7 +275,7 @@ const menuDefinitions = {
   edit: [['撤销', () => undoFile(), 'Ctrl+Z'], ['重做', () => redoFile(), 'Ctrl+Y'], ['查找和替换', () => openFindReplace(), 'Ctrl+F'], ['格式化 XML', () => dom.formatButton?.click()]],
   view: [['Source 源码', () => setMode('editor')], ['Author 编辑', () => setMode('visual')], ['阅读（只读）', () => setMode('preview')], ['显示 Map', () => setActiveView('map')], ['显示 Outline', () => setActiveView('outline')]],
   dita: [['项目型号清单', () => A.project.show()], ['插入元素', () => dom.insertElementButton?.click()], ['XML 语法校验', () => dom.validateButton?.click()], ['审阅变更', () => setMode('review')]],
-  help: [['快捷键', () => setStatus('Ctrl+S 保存 · Ctrl+F 查找 · Ctrl+Z 撤销')]]
+  help: [['快捷键', () => A.shell.showShortcuts()]]
 };
 
 function closeMenu() {
@@ -672,7 +672,7 @@ dom.reviewScope.addEventListener('change', () => {
 dom.repositorySelect.addEventListener('change', selectRepository);
 
 document.addEventListener('keydown', event => {
-  if (event.isComposing || event.keyCode === 229) return;
+  if (event.isComposing || event.keyCode === 229 || document.querySelector('dialog[open]')) return;
   if (!(event.ctrlKey || event.metaKey) || event.altKey) return;
   // Leave native undo/redo available for the workspace search and other
   // controls; the shared history applies to the source and visual editors.
