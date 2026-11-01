@@ -130,7 +130,7 @@ function updateDocumentChrome() {
   const location = document.getElementById('documentLocation');
   const badge = document.getElementById('documentSaveState');
   const empty = document.getElementById('welcomePanel');
-  if (title) title.textContent = file ? window.DitaWorkspaceShell.documentLabel(file) : '你的文档工作台';
+  if (title) title.textContent = file ? window.DitaDocumentLabel.documentLabel(file) : '你的文档工作台';
   if (location) location.textContent = file ? file.path : '选择一个文档，开始专注写作';
   if (badge) {
     const scope = new Set([state.activePath, ...(/\.ditamap$/i.test(state.activePath) ? state.mapAuthorPaths || [] : [])]);
@@ -158,7 +158,7 @@ function toast(message, level) {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => { el.className = 'toast'; }, 3000);
 }
-Object.assign(A, { state, dom, ditaCore, setStatus, toast, api: workspaceClient,
+Object.assign(A, { state, dom, ditaCore, setStatus, toast, api: workspaceClient, saving: false,
   validateXml, openFile, events, downloadText: window.DitaBrowserFiles.downloadText, downloadXML: window.DitaBrowserFiles.downloadXML,
   refreshChrome: updateDocumentChrome, refreshFiles: () => { renderTabs(); updateHistoryButtons(); updateDocumentChrome(); },
   navigateToSource: async (path, start = 0, end = start, expected) => {
@@ -174,7 +174,7 @@ Object.assign(A, { state, dom, ditaCore, setStatus, toast, api: workspaceClient,
   hideLoading: function() { const el = document.getElementById('loadingOverlay'); if (el) { el.classList.remove('active'); el.setAttribute('aria-hidden', 'true'); } } });
 
 const editor = window.DitaEditorController.createEditorController(A, {
-  documentLabel: window.DitaWorkspaceShell.documentLabel, renderTabs, renderOutline, renderInspector, updateTree, refreshChrome: updateDocumentChrome,
+  documentLabel: window.DitaDocumentLabel.documentLabel, renderTabs, renderOutline, renderInspector, updateTree, refreshChrome: updateDocumentChrome,
   beforeModeChange: () => A.releaseExportPreview?.(), modeChanged: () => { A.shell?.syncMode(); A.footnotes?.syncMode(); A.authorNotes?.syncMode(); A.editorTools?.syncMode(); }
 });
 const { setFileContent, setMode, updateHistoryButtons, updateActivePanes, ensureMapAuthorFile,
@@ -352,7 +352,6 @@ async function reloadWorkspace(result) {
   state.selectedMapSourcePath = '';
   state.filesMap.clear();
   A.footnotes?.setScope('');
-  A.clearTopicCache();
   state.activePath = '';
   state.historyTargetPath = '';
   state.reviewGroups.clear();
@@ -426,7 +425,7 @@ function makeTab(file) {
   tab.className = 'tab active';
   tab.dataset.path = file.path;
   const label = document.createElement('span');
-  label.textContent = window.DitaWorkspaceShell.documentLabel(file);
+  label.textContent = window.DitaDocumentLabel.documentLabel(file);
   tab.title = file.path;
   const dirty = document.createElement('span');
   dirty.className = 'dirty';
@@ -470,14 +469,8 @@ async function openFile(path, { preserveFootnotesScope = false } = {}) {
       if (!fileResponse.ok) throw new Error(await fileResponse.text());
       const diskContent = await fileResponse.text();
       const gitInfo = await gitResponse.json();
-      state.filesMap.set(path, {
-        path,
-        disk: diskContent,
-        baseline: gitInfo.available ? gitInfo.content : diskContent,
-        gitStatus: gitInfo.status || 'unknown',
-        current: diskContent,
-        dirty: false
-      });
+      state.filesMap.set(path, documentStore.createDocument({ path, content: diskContent,
+        baseline: gitInfo.available ? gitInfo.content : diskContent, gitStatus: gitInfo.status || 'unknown' }));
     } catch (error) {
       setStatus('\u6253\u5F00\u5931\u8D25', true);
       throw error;
@@ -566,7 +559,7 @@ document.addEventListener('click', event => {
 document.getElementById('welcomeNewButton')?.addEventListener('click', createNewDocument);
 document.addEventListener('keydown', event => {
   if (event.key !== 'Escape' || document.querySelector('dialog[open]')) return;
-  A.closeExportMenu(); closeMenu();
+  closeMenu();
 });
 
 dom.editor.addEventListener('input', markDirty);
@@ -606,7 +599,6 @@ for (const button of document.querySelectorAll('.main-menu [data-menu]')) {
 }
 document.addEventListener('click', event => {
   if (!event.target.closest('.main-menu') && !event.target.closest('.menu-popup')) closeMenu();
-  if (!event.target.closest('.export-dropdown')) A.closeExportMenu();
 });
 dom.contextToolbar?.addEventListener('click', event => {
   const button = event.target.closest('[data-context-action]');
@@ -634,7 +626,6 @@ dom.closeHtmlPreviewButton?.addEventListener('click', () => { dom.htmlPreviewPan
 dom.previewMdButton?.addEventListener('click', () => A.previewMapMd());
 dom.exportMdButton?.addEventListener('click', () => A.exportMapToMarkdownFile());
 dom.exportMenuButton?.addEventListener('click', (e) => { e.stopPropagation(); A.openModelExport(); });
-[dom.previewHtmlButton, dom.exportHtmlButton, dom.previewMdButton, dom.exportMdButton].forEach(btn => btn?.addEventListener('click', () => A.closeExportMenu()));
 dom.closeMdPreviewButton?.addEventListener('click', () => { dom.mdPreviewPane.classList.remove('active'); dom.mdPreviewContent.innerHTML = ''; setMode(state.mode); });
 dom.branchSelect.addEventListener('change', selectBranch);
 dom.undoButton?.addEventListener('click', undoFile);
@@ -730,23 +721,10 @@ async function initialize() {
   }
 }
 
-A.maps = window.DitaMapController.createMapController(A, { ensureMapAuthorFile, renderTabs });
-A.documents = window.DitaDocuments.createDocumentController(A, { renderTabs, updateActivePanes, updateTree, refreshWorkspaceTree });
-A.manual = window.DitaManualService.createManualService(A);
-A.project = window.DitaProject.createProjectController(A);
-A.save = window.DitaSave.createSaveController(A);
-A.drafts = window.DitaDrafts.createDraftController(A);
-A.search = window.DitaSearch.createSearchController(A);
-A.authorSelection = window.DitaAuthorSelection.createController(A);
-A.bodyNavigation = window.DitaBodyNavigation.createController(A);
-A.authorCommands = window.DitaAuthorCommands.createController({ state, dom, core: ditaCore, selection: A.authorSelection, apply: editor.applyAuthorEdit, validate: validateXml });
-A.inspector = window.DitaInspector.createController({ state, dom, commands: A.authorCommands, format: tag => A.editorTools.format(tag), status: setStatus });
-A.resources = window.DitaResources.createResourceController(A);
-A.footnotes = window.DitaFootnotes.createPanel(A);
-A.authorNotes = window.DitaAuthorNotes.createController(A);
-A.editorTools = window.DitaEditorTools.createController(A);
-window.DitaClipboard.createController({ state, dom, core: ditaCore, selection: A.authorSelection, status: setStatus, toast });
-A.shell = window.DitaWorkspaceShell.createController(A);
+window.DitaApplication.start(A, {
+  maps: { ensureMapAuthorFile, renderTabs, documentLabel: window.DitaDocumentLabel.documentLabel },
+  documents: { renderTabs, updateActivePanes, updateTree, refreshWorkspaceTree }
+});
 initialize();
 })();
 

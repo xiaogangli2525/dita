@@ -22,3 +22,5 @@ require('./author-notes-core.test');
 require('./input-history.test');
 
 require('./document-templates.test');
+
+require('./application.test');

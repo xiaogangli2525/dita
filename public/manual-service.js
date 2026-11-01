@@ -5,13 +5,15 @@
   const notesCore = typeof module !== 'undefined' ? require('./footnotes-core') : root.DitaFootnotesCore;
   const domain = typeof module !== 'undefined' ? require('./manual-core') : root.DitaManualCore;
   const xml = typeof module !== 'undefined' ? require('./xml-source') : root.DitaXmlSource;
+  const store = typeof module !== 'undefined' ? require('./document-store') : root.DitaDocumentStore;
+  /** @param {import('./contracts').ManualPorts} A */
   function createManualService(A) {
     async function capture(path = A.state.activePath) {
       if (!path) throw new Error('请先打开文档或功能手册');
       const workspace = A.api.token;
       await A.project?.ready?.();
       if (workspace !== A.api.token) throw new Error('工作区已切换，请重新打开');
-      const buffers = new Map(Array.from(A.state.filesMap, ([key, file]) => [key, { ...file, history: undefined }]));
+      const buffers = new Map(Array.from(A.state.filesMap, ([key, file]) => [key, store.snapshotDocument(file)]));
       async function read(filePath) {
         if (workspace !== A.api.token) throw new Error('工作区已切换，请重新打开');
         if (buffers.has(filePath)) return buffers.get(filePath).current;

@@ -1,19 +1,5 @@
 'use strict';
 (function (root) {
-  // Presentation only: document history, selection and persistence belong to
-  // their existing controllers. Cache labels by buffer identity, not by path.
-  const labels = new WeakMap();
-  function documentLabel(file) {
-    if (!file) return '';
-    const cached = labels.get(file);
-    if (cached?.source === file.current) return cached.label;
-    const xml = new DOMParser().parseFromString(file.current, 'application/xml');
-    const title = xml.querySelector('parsererror') ? null : xml.querySelector('booktitle > mainbooktitle, :root > title');
-    const label = title?.textContent.trim() || file.path.split('/').pop();
-    labels.set(file, { source: file.current, label });
-    return label;
-  }
-
   function createController(A) {
     const { state, dom } = A;
     const get = id => document.getElementById(id);
@@ -108,5 +94,5 @@
     measure(); renderPanel();
     return { openPanel, closePanel, syncMode, sidebar };
   }
-  root.DitaWorkspaceShell = { createController, documentLabel };
+  root.DitaWorkspaceShell = { createController };
 })(window);

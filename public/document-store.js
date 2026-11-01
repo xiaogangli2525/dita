@@ -1,5 +1,16 @@
 'use strict';
 (function (root) {
+  /** @returns {import('./contracts').DocumentState} */
+  function createDocument({ path, content, baseline = content, gitStatus = 'unknown' }) {
+    if (typeof path !== 'string' || !path || typeof content !== 'string' || typeof baseline !== 'string') throw new TypeError('文档路径和内容须为字符串');
+    return { path, current: content, disk: content, baseline, gitStatus, dirty: false };
+  }
+  /** @param {import('./contracts').DocumentState} file
+   * @returns {import('./contracts').DocumentSnapshot} */
+  function snapshotDocument(file) {
+    return Object.freeze({ path: file.path, current: file.current, disk: file.disk,
+      baseline: file.baseline, gitStatus: file.gitStatus, dirty: file.current !== file.disk });
+  }
   function historyOf(file) { return file.history || (file.history = { undo: [], redo: [] }); }
   function breakHistoryGroup(file) { if (file?.history) file.history.openGroup = null; }
   function editDocument(file, content, { record = true, historyMeta, group } = {}) {
@@ -67,7 +78,7 @@
     commit(file, proposal.after); // Reuses the editor's undo history; never saves.
     return Object.freeze({ ...proposal, status: 'applied' });
   }
-  const api = { editDocument, travelHistory, historyOf, breakHistoryGroup, createSaveCoordinator, createProposal, applyProposal };
+  const api = { createDocument, snapshotDocument, editDocument, travelHistory, historyOf, breakHistoryGroup, createSaveCoordinator, createProposal, applyProposal };
   if (typeof module !== 'undefined') module.exports = api;
   else root.DitaDocumentStore = api;
 })(typeof window === 'undefined' ? globalThis : window);
