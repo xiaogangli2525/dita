@@ -4,6 +4,9 @@ A lightweight local web client for reading, editing, reviewing, and exporting DI
 
 ## Writing workflow
 
+- The compact top bar provides **编写 / 阅读 / 源码** modes and delivery. Repository/branch switches, model settings, drafts and delivery history live in the left navigation. XML-only tools remain beside the document's Save button.
+- The right tool rail opens **属性 / 注脚 / 审阅** on demand. Drag the panel's left edge to resize it, or focus the separator and use arrow keys. On narrow screens, **文档** opens navigation. Document titles come from loaded XML; paths remain available for identification.
+- Delivery groups **配置 / 检查 / 导出** around the same source snapshot. Changing model, format or version invalidates the previous check; preview and export always validate their source. The save indicator describes the current document scope, while dirty tabs retain their markers.
 - **New** opens one form with function overview, AT command, parameter table, operation example, model difference and standard DITA templates. New files are create-only and can be added to a function manual through the Map tools.
 - Select an element in Author mode to edit its **source attributes**, including cells inside a Map. Every change enters shared undo/redo and must be saved explicitly.
 - Simple CALS tables support named columns, inserting/deleting rows and columns, header conversion and column widths (`1*`, `2*`, `30mm`). Delete table removes the complete table. Merged/irregular structures remain readable, with unsupported structure commands disabled.

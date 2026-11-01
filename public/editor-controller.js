@@ -8,7 +8,7 @@
   function createEditorController(A, views) {
     const { state, dom, ditaCore, setStatus, validateXml, events, api: workspaceClient } = A;
     const fetch = workspaceClient.request;
-    const { renderTabs, renderOutline, renderInspector, updateTree,
+    const { documentLabel = file => file.path, renderTabs, renderOutline, renderInspector, updateTree,
       refreshChrome: updateDocumentChrome, beforeModeChange, modeChanged } = views;
     let inputHistory = null;
     function surfaceFor(file) {
@@ -178,12 +178,8 @@
       // Reading reuses the Author rendering with all editing disabled.
       dom.reviewPane.classList.toggle('active', mode === 'review');
       dom.visualEditor?.classList.toggle('preview-editable', mode === 'preview');
-      dom.inspector?.classList.toggle('reviewing', mode === 'review');
-      if (dom.inspectorTitle) dom.inspectorTitle.textContent = mode === 'review' ? '变更审阅' : '文档属性';
       dom.htmlPreviewPane?.classList.remove('active');
       dom.mdPreviewPane?.classList.remove('active');
-      if (dom.inspectorElement) dom.inspectorElement.hidden = mode === 'review';
-      if (dom.attributesPanel) dom.attributesPanel.hidden = mode === 'review';
       for (const [button, buttonMode] of [[dom.sourceButton, 'editor'], [dom.visualButton, 'visual'], [dom.previewButton, 'preview']]) {
         button?.classList.toggle('active', mode === buttonMode);
       }
@@ -276,7 +272,7 @@
         const header = document.createElement('div');
         header.className = 'map-topic-header';
         const name = document.createElement('strong');
-        name.textContent = item.entry.title || item.entry.path;
+        name.textContent = item.file ? documentLabel(item.file) : item.entry.title || item.entry.path;
         const path = document.createElement('small');
         path.textContent = item.entry.path;
         header.append(name, path);
@@ -303,6 +299,7 @@
         fragment.append(topic);
       }
       dom.visualEditor.replaceChildren(fragment);
+      renderTabs(); updateTree();
       renderInspector(null);
       // setMode('review') starts the async Map Author load and can render the
       // review dock before topic files finish loading. Refresh it once the

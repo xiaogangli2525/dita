@@ -7,7 +7,7 @@ function renderMapPicker() {
   dom.mapPicker.replaceChildren();
   const label = document.createElement('label');
   label.className = 'map-label';
-  label.append('Map: ');
+  label.append('当前手册');
   const select = document.createElement('select');
   select.id = 'mapSelect';
   for (const map of state.maps) {
@@ -39,7 +39,8 @@ function renderTree(nodes, filter = '') {
 
   function walk(items, parentMatched = false, output = result) {
     for (const node of Array.from(items || [])) {
-      const title = node.title || node.name || '';
+      const file = state.filesMap.get(node.path);
+      const title = file ? root.DitaWorkspaceShell.documentLabel(file) : node.title || node.name || '';
       const matched = !term || title.toLowerCase().includes(term) || node.path?.toLowerCase().includes(term);
       const children = node.children ? walk(node.children, parentMatched || matched, []) : [];
       if (!matched && !parentMatched && !children.length) continue;
@@ -47,7 +48,10 @@ function renderTree(nodes, filter = '') {
       nodeButton.type = 'button';
       nodeButton.className = 'map-node';
       nodeButton.dataset.sourcePath = node.sourcePath || '';
-      nodeButton.textContent = (node.type === 'file' ? '' : '\u{1F4C1} ') + title;
+      nodeButton.textContent = title;
+      nodeButton.title = node.path || title;
+      nodeButton.dataset.path = node.path || '';
+      nodeButton.dataset.kind = node.type;
       nodeButton.addEventListener('click', () => {
         state.selectedMapSourcePath = node.sourcePath || '';
         if (node.type === 'file') openFile(node.path);
@@ -75,7 +79,7 @@ function updateTree(filter = dom.search.value) {
   const source = searched ? state.files : (state.maps.find(map => map.path === state.selectedMap)?.children || state.files);
   dom.tree.replaceChildren(...renderTree(source, filter));
   for (const button of dom.tree.querySelectorAll('button')) {
-    const selected = button.dataset.sourcePath === state.selectedMapSourcePath;
+    const selected = state.selectedMapSourcePath ? button.dataset.sourcePath === state.selectedMapSourcePath : Boolean(state.activePath && button.dataset.path === state.activePath);
     button.classList.toggle('selected', selected);
     if (selected) button.scrollIntoView({ block: 'nearest' });
   }

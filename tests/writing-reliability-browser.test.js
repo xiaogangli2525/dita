@@ -1,4 +1,5 @@
 'use strict';
+const ui = require('./browser-ui');
 const test = require('node:test'), assert = require('node:assert/strict');
 const fs = require('node:fs/promises'), os = require('node:os'), path = require('node:path'), net = require('node:net');
 const { spawn, execFileSync } = require('node:child_process'), { chromium } = require('playwright-core');
@@ -30,7 +31,7 @@ test('reliable writing commands, clipboard, templates and body navigation', asyn
   const paste = async (html, text) => { await page.evaluate(async ({ html, text }) => { const data = { 'text/plain': new Blob([text], { type: 'text/plain' }) }; if (html) data['text/html'] = new Blob([html], { type: 'text/html' }); await navigator.clipboard.write([new ClipboardItem(data)]); }, { html, text }); await page.keyboard.press('Control+v'); };
   await open('main.ditamap');
   await t.test('Map property edits reach the right buffer, undo/redo and filesystem save', async () => {
-    await page.locator('#text').click(); await page.click('#propertiesTab'); const input = page.locator('input[data-attribute="product"]'); await input.fill('M200'); await input.press('Tab');
+    await page.locator('#text').click(); await ui.openProperties(page); const input = page.locator('input[data-attribute="product"]'); await input.fill('M200'); await input.press('Tab');
     assert.match(await current(), /id="text" product="M200"/); assert.equal(await page.evaluate(() => window.DitaApp.state.activePath), 'main.ditamap');
     await undo(); assert.equal(await current(), source); await page.click('#authorRedoButton'); assert.match(await current(), /product="M200"/);
     await page.click('#saveButton'); await page.waitForSelector('#saveScopeDialog[open]'); await page.click('#saveScopeForm button[type=submit]');
@@ -82,15 +83,15 @@ test('reliable writing commands, clipboard, templates and body navigation', asyn
     await page.click('[data-view=search]'); await page.fill('#contentSearchInput', 'TCP协议'); await page.click('#contentSearchButton'); await page.locator('.content-search-result').first().click();
     assert.equal(await page.evaluate(() => window.DitaApp.state.activePath), 'main.ditamap'); assert.equal(await page.evaluate(() => window.DitaApp.state.mode), 'visual'); assert.equal(await page.evaluate(() => window.originalSurface.isConnected), true);
     await page.click('#returnWritingPosition'); assert.equal(await page.evaluate(() => getSelection().anchorNode.parentElement.closest('.map-topic-surface').dataset.mapTopicPath), 'b.dita');
-    await page.click('#footnotesButton'); await page.locator('.footnote-actions button').filter({ hasText: '定位正文' }).first().click(); assert.equal(await page.evaluate(() => window.DitaApp.state.activePath), 'main.ditamap'); assert.equal(await page.evaluate(() => window.originalSurface.isConnected), true);
-    await page.click('#propertiesTab');
+    await ui.openNotes(page); await page.locator('.footnote-actions button').filter({ hasText: '定位正文' }).first().click(); assert.equal(await page.evaluate(() => window.DitaApp.state.activePath), 'main.ditamap'); assert.equal(await page.evaluate(() => window.originalSurface.isConnected), true);
+    await ui.openProperties(page);
   });
   await t.test('new document form creates business templates, rejects existing paths and retains Chinese titles', async () => {
-    await page.click('#newDocumentButton'); await page.selectOption('#newDocumentTemplate', 'command'); await page.fill('#newDocumentTitle', 'MQTT 连接命令'); await page.fill('#newDocumentPath', 'b.dita'); await page.click('#newDocumentSubmit'); await page.waitForFunction(() => document.getElementById('newDocumentError').textContent.includes('已存在')); assert.match(await page.locator('#newDocumentError').innerText(), /已存在/); assert.equal(await current(), source);
+    await ui.newDocument(page); await page.selectOption('#newDocumentTemplate', 'command'); await page.fill('#newDocumentTitle', 'MQTT 连接命令'); await page.fill('#newDocumentPath', 'b.dita'); await page.click('#newDocumentSubmit'); await page.waitForFunction(() => document.getElementById('newDocumentError').textContent.includes('已存在')); assert.match(await page.locator('#newDocumentError').innerText(), /已存在/); assert.equal(await current(), source);
     await page.fill('#newDocumentPath', '../escape.dita'); await page.click('#newDocumentSubmit'); assert.match(await page.locator('#newDocumentError').innerText(), /相对/);
     await page.fill('#newDocumentPath', 'mqtt-command.dita'); await page.click('#newDocumentSubmit'); await page.waitForFunction(() => window.DitaApp.state.activePath === 'mqtt-command.dita');
     const xml = await fs.readFile(path.join(repo, 'mqtt-command.dita'), 'utf8'); assert.match(xml, /<reference/); assert.match(xml, /MQTT 连接命令/); assert.match(xml, /<thead>/); assert.equal(await page.evaluate(() => window.DitaApp.state.mode), 'visual');
-    await page.setViewportSize({ width: 390, height: 844 }); await page.click('#newDocumentButton'); assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true); await page.click('#newDocumentCancel'); await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.setViewportSize({ width: 390, height: 844 }); await ui.newDocument(page); assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true); await page.click('#newDocumentCancel'); await page.setViewportSize({ width: 1440, height: 1000 });
   });
   await t.test('representative long Topic timing is measured and source edits retain all paragraphs', async () => {
     const result = await page.evaluate(() => {

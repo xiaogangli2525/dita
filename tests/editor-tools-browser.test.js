@@ -1,4 +1,5 @@
 'use strict';
+const ui = require('./browser-ui');
 const test = require('node:test'), assert = require('node:assert/strict');
 const fs = require('node:fs/promises'), os = require('node:os'), path = require('node:path'), net = require('node:net');
 const { spawn, execFileSync } = require('node:child_process');
@@ -117,7 +118,7 @@ test('Author selection formatting, body search and block insertion', async t => 
     await closeFind(); await page.click('#visualButton'); await select('.map-topic-surface #same', 'TCP协议');
     await page.evaluate(() => { const a = window.DitaApp, file = a.state.filesMap.get('b.dita'); a.setFileContent(file, file.current.replace('保持另一章节', '后台已修改'), { render: false }); }); const updated = await content('b.dita');
     await page.click('#authorBoldButton'); assert.equal(await content('b.dita'), updated); assert.match(await page.locator('#status').innerText(), /已变化/);
-    await open('a.dita'); await page.click('.editing-tools summary'); await page.click('#sourceButton'); await page.click('.editing-tools summary'); await page.keyboard.press('Control+f'); await page.fill('#editFindInput', 'ATTRIBUTE_ONLY'); await page.click('#editFindNextButton');
+    await open('a.dita'); await page.click('#sourceButton'); await page.keyboard.press('Control+f'); await page.fill('#editFindInput', 'ATTRIBUTE_ONLY'); await page.click('#editFindNextButton');
     assert.equal(await page.evaluate(() => window.DitaApp.state.mode), 'editor'); assert.equal(await page.locator('#editSearchKind').innerText(), 'XML 源码'); assert.match(await page.locator('#editFindMeta').innerText(), /1\/1/); await closeFind(); await page.click('#visualButton');
   });
   await t.test('390px writing/search controls stay contained and explicit GBK save keeps all text', async () => {
@@ -162,7 +163,7 @@ test('Author selection formatting, body search and block insertion', async t => 
     await page.waitForTimeout(10); assert.equal(await content(), before); assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.get('a.dita').history.undo.length), depth);
   });
   await t.test('Source typing groups preserve the exact textarea selection on undo/redo', async () => {
-    await page.click('.editing-tools summary'); await page.click('#sourceButton'); await page.click('.editing-tools summary'); const before = await content();
+    await page.click('#sourceButton'); const before = await content();
     const start = await page.locator('#editor').evaluate(el => { const start = el.value.indexOf('保持这一段'); el.focus(); el.setSelectionRange(start, start); return start; });
     await page.keyboard.type('123'); await page.keyboard.press('Control+z'); assert.equal(await content(), before); assert.equal(await page.locator('#editor').evaluate(el => el.selectionStart), start);
     await page.keyboard.press('Control+y'); assert.equal(await page.locator('#editor').evaluate(el => el.selectionStart), start + 3); await page.keyboard.press('Control+z'); await page.click('#visualButton');
@@ -187,7 +188,7 @@ test('Author selection formatting, body search and block insertion', async t => 
   });
   await t.test('Map note list editing uses the shared model picker without opening a separate Topic', async () => {
     await page.click('#projectButton'); await page.fill('#projectModels', 'M100\nM200\nM300'); await page.click('#projectForm button[type=submit]'); await page.waitForFunction(() => !document.getElementById('projectDialog').open);
-    await open('main.ditamap'); await page.locator('.map-topic-surface #notes').waitFor(); await page.click('#footnotesButton'); await page.locator('.footnote-card').filter({ hasText: '仅注脚中的文字' }).getByRole('button', { name: '编辑注脚' }).click();
+    await open('main.ditamap'); await page.locator('.map-topic-surface #notes').waitFor(); await ui.openNotes(page); await page.locator('.footnote-card').filter({ hasText: '仅注脚中的文字' }).getByRole('button', { name: '编辑注脚' }).click();
     assert.equal(await page.evaluate(() => window.DitaApp.state.activePath), 'main.ditamap'); assert.equal(await page.locator('#footnoteProducts').isVisible(), false);
     const before = await content(); await page.uncheck('#footnoteModels input[value=M100]'); await page.check('#footnoteModels input[value=M200]'); await page.fill('#footnoteContent', '按型号勾选修改'); await page.click('#footnoteEditForm button[type=submit]');
     assert.match(await content(), /<fn product="M200">按型号勾选修改<\/fn>/); assert.equal(await page.evaluate(() => window.DitaApp.state.activePath), 'main.ditamap');

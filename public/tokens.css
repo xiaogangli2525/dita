@@ -1,0 +1,26 @@
+/* Shared visual primitives. No feature layout or document semantics here. */
+:root {
+  color-scheme: light;
+  --bg: #f3f5f2; --panel: #fff; --surface: #eef2ee; --sidebar-bg: #fafbf9;
+  --border: #dfe6e0; --text: #25342f; --muted: #64766a;
+  --accent: #167865; --accent-soft: #e7f1ec; --focus-ring: #167865;
+  --danger: #a93640; --add: #168252; --remove: #b83333;
+  --radius: 6px; --popover-shadow: 0 12px 36px #20372d20;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+  font-size: 13px;
+}
+[hidden] { display: none !important; }
+button, input, select, textarea, summary { font: inherit; }
+button, summary { -webkit-tap-highlight-color: transparent; }
+button { border: 1px solid transparent; background: transparent; color: var(--text); border-radius: var(--radius); padding: 7px 11px; }
+button:not(:disabled), summary { cursor: pointer; }
+button:hover, summary:hover { background: var(--surface); }
+button:disabled { opacity: .45; cursor: not-allowed; }
+select { padding: 7px 8px; border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); background: var(--panel); }
+:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+button.primary-action, .welcome-action { background: var(--accent); border-color: var(--accent); color: #fff; }
+button.primary-action:hover, .welcome-action:hover { background: #106150; }
+button.outline-action { border-color: var(--border); background: var(--panel); }
+@media(prefers-reduced-motion:reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}

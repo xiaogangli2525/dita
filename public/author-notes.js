@@ -64,7 +64,7 @@
         A.applyAuthorEdit(target.file, result.content, target.surface, { selectionBefore: selection.bookmark(target.surface, target.range), selectionAfter: selection.afterNode(result.note.xmlPath) });
         const marker = Array.from(target.surface.querySelectorAll('[data-dita-source="fn"]')).find(node => node.ditaSourcePath === result.note.xmlPath);
         pending = null; get('newFootnoteDialog').close();
-        if (root.matchMedia('(max-width: 1050px)').matches) { A.dom.inspector.classList.remove('drawer-open'); get('inspectorToggleButton').setAttribute('aria-expanded', 'false'); }
+        if (root.matchMedia('(max-width: 1100px)').matches) A.shell.closePanel({ restoreFocus: false });
         restore(target, marker);
         marker?.classList.add('fn-just-inserted'); marker?.scrollIntoView({ block: 'nearest' });
         A.setStatus('注脚已插入，可撤销 · 保存后写入工作区'); A.toast?.('已新增注脚，尚未保存', 'success');

@@ -1,4 +1,5 @@
 'use strict';
+const ui = require('./browser-ui');
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
@@ -41,7 +42,7 @@ test('foundation browser workflows', async t => {
     });
   }
   await scenario('published note scope, inherited conditions and dependency save confirmation agree', async () => {
-    await open('main.ditamap'); await page.click('#footnotesButton'); await page.selectOption('#footnoteModel', 'M100');
+    await open('main.ditamap'); await ui.openNotes(page); await page.selectOption('#footnoteModel', 'M100');
     await page.waitForFunction(() => document.querySelectorAll('.footnote-card').length === 4);
     assert.doesNotMatch(await page.locator('#footnoteList').innerText(), /INHERITED_B|ANCESTOR_EXCLUDED|C_ONLY/);
     await page.locator('.footnote-card').filter({ hasText: 'A_CONREF' }).getByRole('button', { name: '编辑引用源' }).click(); await page.locator('#footnoteEditDialog').waitFor();
@@ -61,7 +62,7 @@ test('foundation browser workflows', async t => {
     await page.click('#projectButton'); await page.fill('#projectModels', 'M100\nM200\nM300'); await page.click('#projectForm button[type=submit]');
     await page.waitForFunction(() => !document.getElementById('projectDialog').open);
     assert.deepEqual(JSON.parse(await fs.readFile(path.join(repo, '.dita-project.json'), 'utf8')).models, ['M100', 'M200', 'M300']);
-    await open('topics/connect.dita'); await page.click('#footnotesButton'); await page.selectOption('#footnoteModel', '');
+    await open('topics/connect.dita'); await ui.openNotes(page); await page.selectOption('#footnoteModel', '');
     await page.locator('.footnote-card').filter({ hasText: 'UNMARKED' }).getByRole('button', { name: '编辑注脚' }).click();
     await page.check('#footnoteCommon'); await page.click('#footnoteEditForm button[type=submit]');
     assert.match(await current(), /otherprops="applicability\(common\)"/);
@@ -122,7 +123,7 @@ test('foundation browser workflows', async t => {
     await page.fill('#resourceLabel', '连接命令'); await page.click('#resourceForm button[type=submit]'); assert.match(await current(), /href="connect.dita#connect">连接命令/);
   });
   await scenario('document creation, GBK save-as and UTF-8 XML downloads retain text and declared encodings', async () => {
-    await page.click('#newDocumentButton'); await page.selectOption('#newDocumentTemplate', 'topic'); await page.fill('#newDocumentPath', 'new-topic.dita'); await page.fill('#newDocumentTitle', '新建基础文档'); await page.click('#newDocumentSubmit');
+    await ui.newDocument(page); await page.selectOption('#newDocumentTemplate', 'topic'); await page.fill('#newDocumentPath', 'new-topic.dita'); await page.fill('#newDocumentTitle', '新建基础文档'); await page.click('#newDocumentSubmit');
     await page.waitForFunction(() => window.DitaApp.state.activePath === 'new-topic.dita');
     const content = '<?xml version="1.0" encoding="GBK"?><topic id="new"><title>中文文档</title><body><p>编码下载</p></body></topic>';
     await source(content); await page.click('#saveButton'); await page.waitForFunction(() => !window.DitaApp.state.filesMap.get('new-topic.dita').dirty);

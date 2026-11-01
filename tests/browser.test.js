@@ -1,4 +1,5 @@
 'use strict';
+const ui = require('./browser-ui');
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
@@ -101,6 +102,7 @@ test('real browser editing, reading and review workflow', async t => {
     const table = '<topic id="a"><title>Table</title><body><table><tgroup cols="2"><tbody><row><entry>A</entry><entry>B</entry></row></tbody></tgroup></table></body></topic>';
     await source(table); await page.click('#visualButton');
     await page.locator('#visualEditor td').first().click();
+    await page.click('#inspectorToggleButton');
     await page.click('[data-context-action="row-after"]');
     assert.equal((await current()).match(/<row/g).length, 2);
     await undo(); assert.equal(await current(), table);
@@ -112,7 +114,7 @@ test('real browser editing, reading and review workflow', async t => {
   });
   await t.test('model footnotes support filtering, exact-source edits, undo, stale protection and full export', async () => {
     const notes = '<topic id="a"><title>MQTT</title><body><p>AT+MQTTOPEN<fn product="M100">Limit &amp; retry.</fn></p><p>AT+MQTTPUB<fn>Legacy unassigned.</fn></p><p>AT+MQTTSUB<fn product="M200">Keep <xref href="a.dita">link</xref>.</fn></p></body></topic>';
-    await source(notes); await page.click('#footnotesButton');
+    await source(notes); await ui.openNotes(page);
     await page.waitForFunction(() => document.getElementById('footnoteCount').textContent === '3');
     await page.selectOption('#footnoteModel', 'M100');
     assert.equal(await page.locator('.footnote-card').count(), 2);
@@ -135,7 +137,7 @@ test('real browser editing, reading and review workflow', async t => {
     assert.match(await page.locator('#footnoteEditError').innerText(), /文档已变化/);
     await page.click('#footnoteCancel');
     // Opening a Map indexes the complete manual; locating one topic retains its scope.
-    await open('main.ditamap'); await page.click('#footnotesButton');
+    await open('main.ditamap'); await ui.openNotes(page);
     await page.waitForFunction(() => document.getElementById('footnoteCount').textContent === '3');
     await page.selectOption('#footnoteModel', '');
     await page.locator('.footnote-actions button').first().click();
@@ -155,7 +157,7 @@ test('real browser editing, reading and review workflow', async t => {
     assert.match(await frame.locator('.export-footnotes').innerText(), /Revised & exact/);
     assert.match(await frame.locator('.export-footnotes').innerText(), /Changed elsewhere/);
     await page.click('#closeHtmlPreviewButton');
-    await page.click('#propertiesTab'); await open('a.dita'); await source(initial);
+    await ui.openProperties(page); await open('a.dita'); await source(initial);
   });
   await t.test('model HTML preview and MD download use one scope, valid references and unchanged sources', async () => {
     try {

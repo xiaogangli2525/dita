@@ -1,4 +1,5 @@
 'use strict';
+const ui = require('./browser-ui');
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
@@ -42,7 +43,7 @@ test('Author footnotes and writing UI', async t => {
     await page.fill('#newFootnoteContent', text); if (model) await page.locator('#newFootnoteModels input').filter({ visible: true }).evaluateAll((inputs, model) => { const input = inputs.find(input => input.value === model); if (!input) throw new Error('Model not found'); input.click(); }, model);
     await page.click('#newFootnoteForm button[type=submit]'); await page.waitForFunction(() => !document.getElementById('newFootnoteDialog').open);
   };
-  const source = async () => { await page.click('.editing-tools summary'); await page.click('#sourceButton'); await page.click('.editing-tools summary'); };
+  const source = async () => { await page.click('#sourceButton'); };
   await open('a.dita');
 
   await t.test('opening and cancelling insertion preserves XML, DOM and the saved caret', async () => {
@@ -100,7 +101,7 @@ test('Author footnotes and writing UI', async t => {
     const before = await content(); await page.fill('#newFootnoteContent', 'UNRESOLVED_NOTE'); await page.click('#newFootnoteForm button[type=submit]');
     assert.match(await page.locator('#newFootnoteError').innerText(), /请选择至少一个型号/); assert.equal(await content(), before);
     await page.check('#newFootnoteForm input[value=unresolved]'); await page.click('#newFootnoteForm button[type=submit]'); await page.waitForFunction(() => !document.getElementById('newFootnoteDialog').open);
-    await page.click('#footnotesButton'); await page.selectOption('#footnoteModel', ''); await page.check('#footnoteUnassignedOnly');
+    await ui.openNotes(page); await page.selectOption('#footnoteModel', ''); await page.check('#footnoteUnassignedOnly');
     await page.waitForFunction(() => document.getElementById('footnoteList').textContent.includes('UNRESOLVED_NOTE'));
     assert.doesNotMatch(await page.locator('#footnoteList').innerText(), /EXISTING|MAP_NOTE|TABLE_NOTE/);
     await page.uncheck('#footnoteUnassignedOnly');
@@ -116,7 +117,7 @@ test('Author footnotes and writing UI', async t => {
     await page.evaluate(() => { const a = window.DitaApp, file = a.state.filesMap.get('a.dita'); a.setFileContent(file, file.current + '<!--external-->'); });
     await page.fill('#newFootnoteContent', 'STALE_NOTE'); await page.check('#newFootnoteModels input[value=M100]'); await page.click('#newFootnoteForm button[type=submit]');
     assert.match(await page.locator('#newFootnoteError').innerText(), /已变化/); assert.doesNotMatch(await content(), /STALE_NOTE/); await page.click('#newFootnoteCancel');
-    await open('a.dita'); await page.setViewportSize({ width: 390, height: 844 }); await page.click('#inspectorCloseButton'); await caret('#repeat', 'SAME', 2); await page.click('#newFootnoteButton'); await page.locator('#newFootnoteDialog[open]').waitFor();
+    await open('a.dita'); await page.setViewportSize({ width: 390, height: 844 }); await ui.closePanel(page); await caret('#repeat', 'SAME', 2); await page.click('#newFootnoteButton'); await page.locator('#newFootnoteDialog[open]').waitFor();
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
     const rect = await page.locator('#newFootnoteDialog').boundingBox(); assert.ok(rect.width <= 390 && rect.height <= 844);
     await page.click('#newFootnoteCancel');
@@ -141,7 +142,7 @@ test('Author footnotes and writing UI', async t => {
     await page.click('#authorRedoButton'); assert.equal(await content(), before);
   });
   await t.test('panel insertion confirms common scope, supports repeated insertion, and saves GBK explicitly', async () => {
-    await caret('#repeat', 'SAME', 2); await page.click('#footnotesButton'); await page.click('#panelNewFootnoteButton'); await page.locator('#newFootnoteDialog[open]').waitFor();
+    await caret('#repeat', 'SAME', 2); await ui.openNotes(page); await page.click('#panelNewFootnoteButton'); await page.locator('#newFootnoteDialog[open]').waitFor();
     await page.fill('#newFootnoteContent', '所有型号通用'); await page.check('#newFootnoteCommon'); await page.keyboard.press('Control+Enter');
     await page.waitForFunction(() => !document.getElementById('newFootnoteDialog').open);
     await create('紧接上一注脚', 'M200');

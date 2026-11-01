@@ -74,6 +74,8 @@
   };
 
   const get = id => document.getElementById(id);
+  let deliveryView;
+  const view = () => deliveryView || (deliveryView = root.DitaDeliveryView.createView());
   let configuration = null, configuring = false, compiled = null, operation = 0, abortController = null;
   const service = () => A.manual || (A.manual = root.DitaManualService.createManualService(A));
   const nativePdf = () => A.state.capabilities?.pdf === true;
@@ -103,14 +105,14 @@
   }
   function summary() {
     if (!configuration) return;
-    compiled = null;
+    compiled = null; view().invalidate();
     try {
       const data = service().prepare(configuration.snapshot, get('exportModel').value);
       get('modelExportSummary').textContent = `包含 ${data.report.included} 条注脚；排除 ${data.report.excluded} 条；保留 ${data.report.unmarked} 条待确认注脚。` + (data.report.unused ? ` ${data.report.unused} 条未引用定义不输出。` : '');
       const warnings = data.notes.filter(note => note.unmarked).map(note => ({ path: note.origin.path, severity: 'warning', message: '注脚尚未确认适用范围，将保留在交付中' }));
       for (const [path, file] of configuration.snapshot.files) if (/oxy_(insert|delete|comment)/.test(file.current)) warnings.push({ path, severity: 'warning', message: '含 Oxygen 修订或批注，请检查是否适合交付' });
       showIssues(warnings); get('modelExportError').textContent = '';
-    } catch (error) { get('modelExportSummary').textContent = ''; get('modelExportError').textContent = error.message; showIssues(issue(error, configuration.snapshot)); }
+    } catch (error) { view().failed(); get('modelExportSummary').textContent = ''; get('modelExportError').textContent = error.message; showIssues(issue(error, configuration.snapshot)); }
   }
   async function provenance() {
     try { const response = await A.api.request('/api/provenance'); if (response.ok) return response.json(); } catch {}
@@ -118,7 +120,7 @@
   }
   A.openModelExport = async function () {
     if (configuring || exporting) return;
-    configuring = true; configuration = null; compiled = null; A.closeExportMenu();
+    configuring = true; configuration = null; compiled = null; view().invalidate(); A.closeExportMenu();
     get('exportModel').replaceChildren(new Option('正在读取…', ''));
     get('exportModel').disabled = true;
     get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = true; });
@@ -141,7 +143,7 @@
       const dirty = service().saveCandidates(snapshot).length;
       get('deliverySource').textContent = `${snapshot.files.size} 个正文／依赖文件 · ${dirty} 个未保存` + (source.commit ? ` · Git ${source.commit.slice(0, 8)}${source.dirty ? '（含未提交修改）' : ''}` : ' · 未取得 Git 版本');
       summary();
-    } catch (error) { get('modelExportSummary').textContent = ''; get('modelExportError').textContent = error.message; showIssues(issue(error)); }
+    } catch (error) { view().failed(); get('modelExportSummary').textContent = ''; get('modelExportError').textContent = error.message; showIssues(issue(error)); }
     finally { configuring = false; }
   };
   async function convert(snapshot, model, format, version) {
@@ -177,20 +179,25 @@
   async function publish(preview, legacy) {
     if (exporting || !configuration) return;
     const { snapshot, source } = configuration;
-    if (!service().current(snapshot)) { if (!legacy) get('modelExportError').textContent = '内容已变化，请重新打开交付设置以更新快照'; return; }
+    if (!service().current(snapshot)) {
+      compiled = null;
+      if (!legacy) { view().failed(); get('modelExportError').textContent = '内容已变化，请重新打开交付设置以更新快照'; }
+      return;
+    }
     const model = legacy ? '' : get('exportModel').value, format = legacy?.format || get('exportFormat').value, version = legacy ? '' : get('exportVersion').value.trim();
     if (version.length > 80) { get('modelExportError').textContent = '文档版本请限制在 80 字以内'; return; }
     const generation = ++operation;
     abortController = new AbortController();
     exporting = true; A.showLoading?.();
-    if (!legacy) { for (const id of ['exportModel', 'exportFormat', 'exportVersion']) get(id).disabled = true; get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = true; }); }
+    if (!legacy) get('modelExportError').textContent = '';
+    if (!legacy) { view().pending(); for (const id of ['exportModel', 'exportFormat', 'exportVersion']) get(id).disabled = true; get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = true; }); }
     try {
       const key = JSON.stringify([model, format, version]);
       const data = compiled?.key === key ? compiled.data : await convert(snapshot, model, format, version);
       if (generation !== operation) return;
       if (!service().current(snapshot)) throw new Error('内容已变化，请重新打开交付设置以更新快照');
       compiled = { key, data }; A.lastExportReport = data.report;
-      if (preview === 'check') { get('deliveryCheckStatus').textContent = '发布检查通过，图片和链接已核对。预览与下载将使用这份快照。'; return; }
+      if (preview === 'check') { view().complete(); get('deliveryCheckStatus').textContent = '发布检查通过，图片和链接已核对。预览与下载将使用这份快照。'; return; }
       const printing = format === 'pdf' && !nativePdf();
       if (preview || printing) {
         A.dom.editorPane.classList.remove('active'); A.dom.visualPane.classList.remove('active');
@@ -230,9 +237,9 @@
       if (!legacy) get('modelExportDialog').close();
     } catch (error) {
       if (generation !== operation) return;
-      if (!legacy) { get('modelExportError').textContent = error.message; showIssues(issue(error, snapshot)); }
+      if (!legacy) { view().failed(); get('modelExportError').textContent = error.message; showIssues(issue(error, snapshot)); }
       A.setStatus(error.message, true); A.toast?.(error.message, 'error');
-    } finally { exporting = false; abortController = null; A.hideLoading?.(); if (!legacy && configuration) { for (const id of ['exportModel', 'exportFormat', 'exportVersion']) get(id).disabled = false; get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = false; }); } }
+    } finally { exporting = false; abortController = null; A.hideLoading?.(); if (!legacy && configuration) { view().settled(); for (const id of ['exportModel', 'exportFormat', 'exportVersion']) get(id).disabled = false; get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = false; }); } }
   }
   async function legacyExport(format, preview) {
     if (!/\.ditamap$/i.test(A.state.activePath)) { A.setStatus('请先打开一个 Map 文档，再预览或导出', true); return; }
@@ -241,7 +248,8 @@
   }
   A.previewMapHtml = () => legacyExport('html', true); A.exportMapToHtmlFile = () => legacyExport('html', false);
   A.previewMapMd = () => legacyExport('md', true); A.exportMapToMarkdownFile = () => legacyExport('md', false);
-  get('exportModel')?.addEventListener('change', summary); get('exportFormat')?.addEventListener('change', () => { compiled = null; formatHint(); get('deliveryCheckStatus').textContent = ''; });
+  get('exportModel')?.addEventListener('change', summary); get('exportFormat')?.addEventListener('change', () => { compiled = null; formatHint(); view().invalidate(); });
+  get('exportVersion')?.addEventListener('input', () => { compiled = null; view().invalidate(); });
   get('printDeliveryButton')?.addEventListener('click', () => {
     A.dom.htmlPreviewFrame.contentWindow.focus(); A.dom.htmlPreviewFrame.contentWindow.print();
     A.setStatus('已请求浏览器打印，请在打印窗口选择“另存为 PDF”。');

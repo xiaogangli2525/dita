@@ -5,19 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="专注于 DITA 文档编写、结构编辑与变更审阅的本地工作台" />
   <title>DITA Lite · 文档工作台</title>
+  <link rel="stylesheet" href="/tokens.css" />
   <link rel="stylesheet" href="/styles.css" />
   <link rel="stylesheet" href="/workspace.css" />
+  <link rel="stylesheet" href="/panels.css" />
 </head>
 <body>
   <header class="app-header">
-    <div class="app-titlebar">
-      <div class="brand">
-        <span class="brand-mark" aria-hidden="true">d.</span>
-        <div class="brand-name"><strong>DITA Lite</strong><small>DOCUMENT WORKSPACE</small></div>
-        <span id="rootPath">未加载</span>
-      </div>
-      <div class="titlebar-context"><span class="connection-dot" aria-hidden="true"></span> 本地工作区 <span class="context-separator">/</span> 功能手册编写</div>
-    </div>
+    <div class="brand"><span class="brand-mark" aria-hidden="true">d.</span><strong>DITA Lite</strong></div>
+    <button id="sidebarToggleButton" class="sidebar-toggle" type="button" aria-controls="workspaceSidebar" aria-expanded="false" title="打开文档导航">☰ 文档</button>
     <nav class="main-menu" aria-label="主菜单">
       <button type="button" data-menu="file" aria-label="文件菜单">文件</button>
       <button type="button" data-menu="edit" aria-label="编辑菜单">编辑</button>
@@ -25,76 +21,25 @@
       <button type="button" data-menu="dita" aria-label="DITA 菜单">DITA</button>
       <button type="button" data-menu="help" aria-label="帮助菜单">帮助</button>
     </nav>
-    <div id="menuPopup" class="menu-popup" hidden></div>
-    <div class="toolbar">
-      <button id="sidebarToggleButton" class="sidebar-toggle" type="button" aria-controls="workspaceSidebar" aria-expanded="false" title="打开文档导航">☰ 文档</button>
-      <div class="toolbar-group workspace-group">
-        <label class="workspace-switch"><span>仓库</span><select id="repositorySelect"></select></label>
-        <label class="workspace-switch"><span>分支</span><select id="branchSelect"></select></label>
-        <button id="projectButton" type="button" title="维护当前仓库的型号清单">型号清单</button>
-      </div>
-      <span class="toolbar-divider" aria-hidden="true"></span>
-      <div class="toolbar-group mode-group" aria-label="编辑模式">
-        <button id="visualButton" type="button" class="tool-button active" title="切换到 Author 可视化编辑模式" aria-label="Author 编辑模式">编写</button>
-        <button id="previewButton" type="button" class="tool-button" title="阅读未筛选的原文（只读）">阅读原文</button>
-      </div>
-      <span class="toolbar-divider" aria-hidden="true"></span>
-      <details class="editing-tools">
-        <summary>编辑工具 <span aria-hidden="true">⌄</span></summary>
-      <div class="toolbar-group edit-group" aria-label="编辑操作">
+    <div class="mode-group" aria-label="编辑模式">
+      <button id="visualButton" type="button" class="tool-button active" aria-label="Author 编辑模式">编写</button>
+      <button id="previewButton" type="button" class="tool-button" title="阅读未筛选的原文（只读）">阅读</button>
         <button id="sourceButton" type="button" class="tool-button" title="切换到源码编辑模式" aria-label="源码编辑模式">源码</button>
-
-        <button id="undoButton" type="button" title="撤销 (Ctrl+Z)" disabled>撤销</button>
-        <button id="redoButton" type="button" title="重做 (Ctrl+Y)" disabled>重做</button>
-        <button id="validateButton" type="button" title="检查 XML 语法">XML 校验</button>
-        <button id="formatButton" type="button" title="格式化当前 DITA 文档">格式化</button>
-        <button id="findReplaceButton" type="button" title="在当前 DITA 文档中查找和替换">查找</button>
-        <label class="insert-element-control" title="在编辑器光标处插入 DITA 元素">
-          <span>插入</span>
-          <select id="insertElementSelect" aria-label="选择 DITA 元素">
-            <option value="p">段落 p</option>
-            <option value="section">节 section</option>
-            <option value="ul">无序列表 ul</option>
-            <option value="ol">有序列表 ol</option>
-            <option value="note">说明 note</option>
-            <option value="fn">注脚 fn</option>
-            <option value="codeblock">代码块 codeblock</option>
-            <option value="table">表格 table</option>
-            <option value="image">图片 image</option>
-            <option value="xref">交叉引用 xref</option>
-            <option value="ph">短语 ph</option>
-            <option value="b">粗体 b</option>
-            <option value="i">斜体 i</option>
-            <option value="codeph">行内代码 codeph</option>
-          </select>
-        </label>
-        <button id="insertElementButton" type="button" title="在编辑器光标处插入所选 DITA 元素">插入</button>
-      </div>
-      </details>
-      <span class="toolbar-divider" aria-hidden="true"></span>
-      <div class="toolbar-group file-group" aria-label="文件操作">
-        <button id="newDocumentButton" type="button" title="创建新的 DITA 文档或 Map">新建</button>
-        <button id="saveButton" type="button" class="primary-action" title="保存当前文档 (Ctrl+S)">保存</button>
-        <button id="exportMenuButton" type="button" title="检查、预览和交付当前功能手册">交付…</button>
-        <button id="releasesButton" type="button" title="查看当前浏览器保存的交付记录">交付记录</button>
-        <button id="draftsButton" type="button" title="恢复当前仓库和分支的未保存草稿">草稿</button>
-        <button id="footnotesButton" type="button" title="管理型号差异注脚">型号注脚</button>
-        <button id="reviewButton" type="button" title="审阅文档变更（接受/拒绝修订）">审阅</button>
-        <button id="inspectorToggleButton" type="button" class="inspector-toggle" title="切换属性面板" aria-controls="inspector" aria-expanded="false">属性</button>
-      </div>
     </div>
+    <button id="reviewButton" type="button" class="outline-action" title="审阅文档变更" aria-controls="inspector" aria-expanded="false">审阅</button>
+    <button id="exportMenuButton" type="button" class="primary-action" title="检查、预览和交付当前功能手册">交付手册 ↗</button>
+    <div id="menuPopup" class="menu-popup" hidden></div>
   </header>
 
   <main class="layout">
     <aside id="workspaceSidebar" class="sidebar" aria-label="文档导航">
-      <div class="sidebar-heading"><span>工作区</span><span class="section-kicker">EXPLORER</span></div>
+      <div class="sidebar-heading"><span>文档导航</span><button id="newDocumentButton" type="button" title="新建文档" aria-label="新建文档">＋</button></div>
       <div class="view-tabs" role="tablist" aria-label="视图">
         <button type="button" class="view-tab active" data-view="map" role="tab" aria-selected="true" title="Map 视图">文档</button>
         <button type="button" class="view-tab" data-view="outline" role="tab" aria-selected="false" title="大纲视图">大纲</button>
         <button type="button" class="view-tab" data-view="search" role="tab" aria-selected="false" title="查找文件">文件查找</button>
       </div>
       <div id="mapView" class="view-panel active">
-      <div class="panel-title">DITA Map</div>
       <div id="mapPicker" class="map-picker"></div>
       <div class="sidebar-search">
         <span aria-hidden="true">⌕</span>
@@ -131,12 +76,56 @@
           </div>
         </div>
       </div>
+      <div class="workspace-settings">
+      <div class="toolbar-group workspace-group">
+        <label class="workspace-switch"><span>仓库</span><select id="repositorySelect"></select></label>
+        <label class="workspace-switch"><span>分支</span><select id="branchSelect"></select></label>
+        <button id="projectButton" type="button" title="维护当前仓库的型号清单">型号清单</button>
+      </div>
+        <span id="rootPath" class="workspace-path">未加载</span>
+        <div class="workspace-actions"><button id="draftsButton" type="button">恢复草稿</button><button id="releasesButton" type="button">交付记录</button></div>
+      </div>
     </aside>
 
     <section class="content" aria-label="文档编辑区">
       <div class="document-heading">
         <div><div id="documentLocation" class="document-location">选择一个文档，开始专注写作</div><h1 id="documentTitle">你的文档工作台</h1><button id="returnWritingPosition" type="button" class="return-writing-position" hidden>← 返回编写位置</button></div>
-        <span id="documentSaveState" class="save-badge" data-state="saved" role="status">本地工作区</span>
+        <div class="document-actions">
+          <span id="documentSaveState" class="save-badge" data-state="saved" role="status">本地工作区</span>
+          <button id="saveButton" type="button" class="outline-action" title="保存当前文档 (Ctrl+S)">保存</button>
+      <details class="editing-tools">
+        <summary>XML 工具 <span aria-hidden="true">⌄</span></summary>
+      <div class="toolbar-group edit-group" aria-label="编辑操作">
+
+
+        <button id="undoButton" type="button" title="撤销 (Ctrl+Z)" disabled>撤销</button>
+        <button id="redoButton" type="button" title="重做 (Ctrl+Y)" disabled>重做</button>
+        <button id="validateButton" type="button" title="检查 XML 语法">XML 校验</button>
+        <button id="formatButton" type="button" title="格式化当前 DITA 文档">格式化</button>
+        <button id="findReplaceButton" type="button" title="在当前 DITA 文档中查找和替换">查找</button>
+        <label class="insert-element-control" title="在编辑器光标处插入 DITA 元素">
+          <span>插入</span>
+          <select id="insertElementSelect" aria-label="选择 DITA 元素">
+            <option value="p">段落 p</option>
+            <option value="section">节 section</option>
+            <option value="ul">无序列表 ul</option>
+            <option value="ol">有序列表 ol</option>
+            <option value="note">说明 note</option>
+            <option value="fn">注脚 fn</option>
+            <option value="codeblock">代码块 codeblock</option>
+            <option value="table">表格 table</option>
+            <option value="image">图片 image</option>
+            <option value="xref">交叉引用 xref</option>
+            <option value="ph">短语 ph</option>
+            <option value="b">粗体 b</option>
+            <option value="i">斜体 i</option>
+            <option value="codeph">行内代码 codeph</option>
+          </select>
+        </label>
+        <button id="insertElementButton" type="button" title="在编辑器光标处插入所选 DITA 元素">插入</button>
+      </div>
+      </details>
+        </div>
       </div>
       <div id="tabs" class="tabs"></div>
       <div id="editSearchPanel" class="edit-search-panel" hidden>
@@ -181,7 +170,8 @@
         <div id="mdPreviewContent" class="md-preview-content" role="region" aria-label="Markdown 预览"></div>
       </div>
     </section>
-    <aside id="inspector" class="inspector" aria-label="属性检查器">
+    <aside id="inspector" class="inspector" aria-label="辅助面板" hidden>
+      <div id="inspectorResize" class="panel-resize" role="separator" tabindex="0" aria-label="调整辅助面板宽度" aria-orientation="vertical" aria-valuemin="280" aria-valuemax="480" aria-valuenow="320"></div>
       <div class="inspector-header">
         <span id="inspectorTitle">文档属性</span>
         <span id="inspectorElement" class="inspector-element">未选择元素</span>
@@ -192,7 +182,7 @@
         <button id="footnotesTab" type="button" role="tab" aria-selected="false">型号注脚</button>
       </div>
       <section id="footnotesPanel" class="footnotes-panel" hidden aria-label="型号注脚管理">
-        <div class="footnote-panel-intro"><div class="footnote-panel-title"><h2>型号注脚</h2><button id="panelNewFootnoteButton" class="note-create-action" type="button" title="先在正文放置光标，再新增注脚">＋ 新增</button></div><p id="footnoteScope">当前功能文档</p></div>
+        <div class="footnote-panel-intro"><div class="footnote-panel-title"><h2>当前手册</h2><button id="panelNewFootnoteButton" class="note-create-action" type="button" title="先在正文放置光标，再新增注脚">＋ 新增</button></div><p id="footnoteScope">当前功能文档</p></div>
         <div class="footnote-stats"><div><strong id="footnoteCount">0</strong><span>条注脚</span></div><div><strong id="footnoteUnassigned">0</strong><span>条待确认</span></div></div>
         <div class="footnote-filters"><label>适用型号<select id="footnoteModel"><option value="">全部型号</option></select></label><input id="footnoteSearch" type="search" placeholder="查找命令、参数或注脚内容" aria-label="查找注脚"/></div>
         <label class="note-pending-filter"><input id="footnoteUnassignedOnly" type="checkbox"/>仅看待确认适用范围</label>
@@ -222,6 +212,11 @@
         <div id="diff" class="diff"></div>
       </div>
     </aside>
+    <nav class="panel-rail" aria-label="辅助工具">
+      <button id="inspectorToggleButton" type="button" data-panel="properties" aria-controls="inspector" aria-expanded="false" title="元素属性"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h5m4 0h7M4 12h9m4 0h3M4 18h2m4 0h10"/><circle cx="11" cy="6" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="8" cy="18" r="2"/></svg><span>属性</span></button>
+      <button id="footnotesButton" type="button" data-panel="notes" aria-controls="inspector" aria-expanded="false" title="型号注脚"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v12H9l-5 4zM8 8h8M8 12h5"/></svg><span>注脚</span></button>
+      <button type="button" data-panel="review" aria-controls="inspector" aria-expanded="false" title="审阅变更"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>审阅</span></button>
+    </nav>
   </main>
 
   <footer class="statusbar">
@@ -231,14 +226,30 @@
 
   <dialog id="modelExportDialog" class="footnote-dialog" aria-labelledby="modelExportHeading">
     <form id="modelExportForm">
-      <span class="section-kicker">MODEL PUBLICATION</span><h2 id="modelExportHeading">交付功能手册</h2>
+      <h2 id="modelExportHeading">交付功能手册</h2>
+      <nav class="delivery-steps" aria-label="交付步骤">
+        <button type="button" data-delivery-step="configure" aria-current="step">1 配置</button>
+        <button type="button" data-delivery-step="check">2 检查</button>
+        <button type="button" data-delivery-step="export" disabled>3 导出</button>
+      </nav>
       <p id="modelExportScope"></p><p id="deliverySource" class="muted"></p>
+      <section id="deliveryConfigure" aria-label="配置交付范围">
       <label>适用型号<select id="exportModel"><option value="">全部型号</option></select></label>
       <label>文件格式<select id="exportFormat"><option value="html">HTML（推荐交付）</option><option value="pdf">PDF</option><option value="docx">Word（.docx）</option><option value="md">Markdown</option></select></label>
       <p id="exportFormatHint" class="muted"></p>
       <label>文档版本<input id="exportVersion" maxlength="80" placeholder="例如 V1.2，可留空"/></label>
-      <p>按注脚及其 Topic 祖先的 product 条件筛选，正文保持完整。没有型号条件的注脚始终保留；不从文字推断支持范围。</p>
-      <p id="modelExportSummary" role="status"></p><ul id="deliveryChecks" class="delivery-checks"></ul><p id="deliveryCheckStatus" role="status"></p><p id="modelExportError" class="footnote-edit-error" role="alert"></p>
+      <p>选择型号后，仅筛选注脚的适用范围，正文保持完整。未标注型号的注脚会保留。</p>
+      </section>
+      <p id="modelExportSummary" role="status"></p>
+      <section id="deliveryCheck" aria-label="交付检查" hidden>
+        <p id="deliveryCheckStatus" role="status">点击“发布前检查”，核对文档、图片和链接。</p>
+        <ul id="deliveryChecks" class="delivery-checks"></ul>
+      </section>
+      <section id="deliveryReady" aria-label="确认导出" hidden>
+        <h3>文件已准备好</h3><p id="deliveryReadySummary"></p>
+        <p>预览和导出使用同一份内容。包含当前未保存修改，导出不会代替保存。</p>
+      </section>
+      <p id="modelExportError" class="footnote-edit-error" role="alert"></p>
       <div class="footnote-dialog-actions"><button id="modelExportCancel" type="button">取消</button><button type="submit" value="check">发布前检查</button><button type="submit" value="preview">交付预览</button><button type="submit" value="download" class="primary-action">导出文件</button></div>
     </form>
   </dialog>
@@ -337,6 +348,7 @@
   <script src="/resources.js"></script>
   <script src="/release-store.js"></script>
   <script src="/office-export.js"></script>
+  <script src="/delivery-view.js"></script>
   <script src="/export.js"></script>
   <script src="/map-controller.js"></script>
   <script src="/document-templates.js"></script>
@@ -352,6 +364,7 @@
   <script src="/inspector.js"></script>
   <script src="/clipboard.js"></script>
   <script src="/body-navigation.js"></script>
+  <script src="/workspace-shell.js"></script>
   <script src="/app.js"></script>
 </body>
 </html>

@@ -130,10 +130,11 @@ function updateDocumentChrome() {
   const location = document.getElementById('documentLocation');
   const badge = document.getElementById('documentSaveState');
   const empty = document.getElementById('welcomePanel');
-  if (title) title.textContent = file ? fileNameFromPath(file.path) : '你的文档工作台';
+  if (title) title.textContent = file ? window.DitaWorkspaceShell.documentLabel(file) : '你的文档工作台';
   if (location) location.textContent = file ? file.path : '选择一个文档，开始专注写作';
   if (badge) {
-    const dirty = Array.from(state.filesMap.values()).filter(item => item.dirty).length;
+    const scope = new Set([state.activePath, ...(/\.ditamap$/i.test(state.activePath) ? state.mapAuthorPaths || [] : [])]);
+    const dirty = [...scope].filter(path => state.filesMap.get(path)?.dirty).length;
     badge.textContent = A.saving ? '正在保存…' : dirty ? `${dirty} 个文档待保存` : file ? (state.capabilities.persistence === 'browser' ? '已保存到浏览器' : '已保存到磁盘') : '本地工作区';
     badge.dataset.state = A.saving ? 'saving' : dirty ? 'dirty' : 'saved';
   }
@@ -173,8 +174,8 @@ Object.assign(A, { state, dom, ditaCore, setStatus, toast, api: workspaceClient,
   hideLoading: function() { const el = document.getElementById('loadingOverlay'); if (el) { el.classList.remove('active'); el.setAttribute('aria-hidden', 'true'); } } });
 
 const editor = window.DitaEditorController.createEditorController(A, {
-  renderTabs, renderOutline, renderInspector, updateTree, refreshChrome: updateDocumentChrome,
-  beforeModeChange: () => A.releaseExportPreview?.(), modeChanged: () => { A.footnotes?.syncMode(); A.authorNotes?.syncMode(); A.editorTools?.syncMode(); }
+  documentLabel: window.DitaWorkspaceShell.documentLabel, renderTabs, renderOutline, renderInspector, updateTree, refreshChrome: updateDocumentChrome,
+  beforeModeChange: () => A.releaseExportPreview?.(), modeChanged: () => { A.shell?.syncMode(); A.footnotes?.syncMode(); A.authorNotes?.syncMode(); A.editorTools?.syncMode(); }
 });
 const { setFileContent, setMode, updateHistoryButtons, updateActivePanes, ensureMapAuthorFile,
   undoFile, redoFile, syncVisualToModel, markDirty, renderDiff, renderMapReview, reviewAll } = editor;
@@ -425,7 +426,8 @@ function makeTab(file) {
   tab.className = 'tab active';
   tab.dataset.path = file.path;
   const label = document.createElement('span');
-  label.textContent = file.path.split('/').pop();
+  label.textContent = window.DitaWorkspaceShell.documentLabel(file);
+  tab.title = file.path;
   const dirty = document.createElement('span');
   dirty.className = 'dirty';
   const mapDirty = /\.ditamap$/i.test(file.path) && Array.from(state.mapAuthorPaths || []).some(path => state.filesMap.get(path)?.dirty);
@@ -440,6 +442,7 @@ function makeTab(file) {
   });
   tab.append(label, dirty, close);
   tab.addEventListener('click', () => openFile(file.path));
+  close.setAttribute('aria-label', '关闭 ' + label.textContent);
   return tab;
 }
 
@@ -454,6 +457,7 @@ function renderTabs() {
     fragment.append(tab);
   }
   dom.tabs.replaceChildren(fragment);
+  dom.tabs.hidden = dom.tabs.children.length < 2;
 }
 
 async function openFile(path, { preserveFootnotesScope = false } = {}) {
@@ -479,8 +483,7 @@ async function openFile(path, { preserveFootnotesScope = false } = {}) {
       throw error;
     }
   }
-  document.body.classList.remove('sidebar-open');
-  document.getElementById('sidebarToggleButton')?.setAttribute('aria-expanded', 'false');
+  A.shell?.sidebar(false);
   state.activePath = path;
   if (!preserveFootnotesScope) A.footnotes?.setScope(path);
   state.historyTargetPath = path;
@@ -556,30 +559,14 @@ async function refreshWorkspaceTree() {
 
 function createNewDocument() { return A.documents.createNewDocument(); }
 
-dom.inspectorToggleButton?.addEventListener('click', () => {
-  const open = dom.inspector.classList.toggle('drawer-open');
-  dom.inspectorToggleButton.setAttribute('aria-expanded', String(open));
-});
-document.getElementById('inspectorCloseButton')?.addEventListener('click', () => {
-  dom.inspector.classList.remove('drawer-open'); dom.inspectorToggleButton?.setAttribute('aria-expanded', 'false');
-});
 document.addEventListener('click', event => {
   const tools = document.querySelector('.editing-tools');
   if (tools && !tools.contains(event.target)) tools.open = false;
 });
 document.getElementById('welcomeNewButton')?.addEventListener('click', createNewDocument);
-document.getElementById('sidebarToggleButton')?.addEventListener('click', event => {
-  const open = document.body.classList.toggle('sidebar-open');
-  event.currentTarget.setAttribute('aria-expanded', String(open));
-});
 document.addEventListener('keydown', event => {
-  if (event.key !== 'Escape') return;
-  document.body.classList.remove('sidebar-open');
-  document.getElementById('sidebarToggleButton')?.setAttribute('aria-expanded', 'false');
-  dom.inspector?.classList.remove('drawer-open');
-  dom.inspectorToggleButton?.setAttribute('aria-expanded', 'false');
-  A.closeExportMenu();
-  closeMenu();
+  if (event.key !== 'Escape' || document.querySelector('dialog[open]')) return;
+  A.closeExportMenu(); closeMenu();
 });
 
 dom.editor.addEventListener('input', markDirty);
@@ -759,9 +746,7 @@ A.footnotes = window.DitaFootnotes.createPanel(A);
 A.authorNotes = window.DitaAuthorNotes.createController(A);
 A.editorTools = window.DitaEditorTools.createController(A);
 window.DitaClipboard.createController({ state, dom, core: ditaCore, selection: A.authorSelection, status: setStatus, toast });
-const measureHeader = () => document.documentElement.style.setProperty('--workspace-header-bottom', Math.ceil(document.querySelector('.app-header').getBoundingClientRect().bottom + 8) + 'px');
-new ResizeObserver(measureHeader).observe(document.querySelector('.app-header'));
-measureHeader();
+A.shell = window.DitaWorkspaceShell.createController(A);
 initialize();
 })();
 

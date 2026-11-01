@@ -3,32 +3,33 @@
   function createPanel(A) {
     const core = root.DitaFootnotesCore;
     const $ = id => document.getElementById(id);
-    const panel = $('footnotesPanel'), inspector = A.dom.inspector;
+    const panel = $('footnotesPanel');
     let shown = false, notes = [], revision = '', generation = 0, timer;
     let editing = null, scopePath = '';
     const picker = root.DitaNoteScope.createPicker(A, 'footnote', 'footnoteEditForm', 'footnoteProducts');
-    function setScope(path) { scopePath = path; revision = ''; generation++; scheduleRefresh(); }
+    function setScope(path) {
+      const changed = scopePath !== path;
+      scopePath = path; revision = ''; generation++;
+      if (changed) {
+        // Do not leave actionable notes from the previous document on screen
+        // while the new manual is being captured by the debounced refresh.
+        notes = [];
+        $('footnoteScope').textContent = path || '当前功能文档';
+        $('footnoteCount').textContent = '—';
+        $('footnoteUnassigned').textContent = '—';
+        $('footnoteResultCount').textContent = '';
+        $('footnoteList').replaceChildren(el('p', 'footnote-empty', '正在读取注脚…'));
+      }
+      scheduleRefresh();
+    }
     const el = (tag, cls, text) => { const node = document.createElement(tag); if (cls) node.className = cls; if (text !== undefined) node.textContent = text; return node; };
-    function show(showNotes) {
-      shown = showNotes;
-      if (showNotes && A.state.mode === 'review') A.setMode('visual');
-      inspector.classList.toggle('notes-open', shown);
-      inspector.classList.add('drawer-open');
-      $('inspectorToggleButton')?.setAttribute('aria-expanded', 'true');
-      syncMode();
-      if (shown) refresh(true);
+    function show(showNotes) { A.shell.openPanel(showNotes ? 'notes' : 'properties'); }
+    function setVisible(value) {
+      const changed = shown !== value;
+      shown = value; syncMode();
+      if (shown && changed) refresh(true);
     }
-    function syncMode() {
-      const visible = shown && A.state.mode !== 'review';
-      panel.hidden = !visible;
-      $('propertiesTab').classList.toggle('active', !shown);
-      $('footnotesTab').classList.toggle('active', shown);
-      $('propertiesTab').setAttribute('aria-selected', String(!shown));
-      $('footnotesTab').setAttribute('aria-selected', String(shown));
-      A.dom.attributesPanel.hidden = visible || A.state.mode === 'review';
-      A.dom.inspectorElement.hidden = visible || A.state.mode === 'review';
-      if (visible) { A.dom.contextToolbar.hidden = true; A.dom.inspectorTitle.textContent = '型号与注脚'; }
-    }
+    function syncMode() { panel.hidden = !shown || A.state.mode === 'review'; }
     function error(message) { $('footnotesMessage').textContent = message; }
     function draw() {
       const model = $('footnoteModel').value, query = $('footnoteSearch').value;
@@ -114,9 +115,6 @@
       } catch (e) { if (token === generation) { notes = []; draw(); error('读取失败：' + e.message); } }
     }
     function scheduleRefresh() { clearTimeout(timer); if (shown) timer = setTimeout(() => refresh(), 180); }
-    $('footnotesTab').addEventListener('click', () => show(true));
-    $('propertiesTab').addEventListener('click', () => show(false));
-    $('footnotesButton').addEventListener('click', () => show(true));
     $('footnoteModel').addEventListener('change', draw);
     $('footnoteSearch').addEventListener('input', draw);
     $('footnoteUnassignedOnly').addEventListener('change', draw);
@@ -156,7 +154,7 @@
         await beginEdit(note);
       } catch (e) { A.setStatus(e.message, true); }
     }
-    return { scheduleRefresh, syncMode, show, setScope, editAt };
+    return { scheduleRefresh, syncMode, show, setVisible, setScope, editAt };
   }
   root.DitaFootnotes = { createPanel };
 })(window);
