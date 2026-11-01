@@ -63,9 +63,10 @@ test('manual footnote numbers share source identity across Author, panel and dia
     const page = await fresh(subtest);
     await page.locator('#visualEditor [data-dita-source=xref]').last().dblclick(); await page.waitForSelector('#footnoteEditDialog[open]');
     assert.equal(await page.locator('#resourceDialog').isVisible(), false);
-    assert.equal(await page.locator('#footnoteEditHeading').innerText(), '编辑注脚 2'); assert.equal(await page.evaluate(() => window.DitaApp.state.activePath), 'a.dita');
+    assert.equal(await page.locator('#footnoteEditHeading').innerText(), '编辑注脚 2'); assert.equal(await page.evaluate(() => window.DitaApp.state.activePath), 'main.ditamap');
     await page.fill('#footnoteContent', 'UPDATED_SHARED'); await page.click('#footnoteEditForm button[type=submit]'); await ready(page);
     assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.get('a.dita').current), original['a.dita'].replace('SHARED_TEXT', 'UPDATED_SHARED'));
+    assert.equal(await page.evaluate(() => getSelection().anchorNode?.parentElement.closest('.map-topic-surface')?.dataset.mapTopicPath), 'b.dita', 'shared edits restore the original call location');
     await page.evaluate(() => window.DitaApp.openFile('main.ditamap')); await page.waitForSelector('.map-topic-surface'); await ready(page);
     assert.deepEqual(await page.locator('#visualEditor [data-dita-source=xref]').allTextContents(), ['[2]', '[2]', '[2]']);
     const roundtrip = await page.evaluate(() => { const a = window.DitaApp; return [...document.querySelectorAll('.map-topic-surface')].map(surface => { const f = a.state.filesMap.get(surface.dataset.mapTopicPath); return a.ditaCore.updateCurrentFromVisual(null, { visualEditor: surface }, f.current) === f.current; }); });

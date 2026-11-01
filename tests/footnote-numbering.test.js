@@ -16,6 +16,8 @@ test('a manual has one first-use sequence and repeated xrefs retain one definiti
   });
   assert.deepEqual(data.notes.map(n => [n.number, n.text]), [[1, 'A'], [2, 'DEFINED_FIRST'], [3, 'B']]);
   assert.equal(data.calls.filter(c => !c.definition && !c.origin && c.number === 2).length, 3);
+  assert.deepEqual(data.notes.map(note => note.usages.length), [1, 3, 1]);
+  assert.deepEqual(data.notes[1].usages.map(use => use.path), ['a.dita', 'a.dita', 'b.dita']);
   buildMockDom(); const html = await core.exportMapToHtml(snapshot), md = await core.exportMapToMarkdown(snapshot);
   assert.deepEqual([...html.matchAll(/id="fnref-(\d+)-\d+"/g)].map(m => Number(m[1])), [1, 2, 2, 3, 2]);
   assert.deepEqual([...md.matchAll(/^\[\^(\d+)\]:/gm)].map(m => Number(m[1])), [1, 2, 3]);
@@ -34,6 +36,7 @@ test('conref occurrences map to their visible source while block reuse does not 
   const visible = data.calls.filter(c => c.path === 'a.dita' && !c.origin);
   assert.deepEqual(visible.map(c => [c.number, c.xmlPath]), [[2, '0/1/0'], [3, '0/1/1']]);
   assert.equal(visible[0].note.sourceNote.path, 'shared.dita');
+  assert.deepEqual(data.notes.map(note => note.usages.length), [1, 1, 1], 'block reuse also has a visible usage');
 });
 test('unused named definitions do not consume numbers and custom callouts keep their explicit label', () => {
   const { data } = fixture({ 'a.dita': '<topic id="a"><body><fn id="unused">UNUSED</fn><fn id="star" callout="*">STAR</fn><p><fn>A</fn><xref type="fn" href="#a/star"/></p></body></topic>' });
@@ -49,4 +52,16 @@ test('model delivery renumbers retained notes while unfiltered authoring preserv
   assert.deepEqual(service.listNotes(snapshot, 'M100').notes.map(n => [n.number, n.text]), [[1, 'A'], [2, 'B']]);
   buildMockDom(); const html = await core.exportMapToHtml({ ...snapshot, model: 'M100' });
   assert.deepEqual([...html.matchAll(/id="fnref-(\d+)-\d+"/g)].map(m => Number(m[1])), [1, 2]);
+});
+
+test('reuse impact aggregates one source under distinct inherited model conditions', () => {
+  const { data } = fixture({
+    'a.dita': '<topic id="a"><body><p product="M100"><fn conref="shared.dita#s/n"/></p><p product="M200"><fn conref="shared.dita#s/n"/></p></body></topic>',
+    'shared.dita': '<topic id="s"><body><fn id="n">SHARED</fn></body></topic>'
+  }, ['a.dita']);
+  assert.equal(data.notes.length, 2);
+  for (const note of data.notes) {
+    assert.equal(note.usages.length, 2);
+    assert.deepEqual(note.usages.map(use => use.conditions), [['M100'], ['M200']]);
+  }
 });

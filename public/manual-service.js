@@ -81,6 +81,19 @@
         const location = locations.get(call.site.path)?.get(call.site.start), note = notes[call.number - 1];
         return location && location.name === call.site.name && ['fn', 'xref'].includes(location.name) ? [{ ...call, path: call.site.path, xmlPath: location.xmlPath, note }] : [];
       });
+      // Count actual uses, including block-level reuse whose individual fn
+      // markers are not directly editable. Definitions are not extra uses.
+      const bySource = new Map();
+      for (const call of data.calls) {
+        if (call.origin || call.definition) continue;
+        const note = notes[call.number - 1], location = locations.get(call.site.path)?.get(call.site.start);
+        if (!note || !location || location.name !== call.site.name) continue;
+        const sourceKey = note.path + '\n' + note.xmlPath, uses = bySource.get(sourceKey) || new Map();
+        const id = call.site.path + '\n' + location.xmlPath;
+        if (!uses.has(id)) uses.set(id, { path: call.site.path, xmlPath: location.xmlPath, label: note.label, conditions: note.conditions });
+        bySource.set(sourceKey, uses);
+      }
+      for (const note of notes) note.usages = [...(bySource.get(note.path + '\n' + note.xmlPath)?.values() || [])];
       return { notes, calls, models: [...models], report: data.report };
     }
     function saveCandidates(snapshot) {
