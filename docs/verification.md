@@ -1,5 +1,11 @@
 # Verification
 
+## Document transitions and reference paths
+
+- Full suites: **158 unit/HTTP checks** and **119 Chromium checks**, zero failures/skips. New domain cases verify shared load identity, preservation of newer buffers, closed/workspace invalidation and retry, byte-preserving URI rebasing, explicit self/Map/conref targets, encoded names, workspace escapes and unsupported `xml:base`.
+- Browser cases use real temporary Git libraries and delayed HTTP responses. They verify duplicate opens, late navigation, shared Map/tab loading, Save As target edits before overwrite and during acknowledgement, retained undo/redo and a subsequent save, duplicate submission prevention, later navigation, selection reset and stale Map operations, nested Map paths, GBK/CRLF image/link/conref relocation through save/reopen, immediate Map-copy registration, and recovery after an externally removed source file.
+- The frontend never treats a successful old write as permission to replace a newer buffer. Supported relocation updates local references; it does not implement arbitrary XML-base rewriting or a full DITA migration engine. Existing workspace/origin guards and four-format publication checks remain active.
+
 ## Contextual content settings
 
 - Full suites: **151 unit/HTTP checks** and **106 Chromium checks**, zero failures/skips. Four new browser scenarios cover collapsed advanced fields and compatible sequential edits/undo, contextual table controls and deleting only an image inside a cell, changing note type without losing child markup and delegating footnotes, plus narrow-screen fit and readonly mode.

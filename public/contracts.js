@@ -53,6 +53,9 @@
  * @property {string|null} expectedContent
  * @property {()=>Promise<void>} ready
  *
+ * @typedef {Object} DocumentLoader
+ * @property {(path:string)=>Promise<DocumentState>} load Shared by Topic tabs and Map surfaces; never replaces an existing working buffer.
+ *
  * @typedef {Object} ManualPorts
  * @property {WorkspaceState} state
  * @property {WorkspaceApi} api

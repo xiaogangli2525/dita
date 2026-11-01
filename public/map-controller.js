@@ -3,6 +3,8 @@
   function createMapController(A, { ensureMapAuthorFile, renderTabs, documentLabel }) {
     const { state, dom, setStatus, setFileContent, openFile } = A;
     const fetch = A.api.request, responseError = A.api.error;
+    let operationGeneration = 0, busy = false;
+    A.events.on('workspace:willChange', () => { operationGeneration++; busy = false; });
 function renderMapPicker() {
   dom.mapPicker.replaceChildren();
   const label = document.createElement('label');
@@ -20,7 +22,9 @@ function renderMapPicker() {
   }
   select.value = state.selectedMap;
   select.addEventListener('change', () => {
+    operationGeneration++; busy = false;
     state.selectedMap = select.value;
+    state.selectedMapSourcePath = '';
     updateTree();
   });
   const openButton = document.createElement('button');
@@ -90,24 +94,28 @@ function updateMapToolbar() {
   const hasMap = Boolean(state.selectedMap);
   const hasSelection = hasMap && state.selectedMapSourcePath !== '';
   for (const button of [dom.moveMapUpButton, dom.moveMapDownButton, dom.promoteMapButton, dom.demoteMapButton, dom.removeMapButton, dom.addTopicrefButton]) {
-    button.disabled = !hasSelection;
+    button.disabled = busy || !hasSelection;
   }
-  dom.addTopicheadButton.disabled = !hasMap;
+  dom.addTopicheadButton.disabled = busy || !hasMap;
 }
 
 async function applyMapOperation(operation, details = {}) {
-  if (!state.selectedMap) return null;
-  const mapPath = state.selectedMap;
+  if (!state.selectedMap || busy) return null;
+  const mapPath = state.selectedMap, workspace = A.api.token, sourcePath = details.sourcePath !== undefined ? details.sourcePath : state.selectedMapSourcePath;
+  const generation = ++operationGeneration; busy = true; updateMapToolbar();
+  const current = () => generation === operationGeneration && workspace === A.api.token && mapPath === state.selectedMap;
   try {
     const file = await ensureMapAuthorFile(mapPath);
+    if (!current()) return null;
     const before = file.current;
     const response = await fetch('/api/map/operation', {
       method: 'POST', headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ path: mapPath, content: before, operation,
-        sourcePath: details.sourcePath !== undefined ? details.sourcePath : state.selectedMapSourcePath, ...details })
+        ...details, sourcePath })
     });
     if (!response.ok) throw new Error(await responseError(response));
     const result = await response.json();
+    if (!current()) return null;
     if (file.current !== before) throw new Error('Map 已修改，请重新执行结构操作');
     const selectedMap = state.maps.find(map => map.path === mapPath);
     if (selectedMap) Object.assign(selectedMap, result.map);
@@ -120,9 +128,9 @@ async function applyMapOperation(operation, details = {}) {
     setStatus('Map 结构已更新；可撤销，按 Ctrl/Cmd+S 保存');
     return result;
   } catch (error) {
-    setStatus(`Map 结构操作失败：${error.message}`, true);
+    if (current()) setStatus(`Map 结构操作失败：${error.message}`, true);
     return null;
-  }
+  } finally { if (generation === operationGeneration) { busy = false; updateMapToolbar(); } }
 }
 
 function promptMapTarget() {

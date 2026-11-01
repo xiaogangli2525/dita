@@ -1,5 +1,15 @@
 # Workspace architecture
 
+## Document loading, navigation and relocation
+
+`document-loader.js` owns a single pending load per workspace/path for both tab opens and Map topics. It returns an existing buffer instead of replacing it, invalidates old workspaces and closed-document requests, and creates new document state through `document-store`. The editor owns one loader instance; the application adds a separate navigation revision so a delayed read can be cached without taking focus from a newer open/close action.
+
+Save As captures source content, target identity/buffer/disk and navigation context. It rechecks the target before an overwrite, serializes duplicate submissions, and merges write acknowledgements without discarding subsequent edits or undo history. Closed targets stay closed and later navigation stays active. A newer disk acknowledgement is never rolled back by an older result.
+
+`reference-paths.js` is shared browser/Node domain logic. The server resolves canonical source/destination paths and patches only local URI attribute values before writing a Save As copy; the browser demo uses the same rebaser. XML declaration, encoding, trivia and code remain intact. Nonempty `xml:base` stops unsupported cross-directory relocation. New Map copies return resolved metadata with the saved result, so no second asynchronous directory refresh can overwrite current buffers.
+
+Map structure commands capture their selection/workspace, disable duplicate actions, and ignore results after a manual switch. New Topic references are resolved against the current Map directory while retaining existing workspace and Map-directory containment guards.
+
 ## Author input and structural commands
 
 The inspector presents context-specific content settings and collapsed advanced XML attributes. It delegates image/xref editing to the existing resource controller and note applicability to the existing notes panel. It no longer depends on formatting tools or owns duplicate paragraph-insertion commands. A targeted `remove` command removes the selected content; the explicit table-delete path still removes its complete table. Advanced edits reselect the acknowledged source node after commit and retain disclosure state only for that selection.

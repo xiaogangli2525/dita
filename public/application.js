@@ -47,8 +47,8 @@
         expose: ['openModelExport', 'releaseExportPreview', 'previewMapHtml', 'previewMapMd', 'exportMapToHtmlFile', 'exportMapToMarkdownFile', 'lastDeliveryRecord', 'lastExportReport']
       }),
       feature('save', 'DitaSave', 'createSaveController', 'state api events manual saving refreshChrome refreshFiles validateXml setStatus toast', ['manual'], { writable: ['saving'] }),
-      feature('maps', 'DitaMapController', 'createMapController', 'state dom api setStatus setFileContent openFile', [], { views: views.maps }),
-      feature('documents', 'DitaDocuments', 'createDocumentController', 'state api events setMode setStatus save footnotes validateXml downloadXML', ['save'], { views: views.documents }),
+      feature('maps', 'DitaMapController', 'createMapController', 'state dom api events setStatus setFileContent openFile', [], { views: views.maps }),
+      feature('documents', 'DitaDocuments', 'createDocumentController', 'state api events maps openFile setFileContent setMode setStatus save validateXml downloadXML', ['save', 'maps'], { views: views.documents }),
       feature('remoteLibraries', 'DitaRemoteLibraries', 'createController', 'state api events setStatus', [], { views: views.remoteLibraries }),
       feature('drafts', 'DitaDrafts', 'createDraftController', 'state api events openFile setFileContent setStatus toast downloadXML'),
       feature('authorSelection', 'DitaAuthorSelection', 'createController', 'state dom api events ditaCore applyAuthorEdit validateXml'),

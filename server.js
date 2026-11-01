@@ -2,6 +2,7 @@
 
 const http = require('http');
 const path = require('path');
+const referencePaths = require('./public/reference-paths');
 const fs = require('fs/promises');
 const { existsSync, readdirSync, statSync } = require('fs');
 const { randomUUID } = require('crypto');
@@ -214,15 +215,16 @@ function nextElementSibling(parent, node) {
 
 async function validateTopicHref(mapPath, requestHref, dependencies = {}) {
   if (dependencies.resolveTopicHref) return dependencies.resolveTopicHref(mapPath, requestHref);
-  const clean = String(requestHref || '').replace(/\\/g, '/').replace(/^\/+/, '');
-  if (!clean || clean.includes('\0')) throw Object.assign(new Error('Topic path is required'), { status: 400 });
-  const target = await checkedResolve(clean);
+  const clean = String(requestHref || '').replace(/\\/g, '/');
+  const resolved = referencePaths.resolve(mapPath, clean);
+  if (!resolved || resolved.self) throw Object.assign(new Error('Topic path must be relative to the current Map'), { status: 400 });
+  const target = await checkedResolve(resolved.path);
   const stat = await fs.stat(target).catch(() => null);
   if (!stat?.isFile() || !isDitaLike(target)) throw Object.assign(new Error('Topic file not found'), { status: 404 });
   const mapDirectory = path.dirname(safeResolve(mapPath));
   const relative = path.relative(mapDirectory, target).replace(/\\/g, '/');
-  if (relative.startsWith('..')) throw Object.assign(new Error('Topic path escapes the map directory'), { status: 400 });
-  return relative;
+  if (relative === '..' || relative.startsWith('../')) throw Object.assign(new Error('Topic path escapes the map directory'), { status: 400 });
+  return relative.split('/').map(encodeURIComponent).join('/') + resolved.suffix;
 }
 
 async function applyMapOperation(content, mapPath, request, dependencies = {}) {
