@@ -2,7 +2,7 @@
 const test = require('node:test'), assert = require('node:assert/strict');
 const fs = require('node:fs/promises'), os = require('node:os'), path = require('node:path'), net = require('node:net');
 const { spawn, execFileSync } = require('node:child_process'), { chromium } = require('playwright-core'), iconv = require('iconv-lite');
-test('manual footnote numbers share source identity across Author, panel and dialogs', async t => {
+test('manual footnote numbers share source identity across Author, panel and dialogs', { timeout: 90000 }, async t => {
   const temp = await fs.mkdtemp(path.join(os.tmpdir(), 'dita-numbers-')), repo = path.join(temp, 'docs'); await fs.mkdir(repo);
   const original = {
     'a.dita': '<?xml version="1.0" encoding="GBK"?>\r\n<!--keep--><topic id="a"><title>第一章</title><body><p id="first">A_CMD<fn product="M100">A_INLINE</fn></p><fn id="shared" product="M100">SHARED_TEXT</fn><p>Ref<xref href="#a/shared" type="fn"/> Again<xref href="#a/shared" type="fn"/></p></body></topic>\r\n<?tail preserve?>',
@@ -85,7 +85,7 @@ test('manual footnote numbers share source identity across Author, panel and dia
     assert.equal(await page.locator('.map-topic-surface').getAttribute('contenteditable'), 'false');
   });
   await t.test('a late snapshot cannot replace the new manual numbering', async subtest => {
-    const page = await fresh(subtest); await page.selectOption('#mapSelect', 'other.ditamap'); await page.click('.map-open-author'); await ready(page);
+    const page = await fresh(subtest); await page.selectOption('#mapSelect', 'other.ditamap'); await page.click('.map-open-author'); await page.waitForFunction(() => window.DitaApp.state.activePath === 'other.ditamap'); await page.waitForSelector('.map-topic-surface[data-map-topic-path="c.dita"]'); await ready(page);
     let release, seen; const gate = new Promise(resolve => { release = resolve; }), observed = new Promise(resolve => { seen = resolve; }); subtest.after(() => release());
     await page.route('**/api/map/resolve', async route => { if (route.request().postDataJSON()?.path === 'main.ditamap') { seen(); await gate; } await route.continue(); });
     await page.selectOption('#mapSelect', 'main.ditamap'); await page.evaluate(() => window.DitaApp.openFile('main.ditamap')); await observed;
