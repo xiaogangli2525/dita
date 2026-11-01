@@ -8,6 +8,7 @@ const { randomUUID } = require('crypto');
 const { createWorkspaceLock } = require('./lib/workspace-lock');
 const workspaceLock = createWorkspaceLock();
 const { createGitService } = require('./lib/git-service');
+const { createRemoteRepositories } = require('./lib/remote-repositories');
 const { createApiHandler } = require('./lib/api-router');
 const { sendJson, sendText } = require('./lib/http-utils');
 let workspaceToken = randomUUID();
@@ -44,6 +45,7 @@ async function checkedResolve(relative, options) {
 }
 
 const git = createGitService({ getRoot: () => DOCS_ROOT, repositoriesRoot: REPOSITORIES_ROOT, checkedResolve });
+const remoteRepositories = createRemoteRepositories({ getRoot: () => DOCS_ROOT, repositoriesRoot: REPOSITORIES_ROOT, runGit: git.runGit });
 const { runGit, gitInfo, listRepositories, listBranches, gitWorktreeStatus, resolveSelectedRepository } = git;
 
 const MAP_REFERENCE_TAGS = new Set(["map", "bookmap", "topicref", "topichead", "topicgroup", "chapter", "appendix", "notices", "preface", "part", "frontmatter", "backmatter", "booklists"]);
@@ -316,10 +318,11 @@ async function buildMapTrees(files) {
 }
 
 async function buildWorkspace() {
-  const files = await walkFileTree();
+  const exists = await fs.stat(DOCS_ROOT).then(stat => stat.isDirectory()).catch(error => { if (error.code === 'ENOENT') return false; throw error; });
+  const files = exists ? await walkFileTree() : [];
   const maps = await buildMapTrees(files);
-  const git = await listBranches();
-  return { root: DOCS_ROOT, workspaceToken, capabilities: { persistence: 'filesystem', git: true, pdf: true }, files, maps, currentBranch: git.current, branches: git.branches };
+  const git = exists ? await listBranches().catch(() => ({ current: '', branches: [] })) : { current: '', branches: [] };
+  return { root: DOCS_ROOT, workspaceToken, capabilities: { persistence: 'filesystem', git: true, pdf: true, remoteGit: true }, files, maps, currentBranch: git.current, branches: git.branches };
 }
 
 async function selectRepository(value) {
@@ -336,7 +339,7 @@ const handleApi = createApiHandler({
     get root() { return DOCS_ROOT; }, get token() { return workspaceToken; }, repositoriesRoot: REPOSITORIES_ROOT,
     snapshot: buildWorkspace, selectRepository, rotateToken: () => { workspaceToken = randomUUID(); }
   },
-  git,
+  git, remoteRepositories,
   documents: { checkedResolve, walkFileTree, readXmlFile, writeXmlFile, relativePath, isDitaLike },
   maps: { parseXml, childElement, textOf, mapNodeToTree, applyMapOperation },
   port: PORT, publicOrigin: process.env.PUBLIC_ORIGIN, demoMode: process.env.DITA_DEMO_MODE === '1'
