@@ -175,12 +175,12 @@
     <aside id="inspector" class="inspector" aria-label="辅助面板" hidden>
       <div id="inspectorResize" class="panel-resize" role="separator" tabindex="0" aria-label="调整辅助面板宽度" aria-orientation="vertical" aria-valuemin="280" aria-valuemax="480" aria-valuenow="320"></div>
       <div class="inspector-header">
-        <span id="inspectorTitle">文档属性</span>
-        <span id="inspectorElement" class="inspector-element">未选择元素</span>
+        <span id="inspectorTitle">内容设置</span>
+        <span id="inspectorElement" class="inspector-element">未选择内容</span>
         <button id="inspectorCloseButton" type="button" aria-label="关闭侧栏" title="关闭侧栏">×</button>
       </div>
       <div class="inspector-tabs" role="tablist" aria-label="检查面板">
-        <button id="propertiesTab" type="button" role="tab" aria-selected="true" class="active">元素属性</button>
+        <button id="propertiesTab" type="button" role="tab" aria-selected="true" class="active">内容设置</button>
         <button id="footnotesTab" type="button" role="tab" aria-selected="false">型号注脚</button>
       </div>
       <section id="footnotesPanel" class="footnotes-panel" hidden aria-label="型号注脚管理">
@@ -193,14 +193,9 @@
         <p id="footnotesMessage" class="footnote-message" role="status"></p>
         <div id="footnoteList" class="footnote-list"></div>
       </section>
-      <div id="contextToolbar" class="context-toolbar" hidden>
-        <span class="context-label">元素</span>
-        <button type="button" data-context-action="before" title="在当前元素上方插入新元素">上方插入</button>
-        <button type="button" data-context-action="after" title="在当前元素下方插入新元素">下方插入</button>
-        <button type="button" data-context-action="delete" title="删除当前元素">删除元素</button>
-      </div>
+      <div id="contextToolbar" class="context-toolbar" role="group" aria-label="当前内容操作" hidden></div>
       <div id="attributesPanel" class="attributes-panel">
-        <div class="inspector-empty">在 Author 视图中选择一个元素以查看属性。</div>
+        <div class="inspector-empty">在正文中选择内容，查看对应设置。</div>
       </div>
       <div id="reviewPane" class="review-pane" aria-label="审阅变更">
         <div class="review-toolbar">
@@ -215,7 +210,7 @@
       </div>
     </aside>
     <nav class="panel-rail" aria-label="辅助工具">
-      <button id="inspectorToggleButton" type="button" data-panel="properties" aria-controls="inspector" aria-expanded="false" title="元素属性"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h5m4 0h7M4 12h9m4 0h3M4 18h2m4 0h10"/><circle cx="11" cy="6" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="8" cy="18" r="2"/></svg><span>属性</span></button>
+      <button id="inspectorToggleButton" type="button" data-panel="properties" aria-controls="inspector" aria-expanded="false" title="内容设置"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h5m4 0h7M4 12h9m4 0h3M4 18h2m4 0h10"/><circle cx="11" cy="6" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="8" cy="18" r="2"/></svg><span>设置</span></button>
       <button id="footnotesButton" type="button" data-panel="notes" aria-controls="inspector" aria-expanded="false" title="型号注脚"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v12H9l-5 4zM8 8h8M8 12h5"/></svg><span>注脚</span></button>
       <button type="button" data-panel="review" aria-controls="inspector" aria-expanded="false" title="审阅变更"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>审阅</span></button>
     </nav>

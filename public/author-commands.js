@@ -26,9 +26,9 @@
     function attribute(target, name, value) {
       if (!/^[A-Za-z_][\w.-]*(?::[A-Za-z_][\w.-]*)?$/.test(name) || /^(?:xmlns(?::|$)|data-|on)/i.test(name)) throw new Error('属性名无效或由编辑器保留');
       const span = spanAt(root.DitaXmlSource.inspectSource(target.current), target.xmlPath);
-      target.node.setAttribute(name, value);
+      const opening = target.node.cloneNode(false); opening.setAttribute(name, value);
       // Patch the opening tag only; preserve all text, comments and child XML.
-      let open = serialize(target.node.cloneNode(false));
+      let open = serialize(opening);
       if (span.close) open = open.replace(/\/>$/, '>');
       const replacement = open + (span.close ? target.current.slice(span.end, span.close.end) : '');
       commit(target, target.xmlPath, replacement);
@@ -37,7 +37,7 @@
       let node = target.node;
       const table = node.closest('table');
       if (action === 'delete' && table) node = table;
-      if (action === 'delete') {
+      if (['delete', 'remove'].includes(action)) {
         if (['title', 'body', 'conbody', 'taskbody', 'refbody'].includes(node.localName)) throw new Error('此结构不能直接删除');
         commit(target, corePath(node), '', null); return;
       }
@@ -46,9 +46,7 @@
         const path = corePath(table); root.DitaTableCore.apply(table, node.closest('entry'), action, value);
         commit(target, path, serialize(table)); return;
       }
-      if (!['body', 'conbody', 'refbody', 'section', 'example', 'entry', 'li', 'note'].includes(node.parentElement?.localName)) throw new Error('此处不能插入同级段落，请使用正文插入工具');
-      const span = spanAt(root.DitaXmlSource.inspectSource(target.current), target.xmlPath), end = span.close?.end ?? span.end, old = target.current.slice(span.start, end), paragraph = '<p>新段落</p>';
-      commit(target, target.xmlPath, action === 'before' ? paragraph + old : old + paragraph);
+      throw new Error('不支持的内容操作，请使用正文插入工具');
     }
     function corePath(node) { const parts = []; while (node.parentElement) { parts.unshift(elements(node.parentElement).indexOf(node)); node = node.parentElement; } return parts.join('/'); }
     return { capture, attribute, context, replace };

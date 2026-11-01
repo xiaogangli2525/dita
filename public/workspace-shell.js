@@ -10,7 +10,7 @@
       layout.classList.toggle('panel-open', Boolean(panel));
       dom.inspector.classList.toggle('notes-open', panel === 'notes');
       dom.inspector.classList.toggle('reviewing', panel === 'review');
-      dom.inspectorTitle.textContent = ({ properties: '元素属性', notes: '型号注脚', review: '审阅变更' })[panel] || '辅助面板';
+      dom.inspectorTitle.textContent = ({ properties: '内容设置', notes: '型号注脚', review: '审阅变更' })[panel] || '辅助面板';
       dom.attributesPanel.hidden = panel !== 'properties';
       dom.inspectorElement.hidden = panel !== 'properties';
       if (panel !== 'properties') dom.contextToolbar.hidden = true;

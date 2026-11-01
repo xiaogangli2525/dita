@@ -112,6 +112,7 @@ test('basic writing commands preserve content, structure, applicability and undo
     await select('#plain', 3); await page.keyboard.insertText('X'); await preserved(); assert.match(await current(), /<alt id="alt-id">原图说明<\/alt><longdescref href="b.dita"\/>/); await undo(); assert.equal(await current(), original);
   });
   await t.test('double-click links edits address and label without deleting inline identities', async () => {
+    await page.locator('#link-bold').click(); await require('./browser-ui').openProperties(page); assert.equal(await page.locator('#inspectorElement').textContent(), '链接'); assert.ok(await page.locator('[data-context-action="edit-resource"]').isVisible()); await require('./browser-ui').closePanel(page);
     await page.locator('#link').dblclick(); await page.waitForFunction(() => document.getElementById('resourceTarget').options.length > 0); await page.fill('#resourceHref', 'https://example.invalid/guide'); await page.fill('#resourceLabel', '新链接'); await page.click('#resourceForm button[type=submit]');
     assert.match(await current(), /<xref id="link" href="https:\/\/example.invalid\/guide" outputclass="keep" scope="external"><b id="link-bold">新链接<\/b><\/xref>/); await undo(); assert.equal(await current(), original);
     await page.locator('#link').dblclick(); await page.waitForFunction(() => document.getElementById('resourceTarget').options.length > 0); await page.fill('#resourceHref', 'javascript:alert(1)'); await page.click('#resourceForm button[type=submit]'); assert.equal(await current(), original); assert.match(await page.locator('#resourceError').textContent(), /有效/); await page.click('#resourceClose');
@@ -119,6 +120,38 @@ test('basic writing commands preserve content, structure, applicability and undo
   await t.test('stale dialogs do not overwrite newer content; compact screens keep controls reachable', async () => {
     await select('#plain', 1); await page.selectOption('#authorInsertSelect', 'table'); await page.evaluate(() => { const A = window.DitaApp, file = A.state.filesMap.get('a.dita'); A.setFileContent(file, file.current.replace('ABCDEF', 'NEWER')); }); await page.click('#tableInsertForm button[type=submit]'); assert.match(await page.locator('#tableInsertError').textContent(), /变化/); assert.match(await current(), /NEWER/); await page.click('#tableInsertCancel'); await reset();
     await page.setViewportSize({ width: 390, height: 844 }); await select('#plain', 1); await page.selectOption('#authorInsertSelect', 'table'); assert.ok(await page.locator('#tableInsertForm button[type=submit]').isVisible()); assert.ok(await page.locator('#tableCols').isVisible()); await page.click('#tableInsertCancel'); await page.setViewportSize({ width: 1440, height: 1000 });
+  });
+  await t.test('content settings keep XML fields collapsed and remove duplicate insertion controls', async () => {
+    await select('#conditioned', 1); await require('./browser-ui').openProperties(page);
+    assert.equal(await page.locator('#inspectorTitle').textContent(), '内容设置'); assert.equal(await page.locator('#inspectorElement').textContent(), '段落');
+    assert.equal(await page.locator('#advancedAttributes').evaluate(node => node.open), false); assert.equal(await page.locator('input[data-attribute="product"]').isVisible(), false);
+    assert.match(await page.locator('.content-condition').textContent(), /M100/); assert.match(await page.locator('.content-condition').textContent(), /不据此隐藏整段正文/);
+    assert.equal(await page.locator('[data-context-action="before"],[data-context-action="after"]').count(), 0);
+    await page.click('#advancedAttributes > summary'); await page.fill('input[data-attribute="product"]', 'M200'); await page.locator('input[data-attribute="product"]').press('Tab');
+    assert.match(await current(), /id="conditioned" product="M200"/); assert.equal(await page.locator('#advancedAttributes').evaluate(node => node.open), true);
+    await page.fill('input[data-attribute="id"]', 'renamed'); await page.locator('input[data-attribute="id"]').press('Tab'); assert.match(await current(), /id="renamed" product="M200"/);
+    await undo(); await undo(); assert.equal(await current(), original); await select('#tail', 1); assert.equal(await page.locator('#advancedAttributes').evaluate(node => node.open), false);
+    await require('./browser-ui').closePanel(page);
+  });
+  await t.test('contextual table controls stay available while image deletion only removes the selected image', async () => {
+    await select('#params td:first-child', 0); await require('./browser-ui').openProperties(page); assert.equal(await page.locator('#advancedAttributes').evaluate(node => node.open), false); assert.ok(await page.locator('[aria-label="当前列宽"]').isVisible());
+    await page.click('[data-context-action="row-after"]'); assert.equal(await page.locator('#params tbody tr').count(), 2); await page.click('[data-context-action="col-after"]'); assert.match(await current(), /cols="3"/); await undo(); await undo(); assert.equal(await current(), original);
+    const fixture = original.replace('<entry>A</entry>', '<entry><image id="cellpic" href="assets/one.svg" alt="表内图片"/>A</entry>');
+    await page.evaluate(content => { const A = window.DitaApp; A.setFileContent(A.state.filesMap.get('a.dita'), content); }, fixture); await page.locator('#cellpic').click();
+    assert.equal(await page.locator('#inspectorElement').textContent(), '图片'); assert.equal(await page.locator('[data-context-action="row-after"]').count(), 0); assert.ok(await page.locator('[data-context-action="edit-resource"]').isVisible());
+    await page.click('[data-context-action="remove"]'); assert.equal(await page.locator('#params').count(), 1); assert.equal(await page.locator('#params tbody tr').count(), 1); assert.doesNotMatch(await current(), /id="cellpic"/); await undo(); assert.equal(await current(), fixture); await require('./browser-ui').closePanel(page);
+  });
+  await t.test('note settings preserve children and delegate footnote models to the existing panel', async () => {
+    const fixture = original.replace('<p id="plain">ABCDEF</p>', '<note id="notice" type="warning"><p>段落 <b id="notice-bold">粗体</b></p></note>');
+    await page.evaluate(content => { const A = window.DitaApp; A.setFileContent(A.state.filesMap.get('a.dita'), content); }, fixture);
+    await page.locator('#notice-bold').click(); await require('./browser-ui').openProperties(page); assert.equal(await page.locator('#inspectorElement').textContent(), '说明');
+    await page.selectOption('#contentNoteType', 'tip'); assert.match(await current(), /<note id="notice" type="tip"><p>段落 <b id="notice-bold">粗体<\/b><\/p><\/note>/); await undo(); assert.equal(await current(), fixture);
+    await page.locator('#notes [data-dita-source="fn"]').click(); assert.equal(await page.locator('#advancedAttributes').count(), 0); await page.click('[data-context-action="open-notes"]'); assert.ok(await page.locator('#footnotesPanel').isVisible()); await require('./browser-ui').closePanel(page);
+  });
+  await t.test('content settings remain readonly outside writing and advanced controls fit narrow screens', async () => {
+    await page.setViewportSize({ width: 390, height: 844 }); await select('#conditioned', 1); await require('./browser-ui').openAdvancedProperties(page);
+    const fit = await page.locator('#advancedAttributes').evaluate(node => { const panel = document.getElementById('inspector').getBoundingClientRect(); return Array.from(node.querySelectorAll('input,button')).every(field => field.getBoundingClientRect().right <= panel.right + 1); }); assert.equal(fit, true);
+    await require('./browser-ui').closePanel(page); await page.setViewportSize({ width: 1440, height: 1000 }); await page.click('#previewButton'); await page.click('#inspectorToggleButton'); assert.equal(await page.locator('#attributesPanel input').count(), 0); await page.click('#visualButton'); await require('./browser-ui').closePanel(page);
   });
   await t.test('Shift+Enter stays in DITA paragraphs, Escape releases Tab, and failed native edits restore the acknowledged view', async () => {
     await select('#plain', 3); await page.keyboard.press('Shift+Enter'); assert.match(await current(), /<p id="plain">ABC<\/p>\s*<p>DEF<\/p>/); await undo(); assert.equal(await current(), original);

@@ -7,6 +7,10 @@ async function openNotes(page) {
 async function openProperties(page) {
   if (!await page.locator('#attributesPanel').isVisible()) await page.click('#inspectorToggleButton');
 }
+async function openAdvancedProperties(page) {
+  await openProperties(page);
+  if (!await page.locator('#advancedAttributes').evaluate(node => node.open)) await page.click('#advancedAttributes > summary');
+}
 async function closePanel(page) {
   if (await page.locator('#inspector').isVisible()) await page.click('#inspectorCloseButton');
 }
@@ -14,4 +18,4 @@ async function newDocument(page) {
   if (!await page.locator('#newDocumentButton').isVisible()) await page.click('#sidebarToggleButton');
   await page.click('#newDocumentButton');
 }
-module.exports = { openNotes, openProperties, closePanel, newDocument };
+module.exports = { openNotes, openProperties, openAdvancedProperties, closePanel, newDocument };

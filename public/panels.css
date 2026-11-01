@@ -200,6 +200,17 @@
 .inspector .diff { font-size:13px; }
 .attributes-panel { padding:16px; }
 .inspector-empty { color:var(--muted); font-size:13px; }
+.inspector-hint { color:var(--muted); font-size:12px; line-height:1.7; margin:0 0 14px; }
+.content-setting-summary { margin:0 0 16px; font-size:12px; color:var(--muted); }
+.content-setting-summary p { margin:5px 0 0; color:var(--text); font-size:13px; overflow-wrap:anywhere; }
+.content-condition { margin:14px 0; padding:12px; border:1px solid var(--border); border-radius:8px; background:var(--accent-soft); font-size:12px; line-height:1.6; overflow-wrap:anywhere; }
+.content-condition p { margin:6px 0 0; color:var(--muted); }
+.advanced-attributes { margin-top:20px; border-top:1px solid var(--border); padding-top:14px; }
+.advanced-attributes > summary { cursor:pointer; font-size:12px; font-weight:600; color:var(--muted); padding:4px 0; }
+.advanced-attributes[open] > summary { margin-bottom:12px; }
+.advanced-attributes .attribute-row { display:grid; gap:6px; margin:0 0 12px; font-size:12px; color:var(--muted); overflow-wrap:anywhere; }
+.advanced-attributes input,.content-setting-field select { width:100%; min-width:0; }
+.content-setting-field select { box-sizing:border-box; border:1px solid var(--border); border-radius:6px; padding:8px; background:var(--panel); color:var(--text); font:inherit; }
 @media(max-width:700px) { #modelExportDialog { padding:18px; } }
 .inspector.notes-open > .context-toolbar { display:none; }
 
