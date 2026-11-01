@@ -345,6 +345,7 @@
         surface.ditaSourceContent = topicFile.current;
         setStatus(`Map Author：已修改 ${path}${topicFile.dirty ? '（待保存）' : ''}`);
       } catch (error) {
+        renderAuthorSurface(topicFile, surface);
         setStatus(`Map Author 同步失败：${error.message}`, true);
       }
       return true;
@@ -417,6 +418,7 @@
         const surfaceLabel = state.mode === 'preview' ? '\u9884\u89C8\u7F16\u8F91' : '\u53EF\u89C6\u5316\u7F16\u8F91';
         setStatus(`${surfaceLabel}\u5DF2\u540C\u6B65\uFF1A${file.dirty ? '\u6709\u672A\u4FDD\u5B58\u4FEE\u6539' : '\u65E0\u4FEE\u6539'}`);
       } catch (error) {
+        renderAuthorSurface(file, dom.visualEditor);
         setStatus(`\u53EF\u89C6\u5316\u7F16\u8F91\u540C\u6B65\u5931\u8D25\uFF1A${error.message}`, true);
       }
     }

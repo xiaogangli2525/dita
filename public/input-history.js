@@ -6,6 +6,7 @@
     const cursor = saved => saved ? JSON.stringify(saved.mode === 'editor' ? [saved.mode, saved.path, saved.start, saved.end] : [saved.mode, saved.path, saved.bookmark?.start, saved.bookmark?.end]) : null;
     function breakAll() { for (const file of A.state.filesMap.values()) store.breakHistoryGroup(file); pending = null; }
     function before(event) {
+      if (event.defaultPrevented) return;
       if (event.inputType === 'historyUndo' || event.inputType === 'historyRedo') { event.preventDefault(); breakAll(); (event.inputType === 'historyUndo' ? undo : redo)(); return; }
       const file = resolve(event.target); if (!file) return;
       const frame = composition || ending && /Composition/.test(event.inputType) && ending;

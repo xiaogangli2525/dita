@@ -22,6 +22,7 @@
       apply(target.file, content, target.surface, { selectionBefore: target.before, selectionAfter: after || target.before });
     }
     function serialize(node) { return new XMLSerializer().serializeToString(node); }
+    function replace(target, node) { commit(target, target.xmlPath, serialize(node), selection.afterNode(target.xmlPath)); }
     function attribute(target, name, value) {
       if (!/^[A-Za-z_][\w.-]*(?::[A-Za-z_][\w.-]*)?$/.test(name) || /^(?:xmlns(?::|$)|data-|on)/i.test(name)) throw new Error('属性名无效或由编辑器保留');
       const span = spanAt(root.DitaXmlSource.inspectSource(target.current), target.xmlPath);
@@ -50,7 +51,7 @@
       commit(target, target.xmlPath, action === 'before' ? paragraph + old : old + paragraph);
     }
     function corePath(node) { const parts = []; while (node.parentElement) { parts.unshift(elements(node.parentElement).indexOf(node)); node = node.parentElement; } return parts.join('/'); }
-    return { capture, attribute, context };
+    return { capture, attribute, context, replace };
   }
   root.DitaAuthorCommands = { createController };
 })(window);

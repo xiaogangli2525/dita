@@ -1,6 +1,7 @@
 'use strict';
 (function (root) {
   const publication = typeof module !== 'undefined' ? require('./publication-core') : root.DitaPublication;
+  const assets = typeof module !== 'undefined' ? require('./asset-core') : root.DitaAssetCore;
   function createDeliveryCore({ parseXml, normalizeOxyPIs, resolveAssetPath }) {
     const _ctx = { topicPath: '', imageDataCache: new Map(), mdFootnotes: [] };
 const PREVIEW_TOPIC_EXTENSIONS = /\.(dita|xml)$/i;
@@ -151,11 +152,12 @@ function ditaToHtml(node, ctx) {
   }
   if (tag === 'image') {
     const href = node.getAttribute('href') || '';
-    const alt = node.getAttribute('alt') || '';
+    const presentation = assets.imagePresentation(node), alt = presentation.alt;
     const resolved = resolveAssetPath(href, ctx);
     const src = ctx.imageDataCache.has(resolved) ? ctx.imageDataCache.get(resolved) : /^(https?:|data:)/i.test(resolved) ? resolved : '/api/asset?path=' + encodeURIComponent(resolved);
     const anchor = publicationAnchor(node, ctx);
-    return '<img' + (anchor ? ' id="' + escapeHtmlAttr(anchor) + '"' : '') + ' src="' + escapeHtmlAttr(src) + '" alt="' + escapeHtmlAttr(alt) + '" style="max-width:100%;"/>';
+    const dimensions = ['width', 'height'].filter(name => presentation[name]).map(name => name + ':' + presentation[name] + ';').join('');
+    return '<img' + (anchor ? ' id="' + escapeHtmlAttr(anchor) + '"' : '') + ' src="' + escapeHtmlAttr(src) + '" alt="' + escapeHtmlAttr(alt) + '" style="max-width:100%;' + dimensions + '"/>';
   }
   if (tag === 'xref') {
     const href = publicationLink(node, ctx);
@@ -364,7 +366,7 @@ function renderMdInline(node, ctx) {
   if (['codeph', 'filepath', 'varname', 'parmname', 'msgph'].includes(tag)) return '`' + node.textContent + '`';
   if (tag === 'xref' && node.getAttribute('type') === 'fn') return markdownFootnote(node, ctx);
   if (tag === 'xref') { const h = publicationLink(node, ctx); return '[' + inner() + '](' + h + ')'; }
-  if (tag === 'image') { const resolved = resolveAssetPath(node.getAttribute('href') || '', ctx); const a = node.getAttribute('alt') || ''; const src = ctx.imageDataCache.has(resolved) ? ctx.imageDataCache.get(resolved) : resolved; return '![' + a + '](' + src + ')'; }
+  if (tag === 'image') { const resolved = resolveAssetPath(node.getAttribute('href') || '', ctx); const a = assets.imagePresentation(node).alt; const src = ctx.imageDataCache.has(resolved) ? ctx.imageDataCache.get(resolved) : resolved; return '![' + a + '](' + src + ')'; }
   if (tag === 'fn') return markdownFootnote(node, ctx);
   if (tag === 'ins' && (node.getAttribute('class') || '').includes('oxy-insert')) return '**' + inner() + '**';
   if (tag === 'del' && (node.getAttribute('class') || '').includes('oxy-delete')) return '~~' + node.textContent + '~~';
@@ -411,7 +413,7 @@ function renderDitaMarkdown(node, ctx) {
 
   if (tag === 'image') {
     const href = node.getAttribute('href') || '';
-    const a = node.getAttribute('alt') || '';
+    const a = assets.imagePresentation(node).alt;
     const resolved = resolveAssetPath(href, ctx);
     const src = ctx.imageDataCache.has(resolved) ? ctx.imageDataCache.get(resolved) : resolved;
     return '![' + a + '](' + src + ')\n\n';

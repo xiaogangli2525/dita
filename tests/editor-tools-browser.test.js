@@ -72,7 +72,7 @@ test('Author selection formatting, body search and block insertion', async t => 
   await t.test('list and table insertion focus their first editable cells and keep CALS spans', async () => {
     await select('#plain', '保持', true); await page.selectOption('#authorInsertSelect', 'ul'); assert.equal(await page.evaluate(() => getSelection().toString()), '列表项'); await page.keyboard.insertText('第一项');
     assert.match(await content(), /<ul><li>第一项<\/li><li>列表项<\/li><\/ul>/); await page.click('#authorUndoButton'); await page.click('#authorUndoButton');
-    await select('#table td', '合并', true); const before = await content(); await page.selectOption('#authorInsertSelect', 'table'); assert.equal(await page.evaluate(() => getSelection().toString()), '单元格'); await page.keyboard.insertText('新参数');
+    await select('#table td', '合并', true); const before = await content(); await page.selectOption('#authorInsertSelect', 'table'); await page.fill('#tableRows', '1'); await page.fill('#tableCols', '2'); await page.uncheck('#tableHeader'); await page.click('#tableInsertForm button[type=submit]'); assert.equal(await page.evaluate(() => getSelection().toString()), '单元格'); await page.keyboard.insertText('新参数');
     assert.match(await content(), /<entry>新参数<\/entry><entry>单元格<\/entry>/); await assertPreserved(); await page.click('#authorUndoButton'); await page.click('#authorUndoButton'); assert.equal(await content(), before);
   });
   await t.test('body search finds cross-inline text and literal entities without switching modes or matching attributes/notes', async () => {

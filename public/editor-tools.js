@@ -77,11 +77,6 @@
         const title = document.createElement('h3'), paragraph = document.createElement('p');
         title.setAttribute('data-dita-source', 'title'); title.textContent = '新节标题'; paragraph.setAttribute('data-dita-source', 'p'); paragraph.textContent = '新节内容';
         node.append(title, paragraph); focus = title;
-      } else if (tag === 'table') {
-        node = document.createElement('div'); node.setAttribute('data-dita-source', 'table');
-        const table = document.createElement('table'), row = document.createElement('tr');
-        for (let i = 0; i < 2; i++) { const cell = document.createElement('td'); cell.textContent = '单元格'; row.append(cell); }
-        table.append(row); node.append(table); focus = row.firstElementChild;
       } else { node.textContent = tag === 'note' ? '在此输入说明' : tag === 'codeblock' ? '在此输入代码' : '在此输入内容'; if (tag === 'note') node.className = 'note'; }
       return { node, focus };
     }
@@ -92,6 +87,7 @@
         if (tag === 'fn') return A.authorNotes.show();
         if (tag === 'image' || tag === 'xref') return A.resources.show(tag === 'image' ? 'image' : 'link');
         if (state.mode === 'editor') return insertSource(tag);
+        if (tag === 'table') return A.authorBlocks.showTable();
         if (['b', 'i', 'codeph', 'ph'].includes(tag)) return format(tag);
         if (!['p', 'ul', 'ol', 'section', 'note', 'codeblock', 'table'].includes(tag)) return;
         const target = selection.capture(), { copy, range } = selection.clone(target);

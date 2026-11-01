@@ -4,6 +4,16 @@ const assert = require('node:assert/strict');
 const test = require('node:test');
 const { buildMockDom } = require('./visual-harness');
 
+test('image delivery retains child alt text and safe authored dimensions in HTML and Markdown', async () => {
+  buildMockDom();
+  const core = require('../public/app-core'), path = 'images.dita';
+  const content = '<topic id="images"><title>Images</title><body><image href="diagram.svg" width="50%" height="30mm"><alt>图 &amp; 说明</alt></image><image href="unsafe.svg" width="expression(alert(1))" alt="Legacy"/></body></topic>';
+  const options = { map: { title: 'M', children: [{ type: 'file', path, title: 'Images' }] }, files: new Map([[path, { path, current: content }]]), title: 'M' };
+  const html = await core.exportMapToHtml(options), md = await core.exportMapToMarkdown(options);
+  assert.match(html, /alt="图 &amp; 说明" style="max-width:100%;width:50%;height:30mm;"/);
+  assert.doesNotMatch(html, /expression\(/); assert.match(md, /!\[图 & 说明\]\(diagram.svg\)/); assert.match(md, /!\[Legacy\]\(unsafe.svg\)/);
+});
+
 test('exportMapToMarkdown converts DITA elements to Markdown', async () => {
   const core = require('../public/app-core.js');
   const entries = [{ type: 'file', path: 'topics/test.dita', title: 'Test' }];
