@@ -58,7 +58,7 @@ test('loading the delivery module registers a factory without touching DOM or th
 
 test('domain modules stay independent of application, UI and filesystem controllers', () => {
   const directory = path.join(__dirname, '../public');
-  for (const name of ['manual-core', 'xml-source', 'document-store', 'footnotes-core', 'publication-core', 'publication-resolver', 'table-core', 'search-core']) {
+  for (const name of ['manual-core', 'xml-source', 'document-store', 'footnotes-core', 'publication-core', 'publication-resolver', 'table-core', 'search-core', 'reference-paths']) {
     const source = fs.readFileSync(path.join(directory, name + '.js'), 'utf8');
     assert.doesNotMatch(source, /(?:window|root)\.DitaApp|require\(['"]\.\/(?:app|editor-controller|export|workspace-shell|save|documents)['"]\)/, name);
   }

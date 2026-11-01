@@ -459,23 +459,20 @@ function renderTabs() {
   dom.tabs.hidden = dom.tabs.children.length < 2;
 }
 
+let openRevision = 0;
+events.on('workspace:willChange', () => { openRevision++; });
+events.on('file:opened', () => { openRevision++; });
+events.on('file:closed', () => { openRevision++; });
 async function openFile(path, { preserveFootnotesScope = false } = {}) {
-  if (!state.filesMap.has(path)) {
-    try {
-      const [fileResponse, gitResponse] = await Promise.all([
-        fetch(`/api/file?path=${encodeURIComponent(path)}`),
-        fetch(`/api/git?path=${encodeURIComponent(path)}`)
-      ]);
-      if (!fileResponse.ok) throw new Error(await fileResponse.text());
-      const diskContent = await fileResponse.text();
-      const gitInfo = await gitResponse.json();
-      state.filesMap.set(path, documentStore.createDocument({ path, content: diskContent,
-        baseline: gitInfo.available ? gitInfo.content : diskContent, gitStatus: gitInfo.status || 'unknown' }));
-    } catch (error) {
-      setStatus('\u6253\u5F00\u5931\u8D25', true);
-      throw error;
-    }
+  const revision = ++openRevision, workspace = workspaceClient.token;
+  events.emit('file:opening', path);
+  let file;
+  try { file = await ensureMapAuthorFile(path); }
+  catch (error) {
+    if (revision !== openRevision || workspace !== workspaceClient.token) return null;
+    setStatus('打开失败：' + path + ' · ' + error.message, true); throw error;
   }
+  if (revision !== openRevision || workspace !== workspaceClient.token || state.filesMap.get(path) !== file) return null;
   A.shell?.sidebar(false);
   state.activePath = path;
   if (!preserveFootnotesScope) A.footnotes?.setScope(path);
@@ -489,6 +486,7 @@ async function openFile(path, { preserveFootnotesScope = false } = {}) {
   events.emit('file:opened', state.filesMap.get(path));
   const git = state.filesMap.get(path)?.gitStatus || 'unknown';
   setStatus(git === 'clean' ? 'Git\uFF1A\u65E0\u672A\u63D0\u4EA4\u4FEE\u6539' : `Git\uFF1A${git}`);
+  return file;
 }
 
 function closeFile(path) {

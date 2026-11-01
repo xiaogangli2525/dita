@@ -2,6 +2,7 @@
 (function (root) {
   const documentStore = typeof module !== 'undefined' ? require('./document-store') : root.DitaDocumentStore;
   const review = typeof module !== 'undefined' ? require('./review') : root.DitaReview;
+  const loader = typeof module !== 'undefined' ? require('./document-loader') : root.DitaDocumentLoader;
 
   // Coordinates Source/Author/Map surfaces around one document history. View
   // callbacks are injected; state and source rules remain in their own modules.
@@ -11,6 +12,7 @@
     const { documentLabel = file => file.path, renderTabs, renderOutline, renderInspector, updateTree,
       refreshChrome: updateDocumentChrome, beforeModeChange, modeChanged } = views;
     let inputHistory = null;
+    const documents = loader.createDocumentLoader({ state, api: workspaceClient, events });
     function surfaceFor(file) {
       return state.activePath === file.path && !/\.ditamap$/i.test(file.path) ? dom.visualEditor :
         Array.from(dom.visualEditor.querySelectorAll('.map-topic-surface')).find(node => node.dataset.mapTopicPath === file.path);
@@ -214,19 +216,7 @@
     const visualCore = ditaCore.createVisualApi(state, dom);
 
     async function ensureMapAuthorFile(path) {
-      const cached = state.filesMap.get(path);
-      if (cached) return cached;
-      const [fileResponse, gitResponse] = await Promise.all([
-        fetch(`/api/file?path=${encodeURIComponent(path)}`),
-        fetch(`/api/git?path=${encodeURIComponent(path)}`)
-      ]);
-      if (!fileResponse.ok) throw new Error(`${path}: ${(await fileResponse.text()).trim()}`);
-      const disk = await fileResponse.text();
-      const git = await gitResponse.json().catch(() => ({}));
-      const file = documentStore.createDocument({ path, content: disk,
-        baseline: git.available ? git.content : disk, gitStatus: git.status || 'unknown' });
-      state.filesMap.set(path, file);
-      return file;
+      return documents.load(path);
     }
 
     async function updateMapAuthor(file) {
