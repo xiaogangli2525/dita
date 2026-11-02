@@ -54,3 +54,13 @@
 
 .dita-preview pre [data-dita-source="b"] { font-weight:700; }
 .dita-preview pre [data-dita-source="i"] { font-style:italic; }
+
+/* Adapt to the document column, including space taken by navigation/panels. */
+@container document (max-width:800px) {
+  .visual-editor:not(.map-author-editor), .map-author-editor { padding:18px 14px 44px; }
+  .visual-editor:not(.map-author-editor) > h2, .visual-editor:not(.map-author-editor) > [data-dita-body], #visualEditor > [data-dita-source="shortdesc"], .map-topic-surface { padding-inline:22px; }
+}
+@container document (max-width:500px) {
+  .visual-editor:not(.map-author-editor), .map-author-editor { padding:12px 8px 36px; }
+  .visual-editor:not(.map-author-editor) > h2, .visual-editor:not(.map-author-editor) > [data-dita-body], #visualEditor > [data-dita-source="shortdesc"], .map-topic-surface { padding-inline:14px; }
+}
