@@ -160,7 +160,7 @@ Explicit model associations are stored in each footnote's standard `product` att
 
 Plain notes use a text editor with safe XML escaping; notes with inline markup use an XML-preserving editor. Updates retain identifiers, links, encoding declarations and surrounding source, use the shared undo history and require explicit Save. Outdated edits are refused. Reused footnotes offer **编辑引用源** and keep their including conditions visible. HTML exports include a linked footnote list with return links; Markdown includes complete numbered footnote definitions.
 
-`npm run dev` opens an isolated MQTT demonstration with fictional M100/M200/M300 models. Open `main.ditamap`, click **型号注脚**, choose M100 and try editing or locating a note. All product limits/commands in this demo are illustrative.
+`npm run dev` opens an isolated copy of the Chinese HTTP/HTTPS manual in `examples/http_httpsusermanual`. Select `http_httpsusermanual.ditamap` to review the real command tables, responses and notes. Referenced shared topics, images and DITAVAL filters are included; editing the demo does not change the source manual. Use `npm run dev -- --docs /path/to/library --manual your-manual.ditamap` for another manual. Fictional MQTT content is retained only under `tests/fixtures/writing-demo` for regression tests.
 
 ### Publish a function manual for a model
 
@@ -177,7 +177,7 @@ In **交付功能手册 → 正文条件过滤**, select a workspace `.ditaval` 
 
 Supported rules are `prop action="include|exclude|passthrough"` for `audience`, `platform`, `product`, `props`, `otherprops` and `deliveryTarget`, with attribute/global defaults and groups. Multiple values in one group use OR; groups and attributes use AND. Excluded ancestors exclude their contents. Flagging, revision flags, custom profiling specializations and branch `ditavalref` are not implemented and fail explicitly. The same captured profile applies to check, preview and all export formats; changing an opened profile buffer invalidates the delivery. Delivery records include its path and SHA-256, alongside the source document hashes. Filtering never writes back to the source library.
 
-An `fn` with an `id` is a reusable definition. Reference it with `xref type="fn"`; unreferenced definitions are omitted, repeated references share one number, and HTML callouts link to one footnote entry and back. The MQTT publishing sample demonstrates repeated references:
+An `fn` with an `id` is a reusable definition. Reference it with `xref type="fn"`; unreferenced definitions are omitted, repeated references share one number, and HTML callouts link to one footnote entry and back. The following example demonstrates repeated references:
 
 ```xml
 <p>First mention<xref href="#topic-id/note-id" type="fn"/>.</p>

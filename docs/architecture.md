@@ -220,3 +220,10 @@ Automatic note presentation captures run only when Author contains note markers;
 `document-presentation.js` owns the standard note labels/tones and preformatted block vocabulary shared by Author, inspector, conversions and delivery. `document.css` owns the document typography separately from shell/panel layout. Generated Author labels use projection metadata and CSS, never editable text nodes.
 
 Author renders codeblock, msgblock, screen, pre and lines as preformatted surfaces while retaining inline XML nodes, exact whitespace and source mappings. Delivery preserves response blocks in HTML/Markdown and emits CALS colgroups for proportional column widths. Note types and custom othertype labels flow through the existing source-preserving attribute command and undo history.
+
+
+## Model discovery and release markers
+
+`model-discovery.js` shares candidate discovery between project setup, footnote filters and delivery. It reads product tokens and explicit CALS applicability tables headed 模组系列 / 模组子型号. Table discovery uses the first column as the series name; it does not split or infer submodels or parse natural-language footnotes. Evidence records retain the source path and declaration kind.
+
+`tbd` is a release marker, omitted from model candidates and registry validation. Rows restricted entirely to that marker remain pending rather than imported as supported models. DITAVAL and source publication behavior are unchanged. Existing registry values are projected without the marker; the stored file stays untouched until explicit Save. Discovery only fills the editable registry form, and unassigned footnotes continue to be retained with an explicit delivery warning.

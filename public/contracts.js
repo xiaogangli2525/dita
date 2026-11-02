@@ -47,6 +47,7 @@
  * @property {(snapshot:ManualSnapshot, model?:string)=>Object} prepare
  * @property {(snapshot:ManualSnapshot, model?:string)=>{notes:Object[],calls:Object[],models:string[],report:Object}} listNotes First-use labels, source-scoped occurrences and deduplicated per-source usages with inherited conditions.
  * @property {(snapshot:ManualSnapshot)=>DocumentSnapshot[]} saveCandidates
+ * @property {(snapshot:ManualSnapshot)=>object} discoverModels
  * @property {(snapshot:ManualSnapshot)=>string[]} listModels
  * @property {()=>string} scopePath
  *

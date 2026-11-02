@@ -345,7 +345,7 @@
   <dialog id="projectDialog" class="workspace-dialog" aria-labelledby="projectHeading"><form id="projectForm">
     <h2 id="projectHeading">项目型号清单</h2><p>每行一个型号。配置保存在当前 Git 仓库，清单仅用于校验，不会批量改动文档。留空表示尚未启用清单校验。</p>
     <label>有效型号<textarea id="projectModels" rows="9" placeholder="M100&#10;M200&#10;M300"></textarea></label>
-    <button id="projectDiscover" type="button">从当前手册导入已有型号</button><p id="projectError" class="form-error" role="alert"></p>
+    <button id="projectDiscover" type="button">从当前手册识别型号</button><p id="projectDiscoverySummary" class="muted" role="status">识别 product 中的型号及“模组系列／模组子型号”表的系列名；不从注脚文字推断适用范围。</p><p id="projectError" class="form-error" role="alert"></p>
     <div class="dialog-actions"><button id="projectClose" type="button">取消</button><button type="submit" class="primary-action">保存清单</button></div>
   </form></dialog>
   <dialog id="draftDialog" class="workspace-dialog" aria-labelledby="draftHeading">
@@ -361,7 +361,7 @@
     <h2 id="remoteImportHeading">加载远程文档库</h2><p>将仓库克隆到服务所在机器的工作区，再选择要编写的功能手册。</p>
     <label>Git 地址<input id="remoteUrl" required maxlength="2048" placeholder="https://github.com/company/manual.git 或 git@host:team/manual.git"/></label>
     <p>私有库使用运行服务机器已有的 Git 凭据或 SSH 配置，请勿在地址中填写密码或 Token。</p>
-    <label>本地名称<input id="remoteName" required maxlength="64" pattern="[A-Za-z0-9][A-Za-z0-9._-]*" placeholder="例如 mqtt-manual"/></label>
+    <label>本地名称<input id="remoteName" required maxlength="64" pattern="[A-Za-z0-9][A-Za-z0-9._-]*" placeholder="例如 http-manual"/></label>
     <label>远程分支<select id="remoteBranch"><option value="">默认分支</option></select></label><button id="remoteBranchesButton" type="button">读取远程分支</button>
     <p id="remoteImportStatus" role="status"></p><p id="remoteImportError" class="form-error" role="alert"></p>
     <div class="dialog-actions"><button id="remoteImportCancel" type="button">取消</button><button type="submit" class="primary-action">克隆并选择手册</button></div>
@@ -378,8 +378,8 @@
   <dialog id="newDocumentDialog" class="workspace-dialog" aria-labelledby="newDocumentHeading"><form id="newDocumentForm">
     <h2 id="newDocumentHeading">新建功能文档</h2><p>选择模板后，在正文中继续编写。文件创建在当前仓库已有目录中。</p>
     <label>文档模板<select id="newDocumentTemplate"></select></label>
-    <label>文档标题<input id="newDocumentTitle" required maxlength="200" placeholder="例如 MQTT 连接命令"/></label>
-    <label>文件路径<input id="newDocumentPath" required placeholder="例如 mqtt-connect.dita"/></label>
+    <label>文档标题<input id="newDocumentTitle" required maxlength="200" placeholder="例如 HTTP 请求命令"/></label>
+    <label>文件路径<input id="newDocumentPath" required placeholder="例如 http-request.dita"/></label>
     <p>新文档可通过目录结构工具加入当前功能手册。</p><p id="newDocumentError" class="form-error" role="alert"></p>
     <div class="dialog-actions"><button id="newDocumentCancel" type="button">取消</button><button id="newDocumentSubmit" type="submit" class="primary-action">创建并编写</button></div>
   </form></dialog>
@@ -418,6 +418,7 @@
   <script src="/document-store.js"></script>
   <script src="/workspace-client.js"></script>
   <script src="/publication-resolver.js"></script>
+  <script src="/model-discovery.js"></script>
   <script src="/publication-core.js"></script>
   <script src="/delivery-core.js"></script>
   <script src="/diff-core.js"></script>

@@ -64,7 +64,7 @@
       compiled = null; view().invalidate();
       try {
         const data = service().prepare(configuration.snapshot, get('exportModel').value);
-        get('modelExportSummary').textContent = `包含 ${data.report.included} 条注脚；排除 ${data.report.excluded} 条；保留 ${data.report.unmarked} 条待确认注脚。` + (data.report.unused ? ` ${data.report.unused} 条未引用定义不输出。` : '') + (configuration.snapshot.filter ? ` DITAVAL 排除 ${data.report.filteredElements} 处内容。` : '');
+        get('modelExportSummary').textContent = `包含 ${data.report.included} 条注脚；排除 ${data.report.excluded} 条；保留 ${data.report.unmarked} 条待确认注脚。` + (data.report.unused ? ` ${data.report.unused} 条未引用定义不输出。` : '') + (configuration.snapshot.filter ? ` DITAVAL 排除 ${data.report.filteredElements} 处内容。` : '') + (get('exportModel').value && data.report.unmarked ? ' 型号仅筛选已标注的适用范围；注脚中的文字差异不会自动识别，待确认内容继续保留。' : '');
         const warnings = data.notes.filter(note => note.unmarked).map(note => ({ path: note.origin.path, severity: 'warning', message: '注脚尚未确认适用范围，将保留在交付中' }));
         for (const [path, file] of configuration.snapshot.files) if (/oxy_(insert|delete|comment)/.test(file.current)) warnings.push({ path, severity: 'warning', message: '含 Oxygen 修订或批注，请检查是否适合交付' });
         showIssues(warnings); get('modelExportError').textContent = '';
@@ -75,7 +75,7 @@
       return { commit: null, branch: null, dirty: null };
     }
     function useSnapshot(snapshot, source, selectedModel) {
-      const models = [...new Set([...(snapshot.project.models || []), ...service().listModels(snapshot)])].sort();
+      const models = [...new Set(([...(snapshot.project.models || []), ...service().listModels(snapshot)]).filter(root.DitaModelDiscovery.isModel))].sort();
       get('exportModel').replaceChildren(new Option('全部型号', ''));
       models.forEach(model => get('exportModel').add(new Option(model, model)));
       if (models.includes(selectedModel)) get('exportModel').value = selectedModel;

@@ -14,9 +14,10 @@
     if (new Set(models).size !== models.length) throw new Error('型号清单包含重复项');
     return { schema: 1, models };
   }
+  const isModelMarker = value => /^tbd$/i.test(value);
   function checkModels(values, project) {
     if (!project?.models?.length) return [];
-    return [...new Set(values)].filter(value => !project.models.includes(value));
+    return [...new Set(values)].filter(value => !isModelMarker(value) && !project.models.includes(value));
   }
   function relativeHref(from, target, fragment = '') {
     const base = from.split('/').slice(0, -1), parts = target.split('/');
@@ -28,6 +29,6 @@
     return { on(name, callback) { if (!listeners.has(name)) listeners.set(name, new Set()); listeners.get(name).add(callback); return () => listeners.get(name)?.delete(callback); },
       emit(name, value) { for (const callback of listeners.get(name) || []) { try { callback(value); } catch (error) { onError(error); } } } };
   }
-  const api = { decode, conditions, matches, common, validateProject, checkModels, relativeHref, createEvents };
+  const api = { decode, conditions, matches, common, validateProject, checkModels, isModelMarker, relativeHref, createEvents };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaManualCore = api;
 })(typeof window === 'undefined' ? globalThis : window);

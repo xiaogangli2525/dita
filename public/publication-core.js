@@ -3,6 +3,7 @@
   const xml = typeof module !== 'undefined' ? require('./xml-source') : root.DitaXmlSource;
   const manual = typeof module !== 'undefined' ? require('./manual-core') : root.DitaManualCore;
   const resolver = typeof module !== 'undefined' ? require('./publication-resolver') : root.DitaPublicationResolver;
+  const discovery = typeof module !== 'undefined' ? require('./model-discovery') : root.DitaModelDiscovery;
   const { decode, walk, localTarget } = resolver;
   const topicTags = new Set(['topic', 'concept', 'task', 'reference']);
   function referenceKey(href, path) {
@@ -114,14 +115,9 @@
     return { content: data.files.get(path).current, report: data.report };
   }
   function listModels(files, profile) {
-    const models = new Set();
-    for (const file of resolver.resolveConrefsDetailed(files, profile).files.values()) walk(xml.inspectSource(file.current), (node, ancestors) => {
-      if (profile && [...ancestors, node].some(parent => !profile.keep(parent))) return;
-      const value = decode(node.attrs.product);
-      if (!/[()]/.test(value)) value.split(/\s+/).filter(Boolean).forEach(model => models.add(model));
-    });
-    return [...models].sort();
+    return discovery.discover(resolver.resolveConrefsDetailed(files, profile).files, profile).models;
   }
+
   const api = { prepareTopic, preparePublication, referenceKey, listModels };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaPublication = api;
 })(typeof window === 'undefined' ? globalThis : window);
