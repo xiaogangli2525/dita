@@ -2,19 +2,20 @@
 (function (root) {
   const documentStore = typeof module !== 'undefined' ? require('./document-store') : root.DitaDocumentStore;
   const review = typeof module !== 'undefined' ? require('./review') : root.DitaReview;
+  const mapAuthor = typeof module !== 'undefined' ? require('./map-author-controller') : root.DitaMapAuthorController;
   const loader = typeof module !== 'undefined' ? require('./document-loader') : root.DitaDocumentLoader;
 
   // Coordinates Source/Author/Map surfaces around one document history. View
   // callbacks are injected; state and source rules remain in their own modules.
   function createEditorController(A, views) {
     const { state, dom, ditaCore, setStatus, validateXml, events, api: workspaceClient } = A;
-    const fetch = workspaceClient.request;
     const { documentLabel = file => file.path, renderTabs, renderOutline, renderInspector, updateTree,
       refreshChrome: updateDocumentChrome, beforeModeChange, modeChanged } = views;
     let inputHistory = null;
     const documents = loader.createDocumentLoader({ state, api: workspaceClient, events });
     function surfaceFor(file) {
-      return state.activePath === file.path && !/\.ditamap$/i.test(file.path) ? dom.visualEditor :
+      if (state.activePath === file.path && /\.ditamap$/i.test(file.path)) return dom.visualEditor.querySelector('[data-map-title]');
+      return state.activePath === file.path ? dom.visualEditor :
         Array.from(dom.visualEditor.querySelectorAll('.map-topic-surface')).find(node => node.dataset.mapTopicPath === file.path);
     }
     function captureSelection(file) {
@@ -48,35 +49,8 @@
       if (dom.authorRedoButton) dom.authorRedoButton.disabled = !history || history.redo.length === 0;
     }
 
-    const mapRefreshTimers = new Map();
-    function scheduleMapRefresh(file) {
-      if (!/\.ditamap$/i.test(file.path)) return;
-      clearTimeout(mapRefreshTimers.get(file.path));
-      const workspace = workspaceClient.token;
-      mapRefreshTimers.set(file.path, setTimeout(async () => {
-        mapRefreshTimers.delete(file.path);
-        if (workspace !== workspaceClient.token || state.filesMap.get(file.path) !== file) return;
-        const content = file.current;
-        try {
-          // Incomplete XML during typing is expected; retain the last valid tree.
-          validateXml(content);
-          const response = await fetch('/api/map/resolve', {
-            method: 'POST', headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({ path: file.path, content })
-          });
-          if (!response.ok) return;
-          const map = await response.json();
-          if (file.current !== content || state.filesMap.get(file.path) !== file) return;
-          const index = state.maps.findIndex(item => item.path === file.path);
-          if (index < 0) state.maps.push(map); else state.maps[index] = map;
-          if (state.selectedMap === file.path) updateTree();
-          if (state.activePath === file.path && ['visual', 'preview', 'review'].includes(state.mode)) updateMapAuthor(file);
-        } catch { /* An incomplete edit or superseded workspace keeps its buffer. */ }
-      }, 180));
-    }
-
     function refreshFileViews(file, { updateEditor = true } = {}) {
-      if (file) scheduleMapRefresh(file);
+      if (file) mapController.scheduleRefresh(file);
       if (!file) return;
       if (state.activePath !== file.path) {
         if (state.mode === 'visual' && state.mapAuthorPaths?.has(file.path)) {
@@ -99,8 +73,9 @@
       updateHistoryButtons();
     }
 
-    function refreshHistoryTargetView(file) {
+    function refreshHistoryTargetView(file, entry) {
       if (!file) return;
+      if (state.mode === 'visual' && entry?.mapTitle && mapController.refreshTitle(file)) return;
       // Keep a long Map and its other Topics in place during Author undo/redo.
       const activeFile = state.filesMap.get(state.activePath);
       if (state.mode === 'visual') {
@@ -140,7 +115,7 @@
       const entry = documentStore.travelHistory(file, 'undo');
       if (!entry) return;
       if (entry.reviewDecisionsBefore) state.reviewDecisions = new Map(entry.reviewDecisionsBefore);
-      refreshHistoryTargetView(file); restoreSelection(file, entry.selectionBefore); events.emit('document:changed', file);
+      refreshHistoryTargetView(file, entry); restoreSelection(file, entry.selectionBefore); events.emit('document:changed', file);
       setStatus('已撤销');
     }
 
@@ -150,7 +125,7 @@
       const entry = documentStore.travelHistory(file, 'redo');
       if (!entry) return;
       if (entry.reviewDecisionsAfter) state.reviewDecisions = new Map(entry.reviewDecisionsAfter);
-      refreshHistoryTargetView(file); restoreSelection(file, entry.selectionAfter); events.emit('document:changed', file);
+      refreshHistoryTargetView(file, entry); restoreSelection(file, entry.selectionAfter); events.emit('document:changed', file);
       setStatus('已重做');
     }
 
@@ -172,6 +147,7 @@
     function setMode(mode) {
       inputHistory?.breakAll();
       beforeModeChange?.();
+      mapController.invalidate();
       state.mode = mode;
       dom.editorPane.classList.toggle('active', mode === 'editor');
       // Review keeps the Author surface in the main column. The review pane is a
@@ -219,130 +195,8 @@
       return documents.load(path);
     }
 
-    async function updateMapAuthor(file) {
-      const token = ++state.mapAuthorRenderToken;
-      const map = state.maps.find(item => item.path === file.path);
-      if (!map) return;
-      const entries = ditaCore.collectPreviewPaths(map.children || []);
-      state.mapAuthorPaths = new Set(entries.map(entry => entry.path));
-      dom.visualEditor.classList.add('map-author-editor');
-      dom.visualEditor.contentEditable = 'false';
-      dom.visualEditor.replaceChildren(document.createTextNode('正在加载 Map 全文…'));
-      const loaded = await Promise.all(entries.map(async entry => {
-        try {
-          return { entry, file: await ensureMapAuthorFile(entry.path) };
-        } catch (error) {
-          return { entry, error };
-        }
-      }));
-      if (token !== state.mapAuthorRenderToken || state.activePath !== file.path) return;
-      const fragment = document.createDocumentFragment();
-      const heading = document.createElement('h1');
-      heading.className = 'map-author-title';
-      heading.textContent = map.title || map.name || map.path;
-      heading.dataset.mapTitle = 'true';
-      heading.contentEditable = state.mode === 'visual' ? 'true' : 'false';
-      fragment.append(heading);
-      if (!loaded.length) {
-        const empty = document.createElement('p');
-        empty.className = 'map-author-empty';
-        empty.textContent = '此 Map 没有可编辑的 topic 引用。';
-        fragment.append(empty);
-      }
-      for (const item of loaded) {
-        const topic = document.createElement('section');
-        topic.className = 'map-topic';
-        topic.dataset.mapTopicPath = item.entry.path;
-        const header = document.createElement('div');
-        header.className = 'map-topic-header';
-        const name = document.createElement('strong');
-        name.textContent = item.file ? documentLabel(item.file) : item.entry.title || item.entry.path;
-        const path = document.createElement('small');
-        path.textContent = item.entry.path;
-        header.append(name, path);
-        topic.append(header);
-        if (item.error) {
-          const error = document.createElement('p');
-          error.className = 'preview-error';
-          error.textContent = `无法打开 ${item.entry.path}：${item.error.message}`;
-          topic.append(error);
-        } else {
-          try {
-            const surface = ditaCore.createAuthorTopic(item.file.current, document, state.mode === 'review', item.entry.path);
-            surface.className = 'map-topic-surface';
-            surface.dataset.mapTopicPath = item.entry.path;
-            surface.contentEditable = state.mode === 'visual' ? 'true' : 'false';
-            topic.append(surface);
-          } catch (error) {
-            const message = document.createElement('p');
-            message.className = 'preview-error';
-            message.textContent = `无法解析 ${item.entry.path}：${error.message}`;
-            topic.append(message);
-          }
-        }
-        fragment.append(topic);
-      }
-      dom.visualEditor.replaceChildren(fragment);
-      events.emit('author:rendered');
-      renderTabs(); updateTree();
-      renderInspector(null);
-      // setMode('review') starts the async Map Author load and can render the
-      // review dock before topic files finish loading. Refresh it once the
-      // complete surface and mapAuthorPaths are ready.
-      if (state.mode === 'review') renderMapReview(file);
-    }
-
-    function syncMapAuthorToModel(event) {
-      const file = state.filesMap.get(state.activePath);
-      if (!file || !/\.ditamap$/i.test(file.path)) return false;
-      const target = event?.target?.closest?.('[data-map-topic-path]');
-      const mapTitle = event?.target?.closest?.('[data-map-title]');
-      if (mapTitle) {
-        try {
-          const doc = ditaCore.parseXml(file.current);
-          const root = doc.documentElement;
-          let title = Array.from(root.childNodes).find(node => node.localName === 'title');
-          if (!title) {
-            title = doc.createElement('title');
-            root.insertBefore(title, root.firstChild);
-          }
-          title.textContent = mapTitle.textContent.trim();
-          const map = state.maps.find(item => item.path === file.path);
-          if (map) map.title = title.textContent;
-          const declaration = file.current.match(/^\s*<\?xml[^?]*\?>/i)?.[0] || '<?xml version="1.0" encoding="UTF-8"?>';
-          const doctype = file.current.match(/<!DOCTYPE[^>[]*(\[[\s\S]*?\])?[^>]*>/i)?.[0] || '';
-          const next = `${declaration}\n${doctype ? `${doctype}\n` : ''}${ditaCore.serializeXmlNode(root)}\n`;
-          setFileContent(file, next, { updateEditor: false });
-          renderTabs();
-          setStatus(`Map Author：已修改 Map 标题${file.dirty ? '（待保存）' : ''}`);
-        } catch (error) {
-          setStatus(`Map 标题同步失败：${error.message}`, true);
-        }
-        return true;
-      }
-      const path = target?.dataset.mapTopicPath;
-      const topicFile = path ? state.filesMap.get(path) : null;
-      const surface = target?.classList.contains('map-topic-surface') ? target : target?.querySelector('.map-topic-surface');
-      if (!topicFile || !surface) return true;
-      try {
-        if (surface.ditaSourceContent !== topicFile.current) throw new Error('正文已由其他操作更新，请重新打开此 Topic 后继续编写');
-        const next = ditaCore.updateCurrentFromVisual(null, { visualEditor: surface }, topicFile.current);
-        if (next !== topicFile.current) {
-          setFileContent(topicFile, next, { updateEditor: false, render: false, ...inputHistory?.take(topicFile, event) });
-          topicFile.gitStatus = topicFile.gitStatus === 'unknown' ? 'modified' : topicFile.gitStatus;
-          renderTabs();
-          updateHistoryButtons();
-        }
-        surface.ditaSourceContent = topicFile.current;
-        setStatus(`Map Author：已修改 ${path}${topicFile.dirty ? '（待保存）' : ''}`);
-      } catch (error) {
-        renderAuthorSurface(topicFile, surface);
-        setStatus(`Map Author 同步失败：${error.message}`, true);
-      }
-      return true;
-    }
-
     function updateVisual(file, reviewMode = false) {
+      mapController.invalidate();
       if (state.selectedVisualElement?.classList) state.selectedVisualElement.classList.remove('author-selected');
       state.selectedVisualElement = null;
       if (!file) {
@@ -352,10 +206,7 @@
         return;
       }
       if (/\.ditamap$/i.test(file.path)) {
-        updateMapAuthor(file).catch(error => {
-          dom.visualEditor.replaceChildren(document.createTextNode(`Map Author 加载失败：${error.message}`));
-          setStatus(`Map Author 加载失败：${error.message}`, true);
-        });
+        void mapController.render(file);
         return;
       }
       try {
@@ -390,7 +241,7 @@
         }
       }
       if (/\.ditamap$/i.test(file.path)) {
-        syncMapAuthorToModel(event);
+        mapController.sync(event);
         return;
       }
       try {
@@ -418,6 +269,13 @@
 
     const { resetReviewSnapshot, renderDiff, renderMapReview, reviewAll } = review.createReviewController({
       state, dom, ditaCore, setFileContent, updateVisual, renderTabs, updateHistoryButtons, setStatus
+    });
+
+    const mapController = mapAuthor.createController({ state, dom, ditaCore, api: workspaceClient, events, validateXml, setStatus }, {
+      load: documents.load, documentLabel, setFileContent,
+      takeHistory: (file, event) => inputHistory?.take(file, event),
+      renderAuthorSurface, renderTabs, updateTree, renderInspector,
+      updateHistoryButtons, renderMapReview
     });
 
     function markDirty(event) {
@@ -478,21 +336,20 @@
       ensureHistory(file).undo.at(-1).selectionAfter = captureSelection(file);
     }
 
-    inputHistory = root.DitaInputHistory?.createController(A, { capture: captureSelection, syncVisual: syncVisualToModel, syncSource: markDirty, undo: undoFile, redo: redoFile,
+    inputHistory = root.DitaInputHistory?.createController({ state, dom, events }, { capture: captureSelection, syncVisual: syncVisualToModel, syncSource: markDirty, undo: undoFile, redo: redoFile,
       resolve(target) {
         if (target === dom.editor && state.mode === 'editor') return state.filesMap.get(state.activePath);
         if (state.mode !== 'visual' || !dom.visualEditor.contains(target)) return null;
+        if (target.closest?.('[data-map-title]')) return state.filesMap.get(state.activePath);
         const path = target.closest?.('.map-topic-surface')?.dataset.mapTopicPath || state.activePath;
         return /\.ditamap$/i.test(path) ? null : state.filesMap.get(path);
       } });
 
     function reset() {
       inputHistory?.reset();
-      for (const timer of mapRefreshTimers.values()) clearTimeout(timer);
-      mapRefreshTimers.clear();
-      state.mapAuthorRenderToken += 1;
+      mapController.reset();
     }
-    events.on('workspace:willChange', reset);
+    // Input history and Map lifecycle subscribe to workspace changes themselves.
     return { setFileContent, undoFile, redoFile, updateHistoryButtons, updateActivePanes,
       setMode, ensureMapAuthorFile, updateVisual, syncVisualToModel, markDirty,
       resetReviewSnapshot, renderDiff, renderMapReview, reviewAll, applyAuthorEdit, reset };

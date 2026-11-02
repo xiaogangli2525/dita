@@ -50,7 +50,7 @@ function editor() {
   const other = { path: 'other.dita', current: '<topic>other</topic>', disk: '<topic>other</topic>' };
   const events = domain.createEvents(), changes = [], requests = [];
   events.on('document:changed', file => changes.push(file.path));
-  const state = { activePath: map.path, historyTargetPath: map.path, mode: 'editor', filesMap: new Map([map, topic, other].map(file => [file.path, file])), mapAuthorPaths: new Set([topic.path]), mapAuthorRenderToken: 0, maps: [], reviewDecisions: new Map() };
+  const state = { activePath: map.path, historyTargetPath: map.path, mode: 'editor', filesMap: new Map([map, topic, other].map(file => [file.path, file])), mapAuthorPaths: new Set([topic.path]), maps: [], reviewDecisions: new Map() };
   const A = { state, events, ditaCore: core, api: { token: 'first', request: async url => { requests.push(url); throw new Error('Unexpected IO'); } },
     dom: { editor: create('textarea'), visualEditor: create('div'), undoButton: create('button'), redoButton: create('button') },
     setStatus() {}, refreshChrome() {}, validateXml: source => core.parseXml(source) };
@@ -73,12 +73,10 @@ test('editor coordination keeps Map child undo and review decisions on the same 
   assert.deepEqual(changes, ['a.dita', 'other.dita', 'a.dita', 'a.dita']);
 });
 
-test('workspace changes invalidate the editor render generation and discard pending Map refreshes', async () => {
+test('workspace changes discard pending Map refreshes and retain the editing buffer', async () => {
   const { A, controller, map, requests } = editor();
-  const generation = A.state.mapAuthorRenderToken;
   controller.setFileContent(map, '<map><title>Pending edit</title></map>');
   A.events.emit('workspace:willChange');
-  assert.ok(A.state.mapAuthorRenderToken > generation);
   await new Promise(resolve => setTimeout(resolve, 220));
   assert.equal(requests.length, 0); assert.equal(map.current, '<map><title>Pending edit</title></map>');
 });

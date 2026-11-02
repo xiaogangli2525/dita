@@ -11,6 +11,8 @@ require('./export-flow.test.js');
 require('./api-integration.test.js');
 
 require('./xml-source.test.js');
+require('./map-source.test.js');
+require('./map-author-controller.test.js');
 require('./footnotes.test.js');
 require('./publication.test.js');
 

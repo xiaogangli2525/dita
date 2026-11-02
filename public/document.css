@@ -5,6 +5,8 @@
 .visual-editor:not(.map-author-editor) > h2 { margin-top:0; margin-bottom:0; padding-top:34px; padding-bottom:16px; border:0; border-radius:6px 6px 0 0; font-size:28px; font-weight:650; line-height:1.4; }
 .visual-editor:not(.map-author-editor) > [data-dita-body] { padding-top:16px; padding-bottom:44px; border:0; border-radius:0 0 6px 6px; }
 .map-topic, .map-author-title { max-width:1100px; }
+.map-author-title { min-height:1.5em; }
+.map-author-title[contenteditable="plaintext-only"]:empty::before { content:"请输入手册标题"; color:var(--doc-muted); pointer-events:none; }
 .map-topic { border:1px solid #e0e6ea; border-radius:6px; box-shadow:none; }
 .map-topic-header { padding:8px 18px; background:#fafbfc; border-color:#e7ecef; }
 .map-topic-header small { font-size:11px; }

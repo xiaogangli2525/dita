@@ -47,6 +47,9 @@
   function createController({ dom, state, selection, core, status, toast }) {
     dom.visualEditor.addEventListener('paste', event => {
       if (state.mode !== 'visual' || !dom.visualEditor.contains(event.target)) return;
+      // The title is a plaintext-only editing host; native paste strips markup
+      // and its input event commits through the Map title/history controller.
+      if (event.target.closest?.('[data-map-title][contenteditable="plaintext-only"]')) return;
       event.preventDefault();
       try {
         const html = event.clipboardData?.getData('text/html') || '', text = event.clipboardData?.getData('text/plain') || '';
