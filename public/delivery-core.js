@@ -260,18 +260,6 @@ async function exportMapToHtml({ map, files, title, loadImageBytes, model = '', 
         if (child === topicTitle) continue;
         inner += serializeOxyNode(child, ctx);
       }
-      let fnNum = 0;
-      inner = inner.replace(/\[fn\]/g, () => "[" + (++fnNum) + "]");
-      inner = inner.replace(/<div class="note([\s\S]*?)<\/div>/g, (match) => {
-        if (match.includes('note-icon')) return match;
-        const typeMatch = match.match(/data-note-type="([^"]*)"/);
-        const noteType = typeMatch ? typeMatch[1] : 'note';
-        const icons = { note: 'ℹ', tip: '💡', caution: '⚠️', warning: '⛔', restriction: '⛔', attention: '⚠️', important: '❗' };
-        const icon = icons[noteType] || '\u2139';
-        return '<div class="dita-note dita-note-' + noteType + '"><span class="note-icon">' + icon + '</span><div class="note-body">' + match.replace(/^<div[^>]*>/, '').replace(/<\/div>$/, '') + '</div></div>';
-      });
-      inner = inner.replace(/<codeblock\b/g, '<pre class="code-block"\u200b');
-      inner = inner.replace(/<pre class="code-block"\u200b/g, '<pre class="code-block"');
       sections.push({ path: entry.path, title: topicTitle?.textContent?.trim() || entry.title || entry.path, body: inner });
     } catch (error) {
       throw new Error(entry.path + '：' + error.message);
@@ -303,8 +291,7 @@ async function exportMapToHtml({ map, files, title, loadImageBytes, model = '', 
     '.toc a:hover { text-decoration: underline; }',
     '.error { color: #d93025; font-size: 13px; }',
     '.dita-note { display: block; padding: 12px 16px; margin: 18px 0; border-radius: 0 5px 5px 0; border-left: 3px solid #4d7b97; background: #f2f7fa; } .note-label { display: block; margin-bottom: 4px; }',
-    '.dita-note .note-icon { font-size: 16px; flex-shrink: 0; margin-top: 2px; }',
-    '.dita-note .note-body { flex: 1; }',
+    '.dita-note > .note-body > :first-child { margin-top:0; } .dita-note > .note-body > :last-child { margin-bottom:0; }',
     '.dita-note .note-body ul, .dita-note .note-body ol { margin: 4px 0; padding-left: 20px; }',
     '.dita-note.dita-note-tip { border-color: #34a853; background: #e6f4ea; }',
     '.dita-note.dita-note-caution, .dita-note.dita-note-warning { border-color: #d93025; background: #fce8e6; }',
@@ -314,7 +301,12 @@ async function exportMapToHtml({ map, files, title, loadImageBytes, model = '', 
     '.dita-note .code-block { background: #f5f7f9; margin: 8px 0; } .dita-note[data-note-tone="tip"] { border-color:#308477;background:#f1f8f5; } .dita-note[data-note-tone="attention"] { border-color:#a47a26;background:#fcf8ee; } .dita-note[data-note-tone="danger"] { border-color:#af4d53;background:#fcf3f3; }',
     'figure { margin: 16px 0; text-align: center; }',
     'figure figcaption, .figtitle { font-size: 13px; color: #5f6368; margin-top: 8px; font-style: italic; }',
-    'section { margin: 20px 0; }'
+    'section { margin: 20px 0; }',
+    '.export-footnotes { margin-top:40px; padding-top:12px; border-top:1px solid #dce5eb; font-size:14px; }',
+    '.export-footnotes > ol { margin:16px 0; padding-left:30px; } .export-footnotes > ol > li { padding:12px 14px; margin:0 0 12px; border:1px solid #e2e9ee; border-radius:6px; background:#fafcfd; overflow-wrap:anywhere; line-height:1.8; }',
+    '.export-footnotes li::marker { color:#597080; font-weight:600; } .footnote-content > :first-child { margin-top:0; } .footnote-content > :last-child { margin-bottom:0; } .footnote-content p, .footnote-content div { margin:4px 0; }',
+    'a.footnote-backlink { display:inline-block; margin-top:8px; font-size:12px; color:#426b80; text-decoration:none; } a.footnote-backlink:hover { text-decoration:underline; }',
+    '@media print { .export-footnotes > ol > li { background:none; border:0; border-bottom:1px solid #ddd; border-radius:0; } a.footnote-backlink { display:none; } }'
 
   ].join('\n');
   let toc = '<nav class="toc"><h2>\u76ee\u5f55</h2><ol>';
@@ -325,7 +317,7 @@ async function exportMapToHtml({ map, files, title, loadImageBytes, model = '', 
     body += '<h2 id="sec-' + i + '" style="scroll-margin-top: 20px;">' + escapeHtmlAttr(sec.title) + '</h2>\n' + sec.body + '\n';
     if (i < sections.length - 1) body += '<hr>\n';
   });
-  if (ctx.htmlFootnotes?.length) body += '<section class="export-footnotes"><h2>注脚</h2><ol>' + ctx.htmlFootnotes.map((text, i) => '<li id="fn-' + (i + 1) + '">' + text + ' <a href="#fnref-' + (i + 1) + '-1" aria-label="返回正文">↩</a></li>').join('') + '</ol></section>';
+  if (ctx.htmlFootnotes?.length) body += '<section class="export-footnotes"><h2>注脚</h2><ol>' + ctx.htmlFootnotes.map((text, i) => '<li id="fn-' + (i + 1) + '"><div class="footnote-content">' + text + '</div><a class="footnote-backlink" href="#fnref-' + (i + 1) + '-1" aria-label="返回正文">↩ 返回正文</a></li>').join('') + '</ol></section>';
   const html = [
     '<!DOCTYPE html>',
     '<html lang="zh-CN"><head><meta charset="utf-8"/>',

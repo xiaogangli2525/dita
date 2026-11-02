@@ -215,3 +215,16 @@ New domain/browser cases verify that imported event handlers, CSS, image src/src
 HTTP probes reject foreign Host values on workspace bootstrap, source reads and asset reads even when Origin is omitted; loopback and configured proxy access remain available. This is a targeted local-interface check, not a claim of multi-user authentication.
 
 The HTTP note-corpus test now loads the selected manual's dependency closure (37 notes) with encoding-aware reads, rather than recursively counting unrelated manuals (130 notes in the full checkout). Both Node 20/22 and browser CI passed for that correction before PR #24 was merged.
+
+
+## Model-text delivery and exported note presentation
+
+Full regression: **210 unit/HTTP checks** and **181 Chromium checks**, zero failures/skips. Additional focused checks cover a condition filter removing an entire model label, which must require review rather than treating the remaining description as common.
+
+Domain tests cover exact identifiers and variants, continuation sentences, shared-label compaction with inline XML retained, nested textual scopes, common content, explicit only/unsupported clauses, ambiguous prose, paired/unpaired Oxygen insertions, original-buffer preservation, repeated public calls and HTML/Markdown numbering. All 37 source notes in the real HTTP closure are checked for five target models; 29 have explicit textual scopes before whole-note model/profile exclusions.
+
+The actual browser downloads the real HTTP manual for ML307G, ML307N and MN319-A with the pending-content condition profile. The retained endnote labels contain only the requested model, common explanations remain, semantic numbers and return links agree, and every input file remains byte-identical. Actual HTML output verifies one frame per DITA note with no regex-generated icon or nested duplicate; the SSL explanation and endnote list were visually inspected.
+
+Browser workflows also check Chinese summaries of real filter rules, refusal of unchecked mixed-model text delivery, HTML/MD/PDF/DOCX sharing the selected prefix policy, invalidation of checked output when the policy changes, all-model preservation, and navigation from ambiguous text to independent-rule review. Existing DITAVAL race, editing, save/draft, Git and export regression remains covered.
+
+Prefix interpretation is explicitly enabled and requires preview review. It follows the displayed source-format convention; it does not infer arbitrary technical applicability, rewrite body prose, automatically confirm sidecar rules or change original DITA.

@@ -26,6 +26,7 @@ test('delivery preserves response blocks, CALS column proportions and safe typed
  assert.match(html,/<colgroup><col style="width:30%"\/><col style="width:70%"\/><\/colgroup>/);
  assert.match(html,/<pre[^>]*>\+HTTP: 0,0\n  OK<\/pre>/);assert.match(html,/&lt;兼容性&gt;：/);assert.doesNotMatch(html,/<兼容性>/);
  assert.match(html,/data-dita-outputclass="has_bgc"/);assert.match(html,/class="dita-note"/);
+ assert.equal((html.match(/class="dita-note"/g)||[]).length,1);assert.doesNotMatch(html,/<span class="note-icon">|class="dita-note dita-note-/);
  const md=await core.exportMapToMarkdown({...input,files:new Map([['a.dita',{current:'<topic id="t"><title>T</title><body><msgblock>+HTTP: 0,0\n  OK</msgblock></body></topic>'}]])});
  assert.match(md,/```\n\+HTTP: 0,0\n  OK\n```/);
 });

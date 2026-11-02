@@ -32,6 +32,7 @@
     let configuration = null, configuring = false, compiled = null, operation = 0, abortController = null;
     let filterGeneration = 0;
     const selectedFilters = new Map();
+    const prefixChoices = new Map();
     let configuringScope = '', configuringWorkspace = '';
     const service = () => A.manual;
     const nativePdf = () => A.state.capabilities?.pdf === true;
@@ -56,6 +57,7 @@
           const button = document.createElement('button'); button.type = 'button'; button.textContent = item.path;
           button.addEventListener('click', async () => { get('modelExportDialog').close(); try { await A.navigateToSource(item.path); } catch (error) { A.setStatus(error.message, true); } }); row.append(button);
         }
+        if(item.xmlPath&&A.noteRules){const button=document.createElement('button');button.type='button';button.textContent='核对这条注脚';button.addEventListener('click',()=>{get('modelExportDialog').close();A.noteRules.show(item);});row.append(button);}
         list.append(row);
       }
     }
@@ -63,10 +65,13 @@
       if (!configuration) return;
       compiled = null; view().invalidate();
       try {
-        const data = service().prepare(configuration.snapshot, get('exportModel').value);
-        get('modelExportSummary').textContent = `包含 ${data.report.included} 条注脚；排除 ${data.report.excluded} 条；保留 ${data.report.unmarked} 条待确认注脚。` + (data.report.unused ? ` ${data.report.unused} 条未引用定义不输出。` : '') + (configuration.snapshot.filter ? ` DITAVAL 排除 ${data.report.filteredElements} 处内容。` : '') + (get('exportModel').value && data.report.unmarked ? ' 型号仅筛选已标注的适用范围；注脚中的文字差异不会自动识别，待确认内容继续保留。' : '');
+        get('exportPrefixNotes').disabled=!get('exportModel').value;
+        const data = service().prepare(configuration.snapshot, get('exportModel').value, true, {prefixes:get('exportPrefixNotes').checked});
+        get('modelExportSummary').textContent = `包含 ${data.report.included} 条注脚；排除 ${data.report.excluded} 条；保留 ${data.report.unmarked} 条待确认注脚。` + (data.report.unused ? ` ${data.report.unused} 条未引用定义不输出。` : '') + (configuration.snapshot.filter ? ` 正文条件排除 ${data.report.filteredElements} 处内容。` : '') + (get('exportModel').value && data.report.unmarked ? ' 其余未设置范围的说明继续保留，请核对是否通用。' : '');
         const warnings = data.notes.filter(note => note.unmarked).map(note => ({ path: note.origin.path, severity: 'warning', message: '注脚尚未确认适用范围，将保留在交付中' }));
         if (data.report.ruleApplied) get('modelExportSummary').textContent += ` 已应用 ${data.report.ruleApplied} 条独立规则，筛除 ${data.report.ruleFilteredParts} 个片段（原始 DITA 不变）。`;
+        if(data.report.prefixApplied)get('modelExportSummary').textContent+=` 已按明确型号前缀处理 ${data.report.prefixApplied} 条注脚，筛除 ${data.report.prefixExcluded} 个片段；请预览核对。`;
+        else if(data.report.prefixCandidates)get('modelExportSummary').textContent+=` 另有 ${data.report.prefixCandidates} 条注脚仅在文字里区分型号。请启用“型号：说明”筛选或核对独立规则，否则不能完成指定型号交付。`;
         if (configuration.snapshot.noteRules?.supported === false) warnings.unshift({path:'',severity:'warning',message:'当前服务不支持独立注脚规则，未应用片段筛选。'});
         if (configuration.source.warning) warnings.unshift({ path: '', severity: 'warning', message: configuration.source.warning });
         for (const [path, file] of configuration.snapshot.files) if (/oxy_(insert|delete|comment)/.test(file.current)) warnings.push({ path, severity: 'warning', message: '含 Oxygen 修订或批注，请检查是否适合交付' });
@@ -89,7 +94,8 @@
       models.forEach(model => get('exportModel').add(new Option(model, model)));
       if (models.includes(selectedModel)) get('exportModel').value = selectedModel;
       configuration = { snapshot, source }; formatHint();
-      get('exportModel').disabled = false; get('exportFilter').disabled = false;
+      get('exportFilterHint').textContent=snapshot.filter?(root.DitaProfiling?.compile(snapshot.filter.current).summary||snapshot.filter.path)+'。仅过滤已标记的正文、图片和注脚，不会识别文字中的型号；原文不变。':'保留全部正文。条件文件（DITAVAL）控制标记内容的取舍；注脚中的型号文字由上方选项处理。';
+      get('exportModel').disabled = false; get('exportFilter').disabled = false;get('exportReviewRules').disabled=false;
       get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = false; });
       get('modelExportScope').textContent = snapshot.map.title + ' · ' + snapshot.path;
       get('deliverySource').textContent = `${snapshot.files.size} 个正文／依赖文件 · ${service().saveCandidates(snapshot).length} 个未保存` + (source.commit ? ` · Git ${source.commit.slice(0, 8)}${source.dirty ? '（含未提交修改）' : ''}` : ' · 未取得 Git 版本');
@@ -100,6 +106,7 @@
       configuring = true; configuration = null; compiled = null; view().invalidate();
       get('exportModel').replaceChildren(new Option('正在读取…', ''));
       get('exportModel').disabled = true;
+      get('exportPrefixNotes').disabled=true;get('exportReviewRules').disabled=true;
       get('exportFilter').replaceChildren(new Option('正在读取…', '')); get('exportFilter').disabled = true;
       get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = true; });
       get('modelExportError').textContent = ''; get('modelExportSummary').textContent = '正在读取手册及依赖…';
@@ -108,10 +115,11 @@
       try {
         const scope = service().scopePath(), workspace = A.api.token;
         configuringScope = scope; configuringWorkspace = workspace;
+        get('exportPrefixNotes').checked=prefixChoices.get(workspace+'\n'+scope)||false;
         const filters = await service().listFilters();
         if (generation !== operation || workspace !== A.api.token || !get('modelExportDialog').open) return;
-        get('exportFilter').replaceChildren(new Option('不使用 DITAVAL', ''));
-        filters.files.forEach(path => get('exportFilter').add(new Option(path, path)));
+        get('exportFilter').replaceChildren(new Option('不过滤正文（保留全部内容）', ''));
+        filters.files.forEach(path => get('exportFilter').add(new Option((filters.descriptions?.[path]||'条件文件')+' · '+path, path)));
         const selectedFilter = selectedFilters.get(workspace + '\n' + scope) || '';
         get('exportFilter').value = filters.files.includes(selectedFilter) ? selectedFilter : '';
         get('exportFilter').disabled = false;
@@ -130,6 +138,7 @@
       const filterPath = get('exportFilter').value, generation = ++filterGeneration, operationId = ++operation;
       const selectedModel = get('exportModel').value;
       configuration = null; compiled = null; configuring = true; view().invalidate();
+      get('exportModel').disabled=true;get('exportPrefixNotes').disabled=true;get('exportReviewRules').disabled=true;
       get('modelExportSummary').textContent = '正在应用条件过滤…'; get('modelExportError').textContent = '';
       get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = true; });
       try {
@@ -143,12 +152,14 @@
       } finally {
         if (generation === filterGeneration && operationId === operation) {
           configuring = false;
+          get('exportModel').disabled=!configuration;get('exportPrefixNotes').disabled=!configuration||!get('exportModel').value;get('exportReviewRules').disabled=!configuration;
           get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = !configuration; });
         }
       }
     }
-    async function convert(snapshot, model, format, version) {
-      const publicationData = service().prepare(snapshot, model);
+    async function convert(snapshot, model, format, version, prefixes=false) {
+      const publicationData = service().prepare(snapshot, model, true, {prefixes});
+      if(model&&publicationData.report.prefixCandidates&&!prefixes)throw new Error('注脚仍有按文字区分的型号内容。请启用“型号：说明”筛选，或先核对独立规则，再检查交付。');
       let output = await (format === 'md' ? A.ditaCore.exportMapToMarkdown : A.ditaCore.exportMapToHtml)({ map: snapshot.map, files: snapshot.files, model, version, title: snapshot.map.title, publicationData,
         loadImageBytes: path => (loadImageBytes || browserLoadImageBytes)(path, abortController?.signal) });
       let previewHtml;
@@ -173,7 +184,7 @@
       if (snapshot.filter) documents.set(snapshot.filter.path, snapshot.filter.current);
       if (typeof snapshot.noteRules?.expectedContent === 'string') documents.set('.dita-note-rules.json', snapshot.noteRules.expectedContent);
       const record = { schema: 1, createdAt: new Date().toISOString(), state: 'download-initiated', manualPath: snapshot.path, model, format, version, filename: name,
-        source, capturedAt: snapshot.capturedAt, filterPath: snapshot.filter?.path || '', unsavedPaths: service().saveCandidates(snapshot).map(file => file.path), report: data.report,
+        source, capturedAt: snapshot.capturedAt, filterPath: snapshot.filter?.path || '', modelNotePrefixPolicy:model&&get('exportPrefixNotes')?.checked?'explicit-prefix-v1':'confirmed-rules-only', unsavedPaths: service().saveCandidates(snapshot).map(file => file.path), report: data.report,
         documents: await Promise.all(Array.from(documents, async ([path, content]) => ({ path, sha256: await root.DitaBrowserFiles.sha256(content) }))),
         projectSha256: await root.DitaBrowserFiles.sha256(JSON.stringify(snapshot.project)), noteRulesSha256: snapshot.noteRules ? await root.DitaBrowserFiles.sha256(JSON.stringify(snapshot.noteRules.config)) : null, outputSha256: await root.DitaBrowserFiles.sha256(data.output) };
       root.DitaReleaseStore.createReleaseStore(root.localStorage).append(snapshot.root, record); lastDeliveryRecord = record;
@@ -192,12 +203,13 @@
       abortController = new AbortController();
       exporting = true; A.showLoading?.();
       if (!legacy) get('modelExportError').textContent = '';
-      if (!legacy) { view().pending(); for (const id of ['exportModel', 'exportFilter', 'exportFormat', 'exportVersion']) get(id).disabled = true; get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = true; }); }
+      if (!legacy) { view().pending(); for (const id of ['exportModel', 'exportPrefixNotes', 'exportFilter', 'exportFormat', 'exportVersion','exportReviewRules']) get(id).disabled = true; get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = true; }); }
       try {
         await service().verifyRules?.(snapshot);
         if (generation !== operation) return;
-        const key = JSON.stringify([model, format, version]);
-        const data = compiled?.key === key ? compiled.data : await convert(snapshot, model, format, version);
+        const prefixes=!legacy&&get('exportPrefixNotes').checked;
+        const key = JSON.stringify([model, format, version,prefixes]);
+        const data = compiled?.key === key ? compiled.data : await convert(snapshot, model, format, version,prefixes);
         await service().verifyRules?.(snapshot);
         if (generation !== operation) return;
         if (!service().current(snapshot)) throw new Error('内容已变化，请重新打开交付设置以更新快照');
@@ -244,7 +256,7 @@
         if (generation !== operation) return;
         if (!legacy) { view().failed(); get('modelExportError').textContent = error.message; showIssues(issue(error, snapshot)); }
         A.setStatus(error.message, true); A.toast?.(error.message, 'error');
-      } finally { exporting = false; abortController = null; A.hideLoading?.(); if (!legacy && configuration) { view().settled(); for (const id of ['exportModel', 'exportFilter', 'exportFormat', 'exportVersion']) get(id).disabled = false; get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = false; }); } }
+      } finally { exporting = false; abortController = null; A.hideLoading?.(); if (!legacy && configuration) { view().settled(); for (const id of ['exportModel', 'exportPrefixNotes','exportFilter', 'exportFormat', 'exportVersion','exportReviewRules']) get(id).disabled = false; get('exportPrefixNotes').disabled=!get('exportModel').value;get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = false; }); } }
     }
     async function legacyExport(format, preview) {
       if (!/\.ditamap$/i.test(A.state.activePath)) { A.setStatus('请先打开一个 Map 文档，再预览或导出', true); return; }
@@ -253,6 +265,8 @@
     }
 
     get('exportModel')?.addEventListener('change', summary); get('exportFormat')?.addEventListener('change', () => { compiled = null; formatHint(); view().invalidate(); });
+    get('exportPrefixNotes')?.addEventListener('change',()=>{prefixChoices.set(A.api.token+'\n'+configuringScope,get('exportPrefixNotes').checked);summary();});
+    get('exportReviewRules')?.addEventListener('click',()=>{get('modelExportDialog').close();A.noteRules?.show();});
     get('exportFilter')?.addEventListener('change', changeFilter);
     get('exportVersion')?.addEventListener('input', () => { compiled = null; view().invalidate(); });
     get('printDeliveryButton')?.addEventListener('click', () => {

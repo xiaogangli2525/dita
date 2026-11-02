@@ -46,7 +46,7 @@
  * @property {()=>Promise<{files:string[],truncated?:boolean}>} listFilters
  * @property {(snapshot:ManualSnapshot)=>boolean} current
  * @property {(snapshot:ManualSnapshot)=>Promise<void>} verifyRules Re-read external rules before delivering output.
- * @property {(snapshot:ManualSnapshot, model?:string)=>Object} prepare
+ * @property {(snapshot:ManualSnapshot, model?:string, validateProject?:boolean, options?:{useRules?:boolean,prefixes?:boolean})=>Object} prepare
  * @property {(snapshot:ManualSnapshot, model?:string)=>{notes:Object[],calls:Object[],models:string[],report:Object}} listNotes First-use labels, source-scoped occurrences and deduplicated per-source usages with inherited conditions.
  * @property {(snapshot:ManualSnapshot)=>DocumentSnapshot[]} saveCandidates
  * @property {(snapshot:ManualSnapshot)=>object} discoverModels
@@ -89,6 +89,7 @@
  * @property {(message:string, level?:string)=>void} toast
  *
  * @typedef {Object} ExportPorts
+ * @property {{show:Function}} noteRules Source-rule review entry, resolved by application composition.
  * @property {WorkspaceState} state
  * @property {WorkspaceApi} api
  * @property {ManualService} manual

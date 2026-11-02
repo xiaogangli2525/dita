@@ -69,7 +69,7 @@ test('real author compatibility and DITAVAL delivery share captured source and o
   await delivery();assert.deepEqual(await page.locator('#exportModel option').evaluateAll(nodes=>nodes.map(n=>n.value)),['','M100','M300']);assert.deepEqual(await page.locator('#exportFilter option').evaluateAll(nodes=>nodes.map(n=>n.value)),['','filters/invalid.ditaval','filters/release.ditaval']);
   await page.selectOption('#exportFilter','filters/invalid.ditaval');await page.waitForFunction(()=>document.getElementById('modelExportError').textContent.includes('action'));
   assert.equal(await page.locator('#modelExportForm [value=download]').isDisabled(),true);
-  await selectFilter('filters/release.ditaval');assert.match(await page.locator('#modelExportSummary').innerText(),/DITAVAL 排除/);assert.equal(await page.locator('#modelExportError').innerText(),'');
+  await selectFilter('filters/release.ditaval');assert.match(await page.locator('#modelExportSummary').innerText(),/正文条件排除/);assert.equal(await page.locator('#modelExportError').innerText(),'');
  });
  await t.test('a late profile read cannot replace a newer selection',async()=>{
   let release,reached;const gate=new Promise(resolve=>{release=resolve;}),pending=new Promise(resolve=>{reached=resolve;});
