@@ -26,7 +26,6 @@
     activeView: 'map',
     selectedVisualElement: null,
     mapAuthorPaths: new Set(),
-    mapAuthorRenderToken: 0,
     historyTargetPath: ''
   };
 
@@ -73,7 +72,10 @@
     showLoading: view.showLoading,
     hideLoading: view.hideLoading
   });
-  const editor = window.DitaEditorController.createEditorController(A, {
+  const editor = window.DitaEditorController.createEditorController(Object.freeze({
+    state, dom, ditaCore, events, api: workspaceClient, setStatus, validateXml,
+    get authorSelection() { return A.authorSelection; }
+  }), {
     documentLabel, renderTabs, renderOutline, renderInspector, updateTree,
     refreshChrome: updateDocumentChrome,
     beforeModeChange: () => A.releaseExportPreview?.(),

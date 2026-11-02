@@ -128,6 +128,14 @@
     host.addEventListener('beforeinput', event => {
       if (event.defaultPrevented || A.state.mode !== 'visual' || event.isComposing || composing) return;
       const type = event.inputType, selected = root.getSelection(); if (!selected?.rangeCount || !host.contains(selected.anchorNode)) return;
+      const title = element(selected.getRangeAt(0).startContainer).closest('[data-map-title]');
+      if (title) {
+        // Map titles use their own source-preserving input/history path.
+        if (!title.contains(selected.getRangeAt(0).endContainer) || ['insertParagraph', 'insertLineBreak'].includes(type)) {
+          event.preventDefault(); fail(new Error('手册标题仅支持单行文字，请在标题内编辑'));
+        }
+        return;
+      }
       if (['insertParagraph', 'insertLineBreak'].includes(type)) { event.preventDefault(); run(() => enter(context())); return; }
       if (!['insertText', 'insertReplacementText', 'deleteContentBackward', 'deleteContentForward', 'deleteByCut'].includes(type)) return;
       const live = selected.getRangeAt(0), first = selection.blockOf(live.startContainer), last = selection.blockOf(live.endContainer);
