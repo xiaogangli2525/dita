@@ -66,6 +66,8 @@
         const data = service().prepare(configuration.snapshot, get('exportModel').value);
         get('modelExportSummary').textContent = `包含 ${data.report.included} 条注脚；排除 ${data.report.excluded} 条；保留 ${data.report.unmarked} 条待确认注脚。` + (data.report.unused ? ` ${data.report.unused} 条未引用定义不输出。` : '') + (configuration.snapshot.filter ? ` DITAVAL 排除 ${data.report.filteredElements} 处内容。` : '') + (get('exportModel').value && data.report.unmarked ? ' 型号仅筛选已标注的适用范围；注脚中的文字差异不会自动识别，待确认内容继续保留。' : '');
         const warnings = data.notes.filter(note => note.unmarked).map(note => ({ path: note.origin.path, severity: 'warning', message: '注脚尚未确认适用范围，将保留在交付中' }));
+        if (data.report.ruleApplied) get('modelExportSummary').textContent += ` 已应用 ${data.report.ruleApplied} 条独立规则，筛除 ${data.report.ruleFilteredParts} 个片段（原始 DITA 不变）。`;
+        if (configuration.snapshot.noteRules?.supported === false) warnings.unshift({path:'',severity:'warning',message:'当前服务不支持独立注脚规则，未应用片段筛选。'});
         if (configuration.source.warning) warnings.unshift({ path: '', severity: 'warning', message: configuration.source.warning });
         for (const [path, file] of configuration.snapshot.files) if (/oxy_(insert|delete|comment)/.test(file.current)) warnings.push({ path, severity: 'warning', message: '含 Oxygen 修订或批注，请检查是否适合交付' });
         showIssues(warnings); get('modelExportError').textContent = '';
@@ -169,10 +171,11 @@
     async function record(snapshot, source, data, model, format, version, name) {
       const documents = new Map([[snapshot.path, snapshot.content], ...Array.from(snapshot.files, ([path, file]) => [path, file.current])]);
       if (snapshot.filter) documents.set(snapshot.filter.path, snapshot.filter.current);
+      if (typeof snapshot.noteRules?.expectedContent === 'string') documents.set('.dita-note-rules.json', snapshot.noteRules.expectedContent);
       const record = { schema: 1, createdAt: new Date().toISOString(), state: 'download-initiated', manualPath: snapshot.path, model, format, version, filename: name,
         source, capturedAt: snapshot.capturedAt, filterPath: snapshot.filter?.path || '', unsavedPaths: service().saveCandidates(snapshot).map(file => file.path), report: data.report,
         documents: await Promise.all(Array.from(documents, async ([path, content]) => ({ path, sha256: await root.DitaBrowserFiles.sha256(content) }))),
-        projectSha256: await root.DitaBrowserFiles.sha256(JSON.stringify(snapshot.project)), outputSha256: await root.DitaBrowserFiles.sha256(data.output) };
+        projectSha256: await root.DitaBrowserFiles.sha256(JSON.stringify(snapshot.project)), noteRulesSha256: snapshot.noteRules ? await root.DitaBrowserFiles.sha256(JSON.stringify(snapshot.noteRules.config)) : null, outputSha256: await root.DitaBrowserFiles.sha256(data.output) };
       root.DitaReleaseStore.createReleaseStore(root.localStorage).append(snapshot.root, record); lastDeliveryRecord = record;
     }
     async function publish(preview, legacy) {
@@ -191,8 +194,11 @@
       if (!legacy) get('modelExportError').textContent = '';
       if (!legacy) { view().pending(); for (const id of ['exportModel', 'exportFilter', 'exportFormat', 'exportVersion']) get(id).disabled = true; get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = true; }); }
       try {
+        await service().verifyRules?.(snapshot);
+        if (generation !== operation) return;
         const key = JSON.stringify([model, format, version]);
         const data = compiled?.key === key ? compiled.data : await convert(snapshot, model, format, version);
+        await service().verifyRules?.(snapshot);
         if (generation !== operation) return;
         if (!service().current(snapshot)) throw new Error('内容已变化，请重新打开交付设置以更新快照');
         compiled = { key, data }; lastExportReport = data.report;

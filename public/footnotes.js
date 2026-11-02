@@ -56,7 +56,8 @@
         edit.title = note.reused ? '打开公共注脚引用源进行修改' : '修改内容与适用型号';
         if (note.reused) edit.textContent = '编辑引用源';
         edit.addEventListener('click', () => beginEdit(note));
-        actions.append(locate, edit); card.append(actions); list.append(card);
+        const rules = el('button', '', '导出型号规则'); rules.type = 'button'; rules.addEventListener('click', () => A.noteRules.show(note));
+        actions.append(locate, edit, rules); card.append(actions); list.append(card);
       }
       syncMode();
     }
@@ -174,7 +175,7 @@
         if (Array.from($('footnoteModel').options).some(option => option.value === previous)) $('footnoteModel').value = previous;
         draw();
         const common = notes.filter(note => note.common).length;
-        error(common + ' 条已确认通用 · 待确认注脚会保留在交付中。');
+        error(common + ' 条已确认通用 · 待确认注脚会保留在交付中。独立规则只在导出中应用，可打开规则预览。');
       } catch (e) { if (token === generation) { notes = []; draw(); error('读取失败：' + e.message); } }
     }
     function scheduleRefresh() { clearTimeout(timer); if (shown) timer = setTimeout(() => refresh(), 180); }
