@@ -128,9 +128,9 @@ test('foundation browser workflows', async t => {
     const content = '<?xml version="1.0" encoding="GBK"?><topic id="new"><title>中文文档</title><body><p>编码下载</p></body></topic>';
     await source(content); await page.click('#saveButton'); await page.waitForFunction(() => !window.DitaApp.state.filesMap.get('new-topic.dita').dirty);
     assert.equal(require('iconv-lite').decode(await fs.readFile(path.join(repo, 'new-topic.dita')), 'gbk'), content);
-    await page.click('button[data-menu=file]'); const downloadPromise = page.waitForEvent('download'); await page.locator('#menuPopup').getByRole('button', { name: '下载', exact: true }).click();
+    await page.click('button[data-menu=file]'); const downloadPromise = page.waitForEvent('download'); await page.locator('#menuPopup').getByRole('menuitem', { name: '下载', exact: true }).click();
     const xml = await fs.readFile(await (await downloadPromise).path(), 'utf8'); assert.match(xml, /encoding="UTF-8"/); assert.match(xml, /编码下载/); assert.equal(await current(), content);
-    promptAnswers.push('copy-topic.dita'); await page.click('button[data-menu=file]'); await page.locator('#menuPopup').getByRole('button', { name: '另存为', exact: true }).click();
+    promptAnswers.push('copy-topic.dita'); await page.click('button[data-menu=file]'); await page.locator('#menuPopup').getByRole('menuitem', { name: '另存为', exact: true }).click();
     await page.waitForFunction(() => window.DitaApp.state.activePath === 'copy-topic.dita');
     assert.equal(require('iconv-lite').decode(await fs.readFile(path.join(repo, 'copy-topic.dita')), 'gbk'), content);
   });

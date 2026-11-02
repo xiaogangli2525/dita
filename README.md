@@ -101,6 +101,12 @@ The light workspace separates document navigation, editing and the attribute/rev
 - `public/publication-core.js`: shared source-preserving model-footnote filtering and reference validation for both publication formats.
 - `public/publication-resolver.js`: bounded local dependency loading, common conref expansion and unsupported-feature checks.
 - `public/app-core.js`: source-preserving Author rendering/conversion.
+- `public/app.js`: initial state and service assembly; the compatibility facade delegates to controllers.
+- `public/app-dom.js`: DOM handle lookup, without behavior or IO.
+- `public/workspace-controller.js`: workspace initialization, repository/branch changes and guarded directory refresh.
+- `public/document-navigation.js`: document open/close and guarded source-position navigation.
+- `public/workspace-view.js`: document header/status, tabs, outline, filename search and switch feedback.
+- `public/app-actions.js` / `public/menu-controller.js`: toolbar/global commands and accessible menu interaction.
 - `public/editor-controller.js`: Source/Topic/Map synchronization, document history, mode changes and review coordination, with injected view callbacks.
 - `public/author-notes.js`: cancellable note insertion and direct marker editing, using the same source and history rules.
 - `public/author-selection.js` / `public/editor-tools.js`: source-aware selections, bookmarks and detached edits; Author formatting, current-Topic plaintext search/replace, block/resource insertion and explicit Source tools.

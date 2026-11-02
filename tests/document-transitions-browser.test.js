@@ -34,7 +34,7 @@ test('document loading, Save As and Map paths preserve current user intent and w
   const open = (page, file) => page.evaluate(file => window.DitaApp.openFile(file).then(value => Boolean(value)), file);
   async function edit(page, selector, text) { await page.locator(selector).click(); await page.keyboard.press('End'); await page.keyboard.insertText(text); }
   function answer(page, value) { page.on('dialog', dialog => dialog.type() === 'prompt' ? dialog.accept(value) : dialog.accept()); }
-  async function saveAs(page) { await page.click('button[data-menu=file]'); await page.locator('#menuPopup').getByRole('button', { name: '另存为', exact: true }).click(); }
+  async function saveAs(page) { await page.click('button[data-menu=file]'); await page.locator('#menuPopup').getByRole('menuitem', { name: '另存为', exact: true }).click(); }
 
   await t.test('duplicate opens issue one read and preserve the new buffer and undo history', async st => {
     const { page, gate } = await fresh(st), held = deferred(), release = gate(); let reads = 0;

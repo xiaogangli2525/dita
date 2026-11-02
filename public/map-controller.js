@@ -36,7 +36,8 @@ function renderMapPicker() {
   openButton.className = 'map-open-author';
   openButton.textContent = '打开全文';
   openButton.title = '在 Author 编辑区打开整个 DITA Map';
-  openButton.addEventListener('click', () => openFile(select.value));
+  openButton.disabled=!state.maps.length;
+  openButton.addEventListener('click', () => { Promise.resolve(openFile(select.value)).catch(error=>setStatus(error.message,true)); });
   heading.append(caption, openButton);
   label.append(heading, select);
   dom.mapPicker.append(label);
@@ -63,7 +64,7 @@ function renderTree(nodes, filter = '') {
       nodeButton.dataset.kind = node.type;
       nodeButton.addEventListener('click', () => {
         state.selectedMapSourcePath = node.sourcePath || '';
-        if (node.type === 'file') openFile(node.path);
+        if (node.type === 'file') Promise.resolve(openFile(node.path)).catch(error=>setStatus(error.message,true));
         else updateTree();
       });
       output.push(nodeButton);
