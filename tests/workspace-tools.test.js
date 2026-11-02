@@ -24,7 +24,7 @@ test('workspace foundation routes preserve boundaries and optimistic writes', as
     await fs.mkdir(path.join(repo,'filters'));const profile='<val><prop att="product" val="tbd" action="exclude"/></val>';
     await fs.writeFile(path.join(repo,'filters','release.ditaval'),profile);
     await fs.symlink(path.join(temporary,'outside.ditaval'),path.join(repo,'filters','linked.ditaval'));
-    assert.deepEqual((await (await request('/api/filters')).json()).files,['filters/release.ditaval']);
+    const listed=await (await request('/api/filters')).json();assert.deepEqual(listed.files,['filters/release.ditaval']);assert.match(listed.descriptions['filters/release.ditaval'],/排除产品标记为“待定（tbd）”/);
     assert.equal(await (await request('/api/file?path=filters%2Frelease.ditaval')).text(),profile);
     assert.equal((await request('/api/file?path=..%2Foutside.ditaval')).status,403);
   });

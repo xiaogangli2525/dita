@@ -44,3 +44,4 @@ require('./export-isolation.test');
 require('./recovery-errors.test');
 require('./note-rules.test');
 require('./content-safety.test');
+require('./model-note-text.test');

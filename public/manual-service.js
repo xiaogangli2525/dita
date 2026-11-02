@@ -60,7 +60,7 @@
         return file ? file.current === content && (!snapshot.buffers.has(path) || file.disk === snapshot.buffers.get(path).disk) : !snapshot.buffers.has(path);
       });
     }
-    function prepare(snapshot, model = '', validateProject = true, {useRules=true} = {}) {
+    function prepare(snapshot, model = '', validateProject = true, {useRules=true,prefixes=false} = {}) {
       const errors = [];
       if (validateProject && snapshot.noteRules?.error) errors.push({path:'.dita-note-rules.json',message:snapshot.noteRules.error});
       const profile = snapshot.filter ? profiling.compile(snapshot.filter.current) : null;
@@ -78,10 +78,12 @@
         } catch (error) { errors.push({ path, message: error.message }); }
       }
       if (validateProject && errors.length) throw Object.assign(new Error(errors.map(item => item.path + '：' + item.message).join('\n')), { issues: errors });
-      const projection = useRules ? rulesCore.project(snapshot.files, snapshot.noteRules?.config, model) : {files:snapshot.files};
-      if (projection.issues?.length) throw Object.assign(new Error('注脚规则已过期，请重新核对后导出'), {issues:projection.issues});
+      const projection = useRules ? rulesCore.project(snapshot.files, snapshot.noteRules?.config, model, {prefixes,profile,knownModels:[...(snapshot.project.models||[]),...discoverModels(snapshot).models]}) : {files:snapshot.files};
+      if (projection.issues?.length) throw Object.assign(new Error(projection.issues.some(item=>item.kind==='model-scope')?'有注脚的型号范围需要核对，请使用独立规则后再导出':'注脚规则已过期，请重新核对后导出'), {issues:projection.issues});
       const result = publication.preparePublication({ map:snapshot.map, files:projection.files, model, profile, ruleConfirmed:projection.confirmed, ruleExclusions:projection.excluded }, A.ditaCore.collectPreviewPaths);
-      result.report.ruleApplied=projection.applied||0; result.report.ruleFilteredParts=projection.filteredParts||0; return result;
+      result.report.ruleApplied=projection.applied||0; result.report.ruleFilteredParts=projection.filteredParts||0;
+      result.report.prefixCandidates=projection.prefixCandidates||0;result.report.prefixApplied=projection.prefixApplied||0;result.report.prefixExcluded=projection.prefixExcluded||0;
+      if(profile)result.report.filteredElements+=(projection.prefixProfileFiltered||0);return result;
     }
     function listNotes(snapshot, model = '') {
       const data = prepare(snapshot, model, false, {useRules:false}), originals = new Map();

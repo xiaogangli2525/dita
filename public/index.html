@@ -284,12 +284,15 @@
       <p id="modelExportScope"></p><p id="deliverySource" class="muted"></p>
       <section id="deliveryConfigure" aria-label="配置交付范围">
       <label>适用型号<select id="exportModel"><option value="">全部型号</option></select></label>
-      <label>正文条件过滤<select id="exportFilter"><option value="">不使用 DITAVAL</option></select></label>
-      <p id="exportFilterHint" class="muted">选择文档库中的 DITAVAL，过滤正文及注脚中不适用的内容。</p>
+      <label class="checkbox-row"><input id="exportPrefixNotes" type="checkbox"/>按“型号：说明”筛选注脚（请预览核对）</label>
+      <p class="muted">仅处理明确的型号前缀；共用型号列表在导出副本中只显示当前型号。复杂说明使用独立规则。</p>
+      <button id="exportReviewRules" type="button">核对注脚型号规则</button>
+      <label>正文条件过滤<select id="exportFilter"><option value="">不过滤正文（保留全部内容）</option></select></label>
+      <p id="exportFilterHint" class="muted">条件文件（DITAVAL）决定哪些标记内容保留，不负责识别文字中的型号。</p>
       <label>文件格式<select id="exportFormat"><option value="html">HTML（推荐交付）</option><option value="pdf">PDF</option><option value="docx">Word（.docx）</option><option value="md">Markdown</option></select></label>
       <p id="exportFormatHint" class="muted"></p>
       <label>文档版本<input id="exportVersion" maxlength="80" placeholder="例如 V1.2，可留空"/></label>
-      <p>型号选择筛选注脚；DITAVAL 可进一步过滤正文、图片和注脚。未标注型号的注脚会保留，除非被 DITAVAL 排除。</p>
+      <p>型号选择、注脚文字规则和正文条件过滤分别生效。普通共用注脚保留；有型号差异但范围不明确的内容须先核对。</p>
       </section>
       <p id="modelExportSummary" role="status"></p>
       <section id="deliveryCheck" aria-label="交付检查" hidden>
@@ -440,6 +443,7 @@
   <script src="/delivery-core.js"></script>
   <script src="/diff-core.js"></script>
   <script src="/app-core.js"></script>
+  <script src="/model-note-text.js"></script>
   <script src="/note-rules-core.js"></script>
   <script src="/note-rule-store.js"></script>
   <script src="/note-rules.js"></script>

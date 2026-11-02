@@ -1,5 +1,16 @@
 # Workspace architecture
 
+## Explicit prose-model export policy
+
+`model-note-text.js` is an opt-in, source-format projection for footnote text. It recognizes complete model-label lists and limited explicit only/unsupported clauses, carries textual scope through continuation sentences and nested containers, and compacts retained labels through XML text spans. Balanced Oxygen insertion spans remain paired; deletion revisions and ambiguous known-model comparisons require review. It does not change the stored fragment-rule schema or source buffers.
+
+`note-rules-core.project` applies reviewed sidecar rules first, then optionally projects unruled notes. It keeps fn shells for the publication pass, passes confirmed/excluded origins through conref resolution and reports policy counts. Profiling is applied to label fragments before interpretation, with its removed-element count retained. `manual-service` and all output formats consume that one projection. All-model publication bypasses prose projection.
+
+The delivery checkbox is explicitly selected per manual/session. Its value participates in compiled-output caching and delivery records. A specific-model export with unresolved textual scope cannot silently return unchanged mixed-model notes. Model choices are disabled while a new condition snapshot loads, preventing a late capture from replacing a newer visible model selection. Rule-review actions retain the current manual scope.
+
+Condition-file listings add bounded Chinese summaries from the actual validated rules; option values remain source paths. HTML note frames are produced once by the XML renderer, with no regex rewrite of nested `note-body` markup. Endnotes retain semantic ordered lists and anchors with dedicated content/return-link styles.
+
+
 ## Imported-content and local HTTP boundaries
 
 Author attribute copying uses `setAuthorAttribute` before attaching source attributes to HTML. Event handlers, CSS, source resource overrides and editor-reserved attributes stay in inert JSON metadata; conversion restores them only to XML. This preserves original bytes and adjacent text edits without activating source handlers or permitting a source `data-dita-source` to replace editor identity. Generated image dimensions and application markers remain controlled by the renderer. CALS row/cell attributes continue to use their existing inert metadata.

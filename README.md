@@ -161,6 +161,14 @@ Click **型号注脚** while a Topic or function Map is open. The panel indexes 
 
 The ordinary footnote editor stores explicit model associations in each footnote's standard `product` attribute (space-separated model names). Existing prose is never used to infer support. Unlabelled footnotes remain visible under every panel filter. Publication also evaluates product conditions on Topic ancestors. Use **交付…** to select the publication model and format. To filter existing prose without editing DITA, use the independent rules below.
 
+### 现有注脚只有型号文字时
+
+对于 `ML307G/ML307N：说明` 这类原文格式，在交付设置选择型号后，显式勾选 **按“型号：说明”筛选注脚（请预览核对）**。程序按完整型号匹配，保留共用说明和当前型号对应片段，并将保留片段的共用型号标签缩成当前型号。支持分段、列表、嵌套块、行内加粗/参数标记，以及明确的“目前仅某型号支持”“某型号不支持”格式；型号前缀下的后续句子沿用该范围。不会把 BX-7 当作 BX-70 或 BX-7-MU。
+
+这是一项需主动开启并预览核对的原文格式约定，不会批量确认或写入独立规则。已确认的独立规则优先。存在明确型号文字但未启用处理时，指定型号的检查/导出会要求先处理；含其他型号的复杂比较或不能确定范围的句子会转到 **核对注脚型号规则**，不会静默删除。全部型号交付保持原始内容，所有模式均不写回 DITA。
+
+**正文条件过滤** 的 DITAVAL 是条件配置文件；例如 `exclude product=tbd` 表示排除产品标记为“待定（tbd）”的内容。列表显示文件中实际规则的中文摘要与原文件路径。它仅控制已有标记的正文、图片和注脚，不会从型号文字推断范围。型号文字筛选和所选条件文件共同生效，排除条件不能被前缀恢复。
+
 ### 不修改原始 DITA 的注脚交付规则
 
 打开功能 Map，在 **注脚 → 导出型号规则（不改原文）** 中核对当前手册的来源注脚。也可以从单条注脚的 **导出型号规则** 按钮进入。系统按句子和完整 XML 结构展示片段；为每段选择 **所有型号通用** 或 **指定适用型号**，再预览目标型号并点击 **确认并保存规则**。型号可手动输入，多个型号用空格分隔。“填入型号建议”只识别已知型号的明确提及，仍需人工核对支持、不支持等语义；没有型号提及的片段不会自动确认为通用。
@@ -171,7 +179,7 @@ The ordinary footnote editor stores explicit model associations in each footnote
 
 原注脚、位置、周围正文或型号条件变化后，旧规则会标为过期，指定型号交付会要求重新核对。规则文件被外部修改时，保存会拒绝覆盖；已检查的导出也会要求重新打开交付设置。无效配置保留原文件并显示错误。可用 **移除这条规则** 恢复该注脚的原有交付行为。
 
-片段筛选保留加粗、斜体、链接、列表等原始 XML，不自动改写句子或共享型号标签。混在同一不可拆分行内元素或修订标记中的差异需要整段核对；保留片段中的其他型号名称不会自动删除。现有手册不会被批量自动确认。
+独立规则保留加粗、斜体、链接、列表等原始 XML，默认不改写句子或共享型号标签；主动开启明确型号前缀处理时，可在导出副本中压缩匹配的标签。混在同一不可拆分行内元素或修订标记中的差异需要整段核对；保留片段中的其他型号名称不会自动删除。现有手册不会被批量自动确认。
 
 Plain notes use a text editor with safe XML escaping; notes with inline markup use an XML-preserving editor. Updates retain identifiers, links, encoding declarations and surrounding source, use the shared undo history and require explicit Save. Outdated edits are refused. Reused footnotes offer **编辑引用源** and keep their including conditions visible. HTML exports include a linked footnote list with return links; Markdown includes complete numbered footnote definitions.
 
