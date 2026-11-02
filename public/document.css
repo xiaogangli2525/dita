@@ -54,3 +54,11 @@
 
 .dita-preview pre [data-dita-source="b"] { font-weight:700; }
 .dita-preview pre [data-dita-source="i"] { font-style:italic; }
+
+/* DITA parameter lists and inline semantics retain their authored XML tags. */
+.dita-preview [data-dita-source="pt"] { font-weight:650; }
+.dita-preview [data-dita-source="sup"] { vertical-align:super; font-size:.75em; line-height:0; }
+.dita-preview [data-dita-source="sub"] { vertical-align:sub; font-size:.75em; line-height:0; }
+.dita-preview [data-dita-source="uicontrol"] { font-weight:650; }
+.dita-preview [data-dita-source="cite"] { font-style:italic; }
+.dita-preview [data-dita-source="tt"] { font-family:Consolas,monospace; }

@@ -31,12 +31,14 @@ const DITA_HTML_MAP = {
   'varname': 'code', 'parmname': 'code', 'msgph': 'code',
   'sl': 'ul', 'sli': 'li', 'ul': 'ul', 'ol': 'ol', 'li': 'li',
   'dl': 'dl', 'dlentry': 'div', 'dt': 'dt', 'dd': 'dd',
+  'parml': 'dl', 'plentry': 'div', 'pt': 'dt', 'pd': 'dd',
   'simpletable': 'table', 'sthead': 'tr', 'strow': 'tr', 'stentry': 'td',
   'table': 'table', 'tgroup': 'div', 'thead': 'thead', 'tbody': 'tbody',
   'row': 'tr', 'entry': 'td',
   'xref': 'a', 'cite': 'cite', 'keyword': 'span', 'term': 'span',
   'ph': 'span', 'b': 'strong', 'i': 'em', 'u': 'u', 'sup': 'sup', 'sub': 'sub',
   'q': 'q', 'boolean': 'span', 'state': 'span',
+  'tt': 'code', 'option': 'code', 'apiname': 'code', 'tm': 'span',
   'image': 'img', 'object': 'div', 'pre': 'pre', 'lines': 'pre', 'msgblock': 'pre', 'screen': 'pre', 'cmdname': 'code', 'userinput': 'code', 'systemoutput': 'code',
   'menucascade': 'span', 'uicontrol': 'span', 'wintitle': 'span',
   'fn': 'sup', 'abbreviated-form': 'span'
@@ -45,7 +47,7 @@ const DITA_HTML_MAP = {
 const DITA_INLINE_TAGS = new Set([
   'codeph', 'filepath', 'varname', 'parmname', 'msgph', 'keyword', 'term',
   'xref', 'cite', 'ph', 'b', 'i', 'u', 'sup', 'sub', 'q', 'boolean', 'state',
-  'menucascade', 'uicontrol', 'wintitle', 'fn', 'abbreviated-form', 'cmdname', 'userinput', 'systemoutput'
+  'menucascade', 'uicontrol', 'wintitle', 'fn', 'abbreviated-form', 'cmdname', 'userinput', 'systemoutput', 'tt', 'option', 'apiname', 'tm'
 ]);
 
 function topicIdOf(node) {
@@ -450,7 +452,7 @@ function renderDitaMarkdown(node, ctx) {
   }
 
   if (tag === 'table' || tag === 'simpletable') return mdTable(node, ctx);
-  if (tag === 'dl') return mdDl(node, ctx);
+  if (tag === 'dl' || tag === 'parml') return mdDl(node, ctx);
 
   if (tag === 'fn') return markdownFootnote(node, ctx);
 
@@ -508,12 +510,12 @@ function mdTable(node, ctx) {
 
 function mdDl(node, ctx) {
   ctx = ctx || _ctx;
-  const entries = Array.from(node.childNodes).filter(n => n.localName === 'dlentry');
+  const entries = Array.from(node.childNodes).filter(n => ['dlentry', 'plentry'].includes(n.localName));
   if (!entries.length) return '';
   let r = '\n';
   for (const entry of entries) {
-    const dt = Array.from(entry.childNodes).find(n => n.localName === 'dt');
-    const dd = Array.from(entry.childNodes).find(n => n.localName === 'dd');
+    const dt = Array.from(entry.childNodes).find(n => ['dt', 'pt'].includes(n.localName));
+    const dd = Array.from(entry.childNodes).find(n => ['dd', 'pd'].includes(n.localName));
     if (dt) r += '**' + dt.textContent.trim() + '**\n';
     if (dd) r += ': ' + Array.from(dd.childNodes).map(function(n) { return mdInline(n, ctx); }).join('').trim() + '\n\n';
   }

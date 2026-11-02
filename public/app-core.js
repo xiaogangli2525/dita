@@ -680,7 +680,8 @@ function renderAuthorNode(node, documentRef = document) {
             const dt = documentRef.createElement('dt');
             dt.ditaSourcePath = xmlNodePath(entry);
             for (const attr of Array.from(entry.attributes || [])) dt.setAttribute(attr.name, attr.value);
-            dt.textContent = entry.textContent;
+            dt.setAttribute('data-dita-source', 'dt');
+            for (const child of entry.childNodes) { const rendered = renderDitaNode(child, documentRef); if (rendered) dt.appendChild(rendered); }
             el.appendChild(dt);
           } else if (entry.localName === 'dd') {
             const dd = documentRef.createElement('dd');
@@ -742,7 +743,8 @@ function renderAuthorNode(node, documentRef = document) {
     return el;
   }
   const inline = new Set(['cmd', 'info', 'term', 'dt', 'dd', 'keyword', 'q', 'sub', 'sup', 'u', 'varname', 'parmname', 'tm', 'menucascade', 'uicontrol', 'state', 'boolean', 'cmdname', 'userinput', 'systemoutput', 'msgph', 'option', 'apiname']);
-  const element = documentRef.createElement(inline.has(tag) ? 'span' : 'div');
+  const semantic = { parml: 'dl', pt: 'dt', pd: 'dd', sub: 'sub', sup: 'sup', q: 'q', tt: 'code' };
+  const element = documentRef.createElement(semantic[tag] || (inline.has(tag) ? 'span' : 'div'));
   element.setAttribute('data-dita-source', tag);
   for (const attribute of Array.from(node.attributes || [])) element.setAttribute(attribute.name, attribute.value);
   for (const child of node.childNodes) {
