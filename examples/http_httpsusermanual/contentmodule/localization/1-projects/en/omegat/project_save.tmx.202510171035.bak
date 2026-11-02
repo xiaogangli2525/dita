@@ -1,0 +1,855 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE tmx SYSTEM "tmx11.dtd">
+<tmx version="1.1">
+  <header creationtool="OmegaT" o-tmf="OmegaT TMX" adminlang="EN-US" datatype="plaintext" creationtoolversion="6.0.1_0_42ef0143" segtype="sentence" srclang="zh-CN"/>
+  <body>
+<!-- Default translations -->
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>../../img/general_assets/icon1.png</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T012819Z" creationid="Lenovo" creationdate="20250902T012819Z">
+        <seg>../../img/general_assets/icon1.png</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>../../img/general_assets/icon2.png</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T012806Z" creationid="Lenovo" creationdate="20250902T012806Z">
+        <seg>../../img/general_assets/icon2.png</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>../../img/general_assets/icon3.png</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T012754Z" creationid="Lenovo" creationdate="20250902T012754Z">
+        <seg>../../img/general_assets/icon3.png</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>../../img/general_assets/icon4.png</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T012810Z" creationid="Lenovo" creationdate="20250902T012810Z">
+        <seg>../../img/general_assets/icon4.png</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>../../img/general_assets/icon5.png</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T012814Z" creationid="Lenovo" creationdate="20250902T012814Z">
+        <seg>../../img/general_assets/icon5.png</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>../../img/general_assets/icon6.png</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T012759Z" creationid="Lenovo" creationdate="20250902T012759Z">
+        <seg>../../img/general_assets/icon6.png</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>&lt;/e10&gt; &lt;/r8&gt; &lt;r11&gt; &lt;e12&gt;PSM&lt;/e12&gt; &lt;e13&gt;模组处于最低功耗状态，网络处于非连接状态，不再接收寻呼消息。</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Zhou Ziwei" changedate="20251017T023458Z" creationid="Zhou Ziwei" creationdate="20251017T023458Z">
+        <seg>&lt;/e10&gt; &lt;/r8&gt; &lt;r11&gt; &lt;e12&gt;PSM&lt;/e12&gt; &lt;e13&gt;In the PSM mode, the module is in the minimal power consumption state, with disconnected network and unable to receive the paging messages.</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>&lt;/e11&gt; &lt;/r8&gt; &lt;r12&gt; &lt;e13&gt;&lt;i14/&gt;&lt;/e13&gt; &lt;e15&gt;移动终端设备并不保障任何情况下都能进行有效连接，例如在移动终端设备没有话费或SIM无效。</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T025153Z" creationid="Lenovo" creationdate="20250902T025153Z">
+        <seg>&lt;/e11&gt; &lt;/r8&gt; &lt;r12&gt; &lt;e13&gt;&lt;i14/&gt;&lt;/e13&gt; &lt;e15&gt;Mobile terminal devices do not guarantee effective connection under all circumstances, such as when there is no credit balance or the SIM card is invalid.</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>&lt;/e13&gt; &lt;/r11&gt; &lt;/t4&gt;</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Zhou Ziwei" changedate="20251017T023502Z" creationid="Zhou Ziwei" creationdate="20251017T023502Z">
+        <seg>&lt;/e13&gt; &lt;/r11&gt; &lt;/t4&gt;</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>&lt;/e15&gt; &lt;/r12&gt; &lt;r16&gt; &lt;e17&gt;&lt;i18/&gt;&lt;/e17&gt; &lt;e19&gt;您的移动终端设备在开机时会接收和发射射频信号。</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T025528Z" creationid="Lenovo" creationdate="20250902T025528Z">
+        <seg>&lt;/e15&gt; &lt;/r12&gt; &lt;r16&gt; &lt;e17&gt;&lt;i18/&gt;&lt;/e17&gt; &lt;e19&gt;Your mobile terminal device will receive and transmit RF signals when powered on.</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>&lt;/e19&gt; &lt;/r16&gt; &lt;r20&gt; &lt;e21&gt;&lt;i22/&gt;&lt;/e21&gt; &lt;e23&gt;请将移动终端设备远离易燃气体。</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T025726Z" creationid="Lenovo" creationdate="20250902T025726Z">
+        <seg>&lt;/e19&gt; &lt;/r16&gt; &lt;r20&gt; &lt;e21&gt;&lt;i22/&gt;&lt;/e21&gt; &lt;e23&gt;Keep mobile devices away from flammable gases.</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>&lt;/e23&gt; &lt;/r20&gt;</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T030012Z" creationid="Lenovo" creationdate="20250902T030012Z">
+        <seg>&lt;/e23&gt; &lt;/r20&gt;</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>&lt;/e3&gt; &lt;/r0&gt; &lt;r4&gt; &lt;e5&gt;&lt;i6/&gt;&lt;/e5&gt; &lt;e7&gt;登机前请关闭移动终端设备。</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T024505Z" creationid="Lenovo" creationdate="20250902T023143Z">
+        <seg>&lt;/e3&gt; &lt;/r0&gt; &lt;r4&gt; &lt;e5&gt;&lt;i6/&gt;&lt;/e5&gt; &lt;e7&gt;Turn off mobile terminal devices before boarding.</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>&lt;/e7&gt; &lt;/r4&gt; &lt;r8&gt; &lt;e9&gt;&lt;i10/&gt;&lt;/e9&gt; &lt;e11&gt;当在医院或健康看护场所，注意是否有移动终端设备使用限制。</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T024415Z" creationid="Lenovo" creationdate="20250902T024415Z">
+        <seg>&lt;/e7&gt; &lt;/r4&gt; &lt;r8&gt; &lt;e9&gt;&lt;i10/&gt;&lt;/e9&gt; &lt;e11&gt;Pay attention to any restrictions on the use of mobile terminal devices when in a hospital or healthcare facility.</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>&lt;/e7&gt; &lt;/r5&gt; &lt;r8&gt; &lt;e9&gt;Idle&lt;/e9&gt; &lt;e10&gt;模组处于DRX或者eDRX状态，网络保持连接状态，可接收寻呼消息；模组在此模式下可切换至Active模式或者PSM模式。</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Zhou Ziwei" changedate="20251017T023447Z" creationid="Zhou Ziwei" creationdate="20251017T023447Z">
+        <seg>&lt;/e7&gt; &lt;/r5&gt; &lt;r8&gt; &lt;e9&gt;Idle&lt;/e9&gt; &lt;e10&gt;In the Idle mode, the module is in the DRX or eDRX state, with a connected network and able to receive paging messages, meanwhile, the module can be switched to either Active or PSM mode.</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>&lt;r0&gt; &lt;e1&gt;&lt;i2/&gt;&lt;/e1&gt; &lt;e3&gt;道路行驶安全第一！</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T012914Z" creationid="Lenovo" creationdate="20250902T012914Z">
+        <seg>&lt;r0&gt; &lt;e1&gt;&lt;i2/&gt;&lt;/e1&gt; &lt;e3&gt;Safety first!</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>&lt;t0&gt; &lt;r1&gt; &lt;e2&gt;分类&lt;/e2&gt; &lt;e3&gt;符号&lt;/e3&gt; &lt;e4&gt;说明&lt;/e4&gt; &lt;/r1&gt; &lt;/t0&gt; &lt;t5&gt; &lt;r6&gt; &lt;e7&gt;信号类型&lt;/e7&gt; &lt;e8&gt;AI&lt;/e8&gt; &lt;e9&gt;模拟输入信号&lt;/e9&gt; &lt;/r6&gt; &lt;r10&gt; &lt;e11&gt;AO&lt;/e11&gt; &lt;e12&gt;模拟输出信号&lt;/e12&gt; &lt;/r10&gt; &lt;r13&gt; &lt;e14&gt;AIO&lt;/e14&gt; &lt;e15&gt;模拟输入输出双向信号&lt;/e15&gt; &lt;/r13&gt; &lt;r16&gt; &lt;e17&gt;DI&lt;/e17&gt; &lt;e18&gt;数字输入信号&lt;/e18&gt; &lt;/r16&gt; &lt;r19&gt; &lt;e20&gt;DO&lt;/e20&gt; &lt;e21&gt;数字输出信号&lt;/e21&gt; &lt;/r19&gt; &lt;r22&gt; &lt;e23&gt;DIO&lt;/e23&gt; &lt;e24&gt;数字输入输出双向信号&lt;/e24&gt; &lt;/r22&gt; &lt;r25&gt; &lt;e26&gt;PI&lt;/e26&gt; &lt;e27&gt;电源输入信号&lt;/e27&gt; &lt;/r25&gt; &lt;r28&gt; &lt;e29&gt;PO&lt;/e29&gt; &lt;e30&gt;电源输出信号&lt;/e30&gt; &lt;/r28&gt; &lt;r31&gt; &lt;e32&gt;IO&lt;/e32&gt; &lt;e33&gt;输入输出双向信号&lt;/e33&gt; &lt;/r31&gt; &lt;r34&gt; &lt;e35&gt;SI&lt;/e35&gt; &lt;e36&gt;施密特输入信号&lt;/e36&gt; &lt;/r34&gt; &lt;r37&gt; &lt;e38&gt;OD&lt;/e38&gt; &lt;e39&gt;开漏输出信号&lt;/e39&gt; &lt;/r37&gt; &lt;r40&gt; &lt;e41&gt;OC&lt;/e41&gt; &lt;e42&gt;开集输出信号&lt;/e42&gt; &lt;/r40&gt; &lt;r43&gt; &lt;e44&gt;BOD&lt;/e44&gt; &lt;e45&gt;开漏输入输出双向信号&lt;/e45&gt; &lt;/r43&gt; &lt;r46&gt; &lt;e47&gt;BOC&lt;/e47&gt; &lt;e48&gt;开集输入输出双向信号&lt;/e48&gt; &lt;/r46&gt; &lt;r49&gt; &lt;e50&gt;RF&lt;/e50&gt; &lt;e51&gt;射频信号&lt;/e51&gt; &lt;/r49&gt; &lt;r52&gt; &lt;e53&gt;默认状态&lt;/e53&gt; &lt;e54&gt;OL&lt;/e54&gt; &lt;e55&gt;输出低电平&lt;/e55&gt; &lt;/r52&gt; &lt;r56&gt; &lt;e57&gt;OH&lt;/e57&gt; &lt;e58&gt;输出高电平&lt;/e58&gt; &lt;/r56&gt; &lt;r59&gt; &lt;e60&gt;Z&lt;/e60&gt; &lt;e61&gt;高阻态&lt;/e61&gt; &lt;/r59&gt; &lt;r62&gt; &lt;e63&gt;Float&lt;/e63&gt; &lt;e64&gt;浮空&lt;/e64&gt; &lt;/r62&gt; &lt;r65&gt; &lt;e66&gt;PU&lt;/e66&gt; &lt;e67&gt;默认上拉&lt;/e67&gt; &lt;/r65&gt; &lt;r68&gt; &lt;e69&gt;PD&lt;/e69&gt; &lt;e70&gt;默认下拉&lt;/e70&gt; &lt;/r68&gt; &lt;r71&gt; &lt;e72&gt;参数&lt;/e72&gt; &lt;e73&gt;VIH&lt;/e73&gt; &lt;e74&gt;高电平输入电压&lt;/e74&gt; &lt;/r71&gt; &lt;r75&gt; &lt;e76&gt;VIL&lt;/e76&gt; &lt;e77&gt;低电平输入电压&lt;/e77&gt; &lt;/r75&gt; &lt;r78&gt; &lt;e79&gt;VOH&lt;/e79&gt; &lt;e80&gt;高电平输出电压&lt;/e80&gt; &lt;/r78&gt; &lt;r81&gt; &lt;e82&gt;VOL&lt;/e82&gt; &lt;e83&gt;低电平输出电压&lt;/e83&gt; &lt;/r81&gt; &lt;/t5&gt;</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Zhou Ziwei" changedate="20251017T021135Z" creationid="Lenovo" creationdate="20250902T065508Z">
+        <seg>&lt;t0&gt; &lt;r1&gt; &lt;e2&gt;Category&lt;/e2&gt; &lt;e3&gt;Symbol&lt;/e3&gt; &lt;e4&gt;Description&lt;/e4&gt; &lt;/r1&gt; &lt;/t0&gt; &lt;t5&gt; &lt;r6&gt; &lt;e7&gt;Signal Type&lt;/e7&gt; &lt;e8&gt;AI&lt;/e8&gt; &lt;e9&gt;Analog input signal&lt;/e9&gt; &lt;/r6&gt; &lt;r10&gt; &lt;e11&gt;AO&lt;/e11&gt; &lt;e12&gt;Analog output signal&lt;/e12&gt; &lt;/r10&gt; &lt;r13&gt; &lt;e14&gt;AIO&lt;/e14&gt; &lt;e15&gt;Analog input/output signal&lt;/e15&gt; &lt;/r13&gt; &lt;r16&gt; &lt;e17&gt;DI&lt;/e17&gt; &lt;e18&gt;Digital input signal&lt;/e18&gt; &lt;/r16&gt; &lt;r19&gt; &lt;e20&gt;DO&lt;/e20&gt; &lt;e21&gt;Digital output signal&lt;/e21&gt; &lt;/r19&gt; &lt;r22&gt; &lt;e23&gt;DIO&lt;/e23&gt; &lt;e24&gt;Digital input/output signal&lt;/e24&gt; &lt;/r22&gt; &lt;r25&gt; &lt;e26&gt;PI&lt;/e26&gt; &lt;e27&gt;Power input signal&lt;/e27&gt; &lt;/r25&gt; &lt;r28&gt; &lt;e29&gt;PO&lt;/e29&gt; &lt;e30&gt;Power output signal&lt;/e30&gt; &lt;/r28&gt; &lt;r31&gt; &lt;e32&gt;IO&lt;/e32&gt; &lt;e33&gt;Bi-directional input/output signal&lt;/e33&gt; &lt;/r31&gt; &lt;r34&gt; &lt;e35&gt;SI&lt;/e35&gt; &lt;e36&gt;Schmitt trigger input signal&lt;/e36&gt; &lt;/r34&gt; &lt;r37&gt; &lt;e38&gt;OD&lt;/e38&gt; &lt;e39&gt;Open-drain output signal&lt;/e39&gt; &lt;/r37&gt; &lt;r40&gt; &lt;e41&gt;OC&lt;/e41&gt; &lt;e42&gt;Open-collector output signal&lt;/e42&gt; &lt;/r40&gt; &lt;r43&gt; &lt;e44&gt;BOD&lt;/e44&gt; &lt;e45&gt;Bi-directional open-drain input/output signal&lt;/e45&gt; &lt;/r43&gt; &lt;r46&gt; &lt;e47&gt;BOC&lt;/e47&gt; &lt;e48&gt;Bi-directional open-collector input/output signal&lt;/e48&gt; &lt;/r46&gt; &lt;r49&gt; &lt;e50&gt;RF&lt;/e50&gt; &lt;e51&gt;Radio frequency signal&lt;/e51&gt; &lt;/r49&gt; &lt;r52&gt; &lt;e53&gt;Default State&lt;/e53&gt; &lt;e54&gt;OL&lt;/e54&gt; &lt;e55&gt;Output low level&lt;/e55&gt; &lt;/r52&gt; &lt;r56&gt; &lt;e57&gt;OH&lt;/e57&gt; &lt;e58&gt;Output high level&lt;/e58&gt; &lt;/r56&gt; &lt;r59&gt; &lt;e60&gt;Z&lt;/e60&gt; &lt;e61&gt;High-impedance state&lt;/e61&gt; &lt;/r59&gt; &lt;r62&gt; &lt;e63&gt;Float&lt;/e63&gt; &lt;e64&gt;Floating&lt;/e64&gt; &lt;/r62&gt; &lt;r65&gt; &lt;e66&gt;PU&lt;/e66&gt; &lt;e67&gt;Default pull-up&lt;/e67&gt; &lt;/r65&gt; &lt;r68&gt; &lt;e69&gt;PD&lt;/e69&gt; &lt;e70&gt;Default pull-down&lt;/e70&gt; &lt;/r68&gt; &lt;r71&gt; &lt;e72&gt;Parameter&lt;/e72&gt; &lt;e73&gt;VIH&lt;/e73&gt; &lt;e74&gt;High-level input voltage&lt;/e74&gt; &lt;/r71&gt; &lt;r75&gt; &lt;e76&gt;VIL&lt;/e76&gt; &lt;e77&gt;Low-level input voltage&lt;/e77&gt; &lt;/r75&gt; &lt;r78&gt; &lt;e79&gt;VOH&lt;/e79&gt; &lt;e80&gt;High-level output voltage&lt;/e80&gt; &lt;/r78&gt; &lt;r81&gt; &lt;e82&gt;VOL&lt;/e82&gt; &lt;e83&gt;Low-level output voltage&lt;/e83&gt; &lt;/r81&gt; &lt;/t5&gt;</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>&lt;t0&gt; &lt;r1&gt; &lt;e2&gt;工作模式&lt;/e2&gt; &lt;e3&gt;描述&lt;/e3&gt; &lt;/r1&gt; &lt;/t0&gt; &lt;t4&gt; &lt;r5&gt; &lt;e6&gt;Active&lt;/e6&gt; &lt;e7&gt;模组处于活动状态，所有功能正常可用，可以进行数据发送和接收；模组在此模式下可切换到Idle模式或PSM模式。</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Zhou Ziwei" changedate="20251017T023413Z" creationid="Zhou Ziwei" creationdate="20251017T023141Z">
+        <seg>&lt;t0&gt; &lt;r1&gt; &lt;e2&gt;Operating Mode&lt;/e2&gt; &lt;e3&gt;Description&lt;/e3&gt; &lt;/r1&gt; &lt;/t0&gt; &lt;t4&gt; &lt;r5&gt; &lt;e6&gt;Active&lt;/e6&gt; &lt;e7&gt;In the Active mode, the module is fully functional and data transmission is available, meanwhile, the module can be switched to either Idle or PSM mode.</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>&lt;t0&gt;页-1&lt;/t0&gt;
+		&lt;v1/&gt;
+		&lt;v2/&gt;
+		&lt;v3/&gt;
+		&lt;g4&gt;
+			&lt;t5&gt;矩形.462&lt;/t5&gt;
+			&lt;d6&gt;RF&lt;/d6&gt;</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T012736Z" creationid="Lenovo" creationdate="20250902T012736Z">
+        <seg>&lt;t0&gt;页-1&lt;/t0&gt;
+		&lt;v1/&gt;
+		&lt;v2/&gt;
+		&lt;v3/&gt;
+		&lt;g4&gt;
+			&lt;t5&gt;矩形.462&lt;/t5&gt;
+			&lt;d6&gt;RF&lt;/d6&gt;</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>ANALOG接口</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031021Z" creationid="Lenovo" creationdate="20250902T031021Z">
+        <seg>ANALOG interface</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>ANALOG接口&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031354Z" creationid="Lenovo" creationdate="20250902T031354Z">
+        <seg>ANALOG interface&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>AUDIO接口</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031113Z" creationid="Lenovo" creationdate="20250902T031113Z">
+        <seg>AUDIO interface</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>AUDIO接口&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031534Z" creationid="Lenovo" creationdate="20250902T031534Z">
+        <seg>AUDIO interface&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>CAMERA接口</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031229Z" creationid="Lenovo" creationdate="20250902T031229Z">
+        <seg>CAMERA interface</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>CAMERA接口&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031622Z" creationid="Lenovo" creationdate="20250902T031622Z">
+        <seg>CAMERA interface&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>CHARGE接口</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T030941Z" creationid="Lenovo" creationdate="20250902T030941Z">
+        <seg>CHARGE interface</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>CHARGE接口&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031257Z" creationid="Lenovo" creationdate="20250902T031257Z">
+        <seg>CHARGE interface&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>CLOCK接口</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031025Z" creationid="Lenovo" creationdate="20250902T031025Z">
+        <seg>CLOCK interface</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>CLOCK接口&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031500Z" creationid="Lenovo" creationdate="20250902T031500Z">
+        <seg>CLOCK  interface&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>CONTROL接口</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031135Z" creationid="Lenovo" creationdate="20250902T031135Z">
+        <seg>CONTROL interface</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>CONTROL接口&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031549Z" creationid="Lenovo" creationdate="20250902T031549Z">
+        <seg>CONTROL interface&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>GND接口</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031239Z" creationid="Lenovo" creationdate="20250902T031239Z">
+        <seg>GND interface</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>GND接口&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031632Z" creationid="Lenovo" creationdate="20250902T031632Z">
+        <seg>GND interface&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>GNSS</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T030338Z" creationid="Lenovo" creationdate="20250902T030338Z">
+        <seg>GNSS</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>GPIO接口</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031005Z" creationid="Lenovo" creationdate="20250902T031005Z">
+        <seg>GPIO interface</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>GPIO接口&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031329Z" creationid="Lenovo" creationdate="20250902T031329Z">
+        <seg>GPIO interface&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>HSIC接口</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031153Z" creationid="Lenovo" creationdate="20250902T031153Z">
+        <seg>HSIC interface</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>HSIC接口&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031601Z" creationid="Lenovo" creationdate="20250902T031601Z">
+        <seg>HSIC interface&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>IIC接口</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031035Z" creationid="Lenovo" creationdate="20250902T031035Z">
+        <seg>IIC interface</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>IIC接口&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031514Z" creationid="Lenovo" creationdate="20250902T031514Z">
+        <seg>IIC interface&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>JTAG接口</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031139Z" creationid="Lenovo" creationdate="20250902T031139Z">
+        <seg>JTAG interface</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>JTAG接口&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031553Z" creationid="Lenovo" creationdate="20250902T031553Z">
+        <seg>JTAG interface&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>KEYPAD接口</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031234Z" creationid="Lenovo" creationdate="20250902T031234Z">
+        <seg>KEYPAD interface</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>KEYPAD接口&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031627Z" creationid="Lenovo" creationdate="20250902T031627Z">
+        <seg>KEYPAD interface&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>LCD接口</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031223Z" creationid="Lenovo" creationdate="20250902T031223Z">
+        <seg>LCD interface</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>LCD接口&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031617Z" creationid="Lenovo" creationdate="20250902T031617Z">
+        <seg>LCD interface&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>MMC接口</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031108Z" creationid="Lenovo" creationdate="20250902T031108Z">
+        <seg>MMC interface</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>MMC接口&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031530Z" creationid="Lenovo" creationdate="20250902T031530Z">
+        <seg>MMC interface&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>PCIe接口</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031219Z" creationid="Lenovo" creationdate="20250902T031219Z">
+        <seg>PCIe interface</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>PCIe接口&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031613Z" creationid="Lenovo" creationdate="20250902T031613Z">
+        <seg>PCIe interface&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>POWER接口</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Zhou Ziwei" changedate="20251017T021303Z" creationid="Lenovo" creationdate="20250902T030935Z">
+        <seg>POWER Interface</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>POWER接口&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031252Z" creationid="Lenovo" creationdate="20250902T031252Z">
+        <seg>POWER interface&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>RESERVED接口</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031245Z" creationid="Lenovo" creationdate="20250902T031245Z">
+        <seg>RESERVED interface</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>RESERVED接口&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031641Z" creationid="Lenovo" creationdate="20250902T031641Z">
+        <seg>RESERVED interface&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>RFIC接口</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031214Z" creationid="Lenovo" creationdate="20250902T031214Z">
+        <seg>RFIC interface</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>RFIC接口&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031607Z" creationid="Lenovo" creationdate="20250902T031607Z">
+        <seg>RFIC interface&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>RF干扰会导致医疗设备运行失常，因此可能需要关闭移动终端设备。</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T025006Z" creationid="Lenovo" creationdate="20250902T025006Z">
+        <seg>Mobile terminal devices should be turned off to prevent RF interference, which can cause medical equipment to malfunction.</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>RF接口</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031012Z" creationid="Lenovo" creationdate="20250902T031012Z">
+        <seg>RF interface</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>RF接口&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031334Z" creationid="Lenovo" creationdate="20250902T031334Z">
+        <seg>RF interface&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>RGMII接口</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031119Z" creationid="Lenovo" creationdate="20250902T031119Z">
+        <seg>RGMII interface</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>RGMII接口&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031537Z" creationid="Lenovo" creationdate="20250902T031537Z">
+        <seg>RGMII interface&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>RMII接口</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031130Z" creationid="Lenovo" creationdate="20250902T031130Z">
+        <seg>RMII interface</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>RMII接口&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031544Z" creationid="Lenovo" creationdate="20250902T031544Z">
+        <seg>RMII interface&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>SDIO接口</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031103Z" creationid="Lenovo" creationdate="20250902T031103Z">
+        <seg>SDIO interface</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>SDIO接口&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031526Z" creationid="Lenovo" creationdate="20250902T031526Z">
+        <seg>SDIO interface&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>SGMII接口</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031124Z" creationid="Lenovo" creationdate="20250902T031124Z">
+        <seg>SGMII interface</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>SGMII接口&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031541Z" creationid="Lenovo" creationdate="20250902T031541Z">
+        <seg>SGMII interface&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>SPI接口</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031030Z" creationid="Lenovo" creationdate="20250902T031030Z">
+        <seg>SPI interface</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>SPI接口&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031507Z" creationid="Lenovo" creationdate="20250902T031507Z">
+        <seg>SPI interface&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>UART接口</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T030947Z" creationid="Lenovo" creationdate="20250902T030947Z">
+        <seg>UART interface</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>UART接口&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031303Z" creationid="Lenovo" creationdate="20250902T031303Z">
+        <seg>UART interface&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>USB接口</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031016Z" creationid="Lenovo" creationdate="20250902T031016Z">
+        <seg>USB interface</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>USB接口&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031339Z" creationid="Lenovo" creationdate="20250902T031339Z">
+        <seg>USB interface&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>USIM接口</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T030959Z" creationid="Lenovo" creationdate="20250902T030959Z">
+        <seg>USIM interface</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>USIM接口&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031311Z" creationid="Lenovo" creationdate="20250902T031311Z">
+        <seg>USIM interface&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>WLAN接口</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T030952Z" creationid="Lenovo" creationdate="20250902T030952Z">
+        <seg>WLAN interface</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>WLAN接口&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031307Z" creationid="Lenovo" creationdate="20250902T031307Z">
+        <seg>WLAN interface&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>xMII(MAC)接口</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031146Z" creationid="Lenovo" creationdate="20250902T031146Z">
+        <seg>xMII(MAC) interface</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>xMII(MAC)接口&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031557Z" creationid="Lenovo" creationdate="20250902T031557Z">
+        <seg>xMII(MAC) interface&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>信号状态符号说明</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T063617Z" creationid="Lenovo" creationdate="20250902T063617Z">
+        <seg>Signal state symbols explanation</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>典型工作模式</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Zhou Ziwei" changedate="20251017T023149Z" creationid="Zhou Ziwei" creationdate="20251017T022813Z">
+        <seg>Typical Operating Mode</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>典型工作模式描述</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Zhou Ziwei" changedate="20251017T023155Z" creationid="Zhou Ziwei" creationdate="20251017T023028Z">
+        <seg>Description of the typical operating mode</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>在任何有潜在爆炸危险场所操作电子设备都有安全隐患。</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T030008Z" creationid="Lenovo" creationdate="20250902T030008Z">
+        <seg>Operating electronic devices in any location with potential explosion hazards poses safety risks.</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>基带</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T030305Z" creationid="Lenovo" creationdate="20250902T030305Z">
+        <seg>Baseband</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>存储</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T030331Z" creationid="Lenovo" creationdate="20250902T030331Z">
+        <seg>Storage</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>安全须知</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Zhou Ziwei" changedate="20251014T202316Z" creationid="Lenovo" creationdate="20250902T012753Z">
+        <seg>Safety Instructions</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>射频</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T030317Z" creationid="Lenovo" creationdate="20250902T030317Z">
+        <seg>Radio frequency</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>应用接口</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T030327Z" creationid="Lenovo" creationdate="20250902T030327Z">
+        <seg>Application interface</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>引脚定义</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T032630Z" creationid="Lenovo" creationdate="20250902T032630Z">
+        <seg>Pin Definition</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>当你在紧急情况下遇见以上情况，请记住使用紧急呼叫，同时保证您的设备开机并且处于信号强度足够的区域。</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T025428Z" creationid="Lenovo" creationdate="20250902T025428Z">
+        <seg>If you encounter these circumstances during an emergency, remember to use emergency calling. Ensure your device is powered on and in an area with sufficient signal strength.</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>当你开车时，请勿使用手持移动终端设备，除非其有免提功能。</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T013243Z" creationid="Lenovo" creationdate="20250902T013243Z">
+        <seg>Do not use hand-held devices while driving. Use hands-free operation only.</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>当你靠近加油站，油库，化工厂或爆炸作业场所，请关闭移动终端设备。</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T025842Z" creationid="Lenovo" creationdate="20250902T025842Z">
+        <seg>Turn off the mobile terminal devices when near gas stations, fuel depots, chemical plants, or blasting sites.</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>当需要采用带状线时，采用带状线阻抗模型进行阻抗计算（如下图）。</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Zhou Ziwei" changedate="20251017T022839Z" creationid="Zhou Ziwei" creationdate="20251017T022839Z">
+        <seg>当需要采用带状线时，采用带状线阻抗模型进行阻抗计算（如下图）。</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>当靠近电视，收音机电脑或者其他电子设备时都会产生射频干扰。</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T025640Z" creationid="Lenovo" creationdate="20250902T025640Z">
+        <seg>RF interference may occur when placed near televisions, radios, computers, or other electronic equipments.</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>忽略该提示项可能会导致飞行安全，甚至触犯法律。</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T024218Z" creationid="Lenovo" creationdate="20250902T024218Z">
+        <seg>Failure to comply may jeopardize flight safety and violate aviation regulations.</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>授时接口</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031057Z" creationid="Lenovo" creationdate="20250902T031057Z">
+        <seg>Timing interface</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>授时接口&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T031522Z" creationid="Lenovo" creationdate="20250902T031522Z">
+        <seg>Timing interface&lt;s0&gt;*&lt;/s0&gt;</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>本节主要介绍使用引脚定义类型、状态以及参数。</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T062553Z" creationid="Lenovo" creationdate="20250902T062553Z">
+        <seg>This chapter mainly introduces the definition, types, states, and parameters of the pins.</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>本节简要介绍模组电源引脚。</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Zhou Ziwei" changedate="20251017T021509Z" creationid="Zhou Ziwei" creationdate="20251017T021509Z">
+        <seg>This chapter provides a brief introduction to the module's power pins.</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>模组功能模块列表</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T030223Z" creationid="Lenovo" creationdate="20250902T030223Z">
+        <seg>List of module functions</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>模组应用接口列表</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Zhou Ziwei" changedate="20251016T062041Z" creationid="Lenovo" creationdate="20250902T030927Z">
+        <seg>List of Application Interface</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>电源管理</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T030255Z" creationid="Lenovo" creationdate="20250902T030255Z">
+        <seg>Power management</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <note>原文：移动终端的无线功能在飞机上禁止开启用以防止对飞机通讯系统的干扰。
+改写：飞机上禁止开启移动终端的无线功能以避免对飞机通讯系统的干扰。</note>
+      <tuv lang="zh-CN">
+        <seg>移动终端的无线功能在飞机上禁止开启用以防止对飞机通讯系统的干扰。</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T024425Z" creationid="Lenovo" creationdate="20250902T023742Z">
+        <seg>Disable the wireless function on the mobile terminal device to avoid interference with aircraft communications.</seg>
+      </tuv>
+    </tu>
+    <tu>
+      <tuv lang="zh-CN">
+        <seg>请停车，再打电话！</seg>
+      </tuv>
+      <tuv lang="en-GB" changeid="Lenovo" changedate="20250902T013351Z" creationid="Lenovo" creationdate="20250902T013351Z">
+        <seg>Drivers must fully park the vehicle before using mobile devices!</seg>
+      </tuv>
+    </tu>
+<!-- Alternative translations -->
+  </body>
+</tmx>

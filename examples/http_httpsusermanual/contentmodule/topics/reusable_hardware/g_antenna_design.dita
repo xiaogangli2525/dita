@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="topic_qsc_lv2_gqb">
+    <title><?oxy_comment_start author="zhouziwei" timestamp="20221104T143534+0800" comment="文档提示：该主题文件为所有型号共用，维护时请注意不要随意删改。"?>天线设计<?oxy_comment_end?></title>
+    <shortdesc>天线设计要求主要包含主天线指标和天线具体设计要求。</shortdesc>
+</topic>
+<?oxy_options track_changes="on"?>

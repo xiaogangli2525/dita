@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="concept_t2n_n5g_k5b">
+    <title>USB接口描述</title>
+    <conbody>
+        <p id="usb_interface_description">模组支持USB2.0高速接口，兼容USB2.0/USB1.1协议，接口速率最大支持480Mbps，只支持从模式，USB输入/输出信号兼容USB2.0接口规范。该接口可用于AT命令传送、数据传输、软件调试和固件升级。接口定义如下表所示。</p>
+    </conbody>
+</concept>

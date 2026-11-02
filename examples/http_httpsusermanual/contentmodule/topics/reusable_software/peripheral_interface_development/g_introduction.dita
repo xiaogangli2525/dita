@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="topic_jgq_gxg_gqb">
+    <title><?oxy_comment_start author="veray" timestamp="20220924T111534+0800" comment="文档提示：该主题文件为所有型号通用，维护时请注意不要随意删改。"?>概述<?oxy_comment_end?></title>
+    <shortdesc>本文档介绍了OpenCPU SDK外围接口资源的硬件说明、API说明、使用示例以及注意事项，外围接口包括GPIO、I2C、UART、PWM等。</shortdesc>
+</topic>
+

@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- 由 Microsoft Visio, SVG Export 生成 mn316a_pin_map_at.svg 页-1 -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ev="http://www.w3.org/2001/xml-events"
+		width="10.1389in" height="9.5096in" viewBox="0 0 730.004 684.691" xml:space="preserve" color-interpolation-filters="sRGB"
+		class="st21">
+	<style type="text/css">
+	<![CDATA[
+		.st1 {fill:#ffffff;stroke:#404040;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5}
+		.st2 {fill:none;stroke:#404040;stroke-dasharray:10.5,7.5;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5}
+		.st3 {fill:#0085d0;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24}
+		.st4 {fill:#000000;font-family:Microsoft YaHei UI;font-size:0.75em;font-weight:bold}
+		.st5 {font-size:1em}
+		.st6 {fill:#6a919a;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24}
+		.st7 {fill:#000000;font-family:Microsoft YaHei UI;font-size:0.833336em;font-weight:bold}
+		.st8 {fill:#ef5964;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24}
+		.st9 {fill:#6fcde2;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24}
+		.st10 {font-size:0.888885em}
+		.st11 {fill:#abd25f;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24}
+		.st12 {fill:#bfbfbf;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24}
+		.st13 {fill:#e94dac;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24}
+		.st14 {fill:#f08300;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:1}
+		.st15 {fill:#feec97;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24}
+		.st16 {fill:#f2f2f2;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24}
+		.st17 {fill:#000000;font-family:Microsoft YaHei UI;font-size:1.99999em;font-weight:bold}
+		.st18 {fill:none;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:1}
+		.st19 {fill:#404040;font-family:Microsoft YaHei UI;font-size:1.00001em;font-weight:bold}
+		.st20 {fill:#000000;font-family:微软雅黑;font-size:0.666664em;font-weight:bold}
+		.st21 {fill:none;fill-rule:evenodd;font-size:12px;overflow:visible;stroke-linecap:square;stroke-miterlimit:3}
+	]]>
+	</style>
+
+	<g>
+		<title>页-1</title>
+		<g id="shape1-1" transform="translate(692.616,-107.917) scale(-1,1)">
+			<title>剪去单角的矩形.1126</title>
+			<path d="M0 684.69 L655.23 684.69 L655.23 143.27 L0 143.27 L0 684.69 Z" class="st1"/>
+		</g>
+		<g id="shape2-3" transform="translate(0.75,-0.75)">
+			<title>框.1094</title>
+			<path d="M0 684.69 L728.5 684.69 L728.5 1.5 L0 1.5 L0 684.69 Z" class="st2"/>
+		</g>
+		<g id="shape3-5" transform="translate(38.4396,-566.864)">
+			<title>框.1095</title>
+			<desc>1 DBG_TXD</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st3"/>
+			<text x="4" y="664.98" class="st4">1 <tspan x="4" dy="1.2em" class="st5">DBG</tspan>_TXD</text>		</g>
+		<g id="shape4-9" transform="translate(38.4396,-520.752)">
+			<title>框.1096</title>
+			<desc>2 DBG_RXD</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st3"/>
+			<text x="4" y="664.98" class="st4">2 <tspan x="4" dy="1.2em" class="st5">DBG</tspan>_RXD</text>		</g>
+		<g id="shape5-13" transform="translate(38.4396,-474.64)">
+			<title>框.1097</title>
+			<desc>3 RSV</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st6"/>
+			<text x="4" y="664.68" class="st7">3 <tspan x="4" dy="1.2em" class="st5">RSV</tspan></text>		</g>
+		<g id="shape6-17" transform="translate(38.4396,-428.528)">
+			<title>框.1098</title>
+			<desc>4 RSV</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st6"/>
+			<text x="4" y="664.68" class="st7">4 <tspan x="4" dy="1.2em" class="st5">RSV</tspan></text>		</g>
+		<g id="shape7-21" transform="translate(38.4396,-382.415)">
+			<title>框.1099</title>
+			<desc>5 RSV</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st6"/>
+			<text x="4" y="664.68" class="st7">5 <tspan x="4" dy="1.2em" class="st5">RSV</tspan></text>		</g>
+		<g id="shape8-25" transform="translate(38.4396,-336.303)">
+			<title>框.1100</title>
+			<desc>6 RSV</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st6"/>
+			<text x="4" y="664.68" class="st7">6 <tspan x="4" dy="1.2em" class="st5">RSV</tspan></text>		</g>
+		<g id="shape9-29" transform="translate(38.4396,-290.191)">
+			<title>框.1101</title>
+			<desc>7 UART_CTS</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st3"/>
+			<text x="4" y="664.98" class="st4">7 <tspan x="4" dy="1.2em" class="st5">UART</tspan>_CTS</text>		</g>
+		<g id="shape10-33" transform="translate(38.4396,-244.079)">
+			<title>框.1102</title>
+			<desc>8 UART_RTS</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st3"/>
+			<text x="4" y="664.98" class="st4">8 <tspan x="4" dy="1.2em" class="st5">UART</tspan>_RTS</text>		</g>
+		<g id="shape11-37" transform="translate(38.4396,-197.967)">
+			<title>框.1103</title>
+			<desc>9 UART_TXD</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st3"/>
+			<text x="4" y="664.98" class="st4">9 <tspan x="4" dy="1.2em" class="st5">UART</tspan>_TXD</text>		</g>
+		<g id="shape12-41" transform="translate(38.4396,-151.854)">
+			<title>框.1104</title>
+			<desc>10 UART_RXD</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st3"/>
+			<text x="4" y="664.98" class="st4">10 <tspan x="4" dy="1.2em" class="st5">UART</tspan>_RXD</text>		</g>
+		<g id="shape13-45" transform="translate(1268.8,510.726) rotate(90)">
+			<title>框.1105</title>
+			<desc>20 VDD_EXT</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st8"/>
+			<text x="4" y="664.98" class="st4">20 <tspan x="4" dy="1.2em" class="st5">VDD</tspan>_EXT</text>		</g>
+		<g id="shape14-49" transform="translate(1216.04,510.726) rotate(90)">
+			<title>框.1106</title>
+			<desc>19 RSV</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st6"/>
+			<text x="4" y="664.68" class="st7">19 <tspan x="4" dy="1.2em" class="st5">RSV</tspan></text>		</g>
+		<g id="shape15-53" transform="translate(1163.29,510.726) rotate(90)">
+			<title>框.1107</title>
+			<desc>18 RSV</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st6"/>
+			<text x="4" y="664.68" class="st7">18 <tspan x="4" dy="1.2em" class="st5">RSV</tspan></text>		</g>
+		<g id="shape16-57" transform="translate(1110.53,510.726) rotate(90)">
+			<title>框.1108</title>
+			<desc>17 RST_WAKEUPIN</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st9"/>
+			<text x="4" y="659.58" class="st4">17 <tspan x="4" dy="1.2em" class="st5">RST</tspan>_WAKEU<tspan x="4" dy="1.2em"
+						class="st5">PIN</tspan></text>		</g>
+		<g id="shape17-62" transform="translate(1057.78,510.726) rotate(90)">
+			<title>框.1109</title>
+			<desc>16 WAKEUPOUT</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st9"/>
+			<text x="4" y="665.58" class="st4">16 <tspan x="4" dy="1.237em" class="st10">WAKEUPOUT</tspan></text>		</g>
+		<g id="shape18-66" transform="translate(1005.02,510.726) rotate(90)">
+			<title>框.1110</title>
+			<desc>15 USIM_PWR</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st8"/>
+			<text x="4" y="664.98" class="st4">15 <tspan x="4" dy="1.2em" class="st5">USIM</tspan>_PWR</text>		</g>
+		<g id="shape19-70" transform="translate(952.264,510.726) rotate(90)">
+			<title>框.1111</title>
+			<desc>14 USIM_DATA</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st11"/>
+			<text x="4" y="664.98" class="st4">14 <tspan x="4" dy="1.2em" class="st5">USIM</tspan>_DATA</text>		</g>
+		<g id="shape20-74" transform="translate(899.508,510.726) rotate(90)">
+			<title>框.1112</title>
+			<desc>13 USIM_CLK</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st11"/>
+			<text x="4" y="664.98" class="st4">13 <tspan x="4" dy="1.2em" class="st5">USIM</tspan>_CLK</text>		</g>
+		<g id="shape21-78" transform="translate(846.753,510.726) rotate(90)">
+			<title>框.1113</title>
+			<desc>12 USIM_RESET</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st11"/>
+			<text x="4" y="664.98" class="st4">12 <tspan x="4" dy="1.2em" class="st5">USIM</tspan>_RESET</text>		</g>
+		<g id="shape22-82" transform="translate(793.997,510.726) rotate(90)">
+			<title>框.1114</title>
+			<desc>11 RSV</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st6"/>
+			<text x="4" y="664.68" class="st7">11 <tspan x="4" dy="1.2em" class="st5">RSV</tspan></text>		</g>
+		<g id="shape23-86" transform="translate(626.629,-567.396)">
+			<title>框.1115</title>
+			<desc>30 GND</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st12"/>
+			<text x="4" y="664.98" class="st4">30 <tspan x="4" dy="1.2em" class="st5">GND</tspan></text>		</g>
+		<g id="shape24-90" transform="translate(626.629,-521.283)">
+			<title>框.1116</title>
+			<desc>29 GND</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st12"/>
+			<text x="4" y="664.98" class="st4">29 <tspan x="4" dy="1.2em" class="st5">GND</tspan></text>		</g>
+		<g id="shape25-94" transform="translate(626.629,-475.171)">
+			<title>框.1117</title>
+			<desc>28 GND</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st12"/>
+			<text x="4" y="664.98" class="st4">28 <tspan x="4" dy="1.2em" class="st5">GND</tspan></text>		</g>
+		<g id="shape26-98" transform="translate(626.629,-429.059)">
+			<title>框.1118</title>
+			<desc>27 ANT</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st13"/>
+			<text x="4" y="664.98" class="st4">27 <tspan x="4" dy="1.2em" class="st5">ANT</tspan></text>		</g>
+		<g id="shape27-102" transform="translate(626.629,-382.947)">
+			<title>框.1119</title>
+			<desc>26 GND</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st12"/>
+			<text x="4" y="664.98" class="st4">26 <tspan x="4" dy="1.2em" class="st5">GND</tspan></text>		</g>
+		<g id="shape28-106" transform="translate(626.629,-336.835)">
+			<title>框.1120</title>
+			<desc>25 GND</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st12"/>
+			<text x="4" y="664.98" class="st4">25 <tspan x="4" dy="1.2em" class="st5">GND</tspan></text>		</g>
+		<g id="shape29-110" transform="translate(626.629,-290.722)">
+			<title>框.1121</title>
+			<desc>24 RSV</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st6"/>
+			<text x="4" y="664.98" class="st4">24 <tspan x="4" dy="1.2em" class="st5">RSV</tspan></text>		</g>
+		<g id="shape30-114" transform="translate(626.629,-244.61)">
+			<title>框.1122</title>
+			<desc>23 GND</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st12"/>
+			<text x="4" y="664.98" class="st4">23 <tspan x="4" dy="1.2em" class="st5">GND</tspan></text>		</g>
+		<g id="shape31-118" transform="translate(626.629,-198.498)">
+			<title>框.1123</title>
+			<desc>22 GND</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st12"/>
+			<text x="4" y="664.98" class="st4">22 <tspan x="4" dy="1.2em" class="st5">GND</tspan></text>		</g>
+		<g id="shape32-122" transform="translate(626.629,-152.386)">
+			<title>框.1124</title>
+			<desc>21 NETLIGHT</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st9"/>
+			<text x="4" y="664.98" class="st4">21 <tspan x="4" dy="1.2em" class="st5">NETLIGHT</tspan></text>		</g>
+		<g id="shape33-126" transform="translate(54.6376,-617.546)">
+			<title>圆形.1125</title>
+			<path d="M0 673.35 A11.3386 11.3386 0 0 1 22.68 673.35 A11.3386 11.3386 0 0 1 0 673.35 Z" class="st14"/>
+		</g>
+		<g id="shape34-128" transform="translate(1268.8,36.2067) rotate(90)">
+			<title>框.1127</title>
+			<desc>31 VBAT</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st8"/>
+			<text x="4" y="664.98" class="st4">31 <tspan x="4" dy="1.2em" class="st5">VBAT</tspan></text>		</g>
+		<g id="shape35-132" transform="translate(1216.04,36.2067) rotate(90)">
+			<title>框.1128</title>
+			<desc>32 VBAT</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st8"/>
+			<text x="4" y="664.98" class="st4">32 <tspan x="4" dy="1.2em" class="st5">VBAT</tspan></text>		</g>
+		<g id="shape36-136" transform="translate(1163.29,36.2067) rotate(90)">
+			<title>框.1129</title>
+			<desc>33 RSV</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st6"/>
+			<text x="4" y="664.68" class="st7">33 <tspan x="4" dy="1.2em" class="st5">RSV</tspan></text>		</g>
+		<g id="shape37-140" transform="translate(1110.53,36.2067) rotate(90)">
+			<title>框.1130</title>
+			<desc>34 RSV</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st6"/>
+			<text x="4" y="664.68" class="st7">34 <tspan x="4" dy="1.2em" class="st5">RSV</tspan></text>		</g>
+		<g id="shape38-144" transform="translate(1057.78,36.2067) rotate(90)">
+			<title>框.1131</title>
+			<desc>35 RSV</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st6"/>
+			<text x="4" y="664.68" class="st7">35 <tspan x="4" dy="1.2em" class="st5">RSV</tspan></text>		</g>
+		<g id="shape39-148" transform="translate(1005.02,36.2067) rotate(90)">
+			<title>框.1132</title>
+			<desc>36 RSV</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st6"/>
+			<text x="4" y="664.68" class="st7">36 <tspan x="4" dy="1.2em" class="st5">RSV</tspan></text>		</g>
+		<g id="shape40-152" transform="translate(952.264,36.2067) rotate(90)">
+			<title>框.1133</title>
+			<desc>37 RSV</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st6"/>
+			<text x="4" y="664.68" class="st7">37 <tspan x="4" dy="1.2em" class="st5">RSV</tspan></text>		</g>
+		<g id="shape41-156" transform="translate(899.508,36.2067) rotate(90)">
+			<title>框.1134</title>
+			<desc>38 ADC</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st15"/>
+			<text x="4" y="664.98" class="st4">38 <tspan x="4" dy="1.2em" class="st5">ADC</tspan></text>		</g>
+		<g id="shape42-160" transform="translate(846.753,36.2067) rotate(90)">
+			<title>框.1135</title>
+			<desc>39 RSV</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st6"/>
+			<text x="4" y="664.68" class="st7">39 <tspan x="4" dy="1.2em" class="st5">RSV</tspan></text>		</g>
+		<g id="shape43-164" transform="translate(793.997,36.2067) rotate(90)">
+			<title>框.1136</title>
+			<desc>40 RSV</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st6"/>
+			<text x="4" y="664.68" class="st7">40 <tspan x="4" dy="1.2em" class="st5">RSV</tspan></text>		</g>
+		<g id="shape44-168" transform="translate(251.616,-419.084)">
+			<title>框.1137</title>
+			<desc>MN316A Top View</desc>
+			<rect x="0" y="567.235" width="226.772" height="117.456" class="st16"/>
+			<text x="59.64" y="618.76" class="st17">MN316A <tspan x="57.1" dy="1.2em" class="st5">Top View</tspan></text>		</g>
+		<g id="shape45-172" transform="translate(233.191,-344.541)">
+			<title>框.539</title>
+			<desc>41 RSV</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st6"/>
+			<text x="4" y="664.68" class="st7">41 <tspan x="4" dy="1.2em" class="st5">RSV</tspan></text>		</g>
+		<g id="shape46-176" transform="translate(233.191,-298.429)">
+			<title>框.540</title>
+			<desc>44 RSV</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st6"/>
+			<text x="4" y="664.68" class="st7">44 <tspan x="4" dy="1.2em" class="st5">RSV</tspan></text>		</g>
+		<g id="shape47-180" transform="translate(233.191,-252.317)">
+			<title>框.541</title>
+			<desc>47 RSV</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st6"/>
+			<text x="4" y="664.68" class="st7">47 <tspan x="4" dy="1.2em" class="st5">RSV</tspan></text>		</g>
+		<g id="shape48-184" transform="translate(332.404,-344.541)">
+			<title>框.542</title>
+			<desc>42 RSV</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st6"/>
+			<text x="4" y="664.68" class="st7">42 <tspan x="4" dy="1.2em" class="st5">RSV</tspan></text>		</g>
+		<g id="shape49-188" transform="translate(332.404,-298.429)">
+			<title>框.543</title>
+			<desc>45 RSV</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st6"/>
+			<text x="4" y="664.68" class="st7">45 <tspan x="4" dy="1.2em" class="st5">RSV</tspan></text>		</g>
+		<g id="shape50-192" transform="translate(332.404,-252.317)">
+			<title>框.544</title>
+			<desc>48 RSV</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st6"/>
+			<text x="4" y="664.68" class="st7">48 <tspan x="4" dy="1.2em" class="st5">RSV</tspan></text>		</g>
+		<g id="shape51-196" transform="translate(431.616,-344.541)">
+			<title>框.545</title>
+			<desc>43 RSV</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st6"/>
+			<text x="4" y="664.68" class="st7">43 <tspan x="4" dy="1.2em" class="st5">RSV</tspan></text>		</g>
+		<g id="shape52-200" transform="translate(431.616,-298.429)">
+			<title>框.546</title>
+			<desc>46 GND</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st12"/>
+			<text x="4" y="664.98" class="st4">46 <tspan x="4" dy="1.2em" class="st5">GND</tspan></text>		</g>
+		<g id="shape53-204" transform="translate(431.616,-252.317)">
+			<title>框.547</title>
+			<desc>49 RSV</desc>
+			<rect x="0" y="650.675" width="65.1969" height="34.0157" class="st6"/>
+			<text x="4" y="664.68" class="st7">49 <tspan x="4" dy="1.2em" class="st5">RSV</tspan></text>		</g>
+		<g id="shape54-208" transform="translate(124.853,-62.5723)">
+			<title>框.471</title>
+			<desc>图 例</desc>
+			<rect x="0" y="662.014" width="53.8583" height="22.6772" class="st18"/>
+			<text x="9.57" y="676.95" class="st19">图   例</text>		</g>
+		<g id="shape57-211" transform="translate(511.608,-58.3796)">
+			<title>框.1652</title>
+			<desc>POWER</desc>
+			<rect x="0" y="659.91" width="85.0394" height="24.7812" class="st8"/>
+			<text x="27.23" y="674.7" class="st20">POWER</text>		</g>
+		<g id="shape58-214" transform="translate(511.608,-22.3694)">
+			<title>框.1666</title>
+			<desc>RF</desc>
+			<rect x="0" y="659.91" width="85.0394" height="24.7812" class="st13"/>
+			<text x="37.49" y="674.7" class="st20">RF</text>		</g>
+		<g id="shape60-217" transform="translate(296.149,-58.3796)">
+			<title>框.1654</title>
+			<desc>GND</desc>
+			<rect x="0" y="659.91" width="85.0394" height="24.7812" class="st12"/>
+			<text x="32.9" y="674.7" class="st20">GND</text>		</g>
+		<g id="shape61-220" transform="translate(403.879,-58.3796)">
+			<title>框.1665</title>
+			<desc>ANALOG</desc>
+			<rect x="0" y="659.91" width="85.0394" height="24.7812" class="st15"/>
+			<text x="24.59" y="674.7" class="st20">ANALOG</text>		</g>
+		<g id="shape62-223" transform="translate(296.149,-22.3694)">
+			<title>框.1670</title>
+			<desc>UART</desc>
+			<rect x="0" y="659.91" width="85.0394" height="24.7812" class="st3"/>
+			<text x="31.11" y="674.7" class="st20">UART</text>		</g>
+		<g id="shape63-226" transform="translate(188.419,-58.3796)">
+			<title>框.1651</title>
+			<desc>RESERVED</desc>
+			<rect x="0" y="659.91" width="85.0394" height="24.7812" class="st6"/>
+			<text x="21.64" y="674.7" class="st20">RESERVED</text>		</g>
+		<g id="shape64-229" transform="translate(188.419,-22.3694)">
+			<title>框.1664</title>
+			<desc>USIM</desc>
+			<rect x="0" y="659.91" width="85.0394" height="24.7812" class="st11"/>
+			<text x="31.55" y="674.7" class="st20">USIM</text>		</g>
+		<g id="shape65-232" transform="translate(405.309,-22.3694)">
+			<title>框.605</title>
+			<desc>CONTROL</desc>
+			<rect x="0" y="659.91" width="85.0394" height="24.7812" class="st9"/>
+			<text x="22.4" y="674.7" class="st20">CONTROL</text>		</g>
+	</g>
+</svg>

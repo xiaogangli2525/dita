@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="examples_of_at_command_flow">
+    <title>AT命令流程示例</title>
+    <conbody>
+        <conbodydiv id="deep_sleep">
+        <section id="deep_sleep_command_control">
+            <title>深睡眠命令控制</title>
+            <p>深睡眠模式默认打开，可通过<cmdname>AT+MLPMCFG="sleepmode"[,&lt;sleep_mode>[,&lt;permanent>]]</cmdname>命令切换。</p>
+            <msgblock>//关闭浅睡眠和深睡眠
+<cmdname>AT+MLPMCFG="sleepmode",0,0</cmdname> 
+OK
+//打开浅睡眠和深睡眠
+<cmdname>AT+MLPMCFG="sleepmode",2,0</cmdname>
+OK</msgblock>
+        </section>
+        <section id="delay_deep_sleep">
+            <title>延迟深睡眠</title>
+            <p>可通过<cmdname>AT+MLPMCFG="delaysleep"[,&lt;delay_sleep>]</cmdname>命令控制模组进入深睡眠的延迟时间。</p>
+            <msgblock id="codeblock_eyf_p2s_rsb">//延时30s进入深睡眠
+<cmdname>AT+MLPMCFG="delaysleep",30</cmdname>
+OK</msgblock>
+        </section>
+       </conbodydiv>
+    </conbody>
+</concept>

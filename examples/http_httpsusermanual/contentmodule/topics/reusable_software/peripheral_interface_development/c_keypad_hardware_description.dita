@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="concept_y5r_wg4_qqb">
+    <title><?oxy_comment_start author="veray" timestamp="20220924T145622+0800" comment="文档提示：该主题文件为所有型号共用，维护时请注意不要随意删改。"?>硬件说明<?oxy_comment_end?></title>
+    <shortdesc>OpenCPU KEYPAD引脚映射详见对应版本的资源综述和硬件设计手册。</shortdesc>
+</concept>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="topic_jdj_jy2_gqb">
+    <title><?oxy_comment_start author="zhouziwei" timestamp="20221104T143357+0800" comment="文档提示：该主题文件为所有型号通用，维护时请注意不要随意删改。"?>射频特性<?oxy_comment_end?></title>
+    <shortdesc>本章主要介绍模组射频特性。</shortdesc>
+    <body>
+        <p>射频特性包括：</p>
+        <ul id="ul_stn_xfr_jsb">
+            <li>工作频段</li>
+            <li>测试数据</li>
+            <li>天线设计</li>
+        </ul>
+    </body>
+</topic>

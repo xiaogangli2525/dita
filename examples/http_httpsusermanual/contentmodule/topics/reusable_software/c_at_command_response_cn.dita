@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="concept_v3h_f4g_brb">
+    <title>AT命令响应</title>
+    <conbody>
+        <table id="table_v22_l4g_brb">
+            <title>AT命令响应类型</title>
+            <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="1*" align="left"/>
+                <colspec colname="c2" colnum="2" colwidth="1*" align="left"/>
+                <thead>
+                    <row>
+                        <entry>响应</entry>
+                        <entry>释义描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>ERROR</entry>
+                        <entry>AT命令格式错误或其他错误</entry>
+                    </row>
+                    <row>
+                        <entry>+CME ERROR: &lt;err>或者+CMS ERROR: &lt;err> 或者 +CIS ERROR:
+                            &lt;err></entry>
+                        <entry>启用了扩展错误报告（+CMEE），其中&lt;err>表示错误码或详细错误信息</entry>
+                    </row>
+                    <row>
+                        <entry>OK</entry>
+                        <entry>AT命令执行成功</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        <note id="note_o3d_bpg_brb">
+            <sl id="sl_dl5_bjy_25b">
+                <sli>AT命令响应结果中，冒号“:”后均存在空格，用以分隔响应头与参数列表。</sli>
+                <sli>手册描述中错误响应用+ CME ERROR: &lt;err>或者+CMS ERROR: &lt;err>或者+CIS ERROR:
+                    &lt;err>表示，实际返回情况参考AT+CMEE命令。</sli>
+            </sl>
+        </note>
+    </conbody>
+</concept>
+

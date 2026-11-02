@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="doc_introduction">
+    <title>引言</title>
+    <shortdesc>本文档介绍模组硬件接口规范、技术参数、电气特性、射频性能指标以及机械规范等，旨在帮助用户快速理解模组的硬件功能，快速应用模组于无线通信，完成产品设计开发。</shortdesc>
+</topic>

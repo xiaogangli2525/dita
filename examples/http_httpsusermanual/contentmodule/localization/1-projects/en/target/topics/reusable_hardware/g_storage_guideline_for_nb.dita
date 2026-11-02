@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="topic_bqf_j1f_gqb">
+    <title><?oxy_comment_start author="chenpeining@cmiot.cmcc" timestamp="20220819T170043+0800" comment="文档提示：该主题为通用，维护时需注意不要随意删改。"?>Storage Specifications<?oxy_comment_end?></title>
+    <body>
+        <p>The module is a moisture-sensitive product with a moisture sensitivity level defined as Class 3.</p>
+        <p>After unpacking, please refer to the following table for specific criteria for module storage conditions. If the storage time exceeds the workshop shelf life as shown in the table below, the module must be baked before mounting.</p>
+        <table id="table_ymn_s52_ksb">
+            <title>Storage conditions reference</title>
+            <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="3*" align="left"/>
+                <colspec colname="c2" colnum="2" colwidth="7*" align="left"/>
+                <thead> <row> <entry>Moisture Sensitivity Level (MSL)</entry> <entry>Floor Life (Factory Environment ≤ +30℃/60%RH)</entry> </row> </thead> <tbody> <row> <entry>1</entry> <entry>Infinite shelf life under conditions of ≤+30℃/85% RH</entry> </row> <row> <entry>2</entry> <entry>1 year</entry> </row> <row> <entry>2a</entry> <entry>4 weeks</entry> </row> <row> <entry>3</entry> <entry>168 hours</entry> </row> <row> <entry>4</entry> <entry>72 hours</entry> </row> <row> <entry>5</entry> <entry>48 hours</entry> </row> <row> <entry>5a</entry> <entry>24 hours</entry> </row> <row> <entry>6</entry> <entry>Mandatory baking required before using; the mounting procedure must be completed within the specified time limit after module baking. (Specific implementation shall be subject to the label instructions.)</entry> </row> </tbody>
+            </tgroup>
+        </table>
+        <note id="note_h15_bv2_ksb">
+            <sl id="sl_aqp_2v2_ksb">
+                <sli>The module packaging cannot withstand high-temperature baking. Please remove the module packaging before baking. For short-term baking, please refer to the <i>IPC/JEDECJ-STD-033</i> standard.</sli> <sli>For detailed standards related to module storage and baking, please refer to the "China Mobile Internet of Things Intelligent Module Department Communication Module SMT Application Guide". </sli>
+            </sl>
+        </note>
+    </body>
+</topic>

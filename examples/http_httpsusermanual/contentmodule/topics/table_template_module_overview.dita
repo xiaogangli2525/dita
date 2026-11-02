@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="table_template_module_overview">
+    <title>模组概述表格模板</title>
+    <body>
+      <table id="table_module_overview">
+            <title><ph keyref="product"/>模组概述</title>
+            <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="3*" align="left"/>
+                <colspec colname="c2" colnum="2" colwidth="7*" align="left"/>
+                <thead>
+                    <row>
+                        <entry>类型</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>封装</entry>
+                        <entry>LCC44+LGA50</entry>
+                    </row>
+                    <row>
+                        <entry>物理特性</entry>
+                        <entry>
+                            <ul>
+                                <li>尺寸（长*宽*高）：17.7mm*15.8mm*2.4mm</li>
+                                <li>重量：约2.9g</li>
+                            </ul>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry>射频特性</entry>
+                        <entry/>
+                    </row>
+                    <row>
+                        <entry>理论速率</entry>
+                        <entry>
+                            <ul>
+                                <li>LTE-FDD：最大下行速率10Mbps，最大上行速率5Mbps </li>
+                                <li>LTE-TDD：最大下行速率7.5Mbps，最大上行速率1Mbps </li>
+                            </ul>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry>工作频段</entry>
+                        <entry>
+                            <ul>
+                                <li>LTE-FDD Band 1/Band 3/Band 5/Band 8</li>
+                                <li>LTE-TDD Band 34/Band 38/Band 39/Band 40/Band 41</li>
+                            </ul>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry>发射功率</entry>
+                        <entry>23dBm±2dB</entry>
+                    </row>
+                    <row>
+                        <entry>温度和湿度</entry>
+                        <entry>
+                            <ul>
+                                <li>正常工作温度：-35℃ ~ +75℃</li>
+                                <li>扩展工作温度：-40℃ ~ +85℃</li>
+                                <li>存储温度：-40℃ ~ +90℃</li>
+                                <li>湿度：</li>
+                            </ul>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry>工作电压范围</entry>
+                        <entry>DC3.4V ~ 4.5V（典型值3.8V）</entry>
+                    </row>
+                    <row>
+                        <entry>应用接口</entry>
+                        <entry>
+                            <ul>
+                                <li>UART*3</li>
+                                <li>USB*1</li>
+                                <li>USIM*2</li>
+                                <li>AUDIO*1<fn>仅ML307A-DSLN支持。</fn></li>
+                                <li>RF*1</li>
+                                <li>CONTROL接口*6</li>
+                                <li>GPIO*4</li>
+                                <li>PWM*2<sup>*</sup></li>
+                                <li>ADC*1</li>
+                            </ul>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry>短信业务</entry>
+                        <entry>支持</entry>
+                    </row>
+                    <row>
+                        <entry>网络协议</entry>
+                        <entry>IPv4/IPv6/PING/NTP/DNS/TCP/UDP/SSL/HTTP/HTTPS/MQTT/MQTTS</entry>
+                    </row>
+                    <row>
+                        <entry>驱动</entry>
+                        <entry>USB驱动：支持Windows7/10,Linux,Android4.x*~Android11.x*</entry>
+                    </row>
+                    <row>
+                        <entry>固件升级</entry>
+                        <entry>USB</entry>
+                    </row>
+                    <row>
+                        <entry>3GPP标准</entry>
+                        <entry>-</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        
+    </body>
+</topic>

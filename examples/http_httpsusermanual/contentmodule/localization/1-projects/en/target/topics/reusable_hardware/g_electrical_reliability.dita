@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="topic_xbg_qy2_gqb">
+    <title><?oxy_comment_start author="zhouziwei@cmiot.cmcc" timestamp="20220824T192159+0800" comment="文档提示：该主题为通用，且为模板，请勿删改内容。"?>Electrical Characteristics and Reliability<?oxy_comment_end?></title>
+    <shortdesc>This chapter primarily introduces the electrical characteristics and reliability performance of the module interfaces. </shortdesc>
+    <body>
+        <p>Including:</p>
+        <ul id="ul_h4n_s4b_xsb">
+            <li>Extreme operational limits</li>
+            <li>Operating and storage conditions</li>
+            <li>Power supply characteristics</li>
+            <li>Reliability metrics</li>
+            <li>EMC and ESD characteristics</li>
+        </ul>
+    </body>
+</topic>

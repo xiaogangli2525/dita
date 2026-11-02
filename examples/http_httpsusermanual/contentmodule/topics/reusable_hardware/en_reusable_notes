@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="reusable_notes">
+    <title>Reusable Notes</title>
+    <body>
+        <note id="function_under_development" type="important">"*" indicates the function is under
+            development.</note>
+        <note id="product_design_note"
+            ><?oxy_comment_start author="zhouziwei@cmiot.cmcc" timestamp="20240628T181718+0800" comment="待逐步替换为英文版本"?>上图为模组产品设计效果展示<?oxy_comment_end?>，实际外观及标签信息请参照中移物联网有限公司提供的产品实物。</note>
+        <note id="pin_map_note">
+            <sl>
+                <sli id="pin_under_development">Pin name with "*" indicates the function is under
+                    development.</sli>
+                <sli id="pin_rsv">RESERVED means the function is not defined yet, and it is
+                    recommended to leave it unconnected.</sli>
+            </sl>
+        </note>
+        <note id="pin_description_note">
+            <sl>
+                <sli>RSV means the function is not defined yet, and it is recommended to leave it
+                    unconnected.</sli>
+                <sli>The prerequisite of the input/output direction definition is that the module is
+                    the master device.</sli>
+            </sl>
+        </note>
+        <note id="usb_interface_note">
+          <sl>
+                    <sli>USB_DM和USB_DP布线在关键信号层，按照差分走线要求控制，需要上下左右包地保护，差分阻抗控制在90Ω，各层走线保持阻抗连续；USB差分信号线必须越短越好，并且尽可能远离高速信号和其他同频信号。</sli>
+                    <sli>最大限度减少USB信号线上的过孔和转角以减少信号反射和阻抗变化。</sli>
+                    <sli>USB信号线上尽量避免留有分支线，以免产生反射影响信号质量。</sli>
+                    <sli>为防止信号辐射，USB信号线必须远离板边缘。</sli>
+                    <sli>推荐使用15nH电感和1.8pF电容并联滤出USB线上的共模干扰，2.2pF用于滤出USB线上的差模干扰。具体的值需要根据走线微调；USB数据线上的ESD防护器件的寄生电容不能超过2pF。</sli>
+                </sl>
+          </note>
+    </body>
+</topic>

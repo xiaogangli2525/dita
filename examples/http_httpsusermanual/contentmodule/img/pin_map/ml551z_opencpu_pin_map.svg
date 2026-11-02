@@ -1,0 +1,1663 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- 由 Microsoft Visio, SVG Export 生成 ml551z_opencpu_pin_map.svg 页-1 -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ev="http://www.w3.org/2001/xml-events"
+		width="14.795in" height="17.3614in" viewBox="0 0 1065.24 1250.02" xml:space="preserve" color-interpolation-filters="sRGB"
+		class="st29">
+	<title>Pinmap Template</title>
+
+	<style type="text/css">
+	<![CDATA[
+		.st1 {fill:none;stroke:#404040;stroke-linecap:round;stroke-linejoin:round;stroke-width:2.25}
+		.st2 {fill:#6a919a;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24}
+		.st3 {fill:#000000;font-family:微软雅黑;font-size:0.333344em}
+		.st4 {font-size:1em}
+		.st5 {fill:#7f7f7f;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24}
+		.st6 {fill:#6fcde2;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24}
+		.st7 {font-size:0.75em}
+		.st8 {fill:#ef5964;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24}
+		.st9 {fill:#0085d0;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24}
+		.st10 {fill:#f2dcda;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24}
+		.st11 {fill:#feec97;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24}
+		.st12 {fill:#dc6f58;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24}
+		.st13 {fill:#feb8c2;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24}
+		.st14 {fill:#706ca9;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24}
+		.st15 {fill:#9dd0a9;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24}
+		.st16 {fill:#f9b04f;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24}
+		.st17 {fill:#9e919a;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24}
+		.st18 {fill:#abd25f;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24}
+		.st19 {fill:#15a6b1;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24}
+		.st20 {fill:#e94dac;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24}
+		.st21 {fill:#a6a6c8;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24}
+		.st22 {fill:#000000;font-family:微软雅黑;font-size:0.499992em}
+		.st23 {fill:#7f7f7f;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.75}
+		.st24 {fill:#000000;font-family:微软雅黑;font-size:0.416656em}
+		.st25 {fill:#bfbfbf;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24}
+		.st26 {fill:#000000;font-family:微软雅黑;font-size:0.666664em;font-weight:bold}
+		.st27 {fill:none;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:1}
+		.st28 {fill:#404040;font-family:微软雅黑;font-size:1.16666em;font-weight:bold}
+		.st29 {fill:none;fill-rule:evenodd;font-size:12px;overflow:visible;stroke-linecap:square;stroke-miterlimit:3}
+	]]>
+	</style>
+
+	<g>
+		<title>页-1</title>
+		<g id="shape1-1" transform="translate(1.125,-313.462)">
+			<title>矩形.1</title>
+			<rect x="0" y="314.587" width="1062.99" height="935.433" class="st1"/>
+		</g>
+		<g id="shape9-3" transform="translate(98.9203,-1210.63)">
+			<title>矩形.9</title>
+			<desc>176 RSV</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st2"/>
+			<text x="6.4" y="1234.75" class="st3">176 <tspan x="6.11" dy="1.1em" class="st4">RSV</tspan></text>		</g>
+		<g id="shape10-7" transform="translate(135.771,-1210.63)">
+			<title>矩形.10</title>
+			<desc>174</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st5"/>
+			<text x="6.4" y="1236.95" class="st3">174</text>		</g>
+		<g id="shape11-10" transform="translate(172.621,-1210.63)">
+			<title>矩形.11</title>
+			<desc>172 RSV</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st2"/>
+			<text x="6.4" y="1234.75" class="st3">172 <tspan x="6.11" dy="1.1em" class="st4">RSV</tspan></text>		</g>
+		<g id="shape12-14" transform="translate(209.471,-1210.63)">
+			<title>矩形.12</title>
+			<desc>170 NETLIGHT</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st6"/>
+			<text x="6.4" y="1234.75" class="st3">170 <tspan x="2.67" dy="1.467em" class="st7">NETLIGHT</tspan></text>		</g>
+		<g id="shape13-18" transform="translate(246.322,-1210.63)">
+			<title>矩形.13</title>
+			<desc>168 VDD_EXT</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st8"/>
+			<text x="6.4" y="1234.75" class="st3">168 <tspan x="1.09" dy="1.1em" class="st4">VDD_EXT</tspan></text>		</g>
+		<g id="shape14-22" transform="translate(283.172,-1210.63)">
+			<title>矩形.14</title>
+			<desc>166 UART2_ RTS</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st9"/>
+			<text x="6.4" y="1232.55" class="st3">166 <tspan x="2.5" dy="1.1em" class="st4">UART2_ </tspan><tspan x="6.31"
+						dy="1.1em" class="st4">RTS</tspan></text>		</g>
+		<g id="shape15-27" transform="translate(320.023,-1210.63)">
+			<title>矩形.15</title>
+			<desc>164 UART2_ CTS</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st9"/>
+			<text x="6.4" y="1232.55" class="st3">164 <tspan x="2.5" dy="1.1em" class="st4">UART2_ </tspan><tspan x="6.28"
+						dy="1.1em" class="st4">CTS</tspan></text>		</g>
+		<g id="shape16-32" transform="translate(356.873,-1210.63)">
+			<title>矩形.16</title>
+			<desc>162 RSV</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st2"/>
+			<text x="6.4" y="1234.75" class="st3">162 <tspan x="6.11" dy="1.1em" class="st4">RSV</tspan></text>		</g>
+		<g id="shape17-36" transform="translate(393.723,-1210.63)">
+			<title>矩形.17</title>
+			<desc>160 WIFI_WAKE_MOD</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st6"/>
+			<text x="6.4" y="1233.1" class="st3">160 <tspan x="1.01" dy="1.192em" class="st7">WIFI_WAKE_</tspan><tspan x="6.09"
+						dy="1.375em" class="st7">MOD</tspan></text>		</g>
+		<g id="shape18-41" transform="translate(430.574,-1210.63)">
+			<title>矩形.18</title>
+			<desc>158</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st5"/>
+			<text x="6.4" y="1236.95" class="st3">158</text>		</g>
+		<g id="shape19-44" transform="translate(467.424,-1210.63)">
+			<title>矩形.19</title>
+			<desc>156 VBAT_BB</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st8"/>
+			<text x="6.4" y="1234.75" class="st3">156 <tspan x="1.35" dy="1.1em" class="st4">VBAT_BB</tspan></text>		</g>
+		<g id="shape20-48" transform="translate(504.275,-1210.63)">
+			<title>矩形.20</title>
+			<desc>154</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st5"/>
+			<text x="6.4" y="1236.95" class="st3">154</text>		</g>
+		<g id="shape21-51" transform="translate(541.125,-1210.63)">
+			<title>矩形.21</title>
+			<desc>152 PCM_MCLK</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st10"/>
+			<text x="6.4" y="1234.75" class="st3">152 <tspan x="1.67" dy="1.467em" class="st7">PCM_MCLK</tspan></text>		</g>
+		<g id="shape22-55" transform="translate(577.975,-1210.63)">
+			<title>矩形.22</title>
+			<desc>150 WAKEUPIN</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st6"/>
+			<text x="6.4" y="1234.75" class="st3">150 <tspan x="1.86" dy="1.467em" class="st7">WAKEUPIN</tspan></text>		</g>
+		<g id="shape23-59" transform="translate(614.826,-1210.63)">
+			<title>矩形.23</title>
+			<desc>148</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st5"/>
+			<text x="6.4" y="1236.95" class="st3">148</text>		</g>
+		<g id="shape24-62" transform="translate(651.676,-1210.63)">
+			<title>矩形.24</title>
+			<desc>146 BOOT_ MODE</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st6"/>
+			<text x="6.4" y="1232.55" class="st3">146 <tspan x="3.36" dy="1.1em" class="st4">BOOT_ </tspan><tspan x="3.71"
+						dy="1.1em" class="st4">MODE</tspan></text>		</g>
+		<g id="shape25-67" transform="translate(688.527,-1210.63)">
+			<title>矩形.25</title>
+			<desc>144 SLEEP_ IND</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st6"/>
+			<text x="6.4" y="1232.55" class="st3">144 <tspan x="3.42" dy="1.1em" class="st4">SLEEP_ </tspan><tspan x="6.18"
+						dy="1.1em" class="st4">IND</tspan></text>		</g>
+		<g id="shape26-72" transform="translate(725.377,-1210.63)">
+			<title>矩形.26</title>
+			<desc>142</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st5"/>
+			<text x="6.4" y="1236.95" class="st3">142</text>		</g>
+		<g id="shape27-75" transform="translate(762.227,-1210.63)">
+			<title>矩形.27</title>
+			<desc>140 RSV</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st2"/>
+			<text x="6.4" y="1234.75" class="st3">140 <tspan x="6.11" dy="1.1em" class="st4">RSV</tspan></text>		</g>
+		<g id="shape28-79" transform="translate(799.078,-1210.63)">
+			<title>Rectangle.28</title>
+			<desc>138 RSV</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st2"/>
+			<text x="6.4" y="1234.75" class="st3">138 <tspan x="6.11" dy="1.1em" class="st4">RSV</tspan></text>		</g>
+		<g id="shape29-83" transform="translate(835.928,-1210.63)">
+			<title>矩形.29</title>
+			<desc>136 RSV</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st2"/>
+			<text x="6.4" y="1234.75" class="st3">136 <tspan x="6.11" dy="1.1em" class="st4">RSV</tspan></text>		</g>
+		<g id="shape30-87" transform="translate(872.779,-1210.63)">
+			<title>矩形.30</title>
+			<desc>134 RSV</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st2"/>
+			<text x="6.4" y="1234.75" class="st3">134 <tspan x="6.11" dy="1.1em" class="st4">RSV</tspan></text>		</g>
+		<g id="shape31-91" transform="translate(909.629,-1210.63)">
+			<title>矩形.31</title>
+			<desc>132 RSV</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st2"/>
+			<text x="6.4" y="1234.75" class="st3">132 <tspan x="6.11" dy="1.1em" class="st4">RSV</tspan></text>		</g>
+		<g id="shape32-95" transform="translate(946.479,-1210.63)">
+			<title>矩形.32</title>
+			<desc>130</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st5"/>
+			<text x="6.4" y="1236.95" class="st3">130</text>		</g>
+		<g id="shape33-98" transform="translate(117.345,-1162.44)">
+			<title>矩形.33</title>
+			<desc>175 ADC1</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st11"/>
+			<text x="6.4" y="1234.75" class="st3">175 <tspan x="4.48" dy="1.1em" class="st4">ADC1</tspan></text>		</g>
+		<g id="shape34-102" transform="translate(154.196,-1162.44)">
+			<title>矩形.34</title>
+			<desc>173 ADC0</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st11"/>
+			<text x="6.4" y="1234.75" class="st3">173 <tspan x="4.48" dy="1.1em" class="st4">ADC0</tspan></text>		</g>
+		<g id="shape35-106" transform="translate(191.046,-1162.44)">
+			<title>矩形.35</title>
+			<desc>171 STATE</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st6"/>
+			<text x="6.4" y="1234.75" class="st3">171 <tspan x="3.97" dy="1.1em" class="st4">STATE</tspan></text>		</g>
+		<g id="shape36-110" transform="translate(227.897,-1162.44)">
+			<title>矩形.36</title>
+			<desc>169 WIFI_ SLP_CLK</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st12"/>
+			<text x="6.4" y="1232.55" class="st3">169 <tspan x="4.75" dy="1.1em" class="st4">WIFI_ </tspan><tspan x="1.99"
+						dy="1.1em" class="st4">SLP_CLK</tspan></text>		</g>
+		<g id="shape37-115" transform="translate(264.747,-1162.44)">
+			<title>矩形.37</title>
+			<desc>167</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st5"/>
+			<text x="6.4" y="1236.95" class="st3">167</text>		</g>
+		<g id="shape38-118" transform="translate(301.597,-1162.44)">
+			<title>矩形.38</title>
+			<desc>165 UART2_ RXD</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st9"/>
+			<text x="6.4" y="1232.55" class="st3">165 <tspan x="2.5" dy="1.1em" class="st4">UART2_ </tspan><tspan x="5.8"
+						dy="1.1em" class="st4">RXD</tspan></text>		</g>
+		<g id="shape39-123" transform="translate(338.448,-1162.44)">
+			<title>矩形.39</title>
+			<desc>163 UART2_ TXD</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st9"/>
+			<text x="6.4" y="1232.55" class="st3">163 <tspan x="2.5" dy="1.1em" class="st4">UART2_ </tspan><tspan x="5.96"
+						dy="1.1em" class="st4">TXD</tspan></text>		</g>
+		<g id="shape40-128" transform="translate(375.298,-1162.44)">
+			<title>矩形.40</title>
+			<desc>161 RSV</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st2"/>
+			<text x="6.4" y="1234.75" class="st3">161 <tspan x="6.11" dy="1.1em" class="st4">RSV</tspan></text>		</g>
+		<g id="shape41-132" transform="translate(412.149,-1162.44)">
+			<title>矩形.41</title>
+			<desc>159 GPIO4</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st13"/>
+			<text x="6.4" y="1234.75" class="st3">159 <tspan x="3.82" dy="1.1em" class="st4">GPIO4</tspan></text>		</g>
+		<g id="shape42-136" transform="translate(448.999,-1162.44)">
+			<title>矩形.42</title>
+			<desc>157</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st5"/>
+			<text x="6.4" y="1236.95" class="st3">157</text>		</g>
+		<g id="shape43-139" transform="translate(485.849,-1162.44)">
+			<title>矩形.43</title>
+			<desc>155 VBAT_BB</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st8"/>
+			<text x="6.4" y="1234.75" class="st3">155 <tspan x="1.35" dy="1.1em" class="st4">VBAT_BB</tspan></text>		</g>
+		<g id="shape44-143" transform="translate(522.7,-1162.44)">
+			<title>矩形.44</title>
+			<desc>153</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st5"/>
+			<text x="6.4" y="1236.95" class="st3">153</text>		</g>
+		<g id="shape45-146" transform="translate(559.55,-1162.44)">
+			<title>矩形.45</title>
+			<desc>151 W_DISABLE</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st6"/>
+			<text x="6.4" y="1234.75" class="st3">151 <tspan x="1.68" dy="1.467em" class="st7">W_DISABLE</tspan></text>		</g>
+		<g id="shape46-150" transform="translate(596.401,-1162.44)">
+			<title>矩形.46</title>
+			<desc>149 WIFI_EN</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st6"/>
+			<text x="6.4" y="1234.75" class="st3">149 <tspan x="2.03" dy="1.1em" class="st4">WIFI_EN</tspan></text>		</g>
+		<g id="shape47-154" transform="translate(633.251,-1162.44)">
+			<title>矩形.47</title>
+			<desc>147 NET_ MODE</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st6"/>
+			<text x="6.4" y="1232.55" class="st3">147 <tspan x="5.15" dy="1.1em" class="st4">NET_ </tspan><tspan x="3.71"
+						dy="1.1em" class="st4">MODE</tspan></text>		</g>
+		<g id="shape48-159" transform="translate(670.101,-1162.44)">
+			<title>矩形.48</title>
+			<desc>145 RSV</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st2"/>
+			<text x="6.4" y="1234.75" class="st3">145 <tspan x="6.11" dy="1.1em" class="st4">RSV</tspan></text>		</g>
+		<g id="shape49-163" transform="translate(706.952,-1162.44)">
+			<title>矩形.49</title>
+			<desc>143 GPIO3</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st13"/>
+			<text x="6.4" y="1234.75" class="st3">143 <tspan x="3.82" dy="1.1em" class="st4">GPIO3</tspan></text>		</g>
+		<g id="shape50-167" transform="translate(743.802,-1162.44)">
+			<title>矩形.50</title>
+			<desc>141</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st5"/>
+			<text x="6.4" y="1236.95" class="st3">141</text>		</g>
+		<g id="shape51-170" transform="translate(780.653,-1162.44)">
+			<title>矩形.51</title>
+			<desc>139 RSV</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st2"/>
+			<text x="6.4" y="1234.75" class="st3">139 <tspan x="6.11" dy="1.1em" class="st4">RSV</tspan></text>		</g>
+		<g id="shape52-174" transform="translate(817.503,-1162.44)">
+			<title>矩形.52</title>
+			<desc>137 GNSS_ BACKUP_EN</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st6"/>
+			<text x="6.4" y="1233.1" class="st3">137 <tspan x="5.18" dy="1.192em" class="st7">GNSS_ </tspan><tspan x="1.21"
+						dy="1.375em" class="st7">BACKUP_EN</tspan></text>		</g>
+		<g id="shape53-179" transform="translate(854.353,-1162.44)">
+			<title>矩形.53</title>
+			<desc>135 RSV</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st2"/>
+			<text x="6.4" y="1234.75" class="st3">135 <tspan x="6.11" dy="1.1em" class="st4">RSV</tspan></text>		</g>
+		<g id="shape54-183" transform="translate(891.204,-1162.44)">
+			<title>矩形.54</title>
+			<desc>133 RSV</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st2"/>
+			<text x="6.4" y="1234.75" class="st3">133 <tspan x="6.11" dy="1.1em" class="st4">RSV</tspan></text>		</g>
+		<g id="shape55-187" transform="translate(928.054,-1162.44)">
+			<title>矩形.55</title>
+			<desc>131</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st5"/>
+			<text x="6.4" y="1236.95" class="st3">131</text>		</g>
+		<g id="shape153-190" transform="translate(11.0463,-1139.76)">
+			<title>矩形.153</title>
+			<desc>1 RESET</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st6"/>
+			<text x="13" y="1239" class="st3">1 <tspan x="8.37" dy="1.1em" class="st4">RESET</tspan></text>		</g>
+		<g id="shape155-194" transform="translate(1025.85,-1139.76)">
+			<title>矩形.155</title>
+			<desc>129</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">129</text>		</g>
+		<g id="shape156-197" transform="translate(98.9203,-323.383)">
+			<title>矩形.156</title>
+			<desc>42 IIC0_SDA</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st14"/>
+			<text x="7.58" y="1234.75" class="st3">42 <tspan x="1.25" dy="1.1em" class="st4">IIC0_SDA</tspan></text>		</g>
+		<g id="shape157-201" transform="translate(117.345,-371.572)">
+			<title>矩形.157</title>
+			<desc>43 IIC0_SCL</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st14"/>
+			<text x="7.58" y="1234.75" class="st3">43 <tspan x="1.82" dy="1.1em" class="st4">IIC0_SCL</tspan></text>		</g>
+		<g id="shape158-205" transform="translate(59.2352,-1121.34)">
+			<title>矩形.158</title>
+			<desc>2 PWR_ON/OFF</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st6"/>
+			<text x="13" y="1239.55" class="st3">2 <tspan x="4.18" dy="1.192em" class="st7">PWR_ON/OFF</tspan></text>		</g>
+		<g id="shape159-209" transform="translate(107.424,-1102.91)">
+			<title>矩形.159</title>
+			<desc>177</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">177</text>		</g>
+		<g id="shape160-212" transform="translate(977.66,-1121.34)">
+			<title>矩形.160</title>
+			<desc>128</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">128</text>		</g>
+		<g id="shape161-215" transform="translate(929.471,-1102.91)">
+			<title>矩形.161</title>
+			<desc>214</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">214</text>		</g>
+		<g id="shape162-218" transform="translate(135.771,-323.383)">
+			<title>矩形.162</title>
+			<desc>44</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st5"/>
+			<text x="7.58" y="1236.95" class="st3">44</text>		</g>
+		<g id="shape163-221" transform="translate(172.621,-323.383)">
+			<title>矩形.163</title>
+			<desc>46 VCC_SDIO</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st8"/>
+			<text x="7.58" y="1234.75" class="st3">46 <tspan x="2.56" dy="1.467em" class="st7">VCC_SDIO</tspan></text>		</g>
+		<g id="shape164-225" transform="translate(209.471,-323.383)">
+			<title>矩形.164</title>
+			<desc>48 SDIO1_ DATA3</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st15"/>
+			<text x="7.58" y="1232.55" class="st3">48 <tspan x="2.96" dy="1.1em" class="st4">SDIO1_ </tspan><tspan x="3.26"
+						dy="1.1em" class="st4">DATA3</tspan></text>		</g>
+		<g id="shape165-230" transform="translate(246.322,-323.383)">
+			<title>矩形.165</title>
+			<desc>50 SDIO1_ DATA1</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st15"/>
+			<text x="7.58" y="1232.55" class="st3">50 <tspan x="2.96" dy="1.1em" class="st4">SDIO1_ </tspan><tspan x="3.26"
+						dy="1.1em" class="st4">DATA1</tspan></text>		</g>
+		<g id="shape166-235" transform="translate(283.172,-323.383)">
+			<title>矩形.166</title>
+			<desc>52 SDIO1_ DET</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st15"/>
+			<text x="7.58" y="1232.55" class="st3">52 <tspan x="2.96" dy="1.1em" class="st4">SDIO1_ </tspan><tspan x="6.15"
+						dy="1.1em" class="st4">DET</tspan></text>		</g>
+		<g id="shape167-240" transform="translate(320.023,-323.383)">
+			<title>矩形.167</title>
+			<desc>54</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st5"/>
+			<text x="7.58" y="1236.95" class="st3">54</text>		</g>
+		<g id="shape168-243" transform="translate(356.873,-323.383)">
+			<title>矩形.168</title>
+			<desc>56 UART1_ CTS</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st9"/>
+			<text x="7.58" y="1232.55" class="st3">56 <tspan x="2.5" dy="1.1em" class="st4">UART1_ </tspan><tspan x="6.28"
+						dy="1.1em" class="st4">CTS</tspan></text>		</g>
+		<g id="shape169-248" transform="translate(393.723,-323.383)">
+			<title>矩形.169</title>
+			<desc>58 UART1_ RXD</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st9"/>
+			<text x="7.58" y="1232.55" class="st3">58 <tspan x="2.5" dy="1.1em" class="st4">UART1_ </tspan><tspan x="5.8"
+						dy="1.1em" class="st4">RXD</tspan></text>		</g>
+		<g id="shape170-253" transform="translate(430.574,-323.383)">
+			<title>矩形.170</title>
+			<desc>60 UART1_ TXD</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st9"/>
+			<text x="7.58" y="1232.55" class="st3">60 <tspan x="2.5" dy="1.1em" class="st4">UART1_ </tspan><tspan x="5.96"
+						dy="1.1em" class="st4">TXD</tspan></text>		</g>
+		<g id="shape171-258" transform="translate(467.424,-323.383)">
+			<title>矩形.171</title>
+			<desc>62 UART1_DTR</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st9"/>
+			<text x="7.58" y="1232.55" class="st3">62 <tspan x="2.5" dy="1.1em" class="st4">UART1_</tspan><tspan x="5.95"
+						dy="1.1em" class="st4">DTR</tspan></text>		</g>
+		<g id="shape172-263" transform="translate(504.275,-323.383)">
+			<title>矩形.172</title>
+			<desc>64</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st5"/>
+			<text x="7.58" y="1236.95" class="st3">64</text>		</g>
+		<g id="shape173-266" transform="translate(541.125,-323.383)">
+			<title>矩形.173</title>
+			<desc>66 PCM_IN</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st10"/>
+			<text x="7.58" y="1234.75" class="st3">66 <tspan x="2.3" dy="1.1em" class="st4">PCM_IN</tspan></text>		</g>
+		<g id="shape174-270" transform="translate(577.975,-323.383)">
+			<title>矩形.174</title>
+			<desc>68 PCM_OUT</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st10"/>
+			<text x="7.58" y="1234.75" class="st3">68 <tspan x="2.66" dy="1.467em" class="st7">PCM_OUT</tspan></text>		</g>
+		<g id="shape175-274" transform="translate(614.826,-323.383)">
+			<title>矩形.175</title>
+			<desc>70</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st5"/>
+			<text x="7.58" y="1236.95" class="st3">70</text>		</g>
+		<g id="shape176-277" transform="translate(651.676,-323.383)">
+			<title>矩形.176</title>
+			<desc>72 DBG_RXD</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st9"/>
+			<text x="7.58" y="1234.75" class="st3">72 <tspan x="2.96" dy="1.467em" class="st7">DBG_RXD</tspan></text>		</g>
+		<g id="shape177-281" transform="translate(688.527,-323.383)">
+			<title>矩形.177</title>
+			<desc>74 IIC1_SCL</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st14"/>
+			<text x="7.58" y="1234.75" class="st3">74 <tspan x="1.82" dy="1.1em" class="st4">IIC1_SCL</tspan></text>		</g>
+		<g id="shape178-285" transform="translate(725.377,-323.383)">
+			<title>矩形.178</title>
+			<desc>76</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st5"/>
+			<text x="7.58" y="1236.95" class="st3">76</text>		</g>
+		<g id="shape179-288" transform="translate(762.227,-323.383)">
+			<title>矩形.179</title>
+			<desc>78 SPI_MISO</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st16"/>
+			<text x="7.58" y="1234.75" class="st3">78 <tspan x="3.03" dy="1.467em" class="st7">SPI_MISO</tspan></text>		</g>
+		<g id="shape180-292" transform="translate(799.078,-323.383)">
+			<title>矩形.180</title>
+			<desc>80 SPI_CLK</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st16"/>
+			<text x="7.58" y="1234.75" class="st3">80 <tspan x="2.42" dy="1.1em" class="st4">SPI_CLK</tspan></text>		</g>
+		<g id="shape181-296" transform="translate(835.928,-323.383)">
+			<title>矩形.181</title>
+			<desc>82</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st5"/>
+			<text x="7.58" y="1236.95" class="st3">82</text>		</g>
+		<g id="shape182-299" transform="translate(872.779,-323.383)">
+			<title>矩形.182</title>
+			<desc>84</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st5"/>
+			<text x="7.58" y="1236.95" class="st3">84</text>		</g>
+		<g id="shape183-302" transform="translate(909.629,-323.383)">
+			<title>矩形.183</title>
+			<desc>86 VBAT_RF</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st8"/>
+			<text x="7.58" y="1234.75" class="st3">86 <tspan x="1.5" dy="1.1em" class="st4">VBAT_RF</tspan></text>		</g>
+		<g id="shape184-306" transform="translate(946.479,-323.383)">
+			<title>矩形.184</title>
+			<desc>88 VBAT_RF</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st8"/>
+			<text x="7.58" y="1234.75" class="st3">88 <tspan x="1.5" dy="1.1em" class="st4">VBAT_RF</tspan></text>		</g>
+		<g id="shape185-310" transform="translate(154.196,-371.572)">
+			<title>矩形.185</title>
+			<desc>45</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st5"/>
+			<text x="7.58" y="1236.95" class="st3">45</text>		</g>
+		<g id="shape186-313" transform="translate(191.046,-371.572)">
+			<title>矩形.186</title>
+			<desc>47 SDIO1_ DATA2</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st15"/>
+			<text x="7.58" y="1232.55" class="st3">47 <tspan x="2.96" dy="1.1em" class="st4">SDIO1_ </tspan><tspan x="3.26"
+						dy="1.1em" class="st4">DATA2</tspan></text>		</g>
+		<g id="shape187-318" transform="translate(227.897,-371.572)">
+			<title>矩形.187</title>
+			<desc>49 SDIO1_ DATA0</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st15"/>
+			<text x="7.58" y="1232.55" class="st3">49 <tspan x="2.96" dy="1.1em" class="st4">SDIO1_ </tspan><tspan x="3.26"
+						dy="1.1em" class="st4">DATA0</tspan></text>		</g>
+		<g id="shape188-323" transform="translate(264.747,-371.572)">
+			<title>矩形.188</title>
+			<desc>51 SDIO1_ CMD</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st15"/>
+			<text x="7.58" y="1232.55" class="st3">51 <tspan x="2.96" dy="1.1em" class="st4">SDIO1_ </tspan><tspan x="5.11"
+						dy="1.1em" class="st4">CMD</tspan></text>		</g>
+		<g id="shape189-328" transform="translate(301.597,-371.572)">
+			<title>矩形.189</title>
+			<desc>53 SDIO1_ CLK</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st15"/>
+			<text x="7.58" y="1232.55" class="st3">53 <tspan x="2.96" dy="1.1em" class="st4">SDIO1_ </tspan><tspan x="6.29"
+						dy="1.1em" class="st4">CLK</tspan></text>		</g>
+		<g id="shape190-333" transform="translate(338.448,-371.572)">
+			<title>矩形.190</title>
+			<desc>55</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st5"/>
+			<text x="7.58" y="1236.95" class="st3">55</text>		</g>
+		<g id="shape191-336" transform="translate(375.298,-371.572)">
+			<title>矩形.191</title>
+			<desc>57 UART1_ RTS</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st9"/>
+			<text x="7.58" y="1232.55" class="st3">57 <tspan x="2.5" dy="1.1em" class="st4">UART1_ </tspan><tspan x="6.31"
+						dy="1.1em" class="st4">RTS</tspan></text>		</g>
+		<g id="shape192-341" transform="translate(412.149,-371.572)">
+			<title>矩形.192</title>
+			<desc>59 UART1_DCD</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st9"/>
+			<text x="7.58" y="1232.55" class="st3">59 <tspan x="2.5" dy="1.1em" class="st4">UART1_</tspan><tspan x="5.54"
+						dy="1.1em" class="st4">DCD</tspan></text>		</g>
+		<g id="shape193-346" transform="translate(448.999,-371.572)">
+			<title>矩形.193</title>
+			<desc>61 UART1_ RI</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st9"/>
+			<text x="7.58" y="1232.55" class="st3">61 <tspan x="2.5" dy="1.1em" class="st4">UART1_ </tspan><tspan x="8.03"
+						dy="1.1em" class="st4">RI</tspan></text>		</g>
+		<g id="shape194-351" transform="translate(485.849,-371.572)">
+			<title>矩形.194</title>
+			<desc>63</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st5"/>
+			<text x="7.58" y="1236.95" class="st3">63</text>		</g>
+		<g id="shape195-354" transform="translate(522.7,-371.572)">
+			<title>矩形.195</title>
+			<desc>65 PCM_SYNC</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st10"/>
+			<text x="7.58" y="1234.75" class="st3">65 <tspan x="1.87" dy="1.467em" class="st7">PCM_SYNC</tspan></text>		</g>
+		<g id="shape196-358" transform="translate(559.55,-371.572)">
+			<title>矩形.196</title>
+			<desc>67 PCM_CLK</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st10"/>
+			<text x="7.58" y="1234.75" class="st3">67 <tspan x="3.14" dy="1.467em" class="st7">PCM_CLK</tspan></text>		</g>
+		<g id="shape197-362" transform="translate(596.401,-371.572)">
+			<title>矩形.197</title>
+			<desc>69</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st5"/>
+			<text x="7.58" y="1236.95" class="st3">69</text>		</g>
+		<g id="shape198-365" transform="translate(633.251,-371.572)">
+			<title>矩形.198</title>
+			<desc>71 DBG_TXD</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st9"/>
+			<text x="7.58" y="1234.75" class="st3">71 <tspan x="3.08" dy="1.467em" class="st7">DBG_TXD</tspan></text>		</g>
+		<g id="shape199-369" transform="translate(670.101,-371.572)">
+			<title>矩形.199</title>
+			<desc>73 IIC1_SDA</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st14"/>
+			<text x="7.58" y="1234.75" class="st3">73 <tspan x="1.25" dy="1.1em" class="st4">IIC1_SDA</tspan></text>		</g>
+		<g id="shape200-373" transform="translate(706.952,-371.572)">
+			<title>矩形.200</title>
+			<desc>75</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st5"/>
+			<text x="7.58" y="1236.95" class="st3">75</text>		</g>
+		<g id="shape201-376" transform="translate(743.802,-371.572)">
+			<title>矩形.201</title>
+			<desc>77 SPI_MOSI</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st16"/>
+			<text x="7.58" y="1234.75" class="st3">77 <tspan x="3.03" dy="1.467em" class="st7">SPI_MOSI</tspan></text>		</g>
+		<g id="shape202-380" transform="translate(780.653,-371.572)">
+			<title>矩形.202</title>
+			<desc>79 SPI_CS</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st16"/>
+			<text x="7.58" y="1234.75" class="st3">79 <tspan x="3.57" dy="1.1em" class="st4">SPI_CS</tspan></text>		</g>
+		<g id="shape203-384" transform="translate(817.503,-371.572)">
+			<title>矩形.203</title>
+			<desc>81</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st5"/>
+			<text x="7.58" y="1236.95" class="st3">81</text>		</g>
+		<g id="shape204-387" transform="translate(854.353,-371.572)">
+			<title>矩形.204</title>
+			<desc>83</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st5"/>
+			<text x="7.58" y="1236.95" class="st3">83</text>		</g>
+		<g id="shape205-390" transform="translate(891.204,-371.572)">
+			<title>矩形.205</title>
+			<desc>85 VBAT_RF</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st8"/>
+			<text x="7.58" y="1234.75" class="st3">85 <tspan x="1.5" dy="1.1em" class="st4">VBAT_RF</tspan></text>		</g>
+		<g id="shape206-394" transform="translate(928.054,-371.572)">
+			<title>矩形.206</title>
+			<desc>87 VBAT_RF</desc>
+			<rect x="0" y="1221.67" width="19.8425" height="28.3465" class="st8"/>
+			<text x="7.58" y="1234.75" class="st3">87 <tspan x="1.5" dy="1.1em" class="st4">VBAT_RF</tspan></text>		</g>
+		<g id="shape227-398" transform="translate(11.0463,-1102.91)">
+			<title>矩形.227</title>
+			<desc>3 BT_EN</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st6"/>
+			<text x="13" y="1239" class="st3">3 <tspan x="8.15" dy="1.1em" class="st4">BT_EN</tspan></text>		</g>
+		<g id="shape228-402" transform="translate(11.0463,-1066.06)">
+			<title>矩形.228</title>
+			<desc>5 PM_EN</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st6"/>
+			<text x="13" y="1239" class="st3">5 <tspan x="7.37" dy="1.1em" class="st4">PM_EN</tspan></text>		</g>
+		<g id="shape229-406" transform="translate(11.0463,-1029.21)">
+			<title>矩形.229</title>
+			<desc>7 RMII_MDC</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st17"/>
+			<text x="13" y="1239" class="st3">7 <tspan x="4.03" dy="1.1em" class="st4">RMII_MDC</tspan></text>		</g>
+		<g id="shape230-410" transform="translate(11.0463,-992.359)">
+			<title>矩形.230</title>
+			<desc>9 RMII_INT</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st17"/>
+			<text x="13" y="1239" class="st3">9 <tspan x="5.48" dy="1.1em" class="st4">RMII_INT</tspan></text>		</g>
+		<g id="shape231-414" transform="translate(11.0463,-955.509)">
+			<title>矩形.231</title>
+			<desc>11 RMII_RXD0</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st17"/>
+			<text x="11.83" y="1239" class="st3">11 <tspan x="3.55" dy="1.1em" class="st4">RMII_RXD0</tspan></text>		</g>
+		<g id="shape232-418" transform="translate(11.0463,-918.659)">
+			<title>矩形.232</title>
+			<desc>13</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="11.83" y="1241.2" class="st3">13</text>		</g>
+		<g id="shape233-421" transform="translate(11.0463,-881.808)">
+			<title>矩形.233</title>
+			<desc>15 RMII_TXD1</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st17"/>
+			<text x="11.83" y="1239" class="st3">15 <tspan x="3.71" dy="1.1em" class="st4">RMII_TXD1</tspan></text>		</g>
+		<g id="shape234-425" transform="translate(11.0463,-844.958)">
+			<title>矩形.234</title>
+			<desc>17</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="11.83" y="1241.2" class="st3">17</text>		</g>
+		<g id="shape235-428" transform="translate(11.0463,-808.107)">
+			<title>矩形.235</title>
+			<desc>19 SDIO0_CLK</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st15"/>
+			<text x="11.83" y="1239" class="st3">19 <tspan x="3.57" dy="1.1em" class="st4">SDIO0_CLK</tspan></text>		</g>
+		<g id="shape236-432" transform="translate(11.0463,-771.257)">
+			<title>矩形.236</title>
+			<desc>21 SDIO0_ DATA1</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st15"/>
+			<text x="11.83" y="1236.8" class="st3">21 <tspan x="7.21" dy="1.1em" class="st4">SDIO0_ </tspan><tspan x="7.52"
+						dy="1.1em" class="st4">DATA1</tspan></text>		</g>
+		<g id="shape237-437" transform="translate(11.0463,-734.407)">
+			<title>矩形.237</title>
+			<desc>23 SDIO0_ DATA3</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st15"/>
+			<text x="11.83" y="1236.8" class="st3">23 <tspan x="7.21" dy="1.1em" class="st4">SDIO0_ </tspan><tspan x="7.52"
+						dy="1.1em" class="st4">DATA3</tspan></text>		</g>
+		<g id="shape238-442" transform="translate(11.0463,-697.556)">
+			<title>矩形.238</title>
+			<desc>25 USIM_DET</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st18"/>
+			<text x="11.83" y="1239" class="st3">25 <tspan x="4.32" dy="1.1em" class="st4">USIM_DET</tspan></text>		</g>
+		<g id="shape239-446" transform="translate(11.0463,-660.706)">
+			<title>矩形.239</title>
+			<desc>27 USIM_CLK</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st18"/>
+			<text x="11.83" y="1239" class="st3">27 <tspan x="4.45" dy="1.1em" class="st4">USIM_CLK</tspan></text>		</g>
+		<g id="shape240-450" transform="translate(11.0463,-623.855)">
+			<title>矩形.240</title>
+			<desc>29 USIM_DATA</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st18"/>
+			<text x="11.83" y="1239" class="st3">29 <tspan x="2.6" dy="1.1em" class="st4">USIM_DATA</tspan></text>		</g>
+		<g id="shape241-454" transform="translate(11.0463,-587.005)">
+			<title>矩形.241</title>
+			<desc>31</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="11.83" y="1241.2" class="st3">31</text>		</g>
+		<g id="shape242-457" transform="translate(11.0463,-550.155)">
+			<title>矩形.242</title>
+			<desc>33 USB_DM</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st19"/>
+			<text x="11.83" y="1239" class="st3">33 <tspan x="5.9" dy="1.1em" class="st4">USB_DM</tspan></text>		</g>
+		<g id="shape243-461" transform="translate(11.0463,-513.304)">
+			<title>矩形.243</title>
+			<desc>35</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="11.83" y="1241.2" class="st3">35</text>		</g>
+		<g id="shape244-464" transform="translate(11.0463,-476.454)">
+			<title>矩形.244</title>
+			<desc>37 RSV</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st2"/>
+			<text x="11.83" y="1239" class="st3">37 <tspan x="10.36" dy="1.1em" class="st4">RSV</tspan></text>		</g>
+		<g id="shape245-468" transform="translate(11.0463,-439.603)">
+			<title>矩形.245</title>
+			<desc>39</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="11.83" y="1241.2" class="st3">39</text>		</g>
+		<g id="shape246-471" transform="translate(11.0463,-402.753)">
+			<title>矩形.246</title>
+			<desc>41 GPIO2</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st13"/>
+			<text x="11.83" y="1239" class="st3">41 <tspan x="8.07" dy="1.1em" class="st4">GPIO2</tspan></text>		</g>
+		<g id="shape247-475" transform="translate(59.2352,-1084.49)">
+			<title>矩形.247</title>
+			<desc>4 VDD_MDIO</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st8"/>
+			<text x="13" y="1239" class="st3">4 <tspan x="3.18" dy="1.1em" class="st4">VDD_MDIO</tspan></text>		</g>
+		<g id="shape248-479" transform="translate(59.2352,-1047.63)">
+			<title>矩形.248</title>
+			<desc>6 RMII_PHY_RST</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st17"/>
+			<text x="13" y="1239.55" class="st3">6 <tspan x="3.81" dy="1.192em" class="st7">RMII_PHY_RST</tspan></text>		</g>
+		<g id="shape249-483" transform="translate(59.2352,-1010.78)">
+			<title>矩形.249</title>
+			<desc>8 RMII_MDIO</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st17"/>
+			<text x="13" y="1239" class="st3">8 <tspan x="3.15" dy="1.1em" class="st4">RMII_MDIO</tspan></text>		</g>
+		<g id="shape250-487" transform="translate(59.2352,-973.934)">
+			<title>矩形.250</title>
+			<desc>10</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="11.83" y="1241.2" class="st3">10</text>		</g>
+		<g id="shape251-490" transform="translate(59.2352,-937.084)">
+			<title>矩形.251</title>
+			<desc>12 RMII_RXD1</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st17"/>
+			<text x="11.83" y="1239" class="st3">12 <tspan x="3.55" dy="1.1em" class="st4">RMII_RXD1</tspan></text>		</g>
+		<g id="shape252-494" transform="translate(59.2352,-900.233)">
+			<title>矩形.252</title>
+			<desc>14 RMII_TXD0</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st17"/>
+			<text x="11.83" y="1239" class="st3">14 <tspan x="3.71" dy="1.1em" class="st4">RMII_TXD0</tspan></text>		</g>
+		<g id="shape253-498" transform="translate(59.2352,-863.383)">
+			<title>矩形.253</title>
+			<desc>16</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="11.83" y="1241.2" class="st3">16</text>		</g>
+		<g id="shape254-501" transform="translate(59.2352,-826.533)">
+			<title>矩形.254</title>
+			<desc>18 SDIO0_CMD</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st15"/>
+			<text x="11.83" y="1239" class="st3">18 <tspan x="2.39" dy="1.1em" class="st4">SDIO0_CMD</tspan></text>		</g>
+		<g id="shape255-505" transform="translate(59.2352,-789.682)">
+			<title>矩形.255</title>
+			<desc>20 SDIO0_ DATA0</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st15"/>
+			<text x="11.83" y="1236.8" class="st3">20 <tspan x="7.21" dy="1.1em" class="st4">SDIO0_ </tspan><tspan x="7.52"
+						dy="1.1em" class="st4">DATA0</tspan></text>		</g>
+		<g id="shape256-510" transform="translate(59.2352,-752.832)">
+			<title>矩形.256</title>
+			<desc>22 SDIO0_ DATA2</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st15"/>
+			<text x="11.83" y="1236.8" class="st3">22 <tspan x="7.21" dy="1.1em" class="st4">SDIO0_ </tspan><tspan x="7.52"
+						dy="1.1em" class="st4">DATA2</tspan></text>		</g>
+		<g id="shape257-515" transform="translate(59.2352,-715.981)">
+			<title>矩形.257</title>
+			<desc>24</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="11.83" y="1241.2" class="st3">24</text>		</g>
+		<g id="shape258-518" transform="translate(59.2352,-679.131)">
+			<title>矩形.258</title>
+			<desc>26 USIM_PWR</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st18"/>
+			<text x="11.83" y="1239" class="st3">26 <tspan x="3.52" dy="1.1em" class="st4">USIM_PWR</tspan></text>		</g>
+		<g id="shape259-522" transform="translate(59.2352,-642.281)">
+			<title>矩形.259</title>
+			<desc>28 USIM_RESET</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st18"/>
+			<text x="11.83" y="1239" class="st3">28 <tspan x="2.28" dy="1.1em" class="st4">USIM_RESET</tspan></text>		</g>
+		<g id="shape260-526" transform="translate(59.2352,-605.43)">
+			<title>矩形.260</title>
+			<desc>30</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="11.83" y="1241.2" class="st3">30</text>		</g>
+		<g id="shape261-529" transform="translate(59.2352,-568.58)">
+			<title>矩形.261</title>
+			<desc>32 USB_VBUS</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st19"/>
+			<text x="11.83" y="1239" class="st3">32 <tspan x="4.12" dy="1.1em" class="st4">USB_VBUS</tspan></text>		</g>
+		<g id="shape262-533" transform="translate(59.2352,-531.729)">
+			<title>矩形.262</title>
+			<desc>34 USB_DP</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st19"/>
+			<text x="11.83" y="1239" class="st3">34 <tspan x="6.63" dy="1.1em" class="st4">USB_DP</tspan></text>		</g>
+		<g id="shape263-537" transform="translate(59.2352,-494.879)">
+			<title>矩形.263</title>
+			<desc>36 RSV</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st2"/>
+			<text x="11.83" y="1239" class="st3">36 <tspan x="10.36" dy="1.1em" class="st4">RSV</tspan></text>		</g>
+		<g id="shape264-541" transform="translate(59.2352,-458.029)">
+			<title>矩形.264</title>
+			<desc>38 GPIO0</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st13"/>
+			<text x="11.83" y="1239" class="st3">38 <tspan x="8.07" dy="1.1em" class="st4">GPIO0</tspan></text>		</g>
+		<g id="shape265-545" transform="translate(59.2352,-421.178)">
+			<title>矩形.265</title>
+			<desc>40 GPIO1</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st13"/>
+			<text x="11.83" y="1239" class="st3">40 <tspan x="8.07" dy="1.1em" class="st4">GPIO1</tspan></text>		</g>
+		<g id="shape266-549" transform="translate(977.66,-1084.49)">
+			<title>矩形.266</title>
+			<desc>126</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">126</text>		</g>
+		<g id="shape267-552" transform="translate(977.66,-1047.63)">
+			<title>矩形.267</title>
+			<desc>124</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">124</text>		</g>
+		<g id="shape268-555" transform="translate(977.66,-1010.78)">
+			<title>矩形.268</title>
+			<desc>122</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">122</text>		</g>
+		<g id="shape269-558" transform="translate(977.66,-973.934)">
+			<title>矩形.269</title>
+			<desc>120</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">120</text>		</g>
+		<g id="shape270-561" transform="translate(977.66,-937.084)">
+			<title>矩形.270</title>
+			<desc>118</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">118</text>		</g>
+		<g id="shape271-564" transform="translate(977.66,-900.233)">
+			<title>矩形.271</title>
+			<desc>116</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">116</text>		</g>
+		<g id="shape272-567" transform="translate(977.66,-863.383)">
+			<title>矩形.272</title>
+			<desc>114</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">114</text>		</g>
+		<g id="shape273-570" transform="translate(977.66,-826.533)">
+			<title>矩形.273</title>
+			<desc>112</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">112</text>		</g>
+		<g id="shape274-573" transform="translate(977.66,-789.682)">
+			<title>矩形.274</title>
+			<desc>110</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">110</text>		</g>
+		<g id="shape275-576" transform="translate(977.66,-752.832)">
+			<title>矩形.275</title>
+			<desc>108</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">108</text>		</g>
+		<g id="shape276-579" transform="translate(977.66,-715.981)">
+			<title>矩形.276</title>
+			<desc>106</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">106</text>		</g>
+		<g id="shape277-582" transform="translate(977.66,-679.131)">
+			<title>矩形.277</title>
+			<desc>104</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">104</text>		</g>
+		<g id="shape278-585" transform="translate(977.66,-642.281)">
+			<title>矩形.278</title>
+			<desc>102</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">102</text>		</g>
+		<g id="shape279-588" transform="translate(977.66,-605.43)">
+			<title>矩形.279</title>
+			<desc>100</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">100</text>		</g>
+		<g id="shape280-591" transform="translate(977.66,-568.58)">
+			<title>矩形.280</title>
+			<desc>98</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="11.83" y="1241.2" class="st3">98</text>		</g>
+		<g id="shape281-594" transform="translate(977.66,-531.729)">
+			<title>矩形.281</title>
+			<desc>96</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="11.83" y="1241.2" class="st3">96</text>		</g>
+		<g id="shape282-597" transform="translate(977.66,-494.879)">
+			<title>矩形.282</title>
+			<desc>94</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="11.83" y="1241.2" class="st3">94</text>		</g>
+		<g id="shape283-600" transform="translate(977.66,-458.029)">
+			<title>矩形.283</title>
+			<desc>92</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="11.83" y="1241.2" class="st3">92</text>		</g>
+		<g id="shape284-603" transform="translate(977.66,-421.178)">
+			<title>矩形.284</title>
+			<desc>90</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="11.83" y="1241.2" class="st3">90</text>		</g>
+		<g id="shape285-606" transform="translate(1025.85,-1102.91)">
+			<title>矩形.285</title>
+			<desc>127 ANT_DIV</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st20"/>
+			<text x="10.65" y="1239" class="st3">127 <tspan x="5.63" dy="1.1em" class="st4">ANT_DIV</tspan></text>		</g>
+		<g id="shape286-610" transform="translate(1025.85,-1066.06)">
+			<title>矩形.286</title>
+			<desc>125</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">125</text>		</g>
+		<g id="shape287-613" transform="translate(1025.85,-1029.21)">
+			<title>矩形.287</title>
+			<desc>123</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">123</text>		</g>
+		<g id="shape288-616" transform="translate(1025.85,-992.359)">
+			<title>矩形.288</title>
+			<desc>121</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">121</text>		</g>
+		<g id="shape289-619" transform="translate(1025.85,-955.509)">
+			<title>矩形.289</title>
+			<desc>119 ANT_GNSS</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st20"/>
+			<text x="10.65" y="1239" class="st3">119 <tspan x="3.67" dy="1.1em" class="st4">ANT_GNSS</tspan></text>		</g>
+		<g id="shape290-623" transform="translate(1025.85,-918.659)">
+			<title>矩形.290</title>
+			<desc>117</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">117</text>		</g>
+		<g id="shape291-626" transform="translate(1025.85,-881.808)">
+			<title>矩形.291</title>
+			<desc>115 RSV</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st2"/>
+			<text x="10.65" y="1239" class="st3">115 <tspan x="10.36" dy="1.1em" class="st4">RSV</tspan></text>		</g>
+		<g id="shape292-630" transform="translate(1025.85,-844.958)">
+			<title>矩形.292</title>
+			<desc>113 RSV</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st2"/>
+			<text x="10.65" y="1239" class="st3">113 <tspan x="10.36" dy="1.1em" class="st4">RSV</tspan></text>		</g>
+		<g id="shape293-634" transform="translate(1025.85,-808.107)">
+			<title>矩形.293</title>
+			<desc>111</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">111</text>		</g>
+		<g id="shape294-637" transform="translate(1025.85,-771.257)">
+			<title>矩形.294</title>
+			<desc>109</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">109</text>		</g>
+		<g id="shape295-640" transform="translate(1025.85,-734.407)">
+			<title>矩形.295</title>
+			<desc>107 ANT_MAIN</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st20"/>
+			<text x="10.65" y="1239" class="st3">107 <tspan x="3.52" dy="1.1em" class="st4">ANT_MAIN</tspan></text>		</g>
+		<g id="shape296-644" transform="translate(1025.85,-697.556)">
+			<title>矩形.296</title>
+			<desc>105</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">105</text>		</g>
+		<g id="shape297-647" transform="translate(1025.85,-660.706)">
+			<title>矩形.297</title>
+			<desc>103</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">103</text>		</g>
+		<g id="shape298-650" transform="translate(1025.85,-623.855)">
+			<title>矩形.298</title>
+			<desc>101 RSV</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st2"/>
+			<text x="10.65" y="1239" class="st3">101 <tspan x="10.36" dy="1.1em" class="st4">RSV</tspan></text>		</g>
+		<g id="shape299-654" transform="translate(1025.85,-587.005)">
+			<title>矩形.299</title>
+			<desc>99</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="11.83" y="1241.2" class="st3">99</text>		</g>
+		<g id="shape300-657" transform="translate(1025.85,-550.155)">
+			<title>矩形.300</title>
+			<desc>97</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="11.83" y="1241.2" class="st3">97</text>		</g>
+		<g id="shape301-660" transform="translate(1025.85,-513.304)">
+			<title>矩形.301</title>
+			<desc>95 VCC_EMMC_EN</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st6"/>
+			<text x="11.83" y="1239" class="st3">95 <tspan x="3" dy="1.467em" class="st7">VCC_EMMC_EN</tspan></text>		</g>
+		<g id="shape302-664" transform="translate(1025.85,-476.454)">
+			<title>矩形.302</title>
+			<desc>93</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="11.83" y="1241.2" class="st3">93</text>		</g>
+		<g id="shape303-667" transform="translate(1025.85,-439.603)">
+			<title>矩形.303</title>
+			<desc>91</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="11.83" y="1241.2" class="st3">91</text>		</g>
+		<g id="shape304-670" transform="translate(1025.85,-402.753)">
+			<title>矩形.304</title>
+			<desc>89</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="11.83" y="1241.2" class="st3">89</text>		</g>
+		<g id="shape305-673" transform="translate(107.424,-1066.06)">
+			<title>矩形.305</title>
+			<desc>178</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">178</text>		</g>
+		<g id="shape306-676" transform="translate(107.424,-1029.21)">
+			<title>矩形.306</title>
+			<desc>179 RMII_WAKE</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st17"/>
+			<text x="10.65" y="1239" class="st3">179 <tspan x="3.03" dy="1.1em" class="st4">RMII_WAKE</tspan></text>		</g>
+		<g id="shape307-680" transform="translate(107.424,-992.359)">
+			<title>矩形.307</title>
+			<desc>180 RMII_CLK</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st17"/>
+			<text x="10.65" y="1239" class="st3">180 <tspan x="5.21" dy="1.1em" class="st4">RMII_CLK</tspan></text>		</g>
+		<g id="shape308-684" transform="translate(107.424,-955.509)">
+			<title>矩形.308</title>
+			<desc>181</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">181</text>		</g>
+		<g id="shape309-687" transform="translate(107.424,-918.659)">
+			<title>矩形.309</title>
+			<desc>182 RMII_RX_DV</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st17"/>
+			<text x="10.65" y="1239" class="st3">182 <tspan x="2.47" dy="1.1em" class="st4">RMII_RX_DV</tspan></text>		</g>
+		<g id="shape310-691" transform="translate(107.424,-881.808)">
+			<title>矩形.310</title>
+			<desc>183 RMII_TX_EN</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st17"/>
+			<text x="10.65" y="1239" class="st3">183 <tspan x="2.78" dy="1.1em" class="st4">RMII_TX_EN</tspan></text>		</g>
+		<g id="shape311-695" transform="translate(107.424,-844.958)">
+			<title>矩形.311</title>
+			<desc>184</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">184</text>		</g>
+		<g id="shape312-698" transform="translate(107.424,-808.107)">
+			<title>矩形.312</title>
+			<desc>185 RSV</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st2"/>
+			<text x="10.65" y="1239" class="st3">185 <tspan x="10.36" dy="1.1em" class="st4">RSV</tspan></text>		</g>
+		<g id="shape313-702" transform="translate(107.424,-771.257)">
+			<title>矩形.313</title>
+			<desc>186 I2S_WS</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st10"/>
+			<text x="10.65" y="1239" class="st3">186 <tspan x="7.17" dy="1.1em" class="st4">I2S_WS</tspan></text>		</g>
+		<g id="shape314-706" transform="translate(107.424,-734.407)">
+			<title>矩形.314</title>
+			<desc>187</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">187</text>		</g>
+		<g id="shape315-709" transform="translate(107.424,-697.556)">
+			<title>矩形.315</title>
+			<desc>188 I2S_CLK</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st10"/>
+			<text x="10.65" y="1239" class="st3">188 <tspan x="6.73" dy="1.1em" class="st4">I2S_CLK</tspan></text>		</g>
+		<g id="shape316-713" transform="translate(107.424,-660.706)">
+			<title>矩形.316</title>
+			<desc>189 I2S_RX</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st10"/>
+			<text x="10.65" y="1239" class="st3">189 <tspan x="7.77" dy="1.1em" class="st4">I2S_RX</tspan></text>		</g>
+		<g id="shape317-717" transform="translate(107.424,-623.855)">
+			<title>矩形.317</title>
+			<desc>190 I2S_TX</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st10"/>
+			<text x="10.65" y="1239" class="st3">190 <tspan x="7.92" dy="1.1em" class="st4">I2S_TX</tspan></text>		</g>
+		<g id="shape318-721" transform="translate(107.424,-587.005)">
+			<title>矩形.318</title>
+			<desc>191</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">191</text>		</g>
+		<g id="shape319-724" transform="translate(107.424,-550.155)">
+			<title>矩形.319</title>
+			<desc>192 RSV</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st2"/>
+			<text x="10.65" y="1239" class="st3">192 <tspan x="10.36" dy="1.1em" class="st4">RSV</tspan></text>		</g>
+		<g id="shape320-728" transform="translate(107.424,-513.304)">
+			<title>矩形.320</title>
+			<desc>193 RSV</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st2"/>
+			<text x="10.65" y="1239" class="st3">193 <tspan x="10.36" dy="1.1em" class="st4">RSV</tspan></text>		</g>
+		<g id="shape321-732" transform="translate(107.424,-476.454)">
+			<title>矩形.321</title>
+			<desc>194 HSIC_STROBE</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st21"/>
+			<text x="10.65" y="1239" class="st3">194 <tspan x="1.06" dy="1.1em" class="st4">HSIC_STROBE</tspan></text>		</g>
+		<g id="shape322-736" transform="translate(107.424,-439.603)">
+			<title>矩形.322</title>
+			<desc>195 HSIC_DATA</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st21"/>
+			<text x="10.65" y="1239" class="st3">195 <tspan x="3.17" dy="1.1em" class="st4">HSIC_DATA</tspan></text>		</g>
+		<g id="shape323-740" transform="translate(929.471,-1066.06)">
+			<title>矩形.323</title>
+			<desc>213</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">213</text>		</g>
+		<g id="shape324-743" transform="translate(929.471,-1029.21)">
+			<title>矩形.324</title>
+			<desc>212</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">212</text>		</g>
+		<g id="shape325-746" transform="translate(929.471,-992.359)">
+			<title>矩形.325</title>
+			<desc>211</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">211</text>		</g>
+		<g id="shape326-749" transform="translate(929.471,-955.509)">
+			<title>矩形.326</title>
+			<desc>210</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">210</text>		</g>
+		<g id="shape327-752" transform="translate(929.471,-918.659)">
+			<title>矩形.327</title>
+			<desc>209</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">209</text>		</g>
+		<g id="shape328-755" transform="translate(929.471,-881.808)">
+			<title>矩形.328</title>
+			<desc>208</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">208</text>		</g>
+		<g id="shape329-758" transform="translate(929.471,-844.958)">
+			<title>矩形.329</title>
+			<desc>207</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">207</text>		</g>
+		<g id="shape330-761" transform="translate(929.471,-808.107)">
+			<title>矩形.330</title>
+			<desc>206</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">206</text>		</g>
+		<g id="shape331-764" transform="translate(929.471,-771.257)">
+			<title>矩形.331</title>
+			<desc>205</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">205</text>		</g>
+		<g id="shape332-767" transform="translate(929.471,-734.407)">
+			<title>矩形.332</title>
+			<desc>204</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">204</text>		</g>
+		<g id="shape333-770" transform="translate(929.471,-697.556)">
+			<title>矩形.333</title>
+			<desc>203</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">203</text>		</g>
+		<g id="shape334-773" transform="translate(929.471,-660.706)">
+			<title>矩形.334</title>
+			<desc>202</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">202</text>		</g>
+		<g id="shape335-776" transform="translate(929.471,-623.855)">
+			<title>矩形.335</title>
+			<desc>201</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">201</text>		</g>
+		<g id="shape336-779" transform="translate(929.471,-587.005)">
+			<title>矩形.336</title>
+			<desc>200</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">200</text>		</g>
+		<g id="shape337-782" transform="translate(929.471,-550.155)">
+			<title>矩形.337</title>
+			<desc>199</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">199</text>		</g>
+		<g id="shape338-785" transform="translate(929.471,-513.304)">
+			<title>矩形.338</title>
+			<desc>198</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">198</text>		</g>
+		<g id="shape339-788" transform="translate(929.471,-476.454)">
+			<title>矩形.339</title>
+			<desc>197</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">197</text>		</g>
+		<g id="shape340-791" transform="translate(929.471,-439.603)">
+			<title>矩形.340</title>
+			<desc>196</desc>
+			<rect x="0" y="1230.18" width="28.3465" height="19.8425" class="st5"/>
+			<text x="10.65" y="1241.2" class="st3">196</text>		</g>
+		<g id="shape341-794" transform="translate(11.0463,-323.383)">
+			<title>正方形.341</title>
+			<desc>297</desc>
+			<rect x="0" y="1213.17" width="36.8504" height="36.8504" class="st5"/>
+			<text x="13.15" y="1233.39" class="st22">297</text>		</g>
+		<g id="shape342-797" transform="translate(1017.35,-323.383)">
+			<title>正方形.342</title>
+			<desc>298</desc>
+			<rect x="0" y="1213.17" width="36.8504" height="36.8504" class="st5"/>
+			<text x="13.15" y="1233.39" class="st22">298</text>		</g>
+		<g id="shape343-800" transform="translate(1017.35,-1202.12)">
+			<title>正方形.343</title>
+			<desc>299</desc>
+			<rect x="0" y="1213.17" width="36.8504" height="36.8504" class="st5"/>
+			<text x="13.15" y="1233.39" class="st22">299</text>		</g>
+		<g id="shape344-803" transform="translate(11.0463,-1202.12)">
+			<title>工作表.344</title>
+			<desc>296</desc>
+			<path d="M0 1242.87 L0 1250.02 L36.85 1250.02 L36.85 1213.17 L28.93 1213.17 L0 1242.87 Z" class="st23"/>
+			<text x="13.15" y="1236.09" class="st22">296</text>		</g>
+		<g id="shape345-806" transform="translate(816.086,-1064.64)">
+			<title>圆形.345</title>
+			<desc>215</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">215</text>		</g>
+		<g id="shape799-809" transform="translate(816.086,-993.777)">
+			<title>圆形.799</title>
+			<desc>216</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">216</text>		</g>
+		<g id="shape800-812" transform="translate(816.086,-922.911)">
+			<title>圆形.800</title>
+			<desc>217</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">217</text>		</g>
+		<g id="shape801-815" transform="translate(816.086,-852.044)">
+			<title>圆形.801</title>
+			<desc>218</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">218</text>		</g>
+		<g id="shape802-818" transform="translate(816.086,-781.178)">
+			<title>圆形.802</title>
+			<desc>219</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">219</text>		</g>
+		<g id="shape803-821" transform="translate(816.086,-710.312)">
+			<title>圆形.803</title>
+			<desc>220</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">220</text>		</g>
+		<g id="shape804-824" transform="translate(816.086,-639.446)">
+			<title>圆形.804</title>
+			<desc>221</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">221</text>		</g>
+		<g id="shape805-827" transform="translate(816.086,-568.58)">
+			<title>圆形.805</title>
+			<desc>222</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">222</text>		</g>
+		<g id="shape806-830" transform="translate(816.086,-497.714)">
+			<title>圆形.806</title>
+			<desc>223</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">223</text>		</g>
+		<g id="shape807-833" transform="translate(745.219,-1064.64)">
+			<title>圆形.807</title>
+			<desc>224</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">224</text>		</g>
+		<g id="shape808-836" transform="translate(745.219,-993.777)">
+			<title>圆形.808</title>
+			<desc>225</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">225</text>		</g>
+		<g id="shape809-839" transform="translate(745.219,-922.911)">
+			<title>圆形.809</title>
+			<desc>226</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">226</text>		</g>
+		<g id="shape810-842" transform="translate(745.219,-852.044)">
+			<title>圆形.810</title>
+			<desc>227</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">227</text>		</g>
+		<g id="shape811-845" transform="translate(745.219,-781.178)">
+			<title>圆形.811</title>
+			<desc>228</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">228</text>		</g>
+		<g id="shape812-848" transform="translate(745.219,-710.312)">
+			<title>圆形.812</title>
+			<desc>229</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">229</text>		</g>
+		<g id="shape813-851" transform="translate(745.219,-639.446)">
+			<title>圆形.813</title>
+			<desc>230</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">230</text>		</g>
+		<g id="shape814-854" transform="translate(745.219,-568.58)">
+			<title>圆形.814</title>
+			<desc>231</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">231</text>		</g>
+		<g id="shape815-857" transform="translate(745.219,-497.714)">
+			<title>圆形.815</title>
+			<desc>232</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">232</text>		</g>
+		<g id="shape816-860" transform="translate(674.353,-1064.64)">
+			<title>圆形.816</title>
+			<desc>233</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">233</text>		</g>
+		<g id="shape817-863" transform="translate(674.353,-993.777)">
+			<title>圆形.817</title>
+			<desc>234</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">234</text>		</g>
+		<g id="shape818-866" transform="translate(674.353,-922.911)">
+			<title>圆形.818</title>
+			<desc>235</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">235</text>		</g>
+		<g id="shape819-869" transform="translate(674.353,-852.044)">
+			<title>圆形.819</title>
+			<desc>236</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">236</text>		</g>
+		<g id="shape820-872" transform="translate(674.353,-781.178)">
+			<title>圆形.820</title>
+			<desc>237</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">237</text>		</g>
+		<g id="shape821-875" transform="translate(674.353,-710.312)">
+			<title>圆形.821</title>
+			<desc>238</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">238</text>		</g>
+		<g id="shape822-878" transform="translate(674.353,-639.446)">
+			<title>圆形.822</title>
+			<desc>239</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">239</text>		</g>
+		<g id="shape823-881" transform="translate(674.353,-568.58)">
+			<title>圆形.823</title>
+			<desc>240</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">240</text>		</g>
+		<g id="shape824-884" transform="translate(674.353,-497.714)">
+			<title>圆形.824</title>
+			<desc>241</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">241</text>		</g>
+		<g id="shape825-887" transform="translate(603.487,-1064.64)">
+			<title>圆形.825</title>
+			<desc>242</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">242</text>		</g>
+		<g id="shape826-890" transform="translate(603.487,-993.777)">
+			<title>圆形.826</title>
+			<desc>243</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">243</text>		</g>
+		<g id="shape827-893" transform="translate(603.487,-922.911)">
+			<title>圆形.827</title>
+			<desc>244</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">244</text>		</g>
+		<g id="shape828-896" transform="translate(603.487,-852.044)">
+			<title>圆形.828</title>
+			<desc>245</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">245</text>		</g>
+		<g id="shape829-899" transform="translate(603.487,-781.178)">
+			<title>圆形.829</title>
+			<desc>246</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">246</text>		</g>
+		<g id="shape830-902" transform="translate(603.487,-710.312)">
+			<title>圆形.830</title>
+			<desc>247</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">247</text>		</g>
+		<g id="shape831-905" transform="translate(603.487,-639.446)">
+			<title>圆形.831</title>
+			<desc>248</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">248</text>		</g>
+		<g id="shape832-908" transform="translate(603.487,-568.58)">
+			<title>圆形.832</title>
+			<desc>249</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">249</text>		</g>
+		<g id="shape833-911" transform="translate(603.487,-497.714)">
+			<title>圆形.833</title>
+			<desc>250</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">250</text>		</g>
+		<g id="shape834-914" transform="translate(532.621,-1064.64)">
+			<title>圆形.834</title>
+			<desc>251</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">251</text>		</g>
+		<g id="shape835-917" transform="translate(532.621,-993.777)">
+			<title>圆形.835</title>
+			<desc>252</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">252</text>		</g>
+		<g id="shape836-920" transform="translate(532.621,-922.911)">
+			<title>圆形.836</title>
+			<desc>253</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">253</text>		</g>
+		<g id="shape837-923" transform="translate(532.621,-852.044)">
+			<title>圆形.837</title>
+			<desc>254</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">254</text>		</g>
+		<g id="shape838-926" transform="translate(532.621,-781.178)">
+			<title>圆形.838</title>
+			<desc>255</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">255</text>		</g>
+		<g id="shape839-929" transform="translate(532.621,-710.312)">
+			<title>圆形.839</title>
+			<desc>256</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">256</text>		</g>
+		<g id="shape840-932" transform="translate(532.621,-639.446)">
+			<title>圆形.840</title>
+			<desc>257</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">257</text>		</g>
+		<g id="shape841-935" transform="translate(532.621,-568.58)">
+			<title>圆形.841</title>
+			<desc>258</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">258</text>		</g>
+		<g id="shape842-938" transform="translate(532.621,-497.714)">
+			<title>圆形.842</title>
+			<desc>259</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">259</text>		</g>
+		<g id="shape843-941" transform="translate(461.755,-1064.64)">
+			<title>圆形.843</title>
+			<desc>260</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">260</text>		</g>
+		<g id="shape844-944" transform="translate(461.755,-993.777)">
+			<title>圆形.844</title>
+			<desc>261</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">261</text>		</g>
+		<g id="shape845-947" transform="translate(461.755,-922.911)">
+			<title>圆形.845</title>
+			<desc>262</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">262</text>		</g>
+		<g id="shape846-950" transform="translate(461.755,-852.044)">
+			<title>圆形.846</title>
+			<desc>263</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">263</text>		</g>
+		<g id="shape847-953" transform="translate(461.755,-781.178)">
+			<title>圆形.847</title>
+			<desc>264</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">264</text>		</g>
+		<g id="shape848-956" transform="translate(461.755,-710.312)">
+			<title>圆形.848</title>
+			<desc>265</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">265</text>		</g>
+		<g id="shape849-959" transform="translate(461.755,-639.446)">
+			<title>圆形.849</title>
+			<desc>266</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">266</text>		</g>
+		<g id="shape850-962" transform="translate(461.755,-568.58)">
+			<title>圆形.850</title>
+			<desc>267</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">267</text>		</g>
+		<g id="shape851-965" transform="translate(461.755,-497.714)">
+			<title>圆形.851</title>
+			<desc>268</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">268</text>		</g>
+		<g id="shape852-968" transform="translate(390.889,-1064.64)">
+			<title>圆形.852</title>
+			<desc>269</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">269</text>		</g>
+		<g id="shape853-971" transform="translate(390.889,-993.777)">
+			<title>圆形.853</title>
+			<desc>270</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">270</text>		</g>
+		<g id="shape854-974" transform="translate(390.889,-922.911)">
+			<title>圆形.854</title>
+			<desc>271</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">271</text>		</g>
+		<g id="shape855-977" transform="translate(390.889,-852.044)">
+			<title>圆形.855</title>
+			<desc>272</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">272</text>		</g>
+		<g id="shape856-980" transform="translate(390.889,-781.178)">
+			<title>圆形.856</title>
+			<desc>273</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">273</text>		</g>
+		<g id="shape857-983" transform="translate(390.889,-710.312)">
+			<title>圆形.857</title>
+			<desc>274</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">274</text>		</g>
+		<g id="shape858-986" transform="translate(390.889,-639.446)">
+			<title>圆形.858</title>
+			<desc>275</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">275</text>		</g>
+		<g id="shape859-989" transform="translate(390.889,-568.58)">
+			<title>圆形.859</title>
+			<desc>276</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">276</text>		</g>
+		<g id="shape860-992" transform="translate(390.889,-497.714)">
+			<title>圆形.860</title>
+			<desc>277</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">277</text>		</g>
+		<g id="shape861-995" transform="translate(320.023,-1064.64)">
+			<title>圆形.861</title>
+			<desc>278</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">278</text>		</g>
+		<g id="shape862-998" transform="translate(320.023,-993.777)">
+			<title>圆形.862</title>
+			<desc>279</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">279</text>		</g>
+		<g id="shape863-1001" transform="translate(320.023,-922.911)">
+			<title>圆形.863</title>
+			<desc>280</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">280</text>		</g>
+		<g id="shape864-1004" transform="translate(320.023,-852.044)">
+			<title>圆形.864</title>
+			<desc>281</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">281</text>		</g>
+		<g id="shape865-1007" transform="translate(320.023,-781.178)">
+			<title>圆形.865</title>
+			<desc>282</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">282</text>		</g>
+		<g id="shape866-1010" transform="translate(320.023,-710.312)">
+			<title>圆形.866</title>
+			<desc>283</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">283</text>		</g>
+		<g id="shape867-1013" transform="translate(320.023,-639.446)">
+			<title>圆形.867</title>
+			<desc>284</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">284</text>		</g>
+		<g id="shape868-1016" transform="translate(320.023,-568.58)">
+			<title>圆形.868</title>
+			<desc>285</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">285</text>		</g>
+		<g id="shape869-1019" transform="translate(320.023,-497.714)">
+			<title>圆形.869</title>
+			<desc>286</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">286</text>		</g>
+		<g id="shape870-1022" transform="translate(249.156,-1064.64)">
+			<title>圆形.870</title>
+			<desc>287</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">287</text>		</g>
+		<g id="shape871-1025" transform="translate(249.156,-993.777)">
+			<title>圆形.871</title>
+			<desc>288</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">288</text>		</g>
+		<g id="shape872-1028" transform="translate(249.156,-922.911)">
+			<title>圆形.872</title>
+			<desc>289</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">289</text>		</g>
+		<g id="shape873-1031" transform="translate(249.156,-852.044)">
+			<title>圆形.873</title>
+			<desc>290</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">290</text>		</g>
+		<g id="shape874-1034" transform="translate(249.156,-781.178)">
+			<title>圆形.874</title>
+			<desc>291</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">291</text>		</g>
+		<g id="shape875-1037" transform="translate(249.156,-710.312)">
+			<title>圆形.875</title>
+			<desc>292</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">292</text>		</g>
+		<g id="shape876-1040" transform="translate(249.156,-639.446)">
+			<title>圆形.876</title>
+			<desc>293</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">293</text>		</g>
+		<g id="shape877-1043" transform="translate(249.156,-568.58)">
+			<title>圆形.877</title>
+			<desc>294</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">294</text>		</g>
+		<g id="shape878-1046" transform="translate(249.156,-497.714)">
+			<title>圆形.878</title>
+			<desc>295</desc>
+			<path d="M0 1240.1 A9.92126 9.92126 0 0 1 19.84 1240.1 A9.92126 9.92126 0 1 1 0 1240.1 Z" class="st5"/>
+			<text x="5.52" y="1241.6" class="st24">295</text>		</g>
+		<g id="shape879-1049" transform="translate(202.405,-0.12)">
+			<title>框.2339</title>
+			<desc>GND</desc>
+			<rect x="0" y="1209.55" width="138.892" height="40.4744" class="st25"/>
+			<text x="59.83" y="1232.18" class="st26">GND</text>		</g>
+		<g id="shape881-1052" transform="translate(202.405,-217.799)">
+			<title>框.1652</title>
+			<desc>POWER</desc>
+			<rect x="0" y="1209.55" width="138.892" height="40.4744" class="st8"/>
+			<text x="54.16" y="1232.18" class="st26">POWER</text>		</g>
+		<g id="shape884-1055" transform="translate(184.825,-267.105)">
+			<title>框.1656</title>
+			<desc>图 例</desc>
+			<rect x="0" y="1230.09" width="138.892" height="19.9271" class="st27"/>
+			<text x="4" y="1244.26" class="st28">图 例</text>		</g>
+		<g id="shape885-1058" transform="translate(358.311,-110.477)">
+			<title>框.1657</title>
+			<desc>SDIO</desc>
+			<rect x="0" y="1209.55" width="138.892" height="40.4744" class="st15"/>
+			<text x="59.26" y="1232.18" class="st26">SDIO</text>		</g>
+		<g id="shape886-1061" transform="translate(670.122,-164.138)">
+			<title>框.1663</title>
+			<desc>SPI</desc>
+			<rect x="0" y="1209.55" width="138.892" height="40.4744" class="st16"/>
+			<text x="63.07" y="1232.18" class="st26">SPI</text>		</g>
+		<g id="shape887-1064" transform="translate(514.216,-217.799)">
+			<title>框.1664</title>
+			<desc>USIM</desc>
+			<rect x="0" y="1209.55" width="138.892" height="40.4744" class="st18"/>
+			<text x="58.48" y="1232.18" class="st26">USIM</text>		</g>
+		<g id="shape888-1067" transform="translate(514.216,-164.138)">
+			<title>框.1665</title>
+			<desc>Analog</desc>
+			<rect x="0" y="1209.55" width="138.892" height="40.4744" class="st11"/>
+			<text x="55.07" y="1232.18" class="st26">Analog</text>		</g>
+		<g id="shape889-1070" transform="translate(202.405,-164.138)">
+			<title>框.1666</title>
+			<desc>RF</desc>
+			<rect x="0" y="1209.55" width="138.892" height="40.4744" class="st20"/>
+			<text x="64.42" y="1232.18" class="st26">RF</text>		</g>
+		<g id="shape890-1073" transform="translate(202.405,-110.477)">
+			<title>框.1667</title>
+			<desc>IIC</desc>
+			<rect x="0" y="1209.55" width="138.892" height="40.4744" class="st14"/>
+			<text x="64.07" y="1232.18" class="st26">IIC</text>		</g>
+		<g id="shape891-1076" transform="translate(670.122,-217.799)">
+			<title>框.1668</title>
+			<desc>GPIO</desc>
+			<rect x="0" y="1209.55" width="138.892" height="40.4744" class="st13"/>
+			<text x="59.14" y="1232.18" class="st26">GPIO</text>		</g>
+		<g id="shape892-1079" transform="translate(670.122,-110.477)">
+			<title>框.1669</title>
+			<desc>CONTROL</desc>
+			<rect x="0" y="1209.55" width="138.892" height="40.4744" class="st6"/>
+			<text x="49.33" y="1232.18" class="st26">CONTROL</text>		</g>
+		<g id="shape893-1082" transform="translate(358.311,-217.799)">
+			<title>框.1670</title>
+			<desc>UART</desc>
+			<rect x="0" y="1209.55" width="138.892" height="40.4744" class="st9"/>
+			<text x="58.04" y="1232.18" class="st26">UART</text>		</g>
+		<g id="shape894-1085" transform="translate(358.311,-164.138)">
+			<title>框.549</title>
+			<desc>USB</desc>
+			<rect x="0" y="1209.55" width="138.892" height="40.4744" class="st19"/>
+			<text x="61.2" y="1232.18" class="st26">USB</text>		</g>
+		<g id="shape895-1088" transform="translate(514.216,-110.477)">
+			<title>框.1674</title>
+			<desc>AUDIO</desc>
+			<rect x="0" y="1209.55" width="138.892" height="40.4744" class="st10"/>
+			<text x="55.55" y="1232.18" class="st26">AUDIO</text>		</g>
+		<g id="shape896-1091" transform="translate(358.311,-56.8163)">
+			<title>框.1676</title>
+			<desc>RMII</desc>
+			<rect x="0" y="1209.55" width="138.892" height="40.4744" class="st17"/>
+			<text x="59.86" y="1232.18" class="st26">RMII</text>		</g>
+		<g id="shape897-1094" transform="translate(514.216,-56.8163)">
+			<title>框.2312</title>
+			<desc>HSIC</desc>
+			<rect x="0" y="1209.55" width="138.892" height="40.4744" class="st21"/>
+			<text x="59.72" y="1232.18" class="st26">HSIC</text>		</g>
+		<g id="shape902-1097" transform="translate(670.122,-56.8163)">
+			<title>框.2338</title>
+			<desc>RESERVED</desc>
+			<rect x="0" y="1209.55" width="138.892" height="40.4744" class="st2"/>
+			<text x="48.57" y="1232.18" class="st26">RESERVED</text>		</g>
+		<g id="shape923-1100" transform="translate(202.405,-56.8163)">
+			<title>框.923</title>
+			<desc>CLOCK</desc>
+			<rect x="0" y="1209.55" width="138.892" height="40.4744" class="st12"/>
+			<text x="55.83" y="1232.18" class="st26">CLOCK</text>		</g>
+	</g>
+</svg>

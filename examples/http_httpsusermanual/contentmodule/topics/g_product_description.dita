@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="topic_bwj_p3h_35b">
+    <title>产品基本信息</title>
+    <body>
+        <p id="description_template"><ph keyref="product"/>是一款LTE
+            Cat.1无线上网模组，支持中国移动OneNET、阿里云、腾讯云等物联网平台，满足多行业物联网产品应用需求，包括可穿戴设备、安全系统、无线POS机、工业级PDA、智能电表、无线遥控、智能计量、共享单车、智能停车、智慧城市、安防、资产追踪、智能家电、农业和环境监测等领域。</p>
+        <p id="medium_speed_description"><ph keyref="product"/>是一款LTE Cat.1无线上网模组，可以广泛应用于各种消费级、工业级产品上。</p>
+    </body>
+</topic>

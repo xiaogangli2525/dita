@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="concept_y5r_wg4_qqb">
+    <title>外设接口总述<?oxy_comment_start author="veray" timestamp="20220924T142556+0800" comment="文档提示：该主题文件为所有型号共用，维护时请注意不要随意删改。"?></title><?oxy_comment_end?>
+    <shortdesc>本文档主要介绍了外设软件接口，通过这些接口可以实现外设的连接，但是在使用这些函数接口之前，需要阅读相关硬件手册实现硬件的正确连接，在使用时需要仔细阅读外设的注意事项，以便实现外设的正确连接和操作。</shortdesc>
+</concept>
+<?oxy_options track_changes="on"?>

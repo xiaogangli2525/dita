@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="reference_rrn_tfm_gqb">
+    <title>AT命令语法格式</title>
+    <?oxy_comment_start author="zhouziwei@cmiot.cmcc" timestamp="20210811T171038+0800" comment="请补充简短说明" id="cwz_hrs_pqb"?>
+    <?oxy_comment_start author="chenxiangyu@cmiot.cmcc" timestamp="20210816T111217+0800" parentID="cwz_hrs_pqb" comment="已添加" mid="1"?>
+    <shortdesc><?oxy_comment_end?><?oxy_comment_end mid="1"?>AT命令的语法格式及其说明。</shortdesc>
+    <refbody>
+        <example>
+            <p>每条命令必须以“AT”或”at”开头，以回车符&lt;CR>结尾。命令发送成功后通常会有包含“&lt;CR>&lt;LF>response&lt;CR>&lt;LF>”的响应消息。AT命令响应时，响应句段前后均会带有&lt;CR>&lt;LF>，而为便于阅读，文档描述时常将&lt;CR>&lt;LF>省略。</p>
+            <p>AT命令集通常包含3GPP TS 27.007、3GPP TS 27.005和ITU-T V.25ter标准命令集以及厂商自定义扩展命令集。</p>
+            <p>AT命令根据语法结构可以归为3类：基础语法、S参数语法和扩展语法。<ul id="ul_y3m_twf_3qb">
+                    <li>基础语法<p>该类AT命令格式是“AT&lt;x>&lt;n>”或“AT&amp;&lt;x>&lt;n>”；其中“&lt;x>”是命令，“&lt;n>”是命令参数。比如命令“ATE&lt;n>”，该命令根据“&lt;n>”值确定DCE是否需要将接收到的字符反馈回给DTE，“&lt;n>”是可选项，如果不带该值则使用缺省值。</p></li>
+                    <li>S参数语法<p>该类命令格式是“ATS&lt;n>=&lt;m>”，其中“&lt;n>”是要设置S寄存器索引，“&lt;m>”是设置值。</p></li>
+                    <li>扩展语法<p>该类命令可以有多种操作模式，如下表：</p><table>
+                            <title>AT命令类型</title>
+                            <tgroup cols="3">
+                                <colspec colname="c1" colnum="1" colwidth="1*2" align="center"/>
+                                <colspec colname="c2" colnum="2" colwidth="1*"/>
+                                <colspec colname="newCol3" colnum="3" colwidth="1*"/>
+                                <thead>
+                                    <row>
+                                        <entry>类型</entry>
+                                        <entry>命令</entry>
+                                        <entry>描述</entry>
+                                    </row>
+                                </thead>
+                                <tbody>
+                                    <row>
+                                        <entry><keyword>测试命令</keyword></entry>
+                                        <entry><keyword>AT+&lt;CMD>=?</keyword></entry>
+                                        <entry>该类命令返回参数列表以及参数值范围</entry>
+                                    </row>
+                                    <row>
+                                        <entry><keyword>读取命令</keyword></entry>
+                                        <entry><keyword>AT+&lt;CMD>?</keyword></entry>
+                                        <entry>该类命令返回参数当前值</entry>
+                                    </row>
+                                    <row>
+                                        <entry><keyword>设置命令</keyword></entry>
+                                        <entry><keyword>AT+&lt;CMD>=&lt;p1>[,&lt;p2>[,&lt;p3>[…]]]</keyword></entry>
+                                        <entry>该类命令设置参数值</entry>
+                                    </row>
+                                    <row>
+                                        <entry><keyword>执行命令</keyword></entry>
+                                        <entry><keyword>AT+&lt;CMD></keyword></entry>
+                                        <entry>执行一个操作</entry>
+                                    </row>
+                                </tbody>
+                            </tgroup>
+                        </table>其中：<ul id="ul_e42_3gg_3qb">
+                            <li>&lt;…>尖括号中是参数，实际输入时不带尖括号；</li>
+                            <li>[…]方括号中的参数是可选参数；</li>
+                        </ul></li>
+                </ul></p>
+        </example>
+        <example>
+            <p>AT命令响应内容有以下三种情况：<ul id="ul_trh_xfg_3qb">
+                    <li>若AT命令格式错误或者其他错误，会返回”ERROR”字符串。<p>如果启用了扩展错误报告（+CMEE），会返回字符串“+CME
+                            ERROR:&lt;err>”或者“+CMS ERROR:&lt;err>”，&lt;err>表示错误码。</p></li>
+                    <li>如果AT命令执行成功，会返回每条命令对应的语法结构里的响应内容以及”OK”。</li>
+                    <li><keyword>AT命令响应结果中，冒号（:）后均存在空格用以分隔响应头与参数列表。</keyword></li>
+                </ul></p>
+        </example>
+    </refbody>
+</reference>

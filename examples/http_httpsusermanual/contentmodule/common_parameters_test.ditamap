@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE map PUBLIC "-//OASIS//DTD DITA Map//EN" "map.dtd">
+<map>
+    <title>通用参数测试地图</title>
+    
+    <!-- 完整参数文件 -->
+    <topicref href="common_parameters/c_complete_product_parameters.dita" format="dita"/>
+    <topicref href="common_parameters/c_product_parameter_mapping.dita" format="dita"/>
+    
+    <!-- 测试文件 -->
+    <topicref href="common_parameters/c_complete_parameter_test.dita" format="dita"/>
+    
+    <!-- 使用指南 -->
+    <topicref href="common_parameters/c_complete_parameter_usage_guide.dita" format="dita"/>
+</map>

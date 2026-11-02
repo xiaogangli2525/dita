@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="list_items">
+    <title>可复用列表项</title>
+    <body>
+        <p>判断模组睡眠状态方法可选列表项。</p>
+        <ul id="sleep_state_judgement_methods">
+            <li id="use_wakeup_out">通过WAKEUP_OUT输出电平判断。</li>
+            <li id="use_urc">通过URC上报消息判断。</li>
+            <li id="use_psm">通过打开PSM状态上报用于辅助判断。</li>
+        </ul>
+    </body>
+</topic>

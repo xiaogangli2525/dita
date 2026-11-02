@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="concept_y5r_wg4_qqb">
+    <title><?oxy_comment_start author="veray" timestamp="20220924T142504+0800" comment="文档提示：该主题文件为所有型号通用，维护时请注意不要随意删改。"?>写作目的<?oxy_comment_end?></title>
+    <shortdesc>本文档介绍了模组OpenCPU的外围接口函数的使用示例和使用注意事项，帮助软件开发者更好理解和使用SDK的接口函数，实现外设相关功能开发。</shortdesc>
+</concept>

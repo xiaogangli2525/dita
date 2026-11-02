@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="concept_t2n_n5g_k5b">
+    <title>USB Interface Description</title>
+    <conbody>
+        <p id="usb_interface_description">The module supports the USB 2.0 High-Speed interface and is compatible with both USB 2.0 and USB 1.1 protocols. It offers a maximum interface rate of up to 480 Mbps and operates only in slave mode. The USB input/output signals are compliant with the USB 2.0 interface specifications. The interface can be used for AT command transmission, data transfer, software debugging, and firmware upgrade. The interface is defined as shown in the following table.</p>
+    </conbody>
+</concept>

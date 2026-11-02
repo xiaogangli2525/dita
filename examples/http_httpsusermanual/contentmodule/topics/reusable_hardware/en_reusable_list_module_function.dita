@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="module_function_list">
+    <title>模组功能模块列表</title>
+    <body>
+        <ul id="list_module_function">
+            <li id="power_management">Power Management</li>
+            <li id="baseband">Baseband</li>
+            <li id="rf">RF</li>
+            <li id="application_interface">Application Interface</li>
+            <li id="storage">Storage</li>
+            <li id="gnss">GNSS</li>
+        </ul>
+    </body>
+</topic>

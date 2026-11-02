@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="topic_v5j_nfm_gqb">
+    <title>AT Command Overview</title>
+    <shortdesc>This chapter mainly introduces AT command definition and its syntax
+        format.</shortdesc>
+    <body>
+        <p>AT command is a string that sent in a specific format from TE (Terminal Equipment) or DTE
+            (Data Terminal Equipment) to TA (Terminal Adaptor) or DCE (Data Circuit Terminal
+            Equipment) .TE uses TA to send AT command to control the functions of MS (Mobile
+            Station) and interact with network services. Through AT command, users can control phone
+            calls, short messages, phonebooks, data services, supplementary services, and faxes
+            etc.</p>
+    </body>
+</topic>

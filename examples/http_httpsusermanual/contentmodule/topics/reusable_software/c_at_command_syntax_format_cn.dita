@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="concept_irj_czf_brb">
+    <title>AT命令语法</title>
+    <conbody>
+        <p>AT命令必须以“AT”或“at”开头，以回车符&lt;CR>结尾；命令后面跟随结构为“&lt;CR>&lt;LF>response&lt;CR>&lt;LF>”的响应。为便于阅读，文档中将省略&lt;CR>&lt;LF>，仅展示响应内容。</p>
+        <p>中移物联网模组实现的AT命令集包含3GPP TS 27.005、3GPP TS 27.007、ITU-TV.25ter标准命令集和中移物联网自定义的扩展命令集。</p>
+        <p>AT命令根据语法结构可归为基础语法、S参数语法和扩展语法3类。</p>
+        <section id="section_vvs_3gg_brb">
+            <title>基础语法</title>
+            <p>该类AT命令格式为“AT&lt;x>&lt;n>”或“AT&amp;&lt;x>&lt;n>”；其中“&lt;x>”是命令，“&lt;n>”是命令参数。</p>
+            <p>比如命令“ATE&lt;n>”，该命令根据“&lt;n>”值确定DCE是否需要将接收到的字符反馈给DTE。“&lt;n>”是可选项，如果不带该值则使用缺省值。</p>
+        </section>
+        <section id="section_k3z_ygg_brb">
+            <title>S参数语法</title>
+            <p>该类AT命令格式为“ATS&lt;n>=&lt;m>”，其中“&lt;n>”是要设置S寄存器索引，“&lt;m>”是设置值。</p>
+        </section>
+        <section id="section_pkp_2hg_brb">
+            <title>扩展语法</title>
+            <p>该类AT命令有多种操作模式。</p>
+            <table id="table_vdf_thg_brb">
+                <title>AT命令及响应类型</title>
+                <tgroup cols="3">
+                    <colspec colname="c1" colnum="1" colwidth="1*" align="left"/>
+                    <colspec colname="c2" colnum="2" colwidth="1*" align="left"/>
+                    <colspec colname="newCol3" colnum="3" colwidth="1*" align="left"/>
+                    <thead>
+                        <row>
+                            <entry>类型</entry>
+                            <entry>命令</entry>
+                            <entry>响应描述</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>测试命令</entry>
+                            <entry>AT+&lt;CMD>=?</entry>
+                            <entry>返回参数列表及参数值范围</entry>
+                        </row>
+                        <row>
+                            <entry>读取命令</entry>
+                            <entry>AT+&lt;CMD>?</entry>
+                            <entry>返回参数当前值</entry>
+                        </row>
+                        <row>
+                            <entry>设置命令</entry>
+                            <entry>AT+&lt;CMD>=&lt;p1>[,&lt;p2[,&lt;p3>[…]]]</entry>
+                            <entry>设置参数值</entry>
+                        </row>
+                        <row>
+                            <entry>执行命令</entry>
+                            <entry>AT+&lt;CMD></entry>
+                            <entry>执行具体操作</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+            <p>其中：<ul id="ul_dhj_png_brb">
+                    <li>&lt;...>尖括号中是参数，实际输入时不包含尖括号；</li>
+                    <li>[...]方括号中的参数是可选参数。</li>
+                </ul></p>
+        </section>
+    </conbody>
+</concept>
+

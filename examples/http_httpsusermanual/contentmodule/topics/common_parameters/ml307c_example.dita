@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="ml307c_example">
+    <title>ML307C产品文档示例</title>
+    <shortdesc>使用新产品模板创建的ML307C产品文档示例</shortdesc>
+    <conbody>
+        <section id="example_overview">
+            <title>示例说明</title>
+            <p>本示例展示如何使用新产品模板创建ML307C的产品文档。注意所有参数都通过conref引用参数库中的标准参数。</p>
+        </section>
+        
+        <section id="ml307c_product_overview">
+            <title>ML307C模组概述</title>
+            <p>以下是使用模板创建的ML307C产品概述：</p>
+            
+            <table>
+                <title>ML307C模组概述</title>
+                <tgroup cols="2">
+                    <colspec colname="c1" colnum="1" colwidth="3*" align="left"/>
+                    <colspec colname="c2" colnum="2" colwidth="7*" align="left"/>
+                    <thead>
+                        <row>
+                            <entry>类型</entry>
+                            <entry>描述</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>产品型号</entry>
+                            <entry>ML307C</entry>
+                        </row>
+                        <row>
+                            <entry>产品类别</entry>
+                            <entry>LTE Cat.1模组</entry>
+                        </row>
+                        <row>
+                            <entry>封装类型</entry>
+                            <entry><ph conref="product_parameters.dita#product_parameters/package_lcc48_lga61"/></entry>
+                        </row>
+                        <row>
+                            <entry>物理特性</entry>
+                            <entry>
+                                <ul>
+                                    <li><ph conref="product_parameters.dita#product_parameters/dimensions_17_7x15_8x2_2"/></li>
+                                    <li><ph conref="product_parameters.dita#product_parameters/weight_1_2g"/></li>
+                                </ul>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>功率特性</entry>
+                            <entry>
+                                <ul>
+                                    <li>发射功率：<ph conref="product_parameters.dita#product_parameters/power_23dbm"/></li>
+                                </ul>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>温度特性</entry>
+                            <entry>
+                                <ul>
+                                    <li>正常工作温度：<ph conref="product_parameters.dita#product_parameters/temp_normal_30_75"/></li>
+                                    <li>扩展工作温度：<ph conref="product_parameters.dita#product_parameters/temp_extended_40_85"/></li>
+                                    <li>存储温度：<ph conref="product_parameters.dita#product_parameters/temp_storage_45_90"/></li>
+                                </ul>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>电压特性</entry>
+                            <entry>
+                                <ul>
+                                    <li>工作电压：<ph conref="product_parameters.dita#product_parameters/voltage_34_45"/></li>
+                                </ul>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>频段支持</entry>
+                            <entry>
+                                <ul>
+                                    <li>LTE-FDD频段：<ph conref="product_parameters.dita#product_parameters/bands_lte_fdd_basic"/></li>
+                                    <li>LTE-TDD频段：<ph conref="product_parameters.dita#product_parameters/bands_lte_tdd_basic"/></li>
+                                </ul>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>数据速率</entry>
+                            <entry>
+                                <ul>
+                                    <li>LTE-FDD速率：<ph conref="product_parameters.dita#product_parameters/rate_cat1_fdd_10_5"/></li>
+                                    <li>LTE-TDD速率：<ph conref="product_parameters.dita#product_parameters/rate_cat1_tdd_9_3"/></li>
+                                </ul>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>应用接口</entry>
+                            <entry>
+                                <ul>
+                                    <li>UART接口：<ph conref="../reusable_hardware/reusable_list_application_interface.dita#ReusableComponent_edd_b4y_25b/interface_uart"/></li>
+                                    <li>USB接口：<ph conref="../reusable_hardware/reusable_list_application_interface.dita#ReusableComponent_edd_b4y_25b/interface_usb"/></li>
+                                    <li>USIM接口：<ph conref="../reusable_hardware/reusable_list_application_interface.dita#ReusableComponent_edd_b4y_25b/interface_usim"/></li>
+                                    <li>GPIO接口：<ph conref="../reusable_hardware/reusable_list_application_interface.dita#ReusableComponent_edd_b4y_25b/interface_gpio"/></li>
+                                    <li>RF接口：<ph conref="../reusable_hardware/reusable_list_application_interface.dita#ReusableComponent_edd_b4y_25b/interface_rf"/></li>
+                                </ul>
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>网络协议</entry>
+                            <entry>IPv4/IPv6/TCP/UDP/HTTP/HTTPS/MQTT</entry>
+                        </row>
+                        <row>
+                            <entry>驱动支持</entry>
+                            <entry>Windows7/10, Linux, Android4.x~Android11.x</entry>
+                        </row>
+                        <row>
+                            <entry>固件升级</entry>
+                            <entry>USB</entry>
+                        </row>
+                        <row>
+                            <entry>3GPP标准</entry>
+                            <entry>R13</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+        
+        <section id="template_benefits">
+            <title>模板优势</title>
+            <p>使用本模板的优势：</p>
+            <ul>
+                <li><b>标准化：</b>所有产品文档使用统一的结构和格式</li>
+                <li><b>一致性：</b>通过conref引用确保参数表述的一致性</li>
+                <li><b>效率：</b>减少重复工作，快速创建新产品文档</li>
+                <li><b>维护性：</b>参数更新时自动反映到所有产品文档</li>
+                <li><b>准确性：</b>减少手动输入错误，确保参数准确性</li>
+            </ul>
+        </section>
+        
+        <section id="usage_instructions">
+            <title>使用说明</title>
+            <p>要使用本模板创建新产品文档：</p>
+            <ol>
+                <li>复制 <filepath>new_product_template.dita</filepath> 文件</li>
+                <li>将文件名改为新产品型号，如 <filepath>ml307c_product_description.dita</filepath></li>
+                <li>将模板中的"NEW_PRODUCT"替换为实际的产品型号</li>
+                <li>根据产品规格选择相应的参数，删除不适用的参数行</li>
+                <li>添加产品特有的参数（如果有）</li>
+                <li>验证所有conref引用都正确解析</li>
+                <li>在产品的地图中包含新创建的文档</li>
+            </ol>
+        </section>
+    </conbody>
+</concept>

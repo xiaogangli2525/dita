@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="topic_scm_swz_fqb">
+    <title><?oxy_comment_start author="zhouziwei@cmiot.cmcc" timestamp="20220901T105035+0800" comment="文档提示：通用主题文件，请勿随意删改。"?>POWER Interface<?oxy_comment_end?></title>
+    <shortdesc>This chapter provides a brief introduction to the module's power pins.</shortdesc>
+</topic>

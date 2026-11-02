@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="topic_z33_bzz_fqb">
+    <title>模组控制信号接口</title>
+    <body>
+        <p>模组控制信号主要有：</p>
+        <ul id="control_signal_list">
+            <li id="ap_ready">应用处理器休眠状态检测接口（AP_READY）</li>
+            <li id="ap_ready_tbd">应用处理器休眠状态检测接口（AP_READY）<sup>*</sup></li>
+            <li id="boot_mode">强制下载接口（BOOT_MODE）</li>
+            <li id="boot_mode_tbd">强制下载接口（BOOT_MODE）<sup>*</sup></li>
+            <li id="bt_en">蓝牙使能输出接口（BT_EN）</li>
+            <li id="bt_en_tbd">蓝牙使能输出接口（BT_EN）<sup>*</sup></li>
+            <li id="config">配置接口（CONFIG_0/1/2/3）</li>
+            <li id="config_tbd">配置接口（CONFIG_0/1/2/3）<sup>*</sup></li>
+            <li id="full_card_power_off">模组开关机接口（FULL_CARD_POWER_OFF#）</li>
+            <li id="full_card_power_off_tbd">模组开关机接口（FULL_CARD_POWER_OFF#）<sup>*</sup></li>
+            <li id="gnss_backup_en">GNSS备份电源使能接口（GNSS_BACKUP_EN）</li>
+            <li id="gnss_backup_en_tbd">GNSS备份电源使能接口（GNSS_BACKUP_EN）<sup>*</sup></li>
+            <li id="led_1">网络状态指示接口（LED_1#）</li>
+            <li id="led_1_tbd">网络状态指示接口（LED_1#）<sup>*</sup></li>
+            <li id="netlight">网络状态指示接口（NETLIGHT）</li>
+            <li id="netlight_tbd">网络状态指示接口（NETLIGHT）<sup>*</sup></li>
+            <li id="net_mode">网络注册指示接口（NET_MODE）</li>
+            <li id="net_mode_tbd">网络注册指示接口（NET_MODE）<sup>*</sup></li>
+            <li id="led_wwan">网络状态指示接口（LED_WWAN#）</li>
+            <li id="led_wwan_tbd">网络状态指示接口（LED_WWAN#）<sup>*</sup></li>
+            <li id="pm_en">Wi-Fi电源使能接口（PM_EN）</li>
+            <li id="pm_en_tbd">Wi-Fi电源使能接口（PM_EN）<sup>*</sup></li>
+            <li id="psm_wakeup">PSM唤醒接口（PSMEXT_INT）</li>
+            <li id="psm_wakeup_tbd">PSM唤醒接口（PSMEXT_INT）<sup>*</sup></li>
+            <li id="pwm">脉冲宽度调制接口（PWM）</li>
+            <li id="pwm_tbd">脉冲宽度调制接口（PWM）<sup>*</sup></li>
+            <li id="power_on_off">模组开关机接口（PWR_ON/OFF）</li>
+            <li id="power_on_off_tbd">模组开关机接口（PWR_ON/OFF）<sup>*</sup></li>
+            <li id="reset">模组复位接口（RESET）</li>
+            <li id="reset_tbd">模组复位接口（RESET）<sup>*</sup></li>
+            <li id="reset_pound">模组复位接口（RESET#）</li>
+            <li id="reset_pound_tbd">模组复位接口（RESET#）<sup>*</sup></li>
+            <li id="ri">振铃状态指示接口（RI）</li>
+            <li id="ri_tbd">振铃状态指示接口（RI）<sup>*</sup></li>
+            <li id="rst_wakeupin">复位唤醒接口（RST_WAKUPIN）</li>
+            <li id="rst_wakeupin_tbd">复位唤醒接口（RST_WAKUPIN）<sup>*</sup></li>
+            <li id="sleep_ind">休眠状态指示接口（SLEEP_IND）</li>
+            <li id="sleep_ind_tbd">休眠状态指示接口（SLEEP_IND）<sup>*</sup></li>
+            <li id="module_state">模组状态指示接口（STATE）</li>
+            <li id="module_state_tbd">模组状态指示接口（STATE）<sup>*</sup></li>
+            <li id="network_state">网络状态指示接口（STATE）</li>
+            <li id="network_state_tbd">网络状态指示接口（STATE）<sup>*</sup></li>
+            <li id="vcc_emmc_en">EMMC电源使能接口（VCC_EMMC_EN）</li>
+            <li id="vcc_emmc_en_tbd">EMMC电源使能接口（VCC_EMMC_EN）<sup>*</sup></li>
+            <li id="wakeupout">模组状态指示接口（WAKEUPOUT）</li>
+            <li id="wakeupout_tbd">模组状态指示接口（WAKEUPOUT）<sup>*</sup></li>
+            <li id="module_wakeup_out">模组休眠唤醒输出接口（WAKEUPOUT）</li>
+            <li id="module_wakeup_out_tbd">模组休眠唤醒输出接口（WAKEUPOUT）<sup>*</sup></li>
+            <li id="wakeup_out">唤醒输出接口（WAKEUP_OUT）</li>
+            <li id="wakeup_out_tbd">唤醒输出接口（WAKEUP_OUT）<sup>*</sup></li>
+            <li id="wake">唤醒输出接口（WAKE#）</li>
+            <li id="wake_tbd">唤醒输出接口（WAKE#）<sup>*</sup></li>
+            <li id="wakeupin">模组休眠唤醒输入接口（WAKEUPIN）</li>
+            <li id="wakeupin_tbd">模组休眠唤醒输入接口（WAKEUPIN）<sup>*</sup></li>
+            <li id="wifi_en">Wi-Fi使能输出接口（WIFI_EN）</li>
+            <li id="wifi_en_tbd">Wi-Fi使能输出接口（WIFI_EN）<sup>*</sup></li>
+            <li id="wifi_wake_mod">Wi-Fi唤醒模组输入接口（WIFI_WAKE_MOD）</li>
+            <li id="wifi_wake_mod_tbd">Wi-Fi唤醒模组输入接口（WIFI_WAKE_MOD）<sup>*</sup></li>
+            <li id="w_disable">飞行模式接口（W_DISABLE）</li>
+            <li id="w_disable_tbd">飞行模式接口（W_DISABLE）<sup>*</sup></li>
+            <li id="w_disable_pound">飞行模式控制接口（W_DISABLE#）</li>
+            <li id="w_disable_pound_tbd">飞行模式控制接口（W_DISABLE#）<sup>*</sup></li>
+            <li id="w_disable_pound1">飞行模式控制接口（W_DISABLE1#）</li>
+            <li id="w_disable_pound1_tbd">飞行模式控制接口（W_DISABLE1#）<sup>*</sup></li>
+            <li id="w_disable_pound2">飞行模式控制接口（W_DISABLE2#）</li>
+            <li id="w_disable_pound2_tbd">飞行模式控制接口（W_DISABLE2#）<sup>*</sup></li>
+            <li id="wowwan">模组唤醒外设接口（WOWWAN#）</li>
+            <li id="wowwan_tbd">模组唤醒外设接口（WOWWAN#）<sup>*</sup></li>
+        </ul>
+    </body>
+</topic>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="topic_jgq_gxg_gqb">
+    <title><?oxy_comment_start author="zhouziwei" timestamp="20220825T141351+0800" comment="文档提示：该主题文件为所有型号共用，维护时请勿随意删改。"?>引言<?oxy_comment_end?></title>
+    <body>
+        <p>本文档介绍了模组软件相关特性，包括睡眠模式、省电场景、驻网流程及配置、短信流程、网络时间同步、TCP/IP应用、IPv6业务等。</p>
+    </body>
+</topic>
+<?oxy_options track_changes="on"?>

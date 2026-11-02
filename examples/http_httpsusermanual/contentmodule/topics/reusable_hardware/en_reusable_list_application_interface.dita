@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="ReusableComponent_edd_b4y_25b">
+    <title>模组应用接口列表</title>
+    <refbody>
+        <example><ul>
+                <li id="interface_power">POWER Interface</li>
+                <li id="interface_charge">CHARGE Interface</li>
+                <li id="interface_uart">UART Interface</li>
+                <li id="interface_wlan">WLAN Interface</li>
+                <li id="interface_usim">USIM Interface</li>
+                <li id="interface_gpio">GPIO Interface</li>
+                <li id="interface_rf">RF Interface</li>
+                <li id="interface_usb">USB Interface</li>
+                <li id="interface_analog">ANALOG Interface</li>
+                <li id="interface_clock">CLOCK Interface</li>
+                <li id="interface_spi">SPI Interface</li>
+                <li id="interface_iic">IIC Interface</li>
+                <li id="interface_timeservice">授时 Interface</li>
+                <li id="interface_sdio">SDIO Interface</li>
+                <li id="interface_mmc">MMC Interface</li>
+                <li id="interface_audio">AUDIO Interface</li>
+                <li id="interface_rmii">RMII Interface</li>
+                <li id="interface_control">CONTROL Interface</li>
+                <li id="interface_jtag">JTAG Interface</li>
+                <li id="interface_xmii">xMII(MAC) Interface</li>
+                <li id="interface_hsic">HSIC Interface</li>
+                <li id="interface_rfic">RFIC Interface</li>
+                <li id="interface_pcie">PCIe Interface</li>
+                <li id="interface_lcd">LCD Interface</li>
+                <li id="interface_camera">CAMERA Interface</li>
+                <li id="interface_keypad">KEYPAD Interface</li>
+                <li id="interface_gnd">GND Interface</li>
+                <li id="interface_reserved">RESERVED Interface</li>
+            </ul>
+      <ul>
+                <li id="interface_power_in_development">POWER Interface<sup>*</sup></li>
+                <li id="interface_charge_in_development">CHARGE Interface<sup>*</sup></li>
+                <li id="interface_uart_in_development">UART Interface<sup>*</sup></li>
+                <li id="interface_wlan_in_development">WLAN Interface<sup>*</sup></li>
+                <li id="interface_usim_in_development">USIM Interface<sup>*</sup></li>
+                <li id="interface_gpio_in_development">GPIO Interface<sup>*</sup></li>
+                <li id="interface_rf_in_development">RF Interface<sup>*</sup></li>
+                <li id="interface_usb_in_development">USB Interface<sup>*</sup></li>
+                <li id="interface_analog_in_development">ANALOG Interface<sup>*</sup></li>
+                <li id="interface_clock_in_development">CLOCK Interface<sup>*</sup></li>
+                <li id="interface_spi_in_development">SPI Interface<sup>*</sup></li>
+                <li id="interface_iic_in_development">IIC Interface<sup>*</sup></li>
+                <li id="interface_timeservice_in_development"
+                    ><?oxy_comment_start author="zhouziwei@cmiot.cmcc" timestamp="20240628T182245+0800" comment="待确认该翻译是否准确"?>Timing<?oxy_comment_end?>
+                        Interface<sup>*</sup></li>
+                <li id="interface_sdio_in_development">SDIO Interface<sup>*</sup></li>
+                <li id="interface_mmc_in_development">MMC Interface<sup>*</sup></li>
+                <li id="interface_audio_in_development">AUDIO Interface<sup>*</sup></li>
+                <li id="interface_rmii_in_development">RMII Interface<sup>*</sup></li>
+                <li id="interface_control_in_development">CONTROL Interface<sup>*</sup></li>
+                <li id="interface_jtag_in_development">JTAG Interface<sup>*</sup></li>
+                <li id="interface_xmii_in_development">xMII(MAC) Interface<sup>*</sup></li>
+                <li id="interface_hsic_in_development">HSIC Interface<sup>*</sup></li>
+                <li id="interface_rfic_in_development">RFIC Interface<sup>*</sup></li>
+                <li id="interface_pcie_in_development">PCIe Interface<sup>*</sup></li>
+                <li id="interface_lcd_in_development">LCD Interface<sup>*</sup></li>
+                <li id="interface_camera_in_development">CAMERA Interface<sup>*</sup></li>
+                <li id="interface_keypad_in_development">KEYPAD Interface<sup>*</sup></li>
+                <li id="interface_gnd_in_development">GND Interface<sup>*</sup></li>
+                <li id="interface_reserved_in_development">RESERVED Interface<sup>*</sup></li>
+            </ul>
+      </example>
+    </refbody>
+</reference>

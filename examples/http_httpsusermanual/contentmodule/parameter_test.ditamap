@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE map PUBLIC "-//OASIS//DTD DITA Map//EN" "map.dtd">
+<map>
+    <title>产品参数测试地图</title>
+    
+    <!-- 参数文件 -->
+    <topicref href="common_parameters/product_parameters.dita" format="dita"/>
+    <topicref href="common_parameters/product_configurations.dita" format="dita"/>
+    
+    <!-- 模板和示例文件 -->
+    <topicref href="common_parameters/new_product_template.dita" format="dita"/>
+    <topicref href="common_parameters/ml307c_example.dita" format="dita"/>
+    
+    <!-- 使用指南 -->
+    <topicref href="common_parameters/conref_usage_guide.dita" format="dita"/>
+    
+    <!-- 测试文件 -->
+    <topicref href="common_parameters/parameter_test.dita" format="dita"/>
+</map>

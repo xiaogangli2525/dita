@@ -1,0 +1,2115 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- 由 Microsoft Visio, SVG Export 生成 mr880a_pin_map_opencpu.svg 页-1 -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ev="http://www.w3.org/2001/xml-events"
+		xmlns:v="http://schemas.microsoft.com/visio/2003/SVGExtensions/" width="31.6975in" height="34.9864in"
+		viewBox="0 0 2282.22 2519.02" xml:space="preserve" color-interpolation-filters="sRGB" class="st39">
+	<v:documentProperties v:langID="2052" v:metric="true" v:viewMarkup="false">
+		<v:userDefs>
+			<v:ud v:nameU="msvConvertTheme"/>
+		</v:userDefs>
+	</v:documentProperties>
+
+	<style type="text/css">
+	<![CDATA[
+		.st1 {fill:#ffffff;stroke:#000000;stroke-width:3}
+		.st2 {visibility:visible}
+		.st3 {fill:#5b9bd5;fill-opacity:0.22;filter:url(#filter_2);stroke:none}
+		.st4 {fill:#6fcde2;stroke:none;stroke-width:0.25}
+		.st5 {fill:#000000;font-family:Microsoft YaHei UI;font-size:2.16666em}
+		.st6 {font-size:1em}
+		.st7 {fill:#000000;font-family:Microsoft YaHei UI;font-size:1.83334em}
+		.st8 {fill:#6a919a;stroke:none;stroke-width:0.25}
+		.st9 {fill:#ef5964;stroke:none;stroke-width:0.25}
+		.st10 {fill:#bfbfbf;stroke:none;stroke-width:0.25}
+		.st11 {fill:#0085d0;stroke:none;stroke-width:0.25}
+		.st12 {fill:#abd25f;stroke:none;stroke-width:0.25}
+		.st13 {fill:#000000;font-family:Microsoft YaHei UI;font-size:1.99999em}
+		.st14 {font-size:0.692309em}
+		.st15 {fill:#000000;font-family:Microsoft YaHei UI;font-size:1.75001em}
+		.st16 {fill:#feb8c2;stroke:none;stroke-width:0.25}
+		.st17 {fill:#f2dcda;stroke:none;stroke-width:0.25}
+		.st18 {fill:#9dd0a9;stroke:none;stroke-width:0.25}
+		.st19 {fill:#e94dac;stroke:none;stroke-width:0.25}
+		.st20 {fill:#f9b04f;stroke:none;stroke-width:0.25}
+		.st21 {fill:#706ca9;stroke:none;stroke-width:0.25}
+		.st22 {fill:#000000;font-family:Aileron;font-size:2.16666em}
+		.st23 {fill:#feec97;stroke:none;stroke-width:0.25}
+		.st24 {fill:#15a6b1;stroke:none;stroke-width:0.25}
+		.st25 {font-size:0.923074em}
+		.st26 {fill:#9e919a;stroke:none;stroke-width:0.25}
+		.st27 {fill:#ffffff;stroke:none;stroke-linecap:butt;stroke-width:0.750002}
+		.st28 {fill:#df7746;stroke:#323232;stroke-linecap:butt;stroke-width:0.750002}
+		.st29 {fill:#191919;font-family:微软雅黑;font-size:2.16666em}
+		.st30 {font-size:0.500005em;font-stretch:ultra-condensed}
+		.st31 {fill:#fdd9a8;stroke:none;stroke-width:0.25}
+		.st32 {font-size:0.538457em}
+		.st33 {fill:none;filter:url(#filter_2);stroke:none}
+		.st34 {fill:#5b9bd5;filter:url(#filter_2);font-family:微软雅黑;font-size:2.16666em;font-weight:bold;opacity:0.219608}
+		.st35 {fill:none;stroke:none;stroke-width:1}
+		.st36 {fill:#404040;font-family:微软雅黑;font-size:2.16666em;font-weight:bold}
+		.st37 {fill:#000000;font-family:Microsoft YaHei UI;font-size:2.16666em;font-weight:bold}
+		.st38 {fill:#000000;font-family:Aileron;font-size:2.16666em;font-weight:bold}
+		.st39 {fill:none;fill-rule:evenodd;font-size:12px;overflow:visible;stroke-linecap:square;stroke-miterlimit:3}
+	]]>
+	</style>
+
+	<defs id="Filters">
+		<filter id="filter_2">
+			<feGaussianBlur stdDeviation="2"/>
+		</filter>
+	</defs>
+	<g v:mID="0" v:index="1" v:groupContext="foregroundPage">
+		<title>页-1</title>
+		<v:pageProperties v:drawingScale="0.0393701" v:pageScale="0.0393701" v:drawingUnits="24" v:shadowOffsetX="9"
+				v:shadowOffsetY="-9"/>
+		<g id="group169-1" transform="translate(3,-4.97281)" v:mID="169" v:groupContext="group">
+			<title>工作表.169</title>
+			<g id="shape168-2" v:mID="168" v:groupContext="shape" transform="translate(0,-613.753)">
+				<title>工作表.168</title>
+				<path d="M0 719.33 L0 2519.02 L2276.22 2519.02 L2276.22 622.07 L96.96 622.07 L0 719.33 Z" class="st1"/>
+			</g>
+			<g id="shape3-4" v:mID="3" v:groupContext="shape" transform="translate(284.58,-2346.6)">
+				<title>工作表.3</title>
+				<image x="0" y="2354.77" width="1764.75" height="164.25" preserveAspectRatio="none" xlink:href="data:image/png;base64,
+							iVBORw0KGgoAAAANSUhEUgAAAH0AAAA8CAIAAADE5iK7AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMA
+							AA7DAcdvqGQAAACQSURBVHhe7dAxAQAADMOg+TfdyeAJErhF6N3o3ejd6N3o3ejd6N3o3ejd6N3o3ejd6N3o3ejd6N3o3ejd6N3o
+							3ejd6N3o3ejd6N3o3ejd6N3o3ejd6N3o3ejd6N3o3ejd6N3o3ejd6N3o3ejd6N3o3ejd6N3o3ejd6N3o3ejd6N3o3ejd6N3o3ejd
+							6N3oXdge/mGRNvDcY1sAAAAASUVORK5CYII="/>
+			</g>
+			<g id="shape5-6" v:mID="5" v:groupContext="shape" transform="translate(2.42179,-2334.46)">
+				<title>工作表.5</title>
+				<desc>1 WAKEUPIN</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow5-7" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st4"/>
+				<text x="71.88" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>1<v:newlineChar/><tspan
+							x="9.68" dy="1.2em" class="st6">WAKEUPIN</tspan></text>			</g>
+			<g id="shape6-13" v:mID="6" v:groupContext="shape" transform="translate(2.42179,-2248.22)">
+				<title>工作表.6</title>
+				<desc>2 AP_READY</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow6-14" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st4"/>
+				<text x="71.88" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>2<v:newlineChar/><tspan
+							x="14.04" dy="1.2em" class="st6">AP</tspan>_READY</text>			</g>
+			<g id="shape7-20" v:mID="7" v:groupContext="shape" transform="translate(2.42179,-2161.96)">
+				<title>工作表.7</title>
+				<desc>3 IRIG_B</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow7-21" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st4"/>
+				<text x="71.88" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>3<v:newlineChar/><tspan
+							x="39.72" dy="1.2em" class="st6">IRIG</tspan>_B  </text>			</g>
+			<g id="shape8-27" v:mID="8" v:groupContext="shape" transform="translate(2.42179,-2075.71)">
+				<title>工作表.8</title>
+				<desc>4 W_DISABLE</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow8-28" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st4"/>
+				<text x="73.05" y="2480.55" class="st7" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>4<v:newlineChar/><tspan
+							x="19.08" dy="1.2em" class="st6">W</tspan>_DISABLE</text>			</g>
+			<g id="shape9-34" v:mID="9" v:groupContext="shape" transform="translate(2.42179,-1991.91)">
+				<title>工作表.9</title>
+				<desc>5 RSV</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow9-35" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st8"/>
+				<text x="71.88" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>5<v:newlineChar/><tspan
+							x="54.72" dy="1.2em" class="st6" v:langID="1033">RSV</tspan></text>			</g>
+			<g id="shape10-41" v:mID="10" v:groupContext="shape" transform="translate(2.42179,-1902.52)">
+				<title>工作表.10</title>
+				<desc>6 NETLIGHT</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow10-42" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st4"/>
+				<text x="73.05" y="2480.55" class="st7" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>6<v:newlineChar/><tspan
+							x="26.33" dy="1.2em" class="st6">NETLIGHT</tspan></text>			</g>
+			<g id="shape11-48" v:mID="11" v:groupContext="shape" transform="translate(2.42179,-1816.13)">
+				<title>工作表.11</title>
+				<desc>7 VDD_EXT</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow11-49" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st9"/>
+				<text x="71.88" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>7<v:newlineChar/><tspan
+							x="22.09" dy="1.2em" class="st6">VDD</tspan>_EXT</text>			</g>
+			<g id="shape12-55" v:mID="12" v:groupContext="shape" transform="translate(2.42179,-1556.97)">
+				<title>工作表.12</title>
+				<desc>8 GND</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow12-56" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st10"/>
+				<text x="71.88" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>8<v:newlineChar/><tspan
+							x="49.36" dy="1.2em" class="st6">GND</tspan></text>			</g>
+			<g id="shape13-62" v:mID="13" v:groupContext="shape" transform="translate(2.42179,-1470.58)">
+				<title>工作表.13</title>
+				<desc>9 GND</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow13-63" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st10"/>
+				<text x="71.88" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>9<v:newlineChar/><tspan
+							x="49.36" dy="1.2em" class="st6">GND</tspan></text>			</g>
+			<g id="shape14-69" v:mID="14" v:groupContext="shape" transform="translate(2.42179,-1384.19)">
+				<title>工作表.14</title>
+				<desc>10 GND</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow14-70" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st10"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>10<v:newlineChar/><tspan
+							x="49.36" dy="1.2em" class="st6">GND</tspan></text>			</g>
+			<g id="shape15-76" v:mID="15" v:groupContext="shape" transform="translate(2.42179,-1297.81)">
+				<title>工作表.15</title>
+				<desc>11 DBG_RXD</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow15-77" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st11"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>11<v:newlineChar/><tspan
+							x="19.17" dy="1.2em" class="st6">DBG</tspan>_RXD</text>			</g>
+			<g id="shape16-83" v:mID="16" v:groupContext="shape" transform="translate(2.42179,-1212.09)">
+				<title>工作表.16</title>
+				<desc>12 DBG_TXD</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow16-84" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st11"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>12<v:newlineChar/><tspan
+							x="20.21" dy="1.2em" class="st6">DBG</tspan>_TXD</text>			</g>
+			<g id="shape17-90" v:mID="17" v:groupContext="shape" transform="translate(2.42179,-1125.46)">
+				<title>工作表.17</title>
+				<desc>13 USIM_DET</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow17-91" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st12"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>13<v:newlineChar/><tspan
+							x="15.44" dy="1.2em" class="st6">USIM</tspan>_DET</text>			</g>
+			<g id="shape18-97" v:mID="18" v:groupContext="shape" transform="translate(2.42179,-1038.84)">
+				<title>工作表.18</title>
+				<desc>14 USIM_PWR</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow18-98" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st12"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>14<v:newlineChar/><tspan
+							x="10.27" dy="1.2em" class="st6" v:langID="1033">USIM</tspan><tspan class="st6" v:langID="1033">_</tspan><tspan
+							class="st6" v:langID="1033">PWR</tspan></text>			</g>
+			<g id="shape19-106" v:mID="19" v:groupContext="shape" transform="translate(2.42179,-952.216)">
+				<title>工作表.19</title>
+				<desc>15 USIM_DATA</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow19-107" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st12"/>
+				<text x="65.43" y="2479.95" class="st13" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>15<v:newlineChar/><tspan
+							x="10.08" dy="1.2em" class="st6">USIM</tspan>_DATA</text>			</g>
+			<g id="shape20-113" v:mID="20" v:groupContext="shape" transform="translate(2.42179,-865.586)">
+				<title>工作表.20</title>
+				<desc>16 USIM_CLK</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow20-114" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st12"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>16<v:newlineChar/><tspan
+							x="16.32" dy="1.2em" class="st6">USIM</tspan>_CLK</text>			</g>
+			<g id="shape21-120" v:mID="21" v:groupContext="shape" transform="translate(1.67299,-779.474)">
+				<title>工作表.21</title>
+				<desc>17 USIM_RESET</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow21-121" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st12"/>
+				<text x="65.43" y="2479.95" class="st13" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>17<v:newlineChar/><tspan
+							x="8.15" dy="1.2em" class="st6">USIM</tspan>_RESET</text>			</g>
+			<g id="shape22-127" v:mID="22" v:groupContext="shape" transform="translate(1.67299,-693.088)">
+				<title>工作表.22</title>
+				<desc>18 USIM_SWITCH</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow22-128" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st12"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>18<v:newlineChar/><tspan
+							x="16.97" dy="1.733em" class="st14" v:langID="1033">USIM</tspan><tspan class="st14" v:langID="1033">_</tspan><tspan
+							class="st14" v:langID="1033">SWITCH</tspan></text>			</g>
+			<g id="shape23-136" v:mID="23" v:groupContext="shape" transform="translate(2.42179,-1729.96)">
+				<title>工作表.23</title>
+				<desc>141 WAKEUPOUT</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow23-137" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st4"/>
+				<text x="56.63" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>141<v:newlineChar/><tspan
+							x="21.91" dy="1.733em" class="st14" v:langID="1033">WAKEUPOUT</tspan></text>			</g>
+			<g id="shape24-143" v:mID="24" v:groupContext="shape" transform="translate(2.42179,-1642.96)">
+				<title>工作表.24</title>
+				<desc>142 RSV</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow24-144" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st8"/>
+				<text x="56.63" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>142<v:newlineChar/><tspan
+							x="54.72" dy="1.2em" class="st6">RSV</tspan></text>			</g>
+			<g id="shape25-150" v:mID="25" v:groupContext="shape" transform="translate(-2163.72,1899.32) rotate(-90)">
+				<title>工作表.25</title>
+				<desc>116 PPS_OUT</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow25-151" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,-1.97279,0.345598)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st4"/>
+				<text x="60.15" y="2480.55" class="st7" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>116<v:newlineChar/><tspan
+							x="31.28" dy="1.2em" class="st6">PPS</tspan>_OUT</text>			</g>
+			<g id="shape26-157" v:mID="26" v:groupContext="shape" transform="translate(-2077.34,1899.32) rotate(-90)">
+				<title>工作表.26</title>
+				<desc>115 BOOT_MODE</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow26-158" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,-1.97279,0.345598)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st4"/>
+				<text x="60.15" y="2480.55" class="st7" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>115<v:newlineChar/><tspan
+							x="9.29" dy="1.2em" class="st6">BOOT</tspan>_MODE</text>			</g>
+			<g id="shape27-164" v:mID="27" v:groupContext="shape" transform="translate(-1990.95,1899.32) rotate(-90)">
+				<title>工作表.27</title>
+				<desc>19 GND</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow27-165" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,-1.97279,0.345598)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st10"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>19<v:newlineChar/><tspan
+							x="49.36" dy="1.2em" class="st6">GND</tspan></text>			</g>
+			<g id="shape28-171" v:mID="28" v:groupContext="shape" transform="translate(-1904.22,1899.32) rotate(-90)">
+				<title>工作表.28</title>
+				<desc>20 RESET#</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow28-172" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,-1.97279,0.345598)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st4"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>20<v:newlineChar/><tspan
+							x="33.47" dy="1.2em" class="st6">RESET</tspan>#</text>			</g>
+			<g id="shape29-178" v:mID="29" v:groupContext="shape" transform="translate(-1818.72,1899.32) rotate(-90)">
+				<title>工作表.29</title>
+				<desc>21 PWR_ON/OFF</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow29-179" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,-1.97279,0.345598)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st4"/>
+				<text x="67.18" y="2480.85" class="st15" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>21<v:newlineChar/><tspan
+							x="9.54" dy="1.2em" class="st6">PWR</tspan>_ON/OFF</text>			</g>
+			<g id="shape30-185" v:mID="30" v:groupContext="shape" transform="translate(-1732.47,1899.32) rotate(-90)">
+				<title>工作表.30</title>
+				<desc>22 GND</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow30-186" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,-1.97279,0.345598)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st10"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>22<v:newlineChar/><tspan
+							x="49.36" dy="1.2em" class="st6">GND</tspan></text>			</g>
+			<g id="shape31-192" v:mID="31" v:groupContext="shape" transform="translate(-1645.39,1899.32) rotate(-90)">
+				<title>工作表.31</title>
+				<desc>23 GPIO0</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow31-193" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,-1.97279,0.345598)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st16"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>23<v:newlineChar/><tspan
+							x="39.84" dy="1.2em" class="st6">GPIO</tspan>0</text>			</g>
+			<g id="shape32-199" v:mID="32" v:groupContext="shape" transform="translate(-1559,1899.32) rotate(-90)">
+				<title>工作表.32</title>
+				<desc>24 PCM_IN</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow32-200" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,-1.97279,0.345598)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st17"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>24<v:newlineChar/><tspan
+							x="29.93" dy="1.2em" class="st6">PCM</tspan>_IN</text>			</g>
+			<g id="shape33-206" v:mID="33" v:groupContext="shape" transform="translate(-1472.6,1899.32) rotate(-90)">
+				<title>工作表.33</title>
+				<desc>25 PCM_OUT</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow33-207" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,-1.97279,0.345598)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st17"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>25<v:newlineChar/><tspan
+							x="16.57" dy="1.2em" class="st6">PCM</tspan>_OUT</text>			</g>
+			<g id="shape34-213" v:mID="34" v:groupContext="shape" transform="translate(-1386.23,1899.32) rotate(-90)">
+				<title>工作表.34</title>
+				<desc>26 PCM_SYNC</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow34-214" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,-1.97279,0.345598)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st17"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>26<v:newlineChar/><tspan
+							x="9.71" dy="1.2em" class="st6">PCM</tspan>_SYNC</text>			</g>
+			<g id="shape35-220" v:mID="35" v:groupContext="shape" transform="translate(-1299.85,1899.32) rotate(-90)">
+				<title>工作表.35</title>
+				<desc>27 PCM_CLK</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow35-221" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,-1.97279,0.345598)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st17"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>27<v:newlineChar/><tspan
+							x="20.7" dy="1.2em" class="st6">PCM</tspan>_CLK</text>			</g>
+			<g id="shape36-227" v:mID="36" v:groupContext="shape" transform="translate(-1212.73,1899.32) rotate(-90)">
+				<title>工作表.36</title>
+				<desc>28 SDIO_DATA3</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow36-228" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,-1.97279,0.345598)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st18"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>28<v:newlineChar/><tspan
+							x="23.48" dy="1.733em" class="st14" v:langID="1033">SDIO</tspan><tspan class="st14" v:langID="1033">_</tspan><tspan
+							class="st14" v:langID="1033">DATA</tspan><tspan class="st14">3</tspan></text>			</g>
+			<g id="shape37-237" v:mID="37" v:groupContext="shape" transform="translate(-1126.85,1899.32) rotate(-90)">
+				<title>工作表.37</title>
+				<desc>29 SDIO_DATA2</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow37-238" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,-1.97279,0.345598)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st18"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>29<v:newlineChar/><tspan
+							x="23.48" dy="1.733em" class="st14" v:langID="1033">SDIO</tspan><tspan class="st14" v:langID="1033">_</tspan><tspan
+							class="st14" v:langID="1033">DATA</tspan><tspan class="st14">2</tspan></text>			</g>
+			<g id="shape38-247" v:mID="38" v:groupContext="shape" transform="translate(-1040.68,1899.32) rotate(-90)">
+				<title>工作表.38</title>
+				<desc>30 SDIO_DATA1</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow38-248" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,-1.97279,0.345598)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st18"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>30<v:newlineChar/><tspan
+							x="23.48" dy="1.733em" class="st14" v:langID="1033">SDIO</tspan><tspan class="st14" v:langID="1033">_</tspan><tspan
+							class="st14" v:langID="1033">DATA</tspan><tspan class="st14">1</tspan></text>			</g>
+			<g id="shape39-257" v:mID="39" v:groupContext="shape" transform="translate(-954.29,1899.32) rotate(-90)">
+				<title>工作表.39</title>
+				<desc>31 SDIO_DATA0</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow39-258" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,-1.97279,0.345598)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st18"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>31<v:newlineChar/><tspan
+							x="23.48" dy="1.733em" class="st14" v:langID="1033">SDIO</tspan><tspan class="st14" v:langID="1033">_</tspan><tspan
+							class="st14" v:langID="1033">DATA</tspan><tspan class="st14">0</tspan></text>			</g>
+			<g id="shape40-267" v:mID="40" v:groupContext="shape" transform="translate(-867.904,1899.32) rotate(-90)">
+				<title>工作表.40</title>
+				<desc>32 SDIO_CLK</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow40-268" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,-1.97279,0.345598)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st18"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>32<v:newlineChar/><tspan
+							x="18.23" dy="1.2em" class="st6" v:langID="1033">SDIO</tspan><tspan class="st6" v:langID="1033">_</tspan>CLK</text>			</g>
+			<g id="shape41-275" v:mID="41" v:groupContext="shape" transform="translate(-781.85,1899.32) rotate(-90)">
+				<title>工作表.41</title>
+				<desc>33 SDIO_CMD</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow41-276" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,-1.97279,0.345598)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st18"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>33<v:newlineChar/><tspan
+							x="10.55" dy="1.2em" class="st6" v:langID="1033">SDIO</tspan><tspan class="st6" v:langID="1033">_</tspan>CMD</text>			</g>
+			<g id="shape42-283" v:mID="42" v:groupContext="shape" transform="translate(-695.126,1899.32) rotate(-90)">
+				<title>工作表.42</title>
+				<desc>34 RSV</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow42-284" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,-1.97279,0.345598)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st8"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>34<v:newlineChar/><tspan
+							x="54.72" dy="1.2em" class="st6">RSV</tspan></text>			</g>
+			<g id="shape43-290" v:mID="43" v:groupContext="shape" transform="translate(-608.733,1899.32) rotate(-90)">
+				<title>工作表.43</title>
+				<desc>35 ANT_DIV</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow43-291" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,-1.97279,0.345598)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st19"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>35<v:newlineChar/><tspan
+							x="23.99" dy="1.2em" class="st6">ANT</tspan>_DIV</text>			</g>
+			<g id="shape44-297" v:mID="44" v:groupContext="shape" transform="translate(-522.347,1899.32) rotate(-90)">
+				<title>工作表.44</title>
+				<desc>36 GND</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow44-298" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,-1.97279,0.345598)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st10"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>36<v:newlineChar/><tspan
+							x="49.36" dy="1.2em" class="st6">GND</tspan></text>			</g>
+			<g id="shape45-304" v:mID="45" v:groupContext="shape" transform="translate(2115.18,-693.088)">
+				<title>工作表.45</title>
+				<desc>37 SPI_CS</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow45-305" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st20"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>37<v:newlineChar/><tspan
+							x="38.2" dy="1.2em" class="st6" v:langID="1033">SPI</tspan><tspan class="st6" v:langID="1033">_</tspan>CS</text>			</g>
+			<g id="shape46-312" v:mID="46" v:groupContext="shape" transform="translate(2115.18,-779.474)">
+				<title>工作表.46</title>
+				<desc>38 SPI_MOSI</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow46-313" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st20"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>38<v:newlineChar/><tspan
+							x="19.77" dy="1.2em" class="st6" v:langID="1033">SPI</tspan><tspan class="st6" v:langID="1033">_</tspan>MOSI</text>			</g>
+			<g id="shape47-320" v:mID="47" v:groupContext="shape" transform="translate(2115.18,-865.866)">
+				<title>工作表.47</title>
+				<desc>39 SPI_MISO</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow47-321" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st20"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>39<v:newlineChar/><tspan
+							x="19.77" dy="1.2em" class="st6" v:langID="1033">SPI</tspan><tspan class="st6" v:langID="1033">_</tspan>MISO</text>			</g>
+			<g id="shape48-328" v:mID="48" v:groupContext="shape" transform="translate(2115.18,-952.216)">
+				<title>工作表.48</title>
+				<desc>40 SPI_CLK</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow48-329" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st20"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>40<v:newlineChar/><tspan
+							x="30.78" dy="1.2em" class="st6" v:langID="1033">SPI</tspan><tspan class="st6" v:langID="1033">_</tspan>CLK</text>			</g>
+			<g id="shape49-336" v:mID="49" v:groupContext="shape" transform="translate(2115.18,-1038.64)">
+				<title>工作表.49</title>
+				<desc>41 IIC_SCL</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow49-337" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st21"/>
+				<text x="64.42" y="2479.35" class="st22" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>41<v:newlineChar/><tspan
+							x="32.88" dy="1.2em" class="st6">IIC</tspan>_SCL</text>			</g>
+			<g id="shape50-343" v:mID="50" v:groupContext="shape" transform="translate(2115.18,-1125.03)">
+				<title>工作表.50</title>
+				<desc>42 IIC_SDA</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow50-344" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st21"/>
+				<text x="64.42" y="2479.35" class="st22" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>42<v:newlineChar/><tspan
+							x="31.92" dy="1.2em" class="st6" v:langID="1033">IIC</tspan><tspan class="st6" v:langID="1033">_</tspan><tspan
+							class="st6" v:langID="1033">SDA</tspan></text>			</g>
+			<g id="shape51-352" v:mID="51" v:groupContext="shape" transform="translate(2115.18,-1211.42)">
+				<title>工作表.51</title>
+				<desc>43 RSV</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow51-353" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st8"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>43<v:newlineChar/><tspan
+							x="54.72" dy="1.2em" class="st6">RSV</tspan></text>			</g>
+			<g id="shape52-359" v:mID="52" v:groupContext="shape" transform="translate(2115.18,-1297.81)">
+				<title>工作表.52</title>
+				<desc>44 ADC0</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow52-360" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st23"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>44<v:newlineChar/><tspan
+							x="44.13" dy="1.2em" class="st6">ADC</tspan>0</text>			</g>
+			<g id="shape53-366" v:mID="53" v:groupContext="shape" transform="translate(2115.18,-1384.19)">
+				<title>工作表.53</title>
+				<desc>45 ADC1</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow53-367" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st23"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>45<v:newlineChar/><tspan
+							x="44.13" dy="1.2em" class="st6">ADC</tspan>1</text>			</g>
+			<g id="shape54-373" v:mID="54" v:groupContext="shape" transform="translate(2115.18,-1470.58)">
+				<title>工作表.54</title>
+				<desc>46 GND</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow54-374" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st10"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>46<v:newlineChar/><tspan
+							x="49.36" dy="1.2em" class="st6">GND</tspan></text>			</g>
+			<g id="shape55-380" v:mID="55" v:groupContext="shape" transform="translate(2115.18,-1556.97)">
+				<title>工作表.55</title>
+				<desc>47 RSV</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow55-381" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st8"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>47<v:newlineChar/><tspan
+							x="54.72" dy="1.2em" class="st6">RSV</tspan></text>			</g>
+			<g id="shape56-387" v:mID="56" v:groupContext="shape" transform="translate(2115.18,-1643.36)">
+				<title>工作表.56</title>
+				<desc>143 RFIO1</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow56-388" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st16"/>
+				<text x="56.63" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>143<v:newlineChar/><tspan
+							x="42.07" dy="1.2em" class="st6" v:langID="1033">RFIO</tspan><tspan class="st6" v:langID="1033">1</tspan></text>			</g>
+			<g id="shape57-395" v:mID="57" v:groupContext="shape" transform="translate(2115.18,-1729.74)">
+				<title>工作表.57</title>
+				<desc>144 RFIO2</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow57-396" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st16"/>
+				<text x="56.63" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>144<v:newlineChar/><tspan
+							x="42.07" dy="1.2em" class="st6" v:langID="1033">RFIO</tspan><tspan class="st6" v:langID="1033">2</tspan></text>			</g>
+			<g id="shape58-403" v:mID="58" v:groupContext="shape" transform="translate(2115.18,-1815.84)">
+				<title>工作表.58</title>
+				<desc>48 GND</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow58-404" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st10"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>48<v:newlineChar/><tspan
+							x="49.36" dy="1.2em" class="st6">GND</tspan></text>			</g>
+			<g id="shape59-410" v:mID="59" v:groupContext="shape" transform="translate(2115.18,-1902.52)">
+				<title>工作表.59</title>
+				<desc>49 ANT_MAIN</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow59-411" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st19"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>49<v:newlineChar/><tspan
+							x="10.27" dy="1.2em" class="st6">ANT</tspan>_MAIN</text>			</g>
+			<g id="shape60-417" v:mID="60" v:groupContext="shape" transform="translate(2115.18,-1989.46)">
+				<title>工作表.60</title>
+				<desc>50 GND</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow60-418" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st10"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>50<v:newlineChar/><tspan
+							x="49.36" dy="1.2em" class="st6">GND</tspan></text>			</g>
+			<g id="shape61-424" v:mID="61" v:groupContext="shape" transform="translate(2115.18,-2075.3)">
+				<title>工作表.61</title>
+				<desc>51 GND</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow61-425" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st10"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>51<v:newlineChar/><tspan
+							x="49.36" dy="1.2em" class="st6">GND</tspan></text>			</g>
+			<g id="shape62-431" v:mID="62" v:groupContext="shape" transform="translate(2115.18,-2161.69)">
+				<title>工作表.62</title>
+				<desc>52 GND</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow62-432" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st10"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>52<v:newlineChar/><tspan
+							x="49.36" dy="1.2em" class="st6">GND</tspan></text>			</g>
+			<g id="shape63-438" v:mID="63" v:groupContext="shape" transform="translate(2115.18,-2248.08)">
+				<title>工作表.63</title>
+				<desc>53 GND</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow63-439" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st10"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>53<v:newlineChar/><tspan
+							x="49.36" dy="1.2em" class="st6">GND</tspan></text>			</g>
+			<g id="shape64-445" v:mID="64" v:groupContext="shape" transform="translate(2115.18,-2334.46)">
+				<title>工作表.64</title>
+				<desc>54 GND</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow64-446" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st10"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>54<v:newlineChar/><tspan
+							x="49.36" dy="1.2em" class="st6">GND</tspan></text>			</g>
+			<g id="shape65-452" v:mID="65" v:groupContext="shape" transform="translate(-517.473,167.312) rotate(-90)">
+				<title>工作表.65</title>
+				<desc>55 RSV</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow65-453" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,-1.97279,0.345598)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st8"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>55<v:newlineChar/><tspan
+							x="54.72" dy="1.2em" class="st6">RSV</tspan></text>			</g>
+			<g id="shape66-459" v:mID="66" v:groupContext="shape" transform="translate(-603.743,167.312) rotate(-90)">
+				<title>工作表.66</title>
+				<desc>56 GND</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow66-460" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,-1.97279,0.345598)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st10"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>56<v:newlineChar/><tspan
+							x="49.36" dy="1.2em" class="st6">GND</tspan></text>			</g>
+			<g id="shape67-466" v:mID="67" v:groupContext="shape" transform="translate(-690.014,167.312) rotate(-90)">
+				<title>工作表.67</title>
+				<desc>57 VBAT_RF</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow67-467" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,-1.97279,0.345598)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st9"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>57<v:newlineChar/><tspan
+							x="24.73" dy="1.2em" class="st6">VBAT</tspan>_RF</text>			</g>
+			<g id="shape68-473" v:mID="68" v:groupContext="shape" transform="translate(-776.284,167.312) rotate(-90)">
+				<title>工作表.68</title>
+				<desc>58 VBAT_RF</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow68-474" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,-1.97279,0.345598)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st9"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>58<v:newlineChar/><tspan
+							x="24.73" dy="1.2em" class="st6">VBAT</tspan>_RF</text>			</g>
+			<g id="shape69-480" v:mID="69" v:groupContext="shape" transform="translate(-862.555,167.312) rotate(-90)">
+				<title>工作表.69</title>
+				<desc>59 VBAT_BB</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow69-481" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,-1.97279,0.345598)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st9"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>59<v:newlineChar/><tspan
+							x="23.81" dy="1.2em" class="st6">VBAT</tspan>_BB</text>			</g>
+			<g id="shape70-487" v:mID="70" v:groupContext="shape" transform="translate(-949.099,167.312) rotate(-90)">
+				<title>工作表.70</title>
+				<desc>60 VBAT_BB</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow70-488" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,-1.97279,0.345598)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st9"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>60<v:newlineChar/><tspan
+							x="23.81" dy="1.2em" class="st6">VBAT</tspan>_BB</text>			</g>
+			<g id="shape71-494" v:mID="71" v:groupContext="shape" transform="translate(-1035.1,167.312) rotate(-90)">
+				<title>工作表.71</title>
+				<desc>61 STATE</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow71-495" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,-1.97279,0.345598)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st4"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>61<v:newlineChar/><tspan
+							x="40.8" dy="1.2em" class="st6" v:langID="1033">STATE</tspan></text>			</g>
+			<g id="shape72-501" v:mID="72" v:groupContext="shape" transform="translate(-1121.36,167.312) rotate(-90)">
+				<title>工作表.72</title>
+				<desc>62 UART0_RI</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow72-502" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,-1.97279,0.345598)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st11"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>62<v:newlineChar/><tspan
+							x="18.95" dy="1.2em" class="st6">UART</tspan>0_RI</text>			</g>
+			<g id="shape73-508" v:mID="73" v:groupContext="shape" transform="translate(-1207.63,167.312) rotate(-90)">
+				<title>工作表.73</title>
+				<desc>63 UART0_DCD</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow73-509" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,-1.97279,0.345598)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st11"/>
+				<text x="65.43" y="2479.95" class="st13" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>63<v:newlineChar/><tspan
+							x="8.66" dy="1.2em" class="st6">UART</tspan>0_DCD</text>			</g>
+			<g id="shape74-515" v:mID="74" v:groupContext="shape" transform="translate(-1293.35,167.312) rotate(-90)">
+				<title>工作表.74</title>
+				<desc>64 UART0_CTS</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow74-516" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,-1.97279,0.345598)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st11"/>
+				<text x="65.43" y="2479.95" class="st13" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>64<v:newlineChar/><tspan
+							x="13.14" dy="1.2em" class="st6">UART</tspan>0_CTS</text>			</g>
+			<g id="shape75-522" v:mID="75" v:groupContext="shape" transform="translate(-1379.98,167.312) rotate(-90)">
+				<title>工作表.75</title>
+				<desc>65 UART0_RTS</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow75-523" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,-1.97279,0.345598)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st11"/>
+				<text x="65.43" y="2479.95" class="st13" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>65<v:newlineChar/><tspan
+							x="13.33" dy="1.2em" class="st6">UART</tspan>0_RTS</text>			</g>
+			<g id="shape76-529" v:mID="76" v:groupContext="shape" transform="translate(-1466.44,167.312) rotate(-90)">
+				<title>工作表.76</title>
+				<desc>66 UART0_DTR</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow76-530" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,-1.97279,0.345598)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st11"/>
+				<text x="65.43" y="2479.95" class="st13" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>66<v:newlineChar/><tspan
+							x="11.12" dy="1.2em" class="st6">UART</tspan>0_DTR</text>			</g>
+			<g id="shape77-536" v:mID="77" v:groupContext="shape" transform="translate(-1552.72,167.312) rotate(-90)">
+				<title>工作表.77</title>
+				<desc>67 UART0_TXD</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow77-537" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,-1.97279,0.345598)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st11"/>
+				<text x="65.43" y="2479.95" class="st13" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>67<v:newlineChar/><tspan
+							x="11.21" dy="1.2em" class="st6">UART</tspan>0_TXD</text>			</g>
+			<g id="shape78-543" v:mID="78" v:groupContext="shape" transform="translate(-1639.1,167.312) rotate(-90)">
+				<title>工作表.78</title>
+				<desc>68 UART0_RXD</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow78-544" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,-1.97279,0.345598)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st11"/>
+				<text x="65.43" y="2479.95" class="st13" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>68<v:newlineChar/><tspan
+							x="10.25" dy="1.2em" class="st6">UART</tspan>0_RXD</text>			</g>
+			<g id="shape79-550" v:mID="79" v:groupContext="shape" transform="translate(-1725.25,167.312) rotate(-90)">
+				<title>工作表.79</title>
+				<desc>69 USB_DP</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow79-551" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,-1.97279,0.345598)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st24"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>69<v:newlineChar/><tspan
+							x="30.45" dy="1.2em" class="st6">USB</tspan>_DP</text>			</g>
+			<g id="shape80-557" v:mID="80" v:groupContext="shape" transform="translate(-1811.51,167.312) rotate(-90)">
+				<title>工作表.80</title>
+				<desc>70 USB_DM</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow80-558" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,-1.97279,0.345598)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st24"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>70<v:newlineChar/><tspan
+							x="25.7" dy="1.2em" class="st6">USB</tspan>_DM</text>			</g>
+			<g id="shape81-564" v:mID="81" v:groupContext="shape" transform="translate(-1897.48,167.312) rotate(-90)">
+				<title>工作表.81</title>
+				<desc>71 USB_VBUS</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow81-565" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,-1.97279,0.345598)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st24"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>71<v:newlineChar/><tspan
+							x="14.15" dy="1.2em" class="st6">USB</tspan>_VBUS</text>			</g>
+			<g id="shape82-571" v:mID="82" v:groupContext="shape" transform="translate(-1984.06,167.312) rotate(-90)">
+				<title>工作表.82</title>
+				<desc>72 GND</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow82-572" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,-1.97279,0.345598)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st10"/>
+				<text x="64.25" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>72<v:newlineChar/><tspan
+							x="49.36" dy="1.2em" class="st6">GND</tspan></text>			</g>
+			<g id="shape83-578" v:mID="83" v:groupContext="shape" transform="translate(-2070.33,167.312) rotate(-90)">
+				<title>工作表.83</title>
+				<desc>113 UART1_RXD</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow83-579" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,-1.97279,0.345598)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st11"/>
+				<text x="56.63" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>113<v:newlineChar/><tspan
+							x="10.25" dy="1.3em" class="st25" v:langID="1033">UART</tspan><tspan class="st25" v:langID="1033">1</tspan><tspan
+							class="st25" v:langID="1033">_</tspan><tspan class="st25" v:langID="1033">RXD</tspan></text>			</g>
+			<g id="shape84-588" v:mID="84" v:groupContext="shape" transform="translate(-2156.6,167.312) rotate(-90)">
+				<title>工作表.84</title>
+				<desc>114 UART1_TXD</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="79.4999" cy="2487.15" width="159" height="63.75"/>
+				<g id="shadow84-589" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,-1.97279,0.345598)" class="st2">
+					<rect x="0" y="2455.27" width="159" height="63.75" class="st3"/>
+				</g>
+				<rect x="0" y="2455.27" width="159" height="63.75" class="st11"/>
+				<text x="56.63" y="2479.35" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>114<v:newlineChar/><tspan
+							x="11.21" dy="1.3em" class="st25" v:langID="1033">UART</tspan><tspan class="st25" v:langID="1033">1</tspan><tspan
+							class="st25" v:langID="1033">_</tspan><tspan class="st25" v:langID="1033">TXD</tspan></text>			</g>
+			<g id="shape85-598" v:mID="85" v:groupContext="shape" transform="translate(1290.92,-1620.46)">
+				<title>工作表.85</title>
+				<desc>73 RGMII_RXD1</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="46.125" cy="2473.65" width="92.25" height="90.7502"/>
+				<g id="shadow85-599" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2428.27" width="92.25" height="90.7502" class="st3"/>
+				</g>
+				<rect x="0" y="2428.27" width="92.25" height="90.7502" class="st26"/>
+				<text x="30.88" y="2455.05" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>73<v:newlineChar/><tspan
+							x="9.56" dy="1.333em" class="st14" v:langID="1033">RGMII</tspan><tspan class="st14" v:langID="1033">_</tspan><tspan
+							class="st14" v:langID="1033">R</tspan><tspan x="28.19" dy="1.6em" class="st14" v:langID="1033">XD</tspan><tspan
+							class="st14" v:langID="1033">1</tspan></text>			</g>
+			<g id="shape86-609" v:mID="86" v:groupContext="shape" transform="translate(1290.92,-1511.34)">
+				<title>工作表.86</title>
+				<desc>74 RGMII_RX_CTL</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="46.125" cy="2473.65" width="92.25" height="90.7502"/>
+				<g id="shadow86-610" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2428.27" width="92.25" height="90.7502" class="st3"/>
+				</g>
+				<rect x="0" y="2428.27" width="92.25" height="90.7502" class="st26"/>
+				<text x="30.88" y="2455.05" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>74<v:newlineChar/><tspan
+							x="9.56" dy="1.333em" class="st14" v:langID="1033">RGMII</tspan><tspan class="st14" v:langID="1033">_</tspan><tspan
+							class="st14" v:langID="1033">R</tspan><tspan x="20.49" dy="1.6em" class="st14" v:langID="1033">X</tspan><tspan
+							class="st14" v:langID="1033">_</tspan><tspan class="st14" v:langID="1033">CTL</tspan></text>			</g>
+			<g id="shape87-621" v:mID="87" v:groupContext="shape" transform="translate(1290.92,-1402.22)">
+				<title>工作表.87</title>
+				<desc>75 RGMII_RX_CLK</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="46.125" cy="2473.65" width="92.25" height="90.7502"/>
+				<g id="shadow87-622" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2428.27" width="92.25" height="90.7502" class="st3"/>
+				</g>
+				<rect x="0" y="2428.27" width="92.25" height="90.7502" class="st26"/>
+				<text x="30.88" y="2455.05" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>75<v:newlineChar/><tspan
+							x="9.56" dy="1.333em" class="st14" v:langID="1033">RGMII</tspan><tspan class="st14" v:langID="1033">_</tspan><tspan
+							class="st14" v:langID="1033">R</tspan><tspan x="19.93" dy="1.6em" class="st14" v:langID="1033">X</tspan><tspan
+							class="st14" v:langID="1033">_</tspan><tspan class="st14" v:langID="1033">CLK</tspan></text>			</g>
+			<g id="shape88-633" v:mID="88" v:groupContext="shape" transform="translate(1169.8,-1620.46)">
+				<title>工作表.88</title>
+				<desc>76 RGMII_RXD0</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="46.125" cy="2473.65" width="92.25" height="90.7502"/>
+				<g id="shadow88-634" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2428.27" width="92.25" height="90.7502" class="st3"/>
+				</g>
+				<rect x="0" y="2428.27" width="92.25" height="90.7502" class="st26"/>
+				<text x="30.88" y="2455.05" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>76<v:newlineChar/><tspan
+							x="9.56" dy="1.333em" class="st14" v:langID="1033">RGMII</tspan><tspan class="st14" v:langID="1033">_</tspan><tspan
+							class="st14" v:langID="1033">R</tspan><tspan x="28.19" dy="1.6em" class="st14" v:langID="1033">XD</tspan><tspan
+							class="st14" v:langID="1033">0</tspan></text>			</g>
+			<g id="shape89-644" v:mID="89" v:groupContext="shape" transform="translate(1169.8,-1511.34)">
+				<title>工作表.89</title>
+				<desc>77 RGMII_TXD0</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="46.125" cy="2473.65" width="92.25" height="90.7502"/>
+				<g id="shadow89-645" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2428.27" width="92.25" height="90.7502" class="st3"/>
+				</g>
+				<rect x="0" y="2428.27" width="92.25" height="90.7502" class="st26"/>
+				<text x="30.88" y="2455.05" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>77<v:newlineChar/><tspan
+							x="4.47" dy="1.333em" class="st14" v:langID="1033">RGMII</tspan><tspan class="st14" v:langID="1033">_</tspan><tspan
+							class="st14" v:langID="1033">TX</tspan><tspan x="33.99" dy="1.6em" class="st14" v:langID="1033">D</tspan><tspan
+							class="st14" v:langID="1033">0</tspan></text>			</g>
+			<g id="shape90-655" v:mID="90" v:groupContext="shape" transform="translate(1169.8,-1402.22)">
+				<title>工作表.90</title>
+				<desc>78 RGMII_TXD1</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="46.125" cy="2473.65" width="92.25" height="90.7502"/>
+				<g id="shadow90-656" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2428.27" width="92.25" height="90.7502" class="st3"/>
+				</g>
+				<rect x="0" y="2428.27" width="92.25" height="90.7502" class="st26"/>
+				<text x="30.88" y="2455.05" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>78<v:newlineChar/><tspan
+							x="4.47" dy="1.333em" class="st14" v:langID="1033">RGMII</tspan><tspan class="st14" v:langID="1033">_</tspan><tspan
+							class="st14" v:langID="1033">TX</tspan><tspan x="33.99" dy="1.6em" class="st14" v:langID="1033">D</tspan><tspan
+							class="st14" v:langID="1033">1</tspan></text>			</g>
+			<g id="shape91-666" v:mID="91" v:groupContext="shape" transform="translate(1051.67,-1620.46)">
+				<title>工作表.91</title>
+				<desc>79 RGMII_RXD2</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="46.125" cy="2473.65" width="92.25" height="90.7502"/>
+				<g id="shadow91-667" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2428.27" width="92.25" height="90.7502" class="st3"/>
+				</g>
+				<rect x="0" y="2428.27" width="92.25" height="90.7502" class="st26"/>
+				<text x="30.88" y="2455.05" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>79<v:newlineChar/><tspan
+							x="9.56" dy="1.333em" class="st14" v:langID="1033">RGMII</tspan><tspan class="st14" v:langID="1033">_</tspan><tspan
+							class="st14" v:langID="1033">R</tspan><tspan x="28.19" dy="1.6em" class="st14" v:langID="1033">XD</tspan><tspan
+							class="st14" v:langID="1033">2</tspan></text>			</g>
+			<g id="shape92-677" v:mID="92" v:groupContext="shape" transform="translate(1051.67,-1511.34)">
+				<title>工作表.92</title>
+				<desc>80 RGMII_TXD2</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="46.125" cy="2473.65" width="92.25" height="90.7502"/>
+				<g id="shadow92-678" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2428.27" width="92.25" height="90.7502" class="st3"/>
+				</g>
+				<rect x="0" y="2428.27" width="92.25" height="90.7502" class="st26"/>
+				<text x="30.88" y="2455.05" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>80<v:newlineChar/><tspan
+							x="4.47" dy="1.333em" class="st14" v:langID="1033">RGMII</tspan><tspan class="st14" v:langID="1033">_</tspan><tspan
+							class="st14" v:langID="1033">TX</tspan><tspan x="33.99" dy="1.6em" class="st14" v:langID="1033">D</tspan><tspan
+							class="st14" v:langID="1033">2</tspan></text>			</g>
+			<g id="shape93-688" v:mID="93" v:groupContext="shape" transform="translate(1051.67,-1402.22)">
+				<title>工作表.93</title>
+				<desc>81 RGMII_TX_CTL</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="46.125" cy="2473.65" width="92.25" height="90.7502"/>
+				<g id="shadow93-689" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2428.27" width="92.25" height="90.7502" class="st3"/>
+				</g>
+				<rect x="0" y="2428.27" width="92.25" height="90.7502" class="st26"/>
+				<text x="30.88" y="2455.05" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>81<v:newlineChar/><tspan
+							x="4.47" dy="1.333em" class="st14" v:langID="1033">RGMII</tspan><tspan class="st14" v:langID="1033">_</tspan><tspan
+							class="st14" v:langID="1033">TX</tspan><tspan x="26.29" dy="1.6em" class="st14" v:langID="1033">_</tspan><tspan
+							class="st14" v:langID="1033">CTL</tspan></text>			</g>
+			<g id="shape94-699" v:mID="94" v:groupContext="shape" transform="translate(930.174,-1620.46)">
+				<title>工作表.94</title>
+				<desc>82 RGMII_RXD3</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="46.125" cy="2473.65" width="92.25" height="90.7502"/>
+				<g id="shadow94-700" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2428.27" width="92.25" height="90.7502" class="st3"/>
+				</g>
+				<rect x="0" y="2428.27" width="92.25" height="90.7502" class="st26"/>
+				<text x="30.88" y="2455.05" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>82<v:newlineChar/><tspan
+							x="9.56" dy="1.333em" class="st14" v:langID="1033">RGMII</tspan><tspan class="st14" v:langID="1033">_</tspan><tspan
+							class="st14" v:langID="1033">R</tspan><tspan x="28.19" dy="1.6em" class="st14" v:langID="1033">XD</tspan><tspan
+							class="st14" v:langID="1033">3</tspan></text>			</g>
+			<g id="shape95-710" v:mID="95" v:groupContext="shape" transform="translate(930.174,-1511.34)">
+				<title>工作表.95</title>
+				<desc>83 RGMII_TX_CLK</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="46.125" cy="2473.65" width="92.25" height="90.7502"/>
+				<g id="shadow95-711" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2428.27" width="92.25" height="90.7502" class="st3"/>
+				</g>
+				<rect x="0" y="2428.27" width="92.25" height="90.7502" class="st26"/>
+				<text x="30.88" y="2455.05" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>83<v:newlineChar/><tspan
+							x="4.47" dy="1.333em" class="st14" v:langID="1033">RGMII</tspan><tspan class="st14" v:langID="1033">_</tspan><tspan
+							class="st14" v:langID="1033">TX</tspan><tspan x="25.74" dy="1.6em" class="st14" v:langID="1033">_</tspan><tspan
+							class="st14" v:langID="1033">CLK</tspan></text>			</g>
+			<g id="shape96-721" v:mID="96" v:groupContext="shape" transform="translate(930.174,-1402.22)">
+				<title>工作表.96</title>
+				<desc>84 RGMII_TXD3</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="46.125" cy="2473.65" width="92.25" height="90.7502"/>
+				<g id="shadow96-722" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2428.27" width="92.25" height="90.7502" class="st3"/>
+				</g>
+				<rect x="0" y="2428.27" width="92.25" height="90.7502" class="st26"/>
+				<text x="30.88" y="2455.05" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>84<v:newlineChar/><tspan
+							x="4.47" dy="1.333em" class="st14" v:langID="1033">RGMII</tspan><tspan class="st14" v:langID="1033">_</tspan><tspan
+							class="st14" v:langID="1033">TX</tspan><tspan x="33.99" dy="1.6em" class="st14" v:langID="1033">D</tspan><tspan
+							class="st14" v:langID="1033">3</tspan></text>			</g>
+			<g id="shape97-732" v:mID="97" v:groupContext="shape" transform="translate(1666.68,-2059.97)">
+				<title>工作表.97</title>
+				<desc>85 GND</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="72.3751" cy="2425.27" width="144.76" height="188.25"/>
+				<g id="shadow97-733" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2331.15" width="144.75" height="187.875" class="st3"/>
+				</g>
+				<rect x="0" y="2331.15" width="144.75" height="187.875" class="st10"/>
+				<text x="57.13" y="2417.47" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>85<v:newlineChar/><tspan
+							x="42.24" dy="1.2em" class="st6">GND</tspan></text>			</g>
+			<g id="shape98-739" v:mID="98" v:groupContext="shape" transform="translate(1666.68,-1778.4)">
+				<title>工作表.98</title>
+				<desc>86 GND</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="72.3751" cy="2425.27" width="144.76" height="188.25"/>
+				<g id="shadow98-740" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2331.15" width="144.75" height="187.875" class="st3"/>
+				</g>
+				<rect x="0" y="2331.15" width="144.75" height="187.875" class="st10"/>
+				<text x="57.13" y="2417.47" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>86<v:newlineChar/><tspan
+							x="42.24" dy="1.2em" class="st6">GND</tspan></text>			</g>
+			<g id="shape99-746" v:mID="99" v:groupContext="shape" transform="translate(1666.68,-1470.58)">
+				<title>工作表.99</title>
+				<desc>87 GND</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="72.3751" cy="2425.27" width="144.76" height="188.25"/>
+				<g id="shadow99-747" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279" v:shadowType="1"
+						transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2331.15" width="144.75" height="187.875" class="st3"/>
+				</g>
+				<rect x="0" y="2331.15" width="144.75" height="187.875" class="st10"/>
+				<text x="57.13" y="2417.47" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>87<v:newlineChar/><tspan
+							x="42.24" dy="1.2em" class="st6">GND</tspan></text>			</g>
+			<g id="shape100-753" v:mID="100" v:groupContext="shape" transform="translate(1666.68,-1149.36)">
+				<title>工作表.100</title>
+				<desc>88 GND</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="72.3751" cy="2425.27" width="144.76" height="188.25"/>
+				<g id="shadow100-754" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2331.15" width="144.75" height="187.875" class="st3"/>
+				</g>
+				<rect x="0" y="2331.15" width="144.75" height="187.875" class="st10"/>
+				<text x="57.13" y="2417.47" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>88<v:newlineChar/><tspan
+							x="42.24" dy="1.2em" class="st6">GND</tspan></text>			</g>
+			<g id="shape101-760" v:mID="101" v:groupContext="shape" transform="translate(1666.68,-848.71)">
+				<title>工作表.101</title>
+				<desc>89 GND</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="72.3751" cy="2425.27" width="144.76" height="188.25"/>
+				<g id="shadow101-761" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2331.15" width="144.75" height="187.875" class="st3"/>
+				</g>
+				<rect x="0" y="2331.15" width="144.75" height="187.875" class="st10"/>
+				<text x="57.13" y="2417.47" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>89<v:newlineChar/><tspan
+							x="42.24" dy="1.2em" class="st6">GND</tspan></text>			</g>
+			<g id="shape102-767" v:mID="102" v:groupContext="shape" transform="translate(1425.17,-2059.97)">
+				<title>工作表.102</title>
+				<desc>90 GND</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="72.3751" cy="2425.27" width="144.76" height="188.25"/>
+				<g id="shadow102-768" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2331.15" width="144.75" height="187.875" class="st3"/>
+				</g>
+				<rect x="0" y="2331.15" width="144.75" height="187.875" class="st10"/>
+				<text x="57.13" y="2417.47" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>90<v:newlineChar/><tspan
+							x="42.24" dy="1.2em" class="st6">GND</tspan></text>			</g>
+			<g id="shape103-774" v:mID="103" v:groupContext="shape" transform="translate(1425.17,-1778.4)">
+				<title>工作表.103</title>
+				<desc>91 GND</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="72.3751" cy="2425.27" width="144.76" height="188.25"/>
+				<g id="shadow103-775" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2331.15" width="144.75" height="187.875" class="st3"/>
+				</g>
+				<rect x="0" y="2331.15" width="144.75" height="187.875" class="st10"/>
+				<text x="57.13" y="2417.47" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>91<v:newlineChar/><tspan
+							x="42.24" dy="1.2em" class="st6">GND</tspan></text>			</g>
+			<g id="shape104-781" v:mID="104" v:groupContext="shape" transform="translate(1425.17,-1470.58)">
+				<title>工作表.104</title>
+				<desc>92 GND</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="72.3751" cy="2425.27" width="144.76" height="188.25"/>
+				<g id="shadow104-782" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2331.15" width="144.75" height="187.875" class="st3"/>
+				</g>
+				<rect x="0" y="2331.15" width="144.75" height="187.875" class="st10"/>
+				<text x="57.13" y="2417.47" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>92<v:newlineChar/><tspan
+							x="42.24" dy="1.2em" class="st6">GND</tspan></text>			</g>
+			<g id="shape105-788" v:mID="105" v:groupContext="shape" transform="translate(1425.17,-1149.36)">
+				<title>工作表.105</title>
+				<desc>93 GND</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="72.3751" cy="2425.27" width="144.76" height="188.25"/>
+				<g id="shadow105-789" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2331.15" width="144.75" height="187.875" class="st3"/>
+				</g>
+				<rect x="0" y="2331.15" width="144.75" height="187.875" class="st10"/>
+				<text x="57.13" y="2417.47" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>93<v:newlineChar/><tspan
+							x="42.24" dy="1.2em" class="st6">GND</tspan></text>			</g>
+			<g id="shape106-795" v:mID="106" v:groupContext="shape" transform="translate(1425.17,-848.71)">
+				<title>工作表.106</title>
+				<desc>94 GND</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="72.3751" cy="2425.27" width="144.76" height="188.25"/>
+				<g id="shadow106-796" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2331.15" width="144.75" height="187.875" class="st3"/>
+				</g>
+				<rect x="0" y="2331.15" width="144.75" height="187.875" class="st10"/>
+				<text x="57.13" y="2417.47" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>94<v:newlineChar/><tspan
+							x="42.24" dy="1.2em" class="st6">GND</tspan></text>			</g>
+			<g id="shape107-802" v:mID="107" v:groupContext="shape" transform="translate(1197.55,-2059.97)">
+				<title>工作表.107</title>
+				<desc>95 GND</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="72.3751" cy="2425.27" width="144.76" height="188.25"/>
+				<g id="shadow107-803" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2331.15" width="144.75" height="187.875" class="st3"/>
+				</g>
+				<rect x="0" y="2331.15" width="144.75" height="187.875" class="st10"/>
+				<text x="57.13" y="2417.47" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>95<v:newlineChar/><tspan
+							x="42.24" dy="1.2em" class="st6">GND</tspan></text>			</g>
+			<g id="shape108-809" v:mID="108" v:groupContext="shape" transform="translate(1197.55,-1778.4)">
+				<title>工作表.108</title>
+				<desc>96 GND</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="72.3751" cy="2425.27" width="144.76" height="188.25"/>
+				<g id="shadow108-810" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2331.15" width="144.75" height="187.875" class="st3"/>
+				</g>
+				<rect x="0" y="2331.15" width="144.75" height="187.875" class="st10"/>
+				<text x="57.13" y="2417.47" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>96<v:newlineChar/><tspan
+							x="42.24" dy="1.2em" class="st6">GND</tspan></text>			</g>
+			<g id="shape109-816" v:mID="109" v:groupContext="shape" transform="translate(1197.55,-1149.36)">
+				<title>工作表.109</title>
+				<desc>97 GND</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="72.3751" cy="2425.27" width="144.76" height="188.25"/>
+				<g id="shadow109-817" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2331.15" width="144.75" height="187.875" class="st3"/>
+				</g>
+				<rect x="0" y="2331.15" width="144.75" height="187.875" class="st10"/>
+				<text x="57.13" y="2417.47" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>97<v:newlineChar/><tspan
+							x="42.24" dy="1.2em" class="st6">GND</tspan></text>			</g>
+			<g id="shape110-823" v:mID="110" v:groupContext="shape" transform="translate(1202.05,-848.71)">
+				<title>工作表.110</title>
+				<desc>98 GND</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="72.3751" cy="2425.27" width="144.76" height="188.25"/>
+				<g id="shadow110-824" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2331.15" width="144.75" height="187.875" class="st3"/>
+				</g>
+				<rect x="0" y="2331.15" width="144.75" height="187.875" class="st10"/>
+				<text x="57.13" y="2417.47" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>98<v:newlineChar/><tspan
+							x="42.24" dy="1.2em" class="st6">GND</tspan></text>			</g>
+			<g id="shape111-830" v:mID="111" v:groupContext="shape" transform="translate(967.673,-2059.97)">
+				<title>工作表.111</title>
+				<desc>99 GND</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="72.3751" cy="2425.27" width="144.76" height="188.25"/>
+				<g id="shadow111-831" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2331.15" width="144.75" height="187.875" class="st3"/>
+				</g>
+				<rect x="0" y="2331.15" width="144.75" height="187.875" class="st10"/>
+				<text x="57.13" y="2417.47" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>99<v:newlineChar/><tspan
+							x="42.24" dy="1.2em" class="st6">GND</tspan></text>			</g>
+			<g id="shape112-837" v:mID="112" v:groupContext="shape" transform="translate(967.673,-1778.4)">
+				<title>工作表.112</title>
+				<desc>100 GND</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="72.3751" cy="2425.27" width="144.76" height="188.25"/>
+				<g id="shadow112-838" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2331.15" width="144.75" height="187.875" class="st3"/>
+				</g>
+				<rect x="0" y="2331.15" width="144.75" height="187.875" class="st10"/>
+				<text x="49.5" y="2417.47" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>100<v:newlineChar/><tspan
+							x="42.24" dy="1.2em" class="st6">GND</tspan></text>			</g>
+			<g id="shape113-844" v:mID="113" v:groupContext="shape" transform="translate(967.673,-1149.36)">
+				<title>工作表.113</title>
+				<desc>101 GND</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="72.3751" cy="2425.27" width="144.76" height="188.25"/>
+				<g id="shadow113-845" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2331.15" width="144.75" height="187.875" class="st3"/>
+				</g>
+				<rect x="0" y="2331.15" width="144.75" height="187.875" class="st10"/>
+				<text x="49.5" y="2417.47" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>101<v:newlineChar/><tspan
+							x="42.24" dy="1.2em" class="st6">GND</tspan></text>			</g>
+			<g id="shape114-851" v:mID="114" v:groupContext="shape" transform="translate(967.673,-848.71)">
+				<title>工作表.114</title>
+				<desc>102 GND</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="72.3751" cy="2425.27" width="144.76" height="188.25"/>
+				<g id="shadow114-852" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2331.15" width="144.75" height="187.875" class="st3"/>
+				</g>
+				<rect x="0" y="2331.15" width="144.75" height="187.875" class="st10"/>
+				<text x="49.5" y="2417.47" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>102<v:newlineChar/><tspan
+							x="42.24" dy="1.2em" class="st6">GND</tspan></text>			</g>
+			<g id="shape115-858" v:mID="115" v:groupContext="shape" transform="translate(735.177,-2059.97)">
+				<title>工作表.115</title>
+				<desc>103 GND</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="72.3751" cy="2425.27" width="144.76" height="188.25"/>
+				<g id="shadow115-859" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2331.15" width="144.75" height="187.875" class="st3"/>
+				</g>
+				<rect x="0" y="2331.15" width="144.75" height="187.875" class="st10"/>
+				<text x="49.5" y="2417.47" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>103<v:newlineChar/><tspan
+							x="42.24" dy="1.2em" class="st6">GND</tspan></text>			</g>
+			<g id="shape116-865" v:mID="116" v:groupContext="shape" transform="translate(735.177,-1778.4)">
+				<title>工作表.116</title>
+				<desc>104 GND</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="72.3751" cy="2425.27" width="144.76" height="188.25"/>
+				<g id="shadow116-866" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2331.15" width="144.75" height="187.875" class="st3"/>
+				</g>
+				<rect x="0" y="2331.15" width="144.75" height="187.875" class="st10"/>
+				<text x="49.5" y="2417.47" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>104<v:newlineChar/><tspan
+							x="42.24" dy="1.2em" class="st6">GND</tspan></text>			</g>
+			<g id="shape117-872" v:mID="117" v:groupContext="shape" transform="translate(735.177,-1470.58)">
+				<title>工作表.117</title>
+				<desc>105 GND</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="72.3751" cy="2425.27" width="144.76" height="188.25"/>
+				<g id="shadow117-873" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2331.15" width="144.75" height="187.875" class="st3"/>
+				</g>
+				<rect x="0" y="2331.15" width="144.75" height="187.875" class="st10"/>
+				<text x="49.5" y="2417.47" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>105<v:newlineChar/><tspan
+							x="42.24" dy="1.2em" class="st6">GND</tspan></text>			</g>
+			<g id="shape118-879" v:mID="118" v:groupContext="shape" transform="translate(735.177,-1149.36)">
+				<title>工作表.118</title>
+				<desc>106 GND</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="72.3751" cy="2425.27" width="144.76" height="188.25"/>
+				<g id="shadow118-880" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2331.15" width="144.75" height="187.875" class="st3"/>
+				</g>
+				<rect x="0" y="2331.15" width="144.75" height="187.875" class="st10"/>
+				<text x="49.5" y="2417.47" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>106<v:newlineChar/><tspan
+							x="42.24" dy="1.2em" class="st6">GND</tspan></text>			</g>
+			<g id="shape119-886" v:mID="119" v:groupContext="shape" transform="translate(735.177,-848.71)">
+				<title>工作表.119</title>
+				<desc>107 GND</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="72.3751" cy="2425.27" width="144.76" height="188.25"/>
+				<g id="shadow119-887" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2331.15" width="144.75" height="187.875" class="st3"/>
+				</g>
+				<rect x="0" y="2331.15" width="144.75" height="187.875" class="st10"/>
+				<text x="49.5" y="2417.47" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>107<v:newlineChar/><tspan
+							x="42.24" dy="1.2em" class="st6">GND</tspan></text>			</g>
+			<g id="shape120-893" v:mID="120" v:groupContext="shape" transform="translate(517.298,-1778.4)">
+				<title>工作表.120</title>
+				<desc>109 GND</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="72.3751" cy="2425.27" width="144.76" height="188.25"/>
+				<g id="shadow120-894" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2331.15" width="144.75" height="187.875" class="st3"/>
+				</g>
+				<rect x="0" y="2331.15" width="144.75" height="187.875" class="st10"/>
+				<text x="49.5" y="2417.47" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>109<v:newlineChar/><tspan
+							x="42.24" dy="1.2em" class="st6">GND</tspan></text>			</g>
+			<g id="shape121-900" v:mID="121" v:groupContext="shape" transform="translate(517.298,-1470.58)">
+				<title>工作表.121</title>
+				<desc>110 GND</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="72.3751" cy="2425.27" width="144.76" height="188.25"/>
+				<g id="shadow121-901" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2331.15" width="144.75" height="187.875" class="st3"/>
+				</g>
+				<rect x="0" y="2331.15" width="144.75" height="187.875" class="st10"/>
+				<text x="49.5" y="2417.47" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>110<v:newlineChar/><tspan
+							x="42.24" dy="1.2em" class="st6">GND</tspan></text>			</g>
+			<g id="shape122-907" v:mID="122" v:groupContext="shape" transform="translate(517.298,-1149.36)">
+				<title>工作表.122</title>
+				<desc>111 GND</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="72.3751" cy="2425.27" width="144.76" height="188.25"/>
+				<g id="shadow122-908" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2331.15" width="144.75" height="187.875" class="st3"/>
+				</g>
+				<rect x="0" y="2331.15" width="144.75" height="187.875" class="st10"/>
+				<text x="49.5" y="2417.47" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>111<v:newlineChar/><tspan
+							x="42.24" dy="1.2em" class="st6">GND</tspan></text>			</g>
+			<g id="shape123-914" v:mID="123" v:groupContext="shape" transform="translate(517.298,-848.71)">
+				<title>工作表.123</title>
+				<desc>112 GND</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="72.3751" cy="2425.27" width="144.76" height="188.25"/>
+				<g id="shadow123-915" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2331.15" width="144.75" height="187.875" class="st3"/>
+				</g>
+				<rect x="0" y="2331.15" width="144.75" height="187.875" class="st10"/>
+				<text x="49.5" y="2417.47" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>112<v:newlineChar/><tspan
+							x="42.24" dy="1.2em" class="st6">GND</tspan></text>			</g>
+			<g id="shape124-921" v:mID="124" v:groupContext="shape" transform="translate(517.298,-2065.78)">
+				<title>工作表.124</title>
+				<desc>108 GND</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="72.3751" cy="2425.27" width="144.76" height="188.25"/>
+				<g id="shadow124-922" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2331.15" width="144.75" height="187.875" class="st3"/>
+				</g>
+				<rect x="0" y="2331.15" width="144.75" height="187.875" class="st10"/>
+				<text x="49.5" y="2417.47" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>108<v:newlineChar/><tspan
+							x="42.24" dy="1.2em" class="st6">GND</tspan></text>			</g>
+			<g id="shape125-928" v:mID="125" v:groupContext="shape" transform="translate(140.442,2745.9) rotate(-170)">
+				<title>工作表.125</title>
+				<path d="M94.86 2519.02 L47.43 2436.81 L0 2519.02 L94.86 2519.02 Z" class="st27"/>
+			</g>
+			<g id="shape126-930" v:mID="126" v:groupContext="shape" transform="translate(354.943,-2178.85)">
+				<title>工作表.126</title>
+				<desc>117 RSV</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="52.8653" cy="2473.65" width="105.74" height="90.7502"/>
+				<g id="shadow126-931" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st3"/>
+				</g>
+				<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st8"/>
+				<text x="29.99" y="2465.85" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>117<v:newlineChar/><tspan
+							x="28.08" dy="1.2em" class="st6">RSV</tspan></text>			</g>
+			<g id="shape127-937" v:mID="127" v:groupContext="shape" transform="translate(354.943,-2056.96)">
+				<title>工作表.127</title>
+				<desc>118 RSV</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="52.8653" cy="2473.65" width="105.74" height="90.7502"/>
+				<g id="shadow127-938" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st3"/>
+				</g>
+				<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st8"/>
+				<text x="29.99" y="2465.85" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>118<v:newlineChar/><tspan
+							x="28.08" dy="1.2em" class="st6">RSV</tspan></text>			</g>
+			<g id="shape128-944" v:mID="128" v:groupContext="shape" transform="translate(354.943,-1927.21)">
+				<title>工作表.128</title>
+				<desc>119 RGMII_RST</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="52.8653" cy="2473.65" width="105.74" height="90.7502"/>
+				<g id="shadow128-945" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st3"/>
+				</g>
+				<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st26"/>
+				<text x="29.99" y="2465.85" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>119<v:newlineChar/><tspan
+							x="5.95" dy="1.733em" class="st14" v:langID="1033">RGMII</tspan><tspan class="st14" v:langID="1033">_</tspan><tspan
+							class="st14">RS</tspan><tspan class="st14" v:langID="1033">T</tspan></text>			</g>
+			<g id="shape129-954" v:mID="129" v:groupContext="shape" transform="translate(354.943,-1809.38)">
+				<title>工作表.129</title>
+				<desc>120 RESERVED</desc>
+				<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197"/>
+				<v:textRect cx="52.8653" cy="2473.65" width="105.74" height="90.7502"/>
+				<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st28"/>
+				<text x="29.99" y="2467.15" class="st29" v:langID="1033"><v:paragraph v:spLine="-1" v:horizAlign="1"/><v:tabList/>120<v:newlineChar/><tspan
+							x="14.09" dy="1em" class="st6">RESER</tspan><tspan x="7.049em 7.049em 7.049em" dy="0em" class="st30">VED</tspan></text>			</g>
+			<g id="shape130-959" v:mID="130" v:groupContext="shape" transform="translate(354.943,-1684.21)">
+				<title>工作表.130</title>
+				<desc>121 RGMII_MDIO</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="52.8653" cy="2473.65" width="105.74" height="90.7502"/>
+				<g id="shadow130-960" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st3"/>
+				</g>
+				<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st26"/>
+				<text x="29.99" y="2455.05" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>121<v:newlineChar/><tspan
+							x="6.53" dy="1.333em" class="st14" v:langID="1033">RGMII</tspan><tspan class="st14" v:langID="1033">_</tspan><tspan
+							class="st14" v:langID="1033">MD</tspan><tspan x="42.89" dy="1.6em" class="st14" v:langID="1033">IO</tspan></text>			</g>
+			<g id="shape131-969" v:mID="131" v:groupContext="shape" transform="translate(354.943,-1559.22)">
+				<title>工作表.131</title>
+				<desc>122 RGMII_MDC</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="52.8653" cy="2473.65" width="105.74" height="90.7502"/>
+				<g id="shadow131-970" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st3"/>
+				</g>
+				<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st26"/>
+				<text x="29.99" y="2455.05" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>122<v:newlineChar/><tspan
+							x="6.53" dy="1.333em" class="st14" v:langID="1033">RGMII</tspan><tspan class="st14" v:langID="1033">_</tspan><tspan
+							class="st14" v:langID="1033">MD</tspan><tspan x="46.84" dy="1.6em" class="st14" v:langID="1033">C</tspan></text>			</g>
+			<g id="shape132-979" v:mID="132" v:groupContext="shape" transform="translate(354.943,-1436.47)">
+				<title>工作表.132</title>
+				<desc>123 RSV</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="52.8653" cy="2473.65" width="105.74" height="90.7502"/>
+				<g id="shadow132-980" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st3"/>
+				</g>
+				<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st8"/>
+				<text x="29.99" y="2465.85" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>123<v:newlineChar/><tspan
+							x="28.08" dy="1.2em" class="st6">RSV</tspan></text>			</g>
+			<g id="shape133-986" v:mID="133" v:groupContext="shape" transform="translate(354.943,-1313.74)">
+				<title>工作表.133</title>
+				<desc>124 PERST#</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="52.8653" cy="2473.65" width="105.74" height="90.7502"/>
+				<g id="shadow133-987" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st3"/>
+				</g>
+				<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st31"/>
+				<text x="29.99" y="2465.85" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>124<v:newlineChar/><tspan
+							x="9.63" dy="1.3em" class="st25" v:langID="1033">PERST</tspan><tspan class="st25" v:langID="1033">#</tspan></text>			</g>
+			<g id="shape134-994" v:mID="134" v:groupContext="shape" transform="translate(354.943,-1189.59)">
+				<title>工作表.134</title>
+				<desc>125 RSV</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="52.8653" cy="2473.65" width="105.74" height="90.7502"/>
+				<g id="shadow134-995" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st3"/>
+				</g>
+				<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st8"/>
+				<text x="29.99" y="2465.85" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>125<v:newlineChar/><tspan
+							x="28.08" dy="1.2em" class="st6">RSV</tspan></text>			</g>
+			<g id="shape135-1001" v:mID="135" v:groupContext="shape" transform="translate(354.943,-1066.19)">
+				<title>工作表.135</title>
+				<desc>126 PCIE_RX_N</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="52.8653" cy="2473.65" width="105.74" height="90.7502"/>
+				<g id="shadow135-1002" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st3"/>
+				</g>
+				<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st31"/>
+				<text x="29.99" y="2465.85" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>126<v:newlineChar/><tspan
+							x="6.68" dy="1.733em" class="st14" v:langID="1033">PCIE</tspan><tspan class="st14" v:langID="1033">_</tspan><tspan
+							class="st14" v:langID="1033">RX</tspan><tspan class="st14" v:langID="1033">_</tspan><tspan class="st14"
+							v:langID="1033">N</tspan></text>			</g>
+			<g id="shape136-1012" v:mID="136" v:groupContext="shape" transform="translate(354.943,-941.711)">
+				<title>工作表.136</title>
+				<desc>127 PCIE_RX_P</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="52.8653" cy="2473.65" width="105.74" height="90.7502"/>
+				<g id="shadow136-1013" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st3"/>
+				</g>
+				<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st31"/>
+				<text x="29.99" y="2465.85" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>127<v:newlineChar/><tspan
+							x="8.49" dy="1.733em" class="st14" v:langID="1033">PCIE</tspan><tspan class="st14" v:langID="1033">_</tspan><tspan
+							class="st14" v:langID="1033">RX</tspan><tspan class="st14" v:langID="1033">_</tspan><tspan class="st14"
+							v:langID="1033">P</tspan></text>			</g>
+			<g id="shape137-1023" v:mID="137" v:groupContext="shape" transform="translate(354.943,-823.962)">
+				<title>工作表.137</title>
+				<desc>128 RSV</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="52.8653" cy="2473.65" width="105.74" height="90.7502"/>
+				<g id="shadow137-1024" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st3"/>
+				</g>
+				<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st8"/>
+				<text x="29.99" y="2465.85" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>128<v:newlineChar/><tspan
+							x="28.08" dy="1.2em" class="st6">RSV</tspan></text>			</g>
+			<g id="shape138-1030" v:mID="138" v:groupContext="shape" transform="translate(206.818,-2180.38)">
+				<title>工作表.138</title>
+				<desc>129 RSV</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="52.8653" cy="2473.65" width="105.74" height="90.7502"/>
+				<g id="shadow138-1031" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st3"/>
+				</g>
+				<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st8"/>
+				<text x="29.99" y="2465.85" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>129<v:newlineChar/><tspan
+							x="28.08" dy="1.2em" class="st6">RSV</tspan></text>			</g>
+			<g id="shape139-1037" v:mID="139" v:groupContext="shape" transform="translate(206.818,-2056.96)">
+				<title>工作表.139</title>
+				<desc>130 RSV</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="52.8653" cy="2473.65" width="105.74" height="90.7502"/>
+				<g id="shadow139-1038" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st3"/>
+				</g>
+				<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st8"/>
+				<text x="29.99" y="2465.85" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>130<v:newlineChar/><tspan
+							x="28.08" dy="1.2em" class="st6">RSV</tspan></text>			</g>
+			<g id="shape140-1044" v:mID="140" v:groupContext="shape" transform="translate(206.818,-1927.21)">
+				<title>工作表.140</title>
+				<desc>131 RSV</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="52.8653" cy="2473.65" width="105.74" height="90.7502"/>
+				<g id="shadow140-1045" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st3"/>
+				</g>
+				<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st8"/>
+				<text x="29.99" y="2465.85" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>131<v:newlineChar/><tspan
+							x="28.08" dy="1.2em" class="st6">RSV</tspan></text>			</g>
+			<g id="shape141-1051" v:mID="141" v:groupContext="shape" transform="translate(206.818,-1809.38)">
+				<title>工作表.141</title>
+				<desc>132 RSV</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="52.8653" cy="2473.65" width="105.74" height="90.7502"/>
+				<g id="shadow141-1052" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st3"/>
+				</g>
+				<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st8"/>
+				<text x="29.99" y="2465.85" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>132<v:newlineChar/><tspan
+							x="28.08" dy="1.2em" class="st6">RSV</tspan></text>			</g>
+			<g id="shape142-1058" v:mID="142" v:groupContext="shape" transform="translate(206.818,-1684.21)">
+				<title>工作表.142</title>
+				<desc>133 RSV</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="52.8653" cy="2473.65" width="105.74" height="90.7502"/>
+				<g id="shadow142-1059" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st3"/>
+				</g>
+				<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st8"/>
+				<text x="29.99" y="2465.85" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>133<v:newlineChar/><tspan
+							x="28.08" dy="1.2em" class="st6">RSV</tspan></text>			</g>
+			<g id="shape143-1065" v:mID="143" v:groupContext="shape" transform="translate(206.818,-1559.22)">
+				<title>工作表.143</title>
+				<desc>134 RSV</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="52.8653" cy="2473.65" width="105.74" height="90.7502"/>
+				<g id="shadow143-1066" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st3"/>
+				</g>
+				<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st8"/>
+				<text x="29.99" y="2465.85" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>134<v:newlineChar/><tspan
+							x="28.08" dy="1.2em" class="st6">RSV</tspan></text>			</g>
+			<g id="shape144-1072" v:mID="144" v:groupContext="shape" transform="translate(206.818,-1436.47)">
+				<title>工作表.144</title>
+				<desc>135 PEWAKE#</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="52.8653" cy="2473.65" width="105.74" height="90.7502"/>
+				<g id="shadow144-1073" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st3"/>
+				</g>
+				<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st31"/>
+				<text x="29.99" y="2465.85" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>135<v:newlineChar/><tspan
+							x="10.52" dy="1.733em" class="st14" v:langID="1033">PEWAKE</tspan><tspan class="st14" v:langID="1033">#</tspan></text>			</g>
+			<g id="shape145-1080" v:mID="145" v:groupContext="shape" transform="translate(206.818,-1313.74)">
+				<title>工作表.145</title>
+				<desc>136 PCIE_REF_CLK_OUT_M</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="52.8653" cy="2473.65" width="105.74" height="90.7502"/>
+				<g id="shadow145-1081" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st3"/>
+				</g>
+				<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st31"/>
+				<text x="29.99" y="2457.45" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>136<v:newlineChar/><tspan
+							x="6.86" dy="1.457em" class="st32" v:langID="1033">PCIE</tspan><tspan class="st32" v:langID="1033">_</tspan><tspan
+							class="st32" v:langID="1033">REF</tspan><tspan class="st32" v:langID="1033">_</tspan><tspan
+							class="st32" v:langID="1033">CLK</tspan><tspan x="24.81" dy="1.971em" class="st32" v:langID="1033">_</tspan><tspan
+							class="st32" v:langID="1033">OUT</tspan><tspan class="st32" v:langID="1033">_</tspan><tspan
+							class="st32" v:langID="1033">M</tspan></text>			</g>
+			<g id="shape146-1095" v:mID="146" v:groupContext="shape" transform="translate(206.818,-1189.59)">
+				<title>工作表.146</title>
+				<desc>137 PCIE_REF_CLK_OUT_P</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="52.8653" cy="2473.65" width="105.74" height="90.7502"/>
+				<g id="shadow146-1096" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st3"/>
+				</g>
+				<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st31"/>
+				<text x="29.99" y="2457.45" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>137<v:newlineChar/><tspan
+							x="6.86" dy="1.457em" class="st32" v:langID="1033">PCIE</tspan><tspan class="st32" v:langID="1033">_</tspan><tspan
+							class="st32" v:langID="1033">REF</tspan><tspan class="st32" v:langID="1033">_</tspan><tspan
+							class="st32" v:langID="1033">CLK</tspan><tspan x="27.36" dy="1.971em" class="st32" v:langID="1033">_</tspan><tspan
+							class="st32" v:langID="1033">OUT</tspan><tspan class="st32" v:langID="1033">_</tspan><tspan
+							class="st32" v:langID="1033">P</tspan></text>			</g>
+			<g id="shape147-1110" v:mID="147" v:groupContext="shape" transform="translate(206.818,-1066.19)">
+				<title>工作表.147</title>
+				<desc>138 PCIE_TX_N</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="52.8653" cy="2473.65" width="105.74" height="90.7502"/>
+				<g id="shadow147-1111" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st3"/>
+				</g>
+				<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st31"/>
+				<text x="29.99" y="2465.85" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>138<v:newlineChar/><tspan
+							x="7.4" dy="1.733em" class="st14" v:langID="1033">PCIE</tspan><tspan class="st14" v:langID="1033">_</tspan><tspan
+							class="st14" v:langID="1033">TX</tspan><tspan class="st14" v:langID="1033">_</tspan><tspan class="st14"
+							v:langID="1033">N</tspan></text>			</g>
+			<g id="shape148-1121" v:mID="148" v:groupContext="shape" transform="translate(206.818,-941.711)">
+				<title>工作表.148</title>
+				<desc>139 PCIE_TX_P</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="52.8653" cy="2473.65" width="105.74" height="90.7502"/>
+				<g id="shadow148-1122" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st3"/>
+				</g>
+				<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st31"/>
+				<text x="29.99" y="2465.85" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>139<v:newlineChar/><tspan
+							x="9.21" dy="1.733em" class="st14" v:langID="1033">PCIE</tspan><tspan class="st14" v:langID="1033">_</tspan><tspan
+							class="st14" v:langID="1033">TX</tspan><tspan class="st14" v:langID="1033">_</tspan><tspan class="st14"
+							v:langID="1033">P</tspan></text>			</g>
+			<g id="shape149-1132" v:mID="149" v:groupContext="shape" transform="translate(206.818,-823.962)">
+				<title>工作表.149</title>
+				<desc>140 PCIE_CLKREQ_N</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="52.8653" cy="2473.65" width="105.74" height="90.7502"/>
+				<g id="shadow149-1133" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st3"/>
+				</g>
+				<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st31"/>
+				<text x="29.99" y="2455.05" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>140<v:newlineChar/><tspan
+							x="7.48" dy="1.333em" class="st14" v:langID="1033">PCIE</tspan><tspan class="st14" v:langID="1033">_</tspan><tspan
+							class="st14" v:langID="1033">CLKR</tspan><tspan x="29.23" dy="1.6em" class="st14" v:langID="1033">EQ</tspan><tspan
+							class="st14" v:langID="1033">_</tspan><tspan class="st14" v:langID="1033">N</tspan></text>			</g>
+			<g id="shape150-1144" v:mID="150" v:groupContext="shape" transform="translate(354.943,-1809.38)">
+				<title>工作表.150</title>
+				<desc>120 RGMII_INT</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="52.8653" cy="2473.65" width="105.74" height="90.7502"/>
+				<g id="shadow150-1145" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st3"/>
+				</g>
+				<rect x="0" y="2428.27" width="105.731" height="90.7502" class="st26"/>
+				<text x="29.99" y="2465.85" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>120<v:newlineChar/><tspan
+							x="7.06" dy="1.733em" class="st14" v:langID="1033">RGMII</tspan><tspan class="st14" v:langID="1033">_</tspan><tspan
+							class="st14">IN</tspan><tspan class="st14" v:langID="1033">T</tspan></text>			</g>
+			<g id="shape151-1154" v:mID="151" v:groupContext="shape" transform="translate(195.613,-357.896)">
+				<title>框.462</title>
+				<desc>图 例</desc>
+				<v:userDefs>
+					<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				</v:userDefs>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="94.87" cy="2479.08" width="189.74" height="79.8905"/>
+				<g id="shadow151-1155" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2439.13" width="189.74" height="79.8905" class="st33"/>
+					<text x="57.25" y="2486.88" class="st34" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>图   例</text>				</g>
+				<rect x="0" y="2439.13" width="189.74" height="79.8905" class="st35"/>
+				<text x="57.25" y="2486.88" class="st36" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>图   例</text>			</g>
+			<g id="shape152-1162" v:mID="152" v:groupContext="shape" transform="translate(1215.82,-255.223)">
+				<title>框.1668</title>
+				<desc>GPIO</desc>
+				<v:userDefs>
+					<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				</v:userDefs>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="149.795" cy="2475.11" width="299.59" height="87.8187"/>
+				<g id="shadow152-1163" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2431.2" width="299.589" height="87.8187" class="st3"/>
+				</g>
+				<rect x="0" y="2431.2" width="299.589" height="87.8187" class="st16"/>
+				<text x="116.3" y="2482.91" class="st37" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>GPIO</text>			</g>
+			<g id="shape153-1168" v:mID="153" v:groupContext="shape" transform="translate(1215.82,-127.611)">
+				<title>框.1674</title>
+				<desc>AUDIO</desc>
+				<v:userDefs>
+					<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				</v:userDefs>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="149.795" cy="2475.11" width="299.59" height="87.8187"/>
+				<g id="shadow153-1169" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2431.2" width="299.589" height="87.8187" class="st3"/>
+				</g>
+				<rect x="0" y="2431.2" width="299.589" height="87.8187" class="st17"/>
+				<text x="104.64" y="2482.91" class="st37" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>AUDIO</text>			</g>
+			<g id="shape154-1174" v:mID="154" v:groupContext="shape" transform="translate(1595.35,-382.834)">
+				<title>框.1652</title>
+				<desc>POWER</desc>
+				<v:userDefs>
+					<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				</v:userDefs>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="149.795" cy="2475.11" width="299.59" height="87.8187"/>
+				<g id="shadow154-1175" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2431.2" width="299.589" height="87.8187" class="st3"/>
+				</g>
+				<rect x="0" y="2431.2" width="299.589" height="87.8187" class="st9"/>
+				<text x="100.11" y="2482.91" class="st37" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>POWER</text>			</g>
+			<g id="shape155-1180" v:mID="155" v:groupContext="shape" transform="translate(1595.35,-255.223)">
+				<title>框.1666</title>
+				<desc>RF</desc>
+				<v:userDefs>
+					<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				</v:userDefs>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="149.795" cy="2475.11" width="299.59" height="87.8187"/>
+				<g id="shadow155-1181" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2431.2" width="299.589" height="87.8187" class="st3"/>
+				</g>
+				<rect x="0" y="2431.2" width="299.589" height="87.8187" class="st19"/>
+				<text x="133.46" y="2482.91" class="st37" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>RF</text>			</g>
+			<g id="shape156-1186" v:mID="156" v:groupContext="shape" transform="translate(836.297,-382.834)">
+				<title>框.1654</title>
+				<desc>GND</desc>
+				<v:userDefs>
+					<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				</v:userDefs>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="149.795" cy="2475.11" width="299.59" height="87.8187"/>
+				<g id="shadow156-1187" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2431.2" width="299.589" height="87.8187" class="st3"/>
+				</g>
+				<rect x="0" y="2431.2" width="299.589" height="87.8187" class="st10"/>
+				<text x="118.53" y="2482.91" class="st37" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>GND</text>			</g>
+			<g id="shape157-1192" v:mID="157" v:groupContext="shape" transform="translate(836.297,-127.611)">
+				<title>框.1665</title>
+				<desc>ADC</desc>
+				<v:userDefs>
+					<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				</v:userDefs>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="149.795" cy="2475.11" width="299.59" height="87.8187"/>
+				<g id="shadow157-1193" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2431.2" width="299.589" height="87.8187" class="st3"/>
+				</g>
+				<rect x="0" y="2431.2" width="299.589" height="87.8187" class="st23"/>
+				<text x="120.98" y="2482.91" class="st37" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>ADC</text>			</g>
+			<g id="shape158-1198" v:mID="158" v:groupContext="shape" transform="translate(836.297,-255.223)">
+				<title>框.1670</title>
+				<desc>UART</desc>
+				<v:userDefs>
+					<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				</v:userDefs>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="149.795" cy="2475.11" width="299.59" height="87.8187"/>
+				<g id="shadow158-1199" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2431.2" width="299.589" height="87.8187" class="st3"/>
+				</g>
+				<rect x="0" y="2431.2" width="299.589" height="87.8187" class="st11"/>
+				<text x="112.72" y="2482.91" class="st37" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>UART</text>			</g>
+			<g id="shape159-1204" v:mID="159" v:groupContext="shape" transform="translate(456.772,-382.834)">
+				<title>框.1651</title>
+				<desc>RESERVED</desc>
+				<v:userDefs>
+					<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				</v:userDefs>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="149.795" cy="2475.11" width="299.59" height="87.8187"/>
+				<g id="shadow159-1205" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2431.2" width="299.589" height="87.8187" class="st3"/>
+				</g>
+				<rect x="0" y="2431.2" width="299.589" height="87.8187" class="st8"/>
+				<text x="81.94" y="2482.91" class="st37" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>RESERVED</text>			</g>
+			<g id="shape160-1210" v:mID="160" v:groupContext="shape" transform="translate(456.772,-255.223)">
+				<title>框.1664</title>
+				<desc>USIM</desc>
+				<v:userDefs>
+					<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				</v:userDefs>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="149.795" cy="2475.11" width="299.59" height="87.8187"/>
+				<g id="shadow160-1211" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2431.2" width="299.589" height="87.8187" class="st3"/>
+				</g>
+				<rect x="0" y="2431.2" width="299.589" height="87.8187" class="st12"/>
+				<text x="114.15" y="2482.91" class="st37" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>USIM</text>			</g>
+			<g id="shape161-1216" v:mID="161" v:groupContext="shape" transform="translate(1215.82,-382.834)">
+				<title>框.1669</title>
+				<desc>CONTROL</desc>
+				<v:userDefs>
+					<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				</v:userDefs>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="149.795" cy="2475.11" width="299.59" height="87.8187"/>
+				<g id="shadow161-1217" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2431.2" width="299.589" height="87.8187" class="st3"/>
+				</g>
+				<rect x="0" y="2431.2" width="299.589" height="87.8187" class="st4"/>
+				<text x="84.42" y="2482.91" class="st37" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>CONTROL</text>			</g>
+			<g id="shape162-1222" v:mID="162" v:groupContext="shape" transform="translate(456.772,-127.611)">
+				<title>框.549</title>
+				<desc>SDIO</desc>
+				<v:userDefs>
+					<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				</v:userDefs>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="149.795" cy="2475.11" width="299.59" height="87.8187"/>
+				<g id="shadow162-1223" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2431.2" width="299.589" height="87.8187" class="st3"/>
+				</g>
+				<rect x="0" y="2431.2" width="299.589" height="87.8187" class="st18"/>
+				<text x="116.69" y="2482.91" class="st37" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>SDIO</text>			</g>
+			<g id="shape163-1228" v:mID="163" v:groupContext="shape" transform="translate(1595.35,-127.611)">
+				<title>框.509</title>
+				<desc>IIC</desc>
+				<v:userDefs>
+					<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				</v:userDefs>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="149.795" cy="2475.11" width="299.59" height="87.8187"/>
+				<g id="shadow163-1229" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2431.2" width="299.589" height="87.8187" class="st3"/>
+				</g>
+				<rect x="0" y="2431.2" width="299.589" height="87.8187" class="st21"/>
+				<text x="134.1" y="2482.91" class="st38" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>IIC</text>			</g>
+			<g id="shape164-1234" v:mID="164" v:groupContext="shape" transform="translate(456.772,-5.91172E-012)">
+				<title>框.169</title>
+				<desc>RGMII</desc>
+				<v:userDefs>
+					<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				</v:userDefs>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="149.795" cy="2475.11" width="299.59" height="87.8187"/>
+				<g id="shadow164-1235" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2431.2" width="299.589" height="87.8187" class="st3"/>
+				</g>
+				<rect x="0" y="2431.2" width="299.589" height="87.8187" class="st26"/>
+				<text x="108.68" y="2482.91" class="st37" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>RGMII</text>			</g>
+			<g id="shape165-1240" v:mID="165" v:groupContext="shape" transform="translate(836.297,-2.72848E-012)">
+				<title>框.170</title>
+				<desc>USB</desc>
+				<v:userDefs>
+					<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				</v:userDefs>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="149.795" cy="2475.11" width="299.59" height="87.8187"/>
+				<g id="shadow165-1241" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2431.2" width="299.589" height="87.8187" class="st3"/>
+				</g>
+				<rect x="0" y="2431.2" width="299.589" height="87.8187" class="st24"/>
+				<text x="122.99" y="2482.91" class="st37" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>USB</text>			</g>
+			<g id="shape166-1246" v:mID="166" v:groupContext="shape" transform="translate(1215.82,0)">
+				<title>框.171</title>
+				<desc>PCIE</desc>
+				<v:userDefs>
+					<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				</v:userDefs>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="149.795" cy="2475.11" width="299.59" height="87.8187"/>
+				<g id="shadow166-1247" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2431.2" width="299.589" height="87.8187" class="st3"/>
+				</g>
+				<rect x="0" y="2431.2" width="299.589" height="87.8187" class="st31"/>
+				<text x="120.7" y="2482.91" class="st37" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>PCIE</text>			</g>
+			<g id="shape167-1252" v:mID="167" v:groupContext="shape" transform="translate(1595.35,0)">
+				<title>框.172</title>
+				<desc>SPI</desc>
+				<v:userDefs>
+					<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				</v:userDefs>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="149.795" cy="2475.11" width="299.59" height="87.8187"/>
+				<g id="shadow167-1253" v:groupContext="shadow" v:shadowOffsetX="0.345598" v:shadowOffsetY="-1.97279"
+						v:shadowType="1" transform="matrix(1,0,0,1,0.345598,1.97279)" class="st2">
+					<rect x="0" y="2431.2" width="299.589" height="87.8187" class="st3"/>
+				</g>
+				<rect x="0" y="2431.2" width="299.589" height="87.8187" class="st20"/>
+				<text x="129.07" y="2482.91" class="st37" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>SPI</text>			</g>
+		</g>
+	</g>
+</svg>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="safety_instruction">
+    <title>Safety Instruction</title>
+    <conbody outputclass="bigbox">
+        <table outputclass="tb_table">
+            <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="1*" align="center"/>
+                <colspec colname="c2" colnum="2" colwidth="6*" align="left"/>
+                <tbody outputclass="tb_tb">
+                    <row outputclass="tbody_row"> <entry align="center"><image href="../../../../../../img/general_assets/icon3.png"/></entry> <entry>Safety first! Do not use hand-held devices while driving. Use hands-free operation only. Drivers must fully park the vehicle before using mobile devices! </entry> </row> <row outputclass="tbody_row"> <entry align="center"><image href="../../../../../../img/general_assets/icon6.png"/></entry> <entry>Turn off mobile terminal devices before boarding. Disable the wireless function on the mobile terminal device to avoid interference with aircraft communications. Failure to comply may jeopardize flight safety and violate aviation regulations. </entry> </row> <row outputclass="tbody_row"> <entry align="center"><image href="../../../../../../img/general_assets/icon2.png"/></entry> <entry>Pay attention to any restrictions on the use of mobile terminal devices when in a hospital or healthcare facility. Mobile terminal devices should be turned off to prevent RF interference, which can cause medical equipment to malfunction. </entry> </row> <row outputclass="tbody_row"> <entry align="center"><image href="../../../../../../img/general_assets/icon4.png"/></entry> <entry>Mobile terminal devices do not guarantee effective connection under all circumstances, such as when there is no credit balance or the SIM card is invalid. If you encounter these circumstances during an emergency, remember to use emergency calling. Ensure your device is powered on and in an area with sufficient signal strength. </entry> </row> <row outputclass="tbody_row"> <entry align="center"><image href="../../../../../../img/general_assets/icon5.png"/></entry> <entry>Your mobile terminal device will receive and transmit RF signals when powered on. RF interference may occur when placed near televisions, radios, computers, or other electronic equipments. </entry> </row> <row outputclass="tbody_row"> <entry align="center"><image href="../../../../../../img/general_assets/icon1.png"/></entry> <entry>Keep mobile devices away from flammable gases. Turn off the mobile terminal devices when near gas stations, fuel depots, chemical plants, or blasting sites. Operating electronic devices in any location with potential explosion hazards poses safety risks. </entry> </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </conbody>
+</concept>
+

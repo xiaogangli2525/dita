@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="concept_e3t_hfm_3pb">
+    <title>服务与支持</title>
+    <conbody outputclass="bigbox">
+        <p outputclass="ds_text">如果您有任何关于模组产品及产品手册的评论、疑问、想法，或者任何无法从本手册中找到答案的疑问，请通过以下方式联系我们。</p>
+        <div outputclass="text_box">
+            <div>
+                <p outputclass="ss_title">OneMO官网：
+                    <xref outputclass="ss_text" href="http://onemo10086.com/" format="html" scope="external">onemo10086.com</xref>
+                </p>
+            </div>
+            <div>
+                <p outputclass="ss_title">邮箱：
+                    <xref outputclass="ss_text" href="mailto:smartmodule@cmiot.chinamobile.com?subject=模组产品咨询" format="html" scope="external">SmartModule@cmiot.chinamobile.com</xref>
+                </p>
+            </div>
+            <div>
+                <p outputclass="ss_title">客户服务热线：400-110-0866</p>
+            </div>
+        </div>
+    </conbody>
+</concept>

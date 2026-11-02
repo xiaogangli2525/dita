@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="topic_jgq_gxg_gqb">
+    <title><?oxy_comment_start author="zhouziwei" timestamp="20220825T143859+0800" comment="文档提示：该主题文件为所有型号共用，维护时请勿随意删改。"?>网络时间同步<?oxy_comment_end?></title>
+    <shortdesc>模组支持两种方式同步网络时间，驻网自动同步和命令同步。</shortdesc>
+</topic>

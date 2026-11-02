@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="safety_instruction">
+    <title>安全须知</title>
+    <conbody outputclass="bigbox">
+        <table outputclass="tb_table">
+            <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="1*" align="center"/>
+                <colspec colname="c2" colnum="2" colwidth="6*" align="left"/>
+                <tbody outputclass="tb_tb">
+                    <row outputclass="tbody_row">
+                        <entry align="center"><image href="../../img/general_assets/icon3.png"
+                            /></entry>
+                        <entry>道路行驶安全第一！当你开车时，请勿使用手持移动终端设备，除非其有免提功能。请停车，再打电话！</entry>
+                    </row>
+                    <row outputclass="tbody_row">
+                        <entry align="center"><image href="../../img/general_assets/icon6.png"
+                            /></entry>
+                        <entry>登机前请关闭移动终端设备。移动终端的无线功能在飞机上禁止开启用以防止对飞机通讯系统的干扰。忽略该提示项可能会导致飞行安全，甚至触犯法律。</entry>
+                    </row>
+                    <row outputclass="tbody_row">
+                        <entry align="center"><image href="../../img/general_assets/icon2.png"
+                            /></entry>
+                        <entry>当在医院或健康看护场所，注意是否有移动终端设备使用限制。RF干扰会导致医疗设备运行失常，因此可能需要关闭移动终端设备。</entry>
+                    </row>
+                    <row outputclass="tbody_row">
+                        <entry align="center"><image href="../../img/general_assets/icon4.png"
+                            /></entry>
+                        <entry>移动终端设备并不保障任何情况下都能进行有效连接，例如在移动终端设备没有话费或SIM无效。当你在紧急情况下遇见以上情况，请记住使用紧急呼叫，同时保证您的设备开机并且处于信号强度足够的区域。</entry>
+                    </row>
+                    <row outputclass="tbody_row">
+                        <entry align="center"><image href="../../img/general_assets/icon5.png"
+                            /></entry>
+                        <entry>您的移动终端设备在开机时会接收和发射射频信号。当靠近电视，收音机电脑或者其他电子设备时都会产生射频干扰。</entry>
+                    </row>
+                    <row outputclass="tbody_row">
+                        <entry align="center"><image href="../../img/general_assets/icon1.png"
+                            /></entry>
+                        <entry>请将移动终端设备远离易燃气体。当你靠近加油站，油库，化工厂或爆炸作业场所，请关闭移动终端设备。在任何有潜在爆炸危险场所操作电子设备都有安全隐患。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </conbody>
+</concept>
+

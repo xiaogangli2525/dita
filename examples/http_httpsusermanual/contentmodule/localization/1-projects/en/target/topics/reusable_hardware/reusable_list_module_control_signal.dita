@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="topic_z33_bzz_fqb">
+    <title>Module Control Signal Interface</title>
+    <body>
+        <p>The main control signals of the module include:</p>
+        <ul id="control_signal_list">
+            <li id="ap_ready">Application processor sleep state detection interface (AP_READY)</li>
+            <li id="ap_ready_tbd">Application processor sleep state detection interface (AP_READY)<sup>*</sup></li>
+            <li id="boot_mode">Forced download interface (BOOT_MODE)</li>
+            <li id="boot_mode_tbd">Forced download interface (BOOT_MODE)<sup>*</sup></li>
+            <li id="bt_en">Bluetooth enable output interface (BT_EN)</li>
+            <li id="bt_en_tbd">Bluetooth enable output interface (BT_EN)<sup>*</sup></li>
+            <li id="config">Configuration interface (CONFIG_0/1/2/3)</li>
+            <li id="config_tbd">Configuration interface (CONFIG_0/1/2/3)<sup>*</sup></li>
+            <li id="full_card_power_off">Module power on/off interface (FULL_CARD_POWER_OFF#)</li>
+            <li id="full_card_power_off_tbd">Module power on/off interface (FULL_CARD_POWER_OFF#)<sup>*</sup></li>
+            <li id="gnss_backup_en">GNSS backup power enable interface (GNSS_BACKUP_EN)</li>
+            <li id="gnss_backup_en_tbd">GNSS backup power enable interface (GNSS_BACKUP_EN)<sup>*</sup></li>
+            <li id="led_1">Network status indicator interface (LED_1#)</li>
+            <li id="led_1_tbd">Network status indicator interface (LED_1#)<sup>*</sup></li>
+            <li id="netlight">Network status indicator interface (NETLIGHT)</li>
+            <li id="netlight_tbd">Network status indicator interface (NETLIGHT)<sup>*</sup></li>
+            <li id="net_mode">Network registration indicator interface (NET_MODE)</li>
+            <li id="net_mode_tbd">Network registration indicator interface (NET_MODE)<sup>*</sup></li>
+            <li id="led_wwan">Network status indicator interface (LED_WWAN#)</li>
+            <li id="led_wwan_tbd">Network status indicator interface (LED_WWAN#)<sup>*</sup></li>
+            <li id="pm_en">Wi-Fi power enable interface (PM_EN)</li>
+            <li id="pm_en_tbd">Wi-Fi power enable interface (PM_EN)<sup>*</sup></li>
+            <li id="psm_wakeup">PSM wake-up interface (PSMEXT_INT)</li>
+            <li id="psm_wakeup_tbd">PSM wake-up interface (PSMEXT_INT)<sup>*</sup></li>
+            <li id="pwm">Pulse width modulation interface (PWM)</li>
+            <li id="pwm_tbd">Pulse width modulation interface (PWM)<sup>*</sup></li>
+            <li id="power_on_off">Module power on/off interface (PWR_ON/OFF)</li>
+            <li id="power_on_off_tbd">Module power on/off interface (PWR_ON/OFF)<sup>*</sup></li>
+            <li id="reset">Module reset interface (RESET)</li>
+            <li id="reset_tbd">Module reset interface (RESET)<sup>*</sup></li>
+            <li id="reset_pound">Module reset interface (RESET#)</li>
+            <li id="reset_pound_tbd">Module reset interface (RESET#)<sup>*</sup></li>
+            <li id="ri">Ringing status indicator interface (RI)</li>
+            <li id="ri_tbd">Ringing status indicator interface (RI)<sup>*</sup></li>
+            <li id="rst_wakeupin">Reset wake-up interface (RST_WAKUPIN)</li>
+            <li id="rst_wakeupin_tbd">Reset wake-up interface (RST_WAKUPIN)<sup>*</sup></li>
+            <li id="sleep_ind">Sleep state indicator interface (SLEEP_IND)</li>
+            <li id="sleep_ind_tbd">Sleep state indicator interface (SLEEP_IND)<sup>*</sup></li>
+            <li id="module_state">Module status indicator interface (STATE)</li>
+            <li id="module_state_tbd">Module status indicator interface (STATE)<sup>*</sup></li>
+            <li id="network_state">Network status indicator interface (STATE)</li>
+            <li id="network_state_tbd">Network status indicator interface (STATE)<sup>*</sup></li>
+            <li id="vcc_emmc_en">EMMC power enable interface (VCC_EMMC_EN)</li>
+            <li id="vcc_emmc_en_tbd">EMMC power enable interface (VCC_EMMC_EN)<sup>*</sup></li>
+            <li id="wakeupout">Module status indicator interface (WAKEUPOUT)</li>
+            <li id="wakeupout_tbd">Module status indicator interface (WAKEUPOUT)<sup>*</sup></li>
+            <li id="module_wakeup_out">Module sleep wake-up output interface (WAKEUPOUT)</li>
+            <li id="module_wakeup_out_tbd">Module sleep wake-up output interface (WAKEUPOUT)<sup>*</sup></li>
+            <li id="wakeup_out">Wake-up output interface (WAKEUP_OUT)</li>
+            <li id="wakeup_out_tbd">Wake-up output interface (WAKEUP_OUT)<sup>*</sup></li>
+            <li id="wake">Wake-up output interface (WAKE#)</li>
+            <li id="wake_tbd">Wake-up output interface (WAKE#)<sup>*</sup></li>
+            <li id="wakeupin">Module sleep wake-up input interface (WAKEUPIN)</li>
+            <li id="wakeupin_tbd">Module sleep wake-up input interface (WAKEUPIN)<sup>*</sup></li>
+            <li id="wifi_en">Wi-Fi enable output interface (WIFI_EN)</li>
+            <li id="wifi_en_tbd">Wi-Fi enable output interface (WIFI_EN)<sup>*</sup></li>
+            <li id="wifi_wake_mod">Wi-Fi wake-up module input interface (WIFI_WAKE_MOD)</li>
+            <li id="wifi_wake_mod_tbd">Wi-Fi wake-up module input interface (WIFI_WAKE_MOD)<sup>*</sup></li>
+            <li id="w_disable">Airplane mode interface (W_DISABLE)</li>
+            <li id="w_disable_tbd">Airplane mode interface (W_DISABLE)<sup>*</sup></li>
+            <li id="w_disable_pound">Airplane mode control interface (W_DISABLE#)</li>
+            <li id="w_disable_pound_tbd">Airplane mode control interface (W_DISABLE#)<sup>*</sup></li>
+            <li id="w_disable_pound1">Airplane mode control interface (W_DISABLE1#)</li>
+            <li id="w_disable_pound1_tbd">Airplane mode control interface (W_DISABLE1#)<sup>*</sup></li>
+            <li id="w_disable_pound2">Airplane mode control interface (W_DISABLE2#)</li>
+            <li id="w_disable_pound2_tbd">Airplane mode control interface (W_DISABLE2#)<sup>*</sup></li>
+            <li id="wowwan">Module wake-up peripheral interface (WOWWAN#)</li>
+            <li id="wowwan_tbd">Module wake-up peripheral interface (WOWWAN#)<sup>*</sup></li>
+        </ul>
+    </body>
+</topic>

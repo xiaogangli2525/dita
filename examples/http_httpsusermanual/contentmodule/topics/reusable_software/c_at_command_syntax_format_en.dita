@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="concept_irj_czf_brb">
+    <title>AT Command Syntax</title>
+    <conbody>
+        <p>AT command must start with "AT" or "at" , and end with a carriage return &lt;CR>; the
+            command is followed by a response with the structure
+            "&lt;CR>&lt;LF>response&lt;CR>&lt;LF>". For readability, &lt;CR>&lt;LF>are often omitted
+            with only the response contents being displayed.</p>
+        <p>The AT command implemented by China Mobile IoT module includes 3GPP TS 27.005, 3GPP TS
+            27.007, ITU-TV.25ter standard command set and China Mobile IoT customized extended
+            command set.</p>
+        <p> According to the syntax structure, AT command can be classified into three types: basic
+            syntax, S parameter syntax and extended syntax.</p>
+        <section id="section_vvs_3gg_brb">
+            <title>Basic Syntax</title>
+            <p>The command format of basic syntax is  "AT&lt;x>&lt;n>" or "AT&amp;&lt;x>&lt;n>",
+                where "&lt;x>" is the command, and "&lt;n>" the command parameter.</p>
+            <p>For example, the command "ATE&lt;n>". This command determines whether DCE needs to
+                feed back the received characters to DTE according to the value of "&lt;n>".
+                "&lt;n>" is optional, and the default value is used if the value is not
+                included.</p>
+        </section>
+        <section id="section_k3z_ygg_brb">
+            <title>S Parameter Syntax</title>
+            <p>The command format of S parameter syntax is "ATS&lt;n>=&lt;m>", where "&lt;n>" is the
+                index setting of S register, and "&lt;m>" the setting value. </p>
+        </section>
+        <section id="section_pkp_2hg_brb">
+            <title>Extended Syntax</title>
+            <p>This type of AT command has multiple operation modes.</p>
+            <table id="table_vdf_thg_brb">
+                <title>AT Command and Response Type</title>
+                <tgroup cols="3">
+                    <colspec colname="c1" colnum="1" colwidth="1*"/>
+                    <colspec colname="c2" colnum="2" colwidth="1*"/>
+                    <colspec colname="newCol3" colnum="3" colwidth="1*"/>
+                    <thead>
+                        <row>
+                            <entry>Type</entry>
+                            <entry>Command</entry>
+                            <entry>Response Description</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>Test Command</entry>
+                            <entry>AT+&lt;CMD>=?</entry>
+                            <entry>Return parameter list and parameter value range</entry>
+                        </row>
+                        <row>
+                            <entry>Read Command</entry>
+                            <entry>AT+&lt;CMD>?</entry>
+                            <entry>Return the current value of the parameter</entry>
+                        </row>
+                        <row>
+                            <entry>Set Command</entry>
+                            <entry>AT+&lt;CMD>=&lt;p1>[,&lt;p2[,&lt;p3>[…]]]</entry>
+                            <entry>Set the parameter value</entry>
+                        </row>
+                        <row>
+                            <entry>Execute Command</entry>
+                            <entry>AT+&lt;CMD></entry>
+                            <entry>Perform specific operation</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+            <p>Please note:<ul id="ul_dhj_png_brb">
+                    <li>&lt;...> It is the parameter that writes in the angle brackets, and the
+                        angle brackets are not included in the actual input;</li>
+                    <li>[...] It is the optional parameter that writes in the square brackets.</li>
+                </ul></p>
+        </section>
+    </conbody>
+</concept>
+

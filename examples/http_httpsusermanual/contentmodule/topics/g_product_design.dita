@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="topic_bwj_p3h_35b">
+    <title>产品图样</title>
+    <body>
+        <image href="../img/product_design/m5310-e_product_design.png" id="m5310-e_product_design"/>
+        <image href="../img/product_design/m5310-a_product_design.png" id="m5310-a_product_design"/>
+    </body>
+</topic>

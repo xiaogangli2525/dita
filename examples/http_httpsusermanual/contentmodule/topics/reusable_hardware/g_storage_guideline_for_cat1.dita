@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="topic_bqf_j1f_gqb">
+    <title><?oxy_comment_start author="chenpeining@cmiot.cmcc" timestamp="20220819T170043+0800" comment="文档提示：该主题为通用，维护时需注意不要随意删改。"?>存储规范<?oxy_comment_end?></title>
+    <body>
+        <p>模组为湿敏产品，湿敏等级定义为4级。</p>
+        <p>模组拆封后需注意存储条件，具体标准请参考下表。存储时长超过下表所示车间寿命，必须烘烤后再贴片。</p>
+        <table id="table_ymn_s52_ksb">
+            <title>存储条件参考表</title>
+            <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="3*" align="left"/>
+                <colspec colname="c2" colnum="2" colwidth="7*" align="left"/>
+                <thead>
+                    <row>
+                        <entry>潮湿等级</entry>
+                        <entry>车间寿命（工厂环境≤+30℃/60%RH）</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>1</entry>
+                        <entry>无限期保质，在环境≤+30℃/85% RH条件下</entry>
+                    </row>
+                    <row>
+                        <entry>2</entry>
+                        <entry>1年</entry>
+                    </row>
+                    <row>
+                        <entry>2a</entry>
+                        <entry>4周</entry>
+                    </row>
+                    <row>
+                        <entry>3</entry>
+                        <entry>168小时</entry>
+                    </row>
+                    <row>
+                        <entry>4</entry>
+                        <entry>72小时</entry>
+                    </row>
+                    <row>
+                        <entry>5</entry>
+                        <entry>48小时</entry>
+                    </row>
+                    <row>
+                        <entry>5a</entry>
+                        <entry>24小时</entry>
+                    </row>
+                    <row>
+                        <entry>6</entry>
+                        <entry>强制烘烤后使用；烘烤后的模组，必须在规定时限内完成贴片。（具体实现以标签所示为准）</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        <note id="note_h15_bv2_ksb">
+            <sl id="sl_aqp_2v2_ksb">
+                <sli>模组包装无法承受高温烘烤，烘烤前请移除模组包装；短时间的烘烤，请参照<i>IPC/JEDECJ-STD-033</i>规范执行；</sli>
+                <sli>模组存储与烘烤相关的详细标准请参考《中移物联网智能模组部通信模组贴片应用指导》。</sli>
+            </sl>
+        </note>
+    </body>
+</topic>

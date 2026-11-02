@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="product_configurations">
+    <title>产品配置表</title>
+    <shortdesc>定义各产品型号的具体参数配置，便于知识图谱构建</shortdesc>
+    <body>
+        <section id="ml307c_config">
+            <title>ML307C配置</title>
+            <p>ML307C系列产品的参数配置：</p>
+            <table>
+                <title>ML307C参数配置</title>
+                <tgroup cols="2">
+                    <colspec colname="c1" colnum="1" colwidth="3*" align="left"/>
+                    <colspec colname="c2" colnum="2" colwidth="7*" align="left"/>
+                    <thead>
+                        <row>
+                            <entry>参数类型</entry>
+                            <entry>参数值</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>产品型号</entry>
+                            <entry>ML307C, ML307G, ML307R</entry>
+                        </row>
+                        <row>
+                            <entry>产品类别</entry>
+                            <entry>LTE Cat.1模组</entry>
+                        </row>
+                        <row>
+                            <entry>封装类型</entry>
+                            <entry><ph conref="product_parameters.dita#product_parameters/package_lcc48_lga61"/></entry>
+                        </row>
+                        <row>
+                            <entry>尺寸规格</entry>
+                            <entry><ph conref="product_parameters.dita#product_parameters/dimensions_17_7x15_8x2_2"/></entry>
+                        </row>
+                        <row>
+                            <entry>重量规格</entry>
+                            <entry><ph conref="product_parameters.dita#product_parameters/weight_1_2g"/></entry>
+                        </row>
+                        <row>
+                            <entry>发射功率</entry>
+                            <entry><ph conref="product_parameters.dita#product_parameters/power_23dbm"/></entry>
+                        </row>
+                        <row>
+                            <entry>工作温度</entry>
+                            <entry><ph conref="product_parameters.dita#product_parameters/temp_normal_30_75"/></entry>
+                        </row>
+                        <row>
+                            <entry>工作电压</entry>
+                            <entry><ph conref="product_parameters.dita#product_parameters/voltage_34_45"/></entry>
+                        </row>
+                        <row>
+                            <entry>LTE-FDD频段</entry>
+                            <entry><ph conref="product_parameters.dita#product_parameters/bands_lte_fdd_basic"/></entry>
+                        </row>
+                        <row>
+                            <entry>LTE-TDD频段</entry>
+                            <entry><ph conref="product_parameters.dita#product_parameters/bands_lte_tdd_basic"/></entry>
+                        </row>
+                        <row>
+                            <entry>LTE-FDD速率</entry>
+                            <entry><ph conref="product_parameters.dita#product_parameters/rate_cat1_fdd_10_5"/></entry>
+                        </row>
+                        <row>
+                            <entry>LTE-TDD速率</entry>
+                            <entry><ph conref="product_parameters.dita#product_parameters/rate_cat1_tdd_9_3"/></entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+        
+        <section id="m5310e_config">
+            <title>M5310-E配置</title>
+            <p>M5310-E系列产品的参数配置：</p>
+            <table>
+                <title>M5310-E参数配置</title>
+                <tgroup cols="2">
+                    <colspec colname="c1" colnum="1" colwidth="3*" align="left"/>
+                    <colspec colname="c2" colnum="2" colwidth="7*" align="left"/>
+                    <thead>
+                        <row>
+                            <entry>参数类型</entry>
+                            <entry>参数值</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>产品型号</entry>
+                            <entry>M5310-E, M5311-E</entry>
+                        </row>
+                        <row>
+                            <entry>产品类别</entry>
+                            <entry>NB-IoT模组</entry>
+                        </row>
+                        <row>
+                            <entry>封装类型</entry>
+                            <entry><ph conref="product_parameters.dita#product_parameters/package_lcc_lga"/></entry>
+                        </row>
+                        <row>
+                            <entry>尺寸规格</entry>
+                            <entry><ph conref="product_parameters.dita#product_parameters/dimensions_19x18_4x2_2"/></entry>
+                        </row>
+                        <row>
+                            <entry>重量规格</entry>
+                            <entry><ph conref="product_parameters.dita#product_parameters/weight_1_5g"/></entry>
+                        </row>
+                        <row>
+                            <entry>发射功率</entry>
+                            <entry><ph conref="product_parameters.dita#product_parameters/power_23dbm"/></entry>
+                        </row>
+                        <row>
+                            <entry>工作温度</entry>
+                            <entry><ph conref="product_parameters.dita#product_parameters/temp_normal_35_75"/></entry>
+                        </row>
+                        <row>
+                            <entry>工作电压</entry>
+                            <entry><ph conref="product_parameters.dita#product_parameters/voltage_21_42"/></entry>
+                        </row>
+                        <row>
+                            <entry>NB-IoT频段</entry>
+                            <entry><ph conref="product_parameters.dita#product_parameters/bands_nb_iot_b3_b5_b8"/></entry>
+                        </row>
+                        <row>
+                            <entry>NB-IoT Single-tone速率</entry>
+                            <entry><ph conref="product_parameters.dita#product_parameters/rate_nb_iot_single_tone"/></entry>
+                        </row>
+                        <row>
+                            <entry>NB-IoT Extended TBS速率</entry>
+                            <entry><ph conref="product_parameters.dita#product_parameters/rate_nb_iot_extended_tbs"/></entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+        
+        <section id="knowledge_graph_info">
+            <title>知识图谱信息</title>
+            <p>本文件结构便于知识图谱构建：</p>
+            <ul>
+                <li><b>实体定义：</b>每个产品型号是一个实体</li>
+                <li><b>属性关系：</b>参数类型是属性，参数值是属性值</li>
+                <li><b>分类关系：</b>产品类别定义了产品分类</li>
+                <li><b>引用关系：</b>conref机制定义了参数重用关系</li>
+            </ul>
+        </section>
+    </body>
+</topic>

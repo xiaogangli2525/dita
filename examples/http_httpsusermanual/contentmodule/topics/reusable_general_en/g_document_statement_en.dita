@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="concept_e4t_hfm_5pb">
+    <title><b>Statement</b></title>
+    <conbody outputclass="bigbox">
+        <section outputclass="ds_notices">
+            <title outputclass="ds_title"><b>Notice</b></title>
+            <p>Some features and functions of the product and its accessories described in this
+                manual depend on the designs and performances of your local network or the software
+                you installed. Some features and functionality may not be available due to local
+                network operators or ISPs, or due to local network settings, or if your installed
+                software does not support it. Therefore, the descriptions in this manual may not
+                correspond exactly to the products you purchased or their accessories.</p>
+        </section>
+        <section outputclass="ds_liability">
+            <title outputclass="ds_title"><b>Limitation of Liability</b></title>
+            <p>The contents of this manual are provided "as is" and shall not provide any express or
+                implied warranties, with respect to the contents of this manual, except as may be
+                required by applicable law, including but not limited to the merchantability or
+                fitness for a particular specific purpose of the guarantee.</p>
+            <p>To the extent permitted by applicable law, China Mobile IoT Co., Ltd. shall in no
+                event be liable for any special, indirect, incidental or consequential damages
+                arising from the use of the contents of this manual and the products described in
+                this manual of any damages, nor will any profit, loss of data, goodwill or expected
+                savings be compensated.</p>
+            <p>The maximum liability (this limitation shall not apply to liability for personal
+                injury to the extent applicable law prohibits such a limitation) of China Mobile IoT
+                arising from the use of the product described in this manual shall be limited to the
+                amount paid by customers for the purchase of this product.</p>
+            <p>China Mobile IoT Co., Ltd. reserves the right to modify any information in this
+                manual, without prior notice and does not assume any responsibility.</p>
+        </section>
+        <section outputclass="ds_trademark">
+            <title outputclass="ds_title"><b>Trademark</b></title>
+            <div outputclass="ds_imgbox">
+                <image href="../../img/logo_color_en.png" id="image_xlz_tjq_vqb" scale="30"/> is the
+                registered trademark of China Mobile.</div>
+            <p>Other trademarks, product names, service names, and company names that appear in this
+                manual and in the products that are described in this manual are the property of
+                their respective owners.</p>
+        </section>
+        <section outputclass="ds_regulation">
+            <title outputclass="ds_title"><b>Import and Export Regulations</b></title>
+            <p>To export, re-export or import the products (including but not limited to the
+                software and technical data in the products) described in this manual, customers
+                shall comply with applicable import and export control laws and regulations.</p>
+        </section>
+        <section outputclass="ds_privacy">
+            <title outputclass="ds_title"><b>Privacy Protection</b></title>
+            <p>To understand how we protect your personal information, please read our privacy
+                policy.</p>
+        </section>
+        <section outputclass="ds_updatestatement">
+            <title outputclass="ds_title"><b>Operating System Upgrade</b></title>
+            <p>The operating system only supports the official upgrade. Users are responsible for
+                the security risks and losses caused by installing unofficial system by
+                themselves.</p>
+        </section>
+        <section outputclass="ds_riskstatement">
+            <title outputclass="ds_title"><b>Firmware Integrity Risk</b></title>
+            <p>The firmware only supports the official upgrade. Users are responsible for the
+                security risks and losses caused by installing unofficial firmware by
+                themselves.</p>
+        </section>
+        <section outputclass="ds_copyright">
+            <title outputclass="ds_title"><b>Copyright © China Mobile IoT Co., Ltd. All Rights
+                    Reserved.</b></title>
+            <p>No part of this manual may be reproduced, copied, or transmitted in any form or by
+                any means without prior written consent of China Mobile IoT Co., Ltd.</p>
+            <p>The products described in this manual may contain software copyrighted by China
+                Mobile IoT Co., Ltd., and its potential licensors. No one may in any manner
+                reproduce, distribute, modify, decompile, disassemble, decrypt, extract, reverse
+                engineer, lease, assign, or sublicense the said software, unless such restrictions
+                are prohibited by applicable laws or such actions are approved by respective
+                copyright holders.</p>
+        </section>
+    </conbody>
+</concept>

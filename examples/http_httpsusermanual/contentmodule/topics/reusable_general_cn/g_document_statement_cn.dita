@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="concept_e4t_hfm_5pb">
+    <title>文档声明</title>
+    <conbody outputclass="bigbox">
+        <section outputclass="ds_notices">
+            <title outputclass="ds_title">注意</title>
+            <p outputclass="ds_text">本手册描述的产品及其附件特性和功能，取决于当地网络设计或网络性能，同时也取决于用户预先安装的各种软件。由于当地网络运营商、ISP，或当地网络设置等原因，可能也会造成本手册中描述的全部或部分产品及其附件特性和功能未包含在您的购买或使用范围之内。</p>
+        </section>
+        <section outputclass="ds_liability">
+            <title outputclass="ds_title">责任限制</title>
+            <p outputclass="ds_text">除非合同另有约定，中移物联网有限公司对本文档内容不做任何明示或暗示的声明或保证，并且不对特定目的适销性及适用性或者任何间接的、特殊的或连带的损失承担任何责任。</p>
+            <p outputclass="ds_text">在适用法律允许的范围内，在任何情况下，中移物联网有限公司均不对用户因使用本手册内容和本手册中描述的产品而引起的任何特殊的、间接的、附带的或后果性的损坏、利润损失、数据丢失、声誉和预期的节省而负责。</p>
+            <p outputclass="ds_text">因使用本手册中所述的产品而引起的中移物联网有限公司对用户的最大赔偿（除在涉及⼈身伤害的情况中根据适用法律规定的损害赔偿外），不应超过用户为购买此产品而支付的金额。</p>
+            <p outputclass="ds_text">由于产品版本升级或其他原因，本文档内容会不定期进行更新。除非另有约定，本文档仅作为使用指导，本文档中的所有陈述、信息和建议不构成任何明示或暗示的担保。公司保留随时修改本手册中任何信息的权利，无需进行提前通知且不承担任何责任。</p>
+        </section>
+        <section outputclass="ds_trademark">
+            <title outputclass="ds_title">商标声明</title>
+            <div outputclass="ds_imgbox"><image href="../../img/logo_color_cn.png"
+                    id="image_xlz_tjq_vqb" scale="30"/><p outputclass="img_text">为中国移动注册商标。</p>
+            </div>
+            <p outputclass="ds_text">本手册和本手册描述的产品中出现的其他商标、产品名称、服务名称和公司名称，均为其各自所有者的财产。</p>
+        </section>
+        <section outputclass="ds_regulation">
+            <title outputclass="ds_title">进出口法规</title>
+            <p outputclass="ds_text">出口、转口或进口本手册中描述的产品（包括但不限于产品软件和技术数据），用户应遵守相关进出口法律和法规。</p>
+        </section>
+        <section outputclass="ds_privacy">
+            <title outputclass="ds_title">隐私保护</title>
+            <p outputclass="ds_text">关于我们如何保护用户的个人信息等隐私情况，请查看相关隐私政策。</p>
+        </section>
+        <section outputclass="ds_updatestatement">
+            <title outputclass="ds_title">操作系统更新声明</title>
+            <p outputclass="ds_text">操作系统仅支持官方升级；如用户自己刷非官方系统，导致安全风险和损失由用户负责。</p>
+        </section>
+        <section outputclass="ds_riskstatement">
+            <title outputclass="ds_title">固件包完整性风险声明</title>
+            <p outputclass="ds_text">固件仅支持官方升级；如用户自己刷非官方固件，导致安全风险和损失由用户负责。</p>
+        </section>
+        <section outputclass="ds_copyright">
+            <title outputclass="ds_title">版权所有©中移物联网有限公司。保留一切权利。</title>
+            <p outputclass="ds_text">本手册中描述的产品，可能包含中移物联网有限公司及其存在的许可人享有版权的软件，除非获得相关权利人的许可，否则，非经本公司书面同意，任何单位和个人不得擅自摘抄、复制本手册内容的部分或全部，并以任何形式传播。</p>
+        </section>
+    </conbody>
+</concept>

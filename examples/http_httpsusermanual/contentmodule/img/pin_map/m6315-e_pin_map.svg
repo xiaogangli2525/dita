@@ -1,0 +1,729 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- 由 Microsoft Visio, SVG Export 生成 m6315-e_引脚分配图.svg 页-1 -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ev="http://www.w3.org/2001/xml-events"
+		xmlns:v="http://schemas.microsoft.com/visio/2003/SVGExtensions/" width="11.1616in" height="15.0312in"
+		viewBox="0 0 803.638 1082.25" xml:space="preserve" color-interpolation-filters="sRGB" class="st34">
+	<v:documentProperties v:langID="2052" v:metric="true" v:viewMarkup="false">
+		<v:userDefs>
+			<v:ud v:nameU="msvConvertTheme"/>
+		</v:userDefs>
+	</v:documentProperties>
+
+	<style type="text/css">
+	<![CDATA[
+		.st1 {fill:none;stroke:#404040;stroke-width:1.5}
+		.st2 {fill:#f2dcda;stroke:none;stroke-width:0.75}
+		.st3 {fill:#000000;font-family:Aileron;font-size:0.833336em;font-weight:bold}
+		.st4 {font-size:1em}
+		.st5 {fill:#f2dcda;stroke:none;stroke-width:0.24}
+		.st6 {fill:#6fcde2;stroke:none;stroke-width:0.24}
+		.st7 {fill:#ef5964;stroke:none;stroke-width:0.24}
+		.st8 {fill:#feec97;stroke:none;stroke-width:0.24}
+		.st9 {fill:#abd25f;stroke:none;stroke-width:0.75}
+		.st10 {fill:#abd25f;stroke:none;stroke-width:0.24}
+		.st11 {fill:#e94dac;stroke:none;stroke-width:0.24}
+		.st12 {fill:#bfbfbf;stroke:none;stroke-width:0.24}
+		.st13 {fill:#9dd0a9;stroke:none;stroke-width:0.24}
+		.st14 {fill:#0085d0;stroke:none;stroke-width:0.24}
+		.st15 {fill:#0085d0;stroke:none;stroke-width:0.75}
+		.st16 {fill:#6a919a;stroke:none;stroke-width:0.24}
+		.st17 {fill:#ef5964;stroke:none;stroke-width:0.75}
+		.st18 {fill:#6a919a;stroke:none;stroke-width:0.25}
+		.st19 {fill:#000000;font-family:Aileron;font-size:1.16666em;font-weight:bold}
+		.st20 {fill:#ef5964;stroke:none;stroke-width:0.25}
+		.st21 {fill:#bfbfbf;stroke:none;stroke-width:0.25}
+		.st22 {fill:none;stroke:none;stroke-width:1}
+		.st23 {fill:#404040;font-family:Microsoft YaHei UI;font-size:1.99999em;font-weight:bold}
+		.st24 {fill:#9dd0a9;stroke:none;stroke-width:0.25}
+		.st25 {fill:#abd25f;stroke:none;stroke-width:0.25}
+		.st26 {fill:#feec97;stroke:none;stroke-width:0.25}
+		.st27 {fill:#e94dac;stroke:none;stroke-width:0.25}
+		.st28 {fill:#6fcde2;stroke:none;stroke-width:0.25}
+		.st29 {fill:#0085d0;stroke:none;stroke-width:0.25}
+		.st30 {fill:#f2dcda;stroke:none;stroke-width:0.25}
+		.st31 {visibility:visible}
+		.st32 {fill:none;filter:url(#filter_2);stroke:#5b9bd5;stroke-dasharray:7,5;stroke-opacity:0.22}
+		.st33 {fill:none;stroke:#404040;stroke-dasharray:7,5;stroke-width:1}
+		.st34 {fill:none;fill-rule:evenodd;font-size:12px;overflow:visible;stroke-linecap:square;stroke-miterlimit:3}
+	]]>
+	</style>
+
+	<defs id="Filters">
+		<filter id="filter_2">
+			<feGaussianBlur stdDeviation="2"/>
+		</filter>
+	</defs>
+	<g v:mID="0" v:index="1" v:groupContext="foregroundPage">
+		<title>页-1</title>
+		<v:pageProperties v:drawingScale="0.0393701" v:pageScale="0.0393701" v:drawingUnits="24" v:shadowOffsetX="8.50394"
+				v:shadowOffsetY="-8.50394"/>
+		<g id="shape1-1" v:mID="1" v:groupContext="shape" transform="translate(43.4252,-279.229)">
+			<title>矩形.1</title>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+			</v:userDefs>
+			<rect x="0" y="311.847" width="716.889" height="770.403" class="st1"/>
+		</g>
+		<g id="shape2-3" v:mID="2" v:groupContext="shape" transform="translate(44.4815,-952.38)">
+			<title>矩形.82</title>
+			<desc>1 AGND</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="48.189" cy="1064.51" width="96.38" height="35.4696"/>
+			<rect x="0" y="1046.78" width="96.378" height="35.4696" class="st2"/>
+			<text x="4" y="1061.51" class="st3" v:langID="2052"><v:paragraph/><v:tabList/>1<v:newlineChar/><tspan x="4" dy="1.2em"
+						class="st4">AGND</tspan></text>		</g>
+		<g id="shape3-7" v:mID="3" v:groupContext="shape" transform="translate(44.4815,-901.356)">
+			<title>矩形.83</title>
+			<desc>2 SPK2_P</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="48.189" cy="1064.51" width="96.38" height="35.4696"/>
+			<rect x="0" y="1046.78" width="96.378" height="35.4696" class="st2"/>
+			<text x="4" y="1061.51" class="st3" v:langID="2052"><v:paragraph/><v:tabList/>2<v:newlineChar/><tspan x="4" dy="1.2em"
+						class="st4">SPK</tspan>2_P</text>		</g>
+		<g id="shape4-11" v:mID="4" v:groupContext="shape" transform="translate(44.4815,-850.332)">
+			<title>矩形.91</title>
+			<desc>3 MIC_P</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="48.189" cy="1064.51" width="96.38" height="35.4696"/>
+			<rect x="0" y="1046.78" width="96.378" height="35.4696" class="st2"/>
+			<text x="4" y="1061.51" class="st3" v:langID="2052"><v:paragraph/><v:tabList/>3<v:newlineChar/><tspan x="4" dy="1.2em"
+						class="st4">MIC</tspan>_P</text>		</g>
+		<g id="shape5-15" v:mID="5" v:groupContext="shape" transform="translate(44.4815,-799.999)">
+			<title>矩形.92</title>
+			<desc>4 MIC_N</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="48.189" cy="1064.51" width="96.38" height="35.4696"/>
+			<rect x="0" y="1046.78" width="96.378" height="35.4696" class="st2"/>
+			<text x="4" y="1061.51" class="st3" v:langID="2052"><v:paragraph/><v:tabList/>4<v:newlineChar/><tspan x="4" dy="1.2em"
+						class="st4">MIC</tspan>_N</text>		</g>
+		<g id="shape6-19" v:mID="6" v:groupContext="shape" transform="translate(44.4815,-748.975)">
+			<title>矩形.93</title>
+			<desc>5 SPK1_P</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="48.189" cy="1064.51" width="96.38" height="35.4696"/>
+			<rect x="0" y="1046.78" width="96.378" height="35.4696" class="st5"/>
+			<text x="4" y="1061.51" class="st3" v:langID="2052"><v:paragraph/><v:tabList/>5<v:newlineChar/><tspan x="4" dy="1.2em"
+						class="st4">SPK</tspan>1_P</text>		</g>
+		<g id="shape7-23" v:mID="7" v:groupContext="shape" transform="translate(44.4815,-697.952)">
+			<title>矩形.94</title>
+			<desc>6 SPK1_N</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="48.189" cy="1064.51" width="96.38" height="35.4696"/>
+			<rect x="0" y="1046.78" width="96.378" height="35.4696" class="st5"/>
+			<text x="4" y="1061.51" class="st3" v:langID="2052"><v:paragraph/><v:tabList/>6<v:newlineChar/><tspan x="4" dy="1.2em"
+						class="st4">SPK</tspan>1_N</text>		</g>
+		<g id="shape8-27" v:mID="8" v:groupContext="shape" transform="translate(44.4815,-647.619)">
+			<title>矩形.95</title>
+			<desc>7 PWRKEY</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="48.189" cy="1064.51" width="96.38" height="35.4696"/>
+			<rect x="0" y="1046.78" width="96.378" height="35.4696" class="st6"/>
+			<text x="4" y="1061.51" class="st3" v:langID="2052"><v:paragraph/><v:tabList/>7<v:newlineChar/><tspan x="4" dy="1.2em"
+						class="st4">PWRKEY</tspan></text>		</g>
+		<g id="shape9-31" v:mID="9" v:groupContext="shape" transform="translate(44.4815,-596.595)">
+			<title>矩形.96</title>
+			<desc>8 AVDD</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="48.189" cy="1064.51" width="96.38" height="35.4696"/>
+			<rect x="0" y="1046.78" width="96.378" height="35.4696" class="st7"/>
+			<text x="4" y="1061.51" class="st3" v:langID="2052"><v:paragraph/><v:tabList/>8<v:newlineChar/><tspan x="4" dy="1.2em"
+						class="st4">AVDD</tspan></text>		</g>
+		<g id="shape10-35" v:mID="10" v:groupContext="shape" transform="translate(44.4815,-545.571)">
+			<title>矩形.97</title>
+			<desc>9 ADC0</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="48.189" cy="1064.51" width="96.38" height="35.4696"/>
+			<rect x="0" y="1046.78" width="96.378" height="35.4696" class="st8"/>
+			<text x="4" y="1061.51" class="st3" v:langID="2052"><v:paragraph/><v:tabList/>9<v:newlineChar/><tspan x="4" dy="1.2em"
+						class="st4">ADC</tspan>0</text>		</g>
+		<g id="shape11-39" v:mID="11" v:groupContext="shape" transform="translate(44.4815,-495.238)">
+			<title>矩形.98</title>
+			<desc>10 SIM_GND</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="48.189" cy="1064.51" width="96.38" height="35.4696"/>
+			<rect x="0" y="1046.78" width="96.378" height="35.4696" class="st9"/>
+			<text x="4" y="1061.51" class="st3" v:langID="2052"><v:paragraph/><v:tabList/>10<v:newlineChar/><tspan x="4" dy="1.2em"
+						class="st4">SIM</tspan>_GND</text>		</g>
+		<g id="shape12-43" v:mID="12" v:groupContext="shape" transform="translate(44.4815,-444.214)">
+			<title>矩形.99</title>
+			<desc>11 SIM_DATA</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="48.189" cy="1064.51" width="96.38" height="35.4696"/>
+			<rect x="0" y="1046.78" width="96.378" height="35.4696" class="st10"/>
+			<text x="4" y="1061.51" class="st3" v:langID="2052"><v:paragraph/><v:tabList/>11<v:newlineChar/><tspan x="4" dy="1.2em"
+						class="st4">SIM</tspan>_DATA</text>		</g>
+		<g id="shape13-47" v:mID="13" v:groupContext="shape" transform="translate(44.4815,-393.191)">
+			<title>矩形.100</title>
+			<desc>12 SIM_RST</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="48.189" cy="1064.51" width="96.38" height="35.4696"/>
+			<rect x="0" y="1046.78" width="96.378" height="35.4696" class="st9"/>
+			<text x="4" y="1061.51" class="st3" v:langID="2052"><v:paragraph/><v:tabList/>12<v:newlineChar/><tspan x="4" dy="1.2em"
+						class="st4">SIM</tspan>_RST</text>		</g>
+		<g id="shape14-51" v:mID="14" v:groupContext="shape" transform="translate(44.4815,-342.24)">
+			<title>矩形.101</title>
+			<desc>13 SIM_CLK</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="48.189" cy="1064.51" width="96.38" height="35.4696"/>
+			<rect x="0" y="1046.78" width="96.378" height="35.4696" class="st9"/>
+			<text x="4" y="1061.51" class="st3" v:langID="2052"><v:paragraph/><v:tabList/>13<v:newlineChar/><tspan x="4" dy="1.2em"
+						class="st4">SIM</tspan>_CLK</text>		</g>
+		<g id="shape17-55" v:mID="17" v:groupContext="shape" transform="translate(662.6,-952.38)">
+			<title>矩形.105</title>
+			<desc>35 RF_ANT</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="48.189" cy="1064.51" width="96.38" height="35.4696"/>
+			<rect x="0" y="1046.78" width="96.378" height="35.4696" class="st11"/>
+			<text x="4" y="1061.51" class="st3" v:langID="2052"><v:paragraph/><v:tabList/>35<v:newlineChar/><tspan x="4" dy="1.2em"
+						class="st4">RF</tspan>_ANT</text>		</g>
+		<g id="shape18-59" v:mID="18" v:groupContext="shape" transform="translate(662.6,-901.356)">
+			<title>矩形.106</title>
+			<desc>34 GND</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="48.189" cy="1064.51" width="96.38" height="35.4696"/>
+			<rect x="0" y="1046.78" width="96.378" height="35.4696" class="st12"/>
+			<text x="4" y="1061.51" class="st3" v:langID="2052"><v:paragraph/><v:tabList/>34<v:newlineChar/><tspan x="4" dy="1.2em"
+						class="st4">GND</tspan></text>		</g>
+		<g id="shape19-63" v:mID="19" v:groupContext="shape" transform="translate(662.6,-850.332)">
+			<title>矩形.107</title>
+			<desc>33 GPIO3</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="48.189" cy="1064.51" width="96.38" height="35.4696"/>
+			<rect x="0" y="1046.78" width="96.378" height="35.4696" class="st13"/>
+			<text x="4" y="1061.51" class="st3" v:langID="2052"><v:paragraph/><v:tabList/>33<v:newlineChar/><tspan x="4" dy="1.2em"
+						class="st4">GPIO</tspan>3</text>		</g>
+		<g id="shape20-67" v:mID="20" v:groupContext="shape" transform="translate(662.6,-799.999)">
+			<title>矩形.108</title>
+			<desc>32 GPIO2</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="48.189" cy="1064.51" width="96.38" height="35.4696"/>
+			<rect x="0" y="1046.78" width="96.378" height="35.4696" class="st13"/>
+			<text x="4" y="1061.51" class="st3" v:langID="2052"><v:paragraph/><v:tabList/>32<v:newlineChar/><tspan x="4" dy="1.2em"
+						class="st4">GPIO</tspan>2</text>		</g>
+		<g id="shape21-71" v:mID="21" v:groupContext="shape" transform="translate(662.6,-748.975)">
+			<title>矩形.109</title>
+			<desc>31 GPIO1</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="48.189" cy="1064.51" width="96.38" height="35.4696"/>
+			<rect x="0" y="1046.78" width="96.378" height="35.4696" class="st13"/>
+			<text x="4" y="1061.51" class="st3" v:langID="2052"><v:paragraph/><v:tabList/>31<v:newlineChar/><tspan x="4" dy="1.2em"
+						class="st4">GPIO</tspan>1</text>		</g>
+		<g id="shape22-75" v:mID="22" v:groupContext="shape" transform="translate(662.6,-697.952)">
+			<title>矩形.110</title>
+			<desc>30 GPIO0</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="48.189" cy="1064.51" width="96.38" height="35.4696"/>
+			<rect x="0" y="1046.78" width="96.378" height="35.4696" class="st13"/>
+			<text x="4" y="1061.51" class="st3" v:langID="2052"><v:paragraph/><v:tabList/>30<v:newlineChar/><tspan x="4" dy="1.2em"
+						class="st4">GPIO</tspan>0</text>		</g>
+		<g id="shape23-79" v:mID="23" v:groupContext="shape" transform="translate(662.6,-647.619)">
+			<title>矩形.111</title>
+			<desc>29 TXD_AUX</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="48.189" cy="1064.51" width="96.38" height="35.4696"/>
+			<rect x="0" y="1046.78" width="96.378" height="35.4696" class="st14"/>
+			<text x="4" y="1061.51" class="st3" v:langID="2052"><v:paragraph/><v:tabList/>29<v:newlineChar/><tspan x="4" dy="1.2em"
+						class="st4">TXD</tspan>_AUX</text>		</g>
+		<g id="shape24-83" v:mID="24" v:groupContext="shape" transform="translate(662.6,-596.595)">
+			<title>矩形.112</title>
+			<desc>28 RXD_AUX</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="48.189" cy="1064.51" width="96.38" height="35.4696"/>
+			<rect x="0" y="1046.78" width="96.378" height="35.4696" class="st15"/>
+			<text x="4" y="1061.51" class="st3" v:langID="2052"><v:paragraph/><v:tabList/>28<v:newlineChar/><tspan x="4" dy="1.2em"
+						class="st4">RXD</tspan>_AUX</text>		</g>
+		<g id="shape25-87" v:mID="25" v:groupContext="shape" transform="translate(662.6,-545.571)">
+			<title>矩形.113</title>
+			<desc>27 GND</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="48.189" cy="1064.51" width="96.38" height="35.4696"/>
+			<rect x="0" y="1046.78" width="96.378" height="35.4696" class="st12"/>
+			<text x="4" y="1061.51" class="st3" v:langID="2052"><v:paragraph/><v:tabList/>27<v:newlineChar/><tspan x="4" dy="1.2em"
+						class="st4">GND</tspan></text>		</g>
+		<g id="shape26-91" v:mID="26" v:groupContext="shape" transform="translate(662.6,-495.238)">
+			<title>矩形.114</title>
+			<desc>26 RESERVED</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="48.189" cy="1064.51" width="96.38" height="35.4696"/>
+			<rect x="0" y="1046.78" width="96.378" height="35.4696" class="st16"/>
+			<text x="4" y="1061.51" class="st3" v:langID="2052"><v:paragraph/><v:tabList/>26<v:newlineChar/><tspan x="4" dy="1.2em"
+						class="st4">RESERVED</tspan></text>		</g>
+		<g id="shape27-95" v:mID="27" v:groupContext="shape" transform="translate(662.6,-444.214)">
+			<title>矩形.115</title>
+			<desc>25 RFTXMON</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="48.189" cy="1064.51" width="96.38" height="35.4696"/>
+			<rect x="0" y="1046.78" width="96.378" height="35.4696" class="st6"/>
+			<text x="4" y="1061.51" class="st3" v:langID="2052"><v:paragraph/><v:tabList/>25<v:newlineChar/><tspan x="4" dy="1.2em"
+						class="st4">RFTXMON</tspan></text>		</g>
+		<g id="shape28-99" v:mID="28" v:groupContext="shape" transform="translate(662.6,-393.191)">
+			<title>矩形.116</title>
+			<desc>24 VDD_EXT</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="48.189" cy="1064.51" width="96.38" height="35.4696"/>
+			<rect x="0" y="1046.78" width="96.378" height="35.4696" class="st7"/>
+			<text x="4" y="1061.51" class="st3" v:langID="2052"><v:paragraph/><v:tabList/>24<v:newlineChar/><tspan x="4" dy="1.2em"
+						class="st4">VDD</tspan>_EXT</text>		</g>
+		<g id="shape29-103" v:mID="29" v:groupContext="shape" transform="translate(662.6,-342.24)">
+			<title>矩形.117</title>
+			<desc>23 RTS</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="48.189" cy="1064.51" width="96.38" height="35.4696"/>
+			<rect x="0" y="1046.78" width="96.378" height="35.4696" class="st15"/>
+			<text x="4" y="1061.51" class="st3" v:langID="2052"><v:paragraph/><v:tabList/>23<v:newlineChar/><tspan x="4" dy="1.2em"
+						class="st4">RTS</tspan></text>		</g>
+		<g id="shape32-107" v:mID="32" v:groupContext="shape" transform="translate(-866.354,129.941) rotate(-90)">
+			<title>矩形.121</title>
+			<desc>44 VRTC</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="48.189" cy="1064.51" width="96.38" height="35.4696"/>
+			<rect x="0" y="1046.78" width="96.378" height="35.4696" class="st7"/>
+			<text x="4" y="1061.51" class="st3" v:langID="2052"><v:paragraph/><v:tabList/>44<v:newlineChar/><tspan x="4" dy="1.2em"
+						class="st4">VRTC</tspan></text>		</g>
+		<g id="shape33-111" v:mID="33" v:groupContext="shape" transform="translate(-815.33,129.941) rotate(-90)">
+			<title>矩形.122</title>
+			<desc>43 VBAT</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="48.189" cy="1064.51" width="96.38" height="35.4696"/>
+			<rect x="0" y="1046.78" width="96.378" height="35.4696" class="st7"/>
+			<text x="4" y="1061.51" class="st3" v:langID="2052"><v:paragraph/><v:tabList/>43<v:newlineChar/><tspan x="4" dy="1.2em"
+						class="st4">VBAT</tspan></text>		</g>
+		<g id="shape34-115" v:mID="34" v:groupContext="shape" transform="translate(-764.306,129.941) rotate(-90)">
+			<title>矩形.123</title>
+			<desc>42 VBAT</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="48.189" cy="1064.51" width="96.38" height="35.4696"/>
+			<rect x="0" y="1046.78" width="96.378" height="35.4696" class="st17"/>
+			<text x="4" y="1061.51" class="st3" v:langID="2052"><v:paragraph/><v:tabList/>42<v:newlineChar/><tspan x="4" dy="1.2em"
+						class="st4">VBAT</tspan></text>		</g>
+		<g id="shape35-119" v:mID="35" v:groupContext="shape" transform="translate(-713.973,129.941) rotate(-90)">
+			<title>矩形.124</title>
+			<desc>41 GND</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="48.189" cy="1064.51" width="96.38" height="35.4696"/>
+			<rect x="0" y="1046.78" width="96.378" height="35.4696" class="st12"/>
+			<text x="4" y="1061.51" class="st3" v:langID="2052"><v:paragraph/><v:tabList/>41<v:newlineChar/><tspan x="4" dy="1.2em"
+						class="st4">GND</tspan></text>		</g>
+		<g id="shape36-123" v:mID="36" v:groupContext="shape" transform="translate(-662.949,129.941) rotate(-90)">
+			<title>矩形.125</title>
+			<desc>40 GND</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="48.189" cy="1064.51" width="96.38" height="35.4696"/>
+			<rect x="0" y="1046.78" width="96.378" height="35.4696" class="st12"/>
+			<text x="4" y="1061.51" class="st3" v:langID="2052"><v:paragraph/><v:tabList/>40<v:newlineChar/><tspan x="4" dy="1.2em"
+						class="st4">GND</tspan></text>		</g>
+		<g id="shape37-127" v:mID="37" v:groupContext="shape" transform="translate(-611.926,129.941) rotate(-90)">
+			<title>矩形.126</title>
+			<desc>39 DBG_TXD</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="48.189" cy="1064.51" width="96.38" height="35.4696"/>
+			<rect x="0" y="1046.78" width="96.378" height="35.4696" class="st14"/>
+			<text x="4" y="1061.51" class="st3" v:langID="2052"><v:paragraph/><v:tabList/>39<v:newlineChar/><tspan x="4" dy="1.2em"
+						class="st4">DBG</tspan>_TXD</text>		</g>
+		<g id="shape38-131" v:mID="38" v:groupContext="shape" transform="translate(-561.593,129.941) rotate(-90)">
+			<title>矩形.127</title>
+			<desc>38 DBG_RXD</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="48.189" cy="1064.51" width="96.38" height="35.4696"/>
+			<rect x="0" y="1046.78" width="96.378" height="35.4696" class="st14"/>
+			<text x="4" y="1061.51" class="st3" v:langID="2052"><v:paragraph/><v:tabList/>38<v:newlineChar/><tspan x="4" dy="1.2em"
+						class="st4">DBG</tspan>_RXD</text>		</g>
+		<g id="shape39-135" v:mID="39" v:groupContext="shape" transform="translate(-510.569,129.941) rotate(-90)">
+			<title>矩形.128</title>
+			<desc>37 GND</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="48.189" cy="1064.51" width="96.38" height="35.4696"/>
+			<rect x="0" y="1046.78" width="96.378" height="35.4696" class="st12"/>
+			<text x="4" y="1061.51" class="st3" v:langID="2052"><v:paragraph/><v:tabList/>37<v:newlineChar/><tspan x="4" dy="1.2em"
+						class="st4">GND</tspan></text>		</g>
+		<g id="shape40-139" v:mID="40" v:groupContext="shape" transform="translate(-459.545,129.941) rotate(-90)">
+			<title>矩形.129</title>
+			<desc>36 GND</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="48.189" cy="1064.51" width="96.38" height="35.4696"/>
+			<rect x="0" y="1046.78" width="96.378" height="35.4696" class="st12"/>
+			<text x="4" y="1061.51" class="st3" v:langID="2052"><v:paragraph/><v:tabList/>36<v:newlineChar/><tspan x="4" dy="1.2em"
+						class="st4">GND</tspan></text>		</g>
+		<g id="shape44-143" v:mID="44" v:groupContext="shape" transform="translate(-869.188,801.965) rotate(-90)">
+			<title>矩形.133</title>
+			<desc>14 SIM_VDD</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="48.189" cy="1064.51" width="96.38" height="35.4696"/>
+			<rect x="0" y="1046.78" width="96.378" height="35.4696" class="st10"/>
+			<text x="4" y="1061.51" class="st3" v:langID="2052"><v:paragraph/><v:tabList/>14<v:newlineChar/><tspan x="4" dy="1.2em"
+						class="st4">SIM</tspan>_VDD</text>		</g>
+		<g id="shape45-147" v:mID="45" v:groupContext="shape" transform="translate(-818.165,801.965) rotate(-90)">
+			<title>矩形.134</title>
+			<desc>15 RESERVED</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="48.189" cy="1064.51" width="96.38" height="35.4696"/>
+			<rect x="0" y="1046.78" width="96.378" height="35.4696" class="st16"/>
+			<text x="4" y="1061.51" class="st3" v:langID="2052"><v:paragraph/><v:tabList/>15<v:newlineChar/><tspan x="4" dy="1.2em"
+						class="st4">RESERVED</tspan></text>		</g>
+		<g id="shape46-151" v:mID="46" v:groupContext="shape" transform="translate(-767.141,801.965) rotate(-90)">
+			<title>矩形.135</title>
+			<desc>16 NETLIGHT</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="48.189" cy="1064.51" width="96.38" height="35.4696"/>
+			<rect x="0" y="1046.78" width="96.378" height="35.4696" class="st6"/>
+			<text x="4" y="1061.51" class="st3" v:langID="2052"><v:paragraph/><v:tabList/>16<v:newlineChar/><tspan x="4" dy="1.2em"
+						class="st4">NETLIGHT</tspan></text>		</g>
+		<g id="shape47-155" v:mID="47" v:groupContext="shape" transform="translate(-716.808,801.965) rotate(-90)">
+			<title>矩形.136</title>
+			<desc>17 RXD</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="48.189" cy="1064.51" width="96.38" height="35.4696"/>
+			<rect x="0" y="1046.78" width="96.378" height="35.4696" class="st14"/>
+			<text x="4" y="1061.51" class="st3" v:langID="2052"><v:paragraph/><v:tabList/>17<v:newlineChar/><tspan x="4" dy="1.2em"
+						class="st4">RXD</tspan></text>		</g>
+		<g id="shape48-159" v:mID="48" v:groupContext="shape" transform="translate(-665.784,801.965) rotate(-90)">
+			<title>矩形.137</title>
+			<desc>18 TXD</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="48.189" cy="1064.51" width="96.38" height="35.4696"/>
+			<rect x="0" y="1046.78" width="96.378" height="35.4696" class="st14"/>
+			<text x="4" y="1061.51" class="st3" v:langID="2052"><v:paragraph/><v:tabList/>18<v:newlineChar/><tspan x="4" dy="1.2em"
+						class="st4">TXD</tspan></text>		</g>
+		<g id="shape49-163" v:mID="49" v:groupContext="shape" transform="translate(-614.76,801.965) rotate(-90)">
+			<title>矩形.138</title>
+			<desc>19 DTR</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="48.189" cy="1064.51" width="96.38" height="35.4696"/>
+			<rect x="0" y="1046.78" width="96.378" height="35.4696" class="st14"/>
+			<text x="4" y="1061.51" class="st3" v:langID="2052"><v:paragraph/><v:tabList/>19<v:newlineChar/><tspan x="4" dy="1.2em"
+						class="st4">DTR</tspan></text>		</g>
+		<g id="shape50-167" v:mID="50" v:groupContext="shape" transform="translate(-564.427,801.965) rotate(-90)">
+			<title>矩形.139</title>
+			<desc>20 RI</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="48.189" cy="1064.51" width="96.38" height="35.4696"/>
+			<rect x="0" y="1046.78" width="96.378" height="35.4696" class="st15"/>
+			<text x="4" y="1061.51" class="st3" v:langID="2052"><v:paragraph/><v:tabList/>20<v:newlineChar/><tspan x="4" dy="1.2em"
+						class="st4">RI</tspan></text>		</g>
+		<g id="shape51-171" v:mID="51" v:groupContext="shape" transform="translate(-513.404,801.965) rotate(-90)">
+			<title>矩形.140</title>
+			<desc>21 DCD</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="48.189" cy="1064.51" width="96.38" height="35.4696"/>
+			<rect x="0" y="1046.78" width="96.378" height="35.4696" class="st15"/>
+			<text x="4" y="1061.51" class="st3" v:langID="2052"><v:paragraph/><v:tabList/>21<v:newlineChar/><tspan x="4" dy="1.2em"
+						class="st4">DCD</tspan></text>		</g>
+		<g id="shape52-175" v:mID="52" v:groupContext="shape" transform="translate(-462.38,801.965) rotate(-90)">
+			<title>矩形.141</title>
+			<desc>22 CTS</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="48.189" cy="1064.51" width="96.38" height="35.4696"/>
+			<rect x="0" y="1046.78" width="96.378" height="35.4696" class="st15"/>
+			<text x="4" y="1061.51" class="st3" v:langID="2052"><v:paragraph/><v:tabList/>22<v:newlineChar/><tspan x="4" dy="1.2em"
+						class="st4">CTS</tspan></text>		</g>
+		<g id="shape70-179" v:mID="70" v:groupContext="shape" transform="translate(20.0363,-172.008)">
+			<title>框.703</title>
+			<desc>RESERVED</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="80.1758" cy="1058.89" width="160.36" height="46.7279"/>
+			<rect x="0" y="1035.52" width="160.352" height="46.7279" class="st18"/>
+			<text x="46.38" y="1063.09" class="st19" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>RESERVED</text>		</g>
+		<g id="shape71-182" v:mID="71" v:groupContext="shape" transform="translate(629.446,-172.008)">
+			<title>框.704</title>
+			<desc>POWER</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="80.1758" cy="1058.89" width="160.36" height="46.7279"/>
+			<rect x="0" y="1035.52" width="160.352" height="46.7279" class="st20"/>
+			<text x="56.15" y="1063.09" class="st19" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>POWER</text>		</g>
+		<g id="shape72-185" v:mID="72" v:groupContext="shape" transform="translate(223.173,-172.008)">
+			<title>框.706</title>
+			<desc>GND</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="80.1758" cy="1058.89" width="160.36" height="46.7279"/>
+			<rect x="0" y="1035.52" width="160.352" height="46.7279" class="st21"/>
+			<text x="65.5" y="1063.09" class="st19" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>GND</text>		</g>
+		<g id="shape73-188" v:mID="73" v:groupContext="shape" transform="translate(18.2913,-224.749)">
+			<title>框.1656</title>
+			<desc>图例</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="66.8131" cy="1060.87" width="133.63" height="42.7604"/>
+			<rect x="0" y="1039.49" width="133.626" height="42.7604" class="st22"/>
+			<text x="4" y="1068.13" class="st23" v:langID="2052"><v:paragraph/><v:tabList/>图例</text>		</g>
+		<g id="shape74-191" v:mID="74" v:groupContext="shape" transform="translate(20.3015,-36.205)">
+			<title>框.1657</title>
+			<desc>GPIO</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="80.1758" cy="1058.89" width="160.36" height="46.7279"/>
+			<rect x="0" y="1035.52" width="160.352" height="46.7279" class="st24"/>
+			<text x="64.29" y="1063.09" class="st19" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>GPIO</text>		</g>
+		<g id="shape75-194" v:mID="75" v:groupContext="shape" transform="translate(20.0363,-104.106)">
+			<title>框.711</title>
+			<desc>USIM</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="80.1758" cy="1058.89" width="160.36" height="46.7279"/>
+			<rect x="0" y="1035.52" width="160.352" height="46.7279" class="st25"/>
+			<text x="63.69" y="1063.09" class="st19" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>USIM</text>		</g>
+		<g id="shape76-197" v:mID="76" v:groupContext="shape" transform="translate(223.173,-36.205)">
+			<title>框.712</title>
+			<desc>ADC</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="80.1758" cy="1058.89" width="160.36" height="46.7279"/>
+			<rect x="0" y="1035.52" width="160.352" height="46.7279" class="st26"/>
+			<text x="66.1" y="1063.09" class="st19" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>ADC</text>		</g>
+		<g id="shape77-200" v:mID="77" v:groupContext="shape" transform="translate(629.446,-104.106)">
+			<title>框.713</title>
+			<desc>RF</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="80.1758" cy="1058.89" width="160.36" height="46.7279"/>
+			<rect x="0" y="1035.52" width="160.352" height="46.7279" class="st27"/>
+			<text x="72.02" y="1063.09" class="st19" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>RF</text>		</g>
+		<g id="shape78-203" v:mID="78" v:groupContext="shape" transform="translate(426.309,-104.106)">
+			<title>框.716</title>
+			<desc>CONTROL</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="80.1758" cy="1058.89" width="160.36" height="46.7279"/>
+			<rect x="0" y="1035.52" width="160.352" height="46.7279" class="st28"/>
+			<text x="47.89" y="1063.09" class="st19" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>CONTROL</text>		</g>
+		<g id="shape79-206" v:mID="79" v:groupContext="shape" transform="translate(223.173,-104.106)">
+			<title>框.717</title>
+			<desc>UART</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="80.1758" cy="1058.89" width="160.36" height="46.7279"/>
+			<rect x="0" y="1035.52" width="160.352" height="46.7279" class="st29"/>
+			<text x="62.63" y="1063.09" class="st19" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>UART</text>		</g>
+		<g id="shape80-209" v:mID="80" v:groupContext="shape" transform="translate(426.574,-172.008)">
+			<title>框.719</title>
+			<desc>AUDIO</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="msvThemeColors" v:val="VT0(254):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="80.1758" cy="1058.89" width="160.36" height="46.7279"/>
+			<rect x="0" y="1035.52" width="160.352" height="46.7279" class="st30"/>
+			<text x="59.33" y="1063.09" class="st19" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>AUDIO</text>		</g>
+		<g id="shape81-212" v:mID="81" v:groupContext="shape" transform="translate(1,-2.47277)">
+			<title>矩形</title>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+			</v:userDefs>
+			<g id="shadow81-213" v:groupContext="shadow" v:shadowOffsetX="0.3456" v:shadowOffsetY="-1.9728" v:shadowType="1"
+					transform="matrix(1,0,0,1,0.3456,1.9728)" class="st31">
+				<path d="M0 1082.25 L801.64 1082.25 L801.64 3.47 L0 3.47 L0 1082.25 Z" class="st32"/>
+			</g>
+			<path d="M0 1082.25 L801.64 1082.25 L801.64 3.47 L0 3.47 L0 1082.25 Z" class="st33"/>
+		</g>
+	</g>
+</svg>

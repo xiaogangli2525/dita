@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="concept_y5r_wg4_qqb">
+    <title><?oxy_comment_start author="zhouziwei" timestamp="20220921T101600+0800" comment="文档提示：该主题文件为所有型号共用，维护时请注意不要随意删改。"?><?oxy_comment_start author="zhouziwei@cmiot.cmcc" timestamp="20230602T150742+0800" comment="【复用说明】适用于M、U系列模组产品。" mid="1"?><?oxy_comment_start author="zhouziwei@cmiot.cmcc" timestamp="20240320T204209+0800" comment="【ML307M编写提示】该文件为已发布手册引用内容，请勿编辑。如内容不可直接复用，请添加评论批注告知文档工程师完成拆分。" mid="2"?>数据透传模式<?oxy_comment_end?><?oxy_comment_end mid="1"?><?oxy_comment_end mid="2"?></title>
+    <conbody>
+        <p>透传模式时，串口输入的数据会自动转发到远程服务器，模块接收到TCP/UDP数据将直接通过串口输出，此时AT命令无效。</p>
+        <msgblock id="msgblock_yph_j3p_zsb">直接建立透传模式连接：
+<cmdname>AT+MIPOPEN=0,"TCP","www.6gforce.com",2012,,1</cmdname>   //以透传模式建立一路TCP连接
+OK
+CONNECT   //进入透传模式
+<cmdname>+++</cmdname>   //退出透传模式
+OK
+修改连接模式：
+<cmdname>AT+MIPOPEN=0,"TCP","www.6gforce.com",2012,,0</cmdname>   //以普通模式建立一路TCP连接
+OK
++MIPOPEN: 0,0   //建立连接成功
+<cmdname>AT+MIPMODE=0,1</cmdname>   //connect_id为0的连接模式修改为透传模式
+OK
+<cmdname>+++</cmdname>   //退出透传模式
+OK</msgblock>
+    </conbody>
+</concept>

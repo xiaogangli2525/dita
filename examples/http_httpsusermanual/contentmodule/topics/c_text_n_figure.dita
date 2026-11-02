@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="concept_y5r_wg4_qqb">
+    <title>图文排版内容模板</title>
+    <shortdesc>这一个示例文件来自PCB设计指导手册。</shortdesc>
+    <conbody>
+        <ul id="ul_pxf_1pp_qqb">
+        <li>微带线模型阻抗计算</li>
+      </ul>
+          <p>微带线时建议采用共面波导结构来计算阻抗。根据与阻抗线相连的焊盘尺寸和层叠结构，有两种共面波导结构可选择。相邻层做参考层或隔层做参考层（如下2图）。</p>
+            <fig>
+            <title>相邻层做参考层</title>
+            <image href="../img/qrcode.jpg" id="image_imw_fpp_qqb"/>
+        </fig>
+            <fig>
+            <title>隔层做参考层</title>
+            <image href="../img/qrcode.jpg" id="image_em5_lpp_qqb"/>
+        </fig>   
+         <p>上图中可以看出主要影响阻抗的几个参数，分别为信号线到参考层之间的距离H1、介质层的介电常数Er1、信号线的宽度W1、对地距离D1和铜箔厚度T1。</p>
+         <p>下表给出了在T1=0.035mm，Er1=4.2情况下，50欧微带线的线宽W1与介质厚度H1和对地间距D1之间的关系。</p>
+      <table id="table_ijv_4pp_qqb">
+        <tgroup cols="3">
+                <colspec colname="c1" colnum="1" colwidth="1*" align="left"/>
+                <colspec colname="c2" colnum="2" colwidth="1*" align="left"/>
+                <colspec colname="newCol3" colnum="3" colwidth="1*" align="left"/>
+                <thead>
+                    <row>
+                        <entry>H (mm)</entry>
+                        <entry>W (mm)</entry>
+                        <entry>D (mm)</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>0.076</entry>
+                        <entry>0.1188</entry>
+                        <entry>0.15</entry>
+                    </row>
+                    <row>
+                        <entry>0.1</entry>
+                        <entry>0.1623</entry>
+                        <entry>0.2</entry>
+                    </row>
+                    <row>
+                        <entry>0.15</entry>
+                        <entry>0.24</entry>
+                        <entry>0.2</entry>
+                    </row>
+                    <row>
+                        <entry>0.8</entry>
+                        <entry>0.8</entry>
+                        <entry>0.18</entry>
+                    </row>
+                    <row>
+                        <entry>1</entry>
+                        <entry>0.8</entry>
+                        <entry>0.17</entry>
+                    </row>
+                    <row>
+                        <entry>1.2</entry>
+                        <entry>0.8</entry>
+                        <entry>0.16</entry>
+                    </row>
+                    <row>
+                        <entry>1.6</entry>
+                        <entry>0.8</entry>
+                        <entry>0.15</entry>
+                    </row>
+                    <row>
+                        <entry>2</entry>
+                        <entry>0.8</entry>
+                        <entry>0.14</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+     </table>      
+      <note type="notice">在计算焊盘的阻抗时，焊盘上没有油墨，阻抗模型要选择无油墨覆盖模型。</note>
+      
+          <ul id="ul_pfn_dqp_qqb">
+           <li>带状线阻抗计算模型</li>
+            </ul>
+          <p>当需要采用带状线时，采用带状线阻抗模型进行阻抗计算（如下图）。</p>
+            
+      <fig>
+            <title>带状线阻抗模型</title>
+            <image href="../img/qrcode.jpg" id="image_abb_jqp_qqb"/>
+        </fig>
+              
+    </conbody>
+</concept>

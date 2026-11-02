@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="topic_jgq_gxg_gqb">
+    <title>TCP/<?oxy_comment_start author="zhouziwei" timestamp="20220921T094430+0800" comment="文档提示：该主题文件为所有型号通用，维护时请注意不要随意删改。"?>IP应用AT命令流程<?oxy_comment_end?></title>
+    <shortdesc>本章介绍UDP/TCP使用方法，含数据发送、数据接收、休眠策略等。</shortdesc>
+</topic>

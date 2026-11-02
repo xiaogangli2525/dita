@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="concept_btx_2lz_j5b">
+    <title>典型工作模式</title>
+    <shortdesc></shortdesc>
+    <conbody>
+      <table id="table_typical_work_mode">
+                <title>典型工作模式描述</title>
+                <tgroup cols="2">
+                    <colspec colnum="1" colwidth="3*" colname="col1" align="left"/>
+                    <colspec colnum="2" colwidth="7*" colname="col2" align="left"/>
+                    <thead>
+                        <row>
+                            <entry>工作模式</entry>
+                            <entry>描述</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>Active</entry>
+                            <entry>模组处于活动状态，所有功能正常可用，可以进行数据发送和接收；模组在此模式下可切换到Idle模式或PSM模式。</entry>
+                        </row>
+                        <row>
+                            <entry>Idle</entry>
+                            <entry>模组处于DRX或者eDRX状态，网络保持连接状态，可接收寻呼消息；模组在此模式下可切换至Active模式或者PSM模式。</entry>
+                        </row>
+                        <row>
+                            <entry>PSM</entry>
+                            <entry>模组处于最低功耗状态，网络处于非连接状态，不再接收寻呼消息。</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+    </conbody>
+</concept>

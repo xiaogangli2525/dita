@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="topic_xbg_qy2_gqb">
+    <title><?oxy_comment_start author="zhouziwei@cmiot.cmcc" timestamp="20220824T192159+0800" comment="文档提示：该主题为通用，且为模板，请勿删改内容。"?>电气特性和可靠性<?oxy_comment_end?></title>
+    <shortdesc>本章主要介绍模组接口的电气特性和可靠性特性。</shortdesc>
+    <body>
+        <p>主要包括：</p>
+        <ul id="ul_h4n_s4b_xsb">
+            <li>极限工作条件</li>
+            <li>工作和存储环境</li>
+            <li>电源特性</li>
+            <li>可靠性指标</li>
+            <li>EMC和ESD特性</li>
+        </ul>
+    </body>
+</topic>

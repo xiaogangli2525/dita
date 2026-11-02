@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="concept_v3h_f4g_brb">
+    <title>AT Command Response</title>
+    <conbody>
+        <table id="table_v22_l4g_brb">
+            <title>AT Command Response Type</title>
+            <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="1*" align="left"/>
+                <colspec colname="c2" colnum="2" colwidth="1*" align="left"/>
+                <thead>
+                    <row>
+                        <entry>Response</entry>
+                        <entry>Response Description</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>ERROR</entry>
+                        <entry>AT command format error or other errors</entry>
+                    </row>
+                    <row>
+                        <entry>+CME ERROR: &lt;err> or +CMS ERROR: &lt;err> or +CIS ERROR:
+                            &lt;err></entry>
+                        <entry>The extended error report (+CMEE) is enabled, where &lt;err>
+                            represents the error code or detailed error information</entry>
+                    </row>
+                    <row>
+                        <entry>OK</entry>
+                        <entry>AT command executed successfully</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        <note id="note_o3d_bpg_brb">
+            <sl id="sl_yfv_x3y_25b">
+                <sli>In the AT command response result, there is a space after the colon ":" to
+                    separate the response header and the parameter list.</sli>
+                <sli>The error response in the manual description is represented by +CME ERROR:
+                    &lt;err> or +CMS ERROR: &lt;err> or +CIS ERROR: &lt;err>. The actual returns
+                    refer to the AT+CMEE command.</sli>
+            </sl>
+        </note>
+    </conbody>
+</concept>
+

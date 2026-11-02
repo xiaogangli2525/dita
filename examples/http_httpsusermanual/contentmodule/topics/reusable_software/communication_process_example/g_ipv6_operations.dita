@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="topic_jgq_gxg_gqb">
+    <title><?oxy_comment_start author="zhouziwei" timestamp="20220825T144423+0800" comment="文档提示：通用主题，请勿随意删改。"?>IPv6业务<?oxy_comment_end?></title>
+    <shortdesc>本章介绍IPv6的入网配置方法，以及IPv6的PING、DNS使用示例。</shortdesc>
+</topic>

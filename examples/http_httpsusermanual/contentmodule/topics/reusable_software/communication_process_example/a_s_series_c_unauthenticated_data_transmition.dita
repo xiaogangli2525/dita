@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="concept_y5r_wg4_qqb">
+    <title><?oxy_comment_start author="zhouziwei" timestamp="20220921T101600+0800" comment="文档提示：该主题文件为所有型号共用，维护时请注意不要随意删改。"?><?oxy_comment_start author="zhouziwei@cmiot.cmcc" timestamp="20230602T150938+0800" comment="【复用说明】适用于A、S系列模组产品。" id="v44_l5s_tyb" mid="1"?><?oxy_comment_start author="zhouziwei@cmiot.cmcc" timestamp="20230913T111836+0800" parentID="v44_l5s_tyb" comment="ML307G发布后，新增G系列。" mid="3"?><?oxy_comment_start author="Lenovo" timestamp="20230627T165657+0800" comment="【ML307R&amp;ML307X编写提示】该文件为已发布手册内容，请勿做删改。如无法复用该内容，请联系文档工程师重新创建编写文件。或以批注形式提供差异内容以便文档工程师处理。" mid="2"?><?oxy_comment_start author="Zhou Ziwei" timestamp="20241105T111240+0800" comment="【ML307H编写提示】该主题为已发布内容，如不可直接复用请批注告知做拆分。" mid="4"?>数据透传模式<?oxy_comment_end mid="4"?><?oxy_comment_end mid="2"?><?oxy_comment_end mid="3"?><?oxy_comment_end mid="1"?><?oxy_comment_end?></title>
+    <conbody>
+        <p>透传模式时，串口输入的数据会自动转发到远程服务器，模块接收到TCP/UDP数据将直接通过串口输出，此时AT命令无效。</p>
+        <msgblock id="msgblock_yph_j3p_zsb">直接建立透传模式连接：
+<cmdname>AT+MIPOPEN=0,"TCP","www.6gforce.com",2012,,1</cmdname>   //以透传模式建立一路TCP连接
+OK
+CONNECT   //进入透传模式
+<cmdname>+++</cmdname>   //退出透传模式
+OK
+修改连接模式：
+<cmdname>AT+MIPOPEN=0,"TCP","www.6gforce.com",2012,,0</cmdname>   //以普通模式建立一路TCP连接
+OK
++MIPOPEN: 0,0   //建立连接成功
+<cmdname>AT+MIPMODE=0,1</cmdname>   //connect_id为0的连接模式修改为透传模式
+OK
+CONNECT   //进入透传模式
+<cmdname>+++</cmdname>   //退出透传模式
+OK</msgblock>
+    </conbody>
+</concept>

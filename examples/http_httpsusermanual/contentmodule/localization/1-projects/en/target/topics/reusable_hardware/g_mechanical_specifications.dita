@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="topic_bqf_j1f_gqb">
+    <title><?oxy_comment_start author="zhouziwei" timestamp="20221104T144038+0800" comment="文档提示：该主题文件为所有型号共用，维护时请注意不要随意删改。"?>Mechanical Characteristics<?oxy_comment_end?></title>
+    <shortdesc>This chapter describes the module's mechanical dimensions, recommended PCB footprint, and related specifications. </shortdesc>
+</topic>

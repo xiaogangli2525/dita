@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="concept_e3t_hfm_3pb">
+    <title><b>Services &amp; Supports</b></title>
+    <conbody outputclass="bigbox">
+        <p outputclass="ds_text">If you have comments, questions, or ideas regarding the products,
+            or any that are not answered by querying the manual, please contact us in the following
+            ways. </p>
+        <div outputclass="text_box">
+            <div>
+                <p outputclass="ss_title">Web： <xref outputclass="ss_text"
+                        href="http://onemo10086.com/" format="html" scope="external"
+                        >onemo10086.com</xref>
+                </p>
+            </div>
+            <div>
+                <p outputclass="ss_title">Email： <xref outputclass="ss_text"
+                        href="mailto:smartmodule@cmiot.chinamobile.com?subject=模组产品咨询" format="html"
+                        scope="external">SmartModule@cmiot.chinamobile.com</xref>
+                </p>
+            </div>
+            <div>
+                <p outputclass="ss_title">Hotline：400-110-0866</p>
+            </div>
+        </div>
+    </conbody>
+</concept>

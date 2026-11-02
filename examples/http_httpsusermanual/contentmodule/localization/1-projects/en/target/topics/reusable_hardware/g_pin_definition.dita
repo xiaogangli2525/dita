@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="topic_hbv_lvz_fqb">
+    <title><?oxy_comment_start author="zhouziwei" timestamp="20230118T114609+0800" comment="【文档说明】通用主题，不可删改。"?>Pin Definition<?oxy_comment_end?></title>
+    <shortdesc>This chapter mainly introduces the definition, types, states, and parameters of the pins.</shortdesc>
+    <body>
+        <table id="table_fcj_5s5_pqb">
+            <title>Signal state symbols explanation</title>
+            <tgroup cols="3">
+                <colspec colname="c1" colnum="1" colwidth="1*" align="left"/>
+                <colspec colname="newCol2" colnum="2" colwidth="1*" align="left"/>
+                <colspec colname="c2" colnum="3" colwidth="2*" align="left"/>
+                <thead> <row> <entry>Category</entry> <entry>Symbol</entry> <entry>Description</entry> </row> </thead> <tbody> <row> <entry morerows="14">Signal Type</entry> <entry>AI</entry> <entry>Analog input signal</entry> </row> <row> <entry>AO</entry> <entry>Analog output signal</entry> </row> <row> <entry>AIO</entry> <entry>Analog input/output signal</entry> </row> <row> <entry>DI</entry> <entry>Digital input signal</entry> </row> <row> <entry>DO</entry> <entry>Digital output signal</entry> </row> <row> <entry>DIO</entry> <entry>Digital input/output signal</entry> </row> <row> <entry>PI</entry> <entry>Power input signal</entry> </row> <row> <entry>PO</entry> <entry>Power output signal</entry> </row> <row> <entry>IO</entry> <entry>Bi-directional input/output signal</entry> </row> <row> <entry>SI</entry> <entry>Schmitt trigger input signal</entry> </row> <row> <entry>OD</entry> <entry>Open-drain output signal</entry> </row> <row> <entry>OC</entry> <entry>Open-collector output signal</entry> </row> <row> <entry>BOD</entry> <entry>Bi-directional open-drain input/output signal</entry> </row> <row> <entry>BOC</entry> <entry>Bi-directional open-collector input/output signal</entry> </row> <row> <entry>RF</entry> <entry>Radio frequency signal</entry> </row> <row> <entry morerows="5">Default State</entry> <entry>OL</entry> <entry>Output low level</entry> </row> <row> <entry>OH</entry> <entry>Output high level</entry> </row> <row> <entry>Z</entry> <entry>High-impedance state</entry> </row> <row> <entry>Float</entry> <entry>Floating</entry> </row> <row> <entry>PU</entry> <entry>Default pull-up</entry> </row> <row> <entry>PD</entry> <entry>Default pull-down</entry> </row> <row> <entry morerows="3">Parameter</entry> <entry>VIH</entry> <entry>High-level input voltage</entry> </row> <row> <entry>VIL</entry> <entry>Low-level input voltage</entry> </row> <row> <entry>VOH</entry> <entry>High-level output voltage</entry> </row> <row> <entry>VOL</entry> <entry>Low-level output voltage</entry> </row> </tbody>
+            </tgroup>
+        </table>
+    </body>
+</topic>
+

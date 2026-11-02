@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="topic_v5j_nfm_gqb">
+    <title>AT命令概述</title>
+    <shortdesc>本章主要介绍AT命令定义及其语法格式。</shortdesc>
+    <body>
+        <p>AT命令是从TE（Terminal Equipment，终端设备）或DTE（Data Terminal Equipment，数据终端设备）向TA（Terminal
+            Adaptor，终端适配器）或DCE（Data Circuit Terminal
+            Equipment，数据电路终端设备）发送的特定格式的字符串。TE通过TA发送AT命令来控制MS（Mobile
+            Station，移动台）的功能，与网络业务进行交互。用户可以通过AT命令进行呼叫、短消息、电话本、数据业务、补充业务、传真等方面的控制。</p>
+    </body>
+</topic>

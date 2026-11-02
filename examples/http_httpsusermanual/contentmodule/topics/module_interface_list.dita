@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="ReusableComponent_edd_b4y_25b">
+    <title>模组应用接口列表</title>
+    <refbody>
+        <example><ul>
+                <li id="interface_power">POWER接口</li>
+                <li id="interface_charge">CHARGE接口</li>
+                <li id="interface_uart">UART接口</li>
+                <li id="interface_usim">USIM接口</li>
+                <li id="interface_gpio">GPIO接口</li>
+                <li id="interface_rf">RF接口</li>
+                <li id="interface_usb">USB接口</li>
+                <li id="interface_analog">ANALOG接口</li>
+                <li id="interface_clock">CLOCK接口</li>
+                <li id="interface_spi">SPI接口</li>
+                <li id="interface_iic">IIC接口</li>
+                <li id="interface_sdio">SDIO接口</li>
+                <li id="interface_mmc">MMC接口</li>
+                <li id="interface_audio">AUDIO接口</li>
+                <li id="interface_control">CONTROL接口</li>
+                <li id="interface_jtag">JTAG接口</li>
+                <li id="interface_xmii">xMII(MAC)接口</li>
+                <li id="interface_hsic">HSIC接口</li>
+                <li id="interface_rfic">RFIC接口</li>
+                <li id="interface_pcie">PCIe接口</li>
+                <li id="interface_lcd">LCD接口</li>
+                <li id="interface_camera">CAMERA接口</li>
+                <li id="interface_keypad">KEYPAD接口</li>
+                <li id="interface_gnd">GND接口</li>
+                <li id="interface_reserved">RESERVED接口</li>
+            </ul>
+      <ul>
+                <li id="interface_power_in_development">POWER接口<sup>*</sup></li>
+                <li id="interface_charge_in_development">CHARGE接口<sup>*</sup></li>
+                <li id="interface_uart_in_development">UART接口<sup>*</sup></li>
+                <li id="interface_usim_in_development">USIM接口<sup>*</sup></li>
+                <li id="interface_gpio_in_development">GPIO接口<sup>*</sup></li>
+                <li id="interface_rf_in_development">RF接口<sup>*</sup></li>
+                <li id="interface_usb_in_development">USB接口<sup>*</sup></li>
+                <li id="interface_analog_in_development">ANALOG接口<sup>*</sup></li>
+                <li id="interface_clock_in_development">CLOCK接口<sup>*</sup></li>
+                <li id="interface_spi_in_development">SPI接口<sup>*</sup></li>
+                <li id="interface_iic_in_development">IIC接口<sup>*</sup></li>
+                <li id="interface_sdio_in_development">SDIO接口<sup>*</sup></li>
+                <li id="interface_mmc_in_development">MMC接口<sup>*</sup></li>
+                <li id="interface_audio_in_development">AUDIO接口<sup>*</sup></li>
+                <li id="interface_control_in_development">CONTROL接口<sup>*</sup></li>
+                <li id="interface_jtag_in_development">JTAG接口<sup>*</sup></li>
+                <li id="interface_xmii_in_development">xMII(MAC)接口<sup>*</sup></li>
+                <li id="interface_hsic_in_development">HSIC接口<sup>*</sup></li>
+                <li id="interface_rfic_in_development">RFIC接口<sup>*</sup></li>
+                <li id="interface_pcie_in_development">PCIe接口<sup>*</sup></li>
+                <li id="interface_lcd_in_development">LCD接口<sup>*</sup></li>
+                <li id="interface_camera_in_development">CAMERA接口<sup>*</sup></li>
+                <li id="interface_keypad_in_development">KEYPAD接口<sup>*</sup></li>
+                <li id="interface_gnd_in_development">GND接口<sup>*</sup></li>
+                <li id="interface_reserved_in_development">RESERVED接口<sup>*</sup></li>
+            </ul>
+      </example>
+    </refbody>
+</reference>

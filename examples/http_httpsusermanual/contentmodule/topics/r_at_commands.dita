@@ -1,0 +1,335 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="reference_fvd_fy4_cqb">
+    <title>AT+MHTTPCFG 参数设置</title>
+    <shortdesc>该命令用于设置客户端实例相关的通用配置参数。</shortdesc>
+    <refbody>
+        <table id="table_pvb_kbv_3qb">
+            <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="3*" align="left"/>
+                <colspec colname="c2" colnum="2" colwidth="7*" align="left"/>
+                <thead>
+                    <row>
+                        <entry namest="c1" nameend="c2"><cmdname>AT+MHTTPCFG</cmdname></entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row outputclass="has_bgc">
+                        <entry>语法</entry>
+                        <entry>响应</entry>
+                    </row>
+                    <row>
+                    <entry>测试命令<codeblock><cmdname>AT+MHTTPCFG=?</cmdname></codeblock></entry>
+                    <entry>成功<msgblock id="msgblock_xcs_nyt_pqb">+MHTTPCFG: (list of supported&lt;cmd>s),(list of supported&lt;httpid>s),
+OK</msgblock> 错误<msgblock id="msgblock_pgq_pyt_pqb">ERROR</msgblock></entry>
+                    </row>
+                    <row>
+                        <entry>读取命令<codeblock><cmdname>AT+MHTTPCFG?</cmdname></codeblock></entry>
+                        <entry>成功<msgblock id="msgblock_ln5_fzt_pqb">[+MHTTPCFG: "header",&lt;httpid>[,&lt;header_len>,&lt;header>]
++MHTTPCFG: "chunked",&lt;httpid>,&lt;chunked_mode>
++MHTTPCFG: "cached",&lt;httpid>,&lt;cached>[,&lt;cache_lenght>]
++MHTTPCFG: "timeout",&lt;httpid>,&lt;conn_timeout>,&lt;rsp_timeout>,&lt;input_timeout>
++MHTTPCFG: "encoding",&lt;httpid>,&lt;input_format>,&lt;output_format>
++MHTTPCFG: "ssl",&lt;httpid>,&lt;ssl_enable>[,&lt;ssl_id>]
++MHTTPCFG: "cid",&lt;httpid>,&lt;cid>
++MHTTPCFG: "fragment",&lt;httpid>,&lt;frag_size>[,&lt;interval>]
++MHTTPCFG: "urlencode",&lt;httpid>,&lt;urlencode_mode>
+[...]]
+OK</msgblock>
+                            错误
+                            <msgblock id="msgblock_v25_hzt_pqb">ERROR</msgblock>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry><?oxy_comment_start author="zhouziwei@cmiot.cmcc" timestamp="20211012T152631+0800" comment="请统一使用一种称呼，请确认是“配置命令”或是“设置命令”，明确后请全文档统一修改，并同步至所有研发相关人员"?>设置命令<?oxy_comment_end?>（通用报头设置）<codeblock><cmdname>AT+MHTTPCFG="header"[,&lt;httpId>[,&lt;header>]]</cmdname></codeblock></entry>
+                        <entry>成功<msgblock id="msgblock_als_lzt_pqb">[+MHTTPCFG: "header",&lt;httpid>[,&lt;header_len>,&lt;header>][…]]
+OK</msgblock> 错误<msgblock id="msgblock_ogt_mzt_pqb">ERROR</msgblock></entry>
+                    </row>
+                    <row>
+                        <entry>设置命令（传输模式设置）<codeblock><cmdname>AT+MHTTPCFG="chunked"[,&lt;httpId>[,&lt;chunked_mode>]]</cmdname></codeblock></entry>
+                        <entry>成功<msgblock id="msgblock_c5x_115_pqb">[+MHTTPCFG: "chunked",&lt;httpid>,&lt;chunked_mode>[…]]
+OK</msgblock> 错误<msgblock id="msgblock_afn_b15_pqb">ERROR</msgblock></entry>
+                    </row>
+                    <row>
+                        <entry>设置命令（缓存模式设置）<codeblock><cmdname>AT+MHTTPCFG="cached"[,&lt;httpId>[,&lt;cached>[,&lt;cache_leng<?oxy_comment_start author="zhouziwei@cmiot.cmcc" timestamp="20211012T155101+0800" comment="请确认是否为拼写错误？确认后参数描述中的对应内容也需要修改"?>ht<?oxy_comment_end?>>]]]</cmdname></codeblock></entry>
+                        <entry>成功<msgblock id="msgblock_qrk_j15_pqb">[+MHTTPCFG: "cached",&lt;httpid>,&lt;cached>[,&lt;cache_len<?oxy_comment_start author="zhouziwei@cmiot.cmcc" timestamp="20211012T155400+0800" comment="待确认"?>ght<?oxy_comment_end?>>]
+[…]]
+OK</msgblock> 错误<msgblock id="msgblock_ivr_j15_pqb">ERROR</msgblock></entry>
+                    </row>
+                    <row>
+                        <entry>设置命令（超时时间设置）<codeblock><cmdname>AT+MHTTPCFG="timeout"[,&lt;httpid>[,&lt;conn_timeout>[,&lt;rsp_timeout>[,&lt;input_timeout>]]]]</cmdname></codeblock></entry>
+                        <entry>成功<msgblock id="msgblock_mqd_l15_pqb">[+MHTTPCFG: "timeout",&lt;httpid>,&lt;conn_timeout>,&lt;rsp_timeout>,&lt;input_timeout>
+[…]]
+OK</msgblock> 错误<msgblock id="msgblock_gtg_l15_pqb">ERROR</msgblock></entry>
+                    </row>
+                    <row>
+                        <entry>设置命令（输入输出编码模式设置）<codeblock><cmdname>AT+MHTTPCFG="encoding"[,&lt;httpid>[,&lt;input_format>[,&lt;output_format>]]]</cmdname></codeblock></entry>
+                        <entry>成功<msgblock id="msgblock_jkj_n15_pqb">[+MHTTPCFG: "encoding",&lt;httpid>,&lt;input_format>,&lt;output_format>
+[…]]
+OK</msgblock> 错误<msgblock id="msgblock_cmm_n15_pqb">ERROR</msgblock></entry>
+                    </row>
+                    <row>
+                        <entry>设置命令（SSL模式设置）<codeblock><cmdname>AT+MHTTPCFG="ssl"[,&lt;httpid>[,&lt;ssl_enable>[,&lt;ssl_id>]]]</cmdname></codeblock></entry>
+                        <entry>成功<msgblock id="msgblock_lvz_415_pqb">[+MHTTPCFG: "ssl",&lt;httpid>,&lt;ssl_enable>[,&lt;ssl_id>]
+[…]]
+OK</msgblock> 错误<msgblock id="msgblock_bg2_p15_pqb">ERROR</msgblock></entry>
+                    </row>
+                    <row>
+                        <entry>设置命令（cid设置）<codeblock><cmdname>AT+MHTTPCFG="cid"[,&lt;httpid>[,&lt;cid>]]</cmdname></codeblock></entry>
+                        <entry>成功<msgblock id="msgblock_dfp_q15_pqb">[+MHTTPCFG: "cid",&lt;httpid>,&lt;cid>
+[…]]
+OK</msgblock> 错误<msgblock id="msgblock_xns_q15_pqb">ERROR</msgblock></entry>
+                    </row>
+                    <row>
+                        <entry>设置命令（数据输出流控设置）<codeblock><cmdname>AT+MHTTPCFG="fragment"[,&lt;httpid>[,&lt;frag_size>[,&lt;interval>]]]</cmdname></codeblock></entry>
+                        <entry>成功<msgblock id="msgblock_l54_s15_pqb">[+MHTTPCFG: "fragment",&lt;httpid>,&lt;frag_size>[,&lt;interval>]
+[…]]
+OK</msgblock> 错误<msgblock id="msgblock_e5r_s15_pqb">ERROR</msgblock></entry>
+                    </row>
+                    <row>
+                        <entry>设置命令（URL编码设置）<codeblock><cmdname>AT+MHTTPCFG="urlencode"[,&lt;httpid>[,&lt;urlencode_mode>]]</cmdname></codeblock></entry>
+                        <entry>成功<msgblock id="msgblock_rzl_bb5_pqb">[+MHTTPCFG: "urlencode",&lt;httpid>,&lt;urlencode_mode>
+[…]]
+OK</msgblock>
+                                错误<msgblock id="msgblock_lt4_bb5_pqb">ERROR</msgblock></entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">命令描述</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                ><?oxy_comment_start author="zhouziwei@cmiot.cmcc" timestamp="20210811T172157+0800" comment="1-短描述已经介绍的内容不需要再出现于正文中；
+2-表格中的文字描述与短描述表达意思不一致；
+请参考规范修改" id="j1l_ppt_pqb"?><?oxy_comment_start author="chenxiangyu@cmiot.cmcc" timestamp="20210816T141715+0800" parentID="j1l_ppt_pqb" comment="这里我觉得没有什么问题吧，简短描述的里面写了，这个详细描述也会再描述一下吧。" mid="4"?><?oxy_comment_start author="zhouziwei@cmiot.cmcc" timestamp="20210927T112330+0800" parentID="j1l_ppt_pqb" comment="无意义的文字重复会增加用户阅读负担，需精简内容，保留关键信息在合适的位置。请调整修改。" mid="5"?>该命令用于设置读取客户端实例的通用配置参数。<?oxy_comment_end mid="5"?><?oxy_comment_end mid="4"?><?oxy_comment_end?>读取命令将返回所有已创建实例的所<?oxy_insert_start author="zhouziwei@cmiot.cmcc" timestamp="20211012T164327+0800"?>有<?oxy_insert_end?><?oxy_delete author="zhouziwei@cmiot.cmcc" timestamp="20211012T164325+0800" content="以"?>配置参数；设置命令中，如果只设置<varname>&lt;cmd></varname><?oxy_delete author="zhouziwei@cmiot.cmcc" timestamp="20211012T164441+0800" content="("?><?oxy_insert_start author="zhouziwei@cmiot.cmcc" timestamp="20211014T161523+0800"?>（<?oxy_insert_end?>命令标识符<?oxy_insert_start author="zhouziwei@cmiot.cmcc" timestamp="20211012T164447+0800"?>）<?oxy_insert_end?><?oxy_delete author="zhouziwei@cmiot.cmcc" timestamp="20211012T164438+0800" content=")"?>，将返回所有已创建实例的当前配置参数，如果<?oxy_delete author="zhouziwei@cmiot.cmcc" timestamp="20211012T164500+0800" content="只"?>设置<varname>&lt;cmd></varname>和<varname>&lt;httpid></varname><?oxy_insert_start author="zhouziwei@cmiot.cmcc" timestamp="20211012T164708+0800"?>（客户端实例id）<?oxy_insert_end?>，将返回当前实例的当前配置参数，<?oxy_comment_start author="zhouziwei@cmiot.cmcc" timestamp="20211012T164600+0800" comment="该句描述表意不明，请提供释义说明或调整语句。"?>如果设置后续参数，将进行参数设置。<?oxy_comment_end?>需创建实例后，才可进行参数设置。</entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">参数描述</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"><varname>&lt;cmd> </varname>命令标识符</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">
+                            <parml id="parml_cfz_pgj_1rb">
+                                <plentry>
+                                    <pt>header</pt>
+                                    <pd>通用报头设置，应用于实例生命周期，设置时需按key:
+                                        value的形式<?oxy_insert_start author="zhouziwei@cmiot.cmcc" timestamp="20211012T164811+0800"?>分<?oxy_insert_end?><?oxy_delete author="zhouziwei@cmiot.cmcc" timestamp="20211012T164809+0800" content="按"?>字段进行设置，模组会<?oxy_insert_start author="zhouziwei@cmiot.cmcc" timestamp="20211012T164831+0800"?>保存<?oxy_insert_end?><?oxy_delete author="zhouziwei@cmiot.cmcc" timestamp="20211012T164832+0800" content="将"?>所有设置字段<?oxy_delete author="zhouziwei@cmiot.cmcc" timestamp="20211012T164834+0800" content="保存"?>。</pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>chunked</pt>
+                                    <pd>传输模式设置<?oxy_insert_start author="zhouziwei@cmiot.cmcc" timestamp="20211012T164905+0800"?>。<?oxy_insert_end?><?oxy_delete author="zhouziwei@cmiot.cmcc" timestamp="20211012T164904+0800" content="，"?>普通模式（Content-Length模式）与Chunked模式<?oxy_insert_start author="zhouziwei@cmiot.cmcc" timestamp="20211012T165011+0800"?>的<?oxy_insert_end?><?oxy_delete author="zhouziwei@cmiot.cmcc" timestamp="20211012T165003+0800" content="在"?>使用流程<?oxy_delete author="zhouziwei@cmiot.cmcc" timestamp="20211012T165013+0800" content="上"?>存在差异<?oxy_insert_start author="zhouziwei@cmiot.cmcc" timestamp="20211012T165019+0800"?>。<?oxy_insert_end?><?oxy_delete author="zhouziwei@cmiot.cmcc" timestamp="20211012T165018+0800" content="，使"?><?oxy_delete author="zhouziwei@cmiot.cmcc" timestamp="20211012T165153+0800" content="用"?>普通模式<?oxy_delete author="zhouziwei@cmiot.cmcc" timestamp="20211012T165156+0800" content="时，需"?>先设置content数据，<?oxy_delete author="zhouziwei@cmiot.cmcc" timestamp="20211012T165204+0800" content="然"?>后发送请求；<?oxy_delete author="zhouziwei@cmiot.cmcc" timestamp="20211012T165206+0800" content="使用"?>Chunked模式<?oxy_delete author="zhouziwei@cmiot.cmcc" timestamp="20211012T165209+0800" content="时，需"?>先发送请求，<?oxy_delete author="zhouziwei@cmiot.cmcc" timestamp="20211012T165215+0800" content="然"?>后设置content数据。</pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>cached</pt>
+                                    <pd>缓存模式设置，设置为缓存模式时，接收数据将缓存在模组中，请求完成时上报提示，用户手动读取。</pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>timeout</pt>
+                                    <pd>超时时间设置，包含连接超时、响应超时、数据输入超时。</pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>encoding</pt>
+                                    <pd>输入输出数据编码设置。</pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>ssl</pt>
+                                    <pd>SSL使能设置，用于HTTPS。</pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>cid</pt>
+                                    <pd>PDP上下文cid设置。</pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>fragment</pt>
+                                    <pd>数据输出流控设置，用于数据输出打印时控制分包输出。</pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>urlencode</pt>
+                                    <pd>URL编码设置，使能后，模组将自动对请求的path进行编码，不对字母数字以及-_.!~*'();/?:@&amp;=+$,#进行编码。</pd>
+                                </plentry>
+                            </parml>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"><varname>&lt;httpid></varname>
+                            客户端实例id，AT+MHTTPCREATE创建成功后返回，0-3。 </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"><varname>&lt;header></varname>
+                            通用报头，应用于实例生命周期，设置时需按key:
+                            value的形式<?oxy_insert_start author="zhouziwei@cmiot.cmcc" timestamp="20211012T170241+0800"?>分<?oxy_insert_end?><?oxy_delete author="zhouziwei@cmiot.cmcc" timestamp="20211012T170240+0800" content="按"?>字段进行设置，模组会<?oxy_insert_start author="zhouziwei@cmiot.cmcc" timestamp="20211012T170259+0800"?>保存<?oxy_insert_end?><?oxy_delete author="zhouziwei@cmiot.cmcc" timestamp="20211012T170300+0800" content="将"?>所有设置字段<?oxy_delete author="zhouziwei@cmiot.cmcc" timestamp="20211012T170302+0800" content="保存"?>。</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"><varname>&lt;chunked_mode></varname>
+                            传输模式，默认0。</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">
+                            <parml id="parml_dj2_f4s_frb">
+                                <plentry>
+                                    <pt>0</pt>
+                                    <pd>content_length模式</pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>1</pt>
+                                    <pd>chunked模式</pd>
+                                </plentry>
+                            </parml>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"><varname>&lt;cached></varname><?oxy_insert_start author="zhouziwei@cmiot.cmcc" timestamp="20211012T170324+0800"?>
+                            <?oxy_insert_end?>缓存模式，默认0。</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">
+                            <parml id="parml_u4j_m4s_frb">
+                                <plentry>
+                                    <pt>0</pt>
+                                    <pd>非缓存模式</pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>1</pt>
+                                    <pd>缓存模式</pd>
+                                </plentry>
+                            </parml>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                ><varname>&lt;cache_leng<?oxy_comment_start author="zhouziwei@cmiot.cmcc" timestamp="20211012T155656+0800" comment="待确认
+"?>ht<?oxy_comment_end?>></varname> 缓存空间，默认4K。</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"><varname>&lt;conn_timeout></varname>
+                            连接超时时间，0<?oxy_insert_start author="zhouziwei@cmiot.cmcc" timestamp="20211012T155822+0800"?><?oxy_comment_start author="zhouziwei@cmiot.cmcc" timestamp="20211012T160009+0800" comment="表范围的连接符请使用 ~ 
+请全文档修正"?>~<?oxy_insert_end?><?oxy_delete author="zhouziwei@cmiot.cmcc" timestamp="20211012T155820+0800" content="-"?><?oxy_comment_end?>180s，默认60s。</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"><varname>&lt;rsp_timeout></varname>
+                            服务器响应超时时间，0-60s，默认0s<?oxy_delete author="zhouziwei@cmiot.cmcc" timestamp="20211012T160038+0800" content="("?><?oxy_insert_start author="zhouziwei@cmiot.cmcc" timestamp="20211012T160040+0800"?>（<?oxy_insert_end?>不超时<?oxy_insert_start author="zhouziwei@cmiot.cmcc" timestamp="20211012T160044+0800"?><?oxy_comment_start author="zhouziwei@cmiot.cmcc" timestamp="20211012T160112+0800" comment="中文手册请使用中文状态输入符号"?>）<?oxy_comment_end?><?oxy_insert_end?><?oxy_delete author="zhouziwei@cmiot.cmcc" timestamp="20211012T160036+0800" content=")"?>。</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"><varname>&lt;input_timeout></varname>
+                            数据输入超时时间，0-180s，默认10s。（AT<?oxy_insert_start author="zhouziwei@cmiot.cmcc" timestamp="20211012T160514+0800"?>命<?oxy_insert_end?><?oxy_delete author="zhouziwei@cmiot.cmcc" timestamp="20211012T160512+0800" content="指"?>令输入数据，并采用>模式输入时。）</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"><varname>&lt;input_format></varname>
+                            数据输入编码模式，默认0。模组将按设置的编码格式把输入数据转换为原始数据。</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">
+                            <parml id="parml_qqx_xqs_frb">
+                                <plentry>
+                                    <pt>0</pt>
+                                    <pd>ASCII字符串（原始数据）</pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>1</pt>
+                                    <pd>HEX字符串</pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>2</pt>
+                                    <pd>带转义的字符串</pd>
+                                </plentry>
+                            </parml>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"><varname>&lt;output_format></varname>
+                            数据输出编码模式，默认0。模组将按设置的编码格式把原始数据转换为指定编码格式数据然后输出。</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">
+                            <parml id="parml_ayj_2rs_frb">
+                                <plentry>
+                                    <pt>0</pt>
+                                    <pd>ASCII字符串（原始数据）</pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>1</pt>
+                                    <pd>HEX字符串</pd>
+                                </plentry>
+                            </parml>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"><varname>&lt;ssl_enable></varname>
+                            SSL使能，默认0。</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">
+                            <parml id="parml_vrx_krs_frb">
+                                <plentry>
+                                    <pt>0</pt>
+                                    <pd>不使用SSL（普通连接，HTTP）。</pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>1</pt>
+                                    <pd>使用SSL（安全连接，HTTPS）。</pd>
+                                </plentry>
+                            </parml>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"><varname>&lt;ssl_id></varname>
+                            SSL上下文索引号，指定当前实例使用的SSL上下文。</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"><varname>&lt;cid></varname>
+                            PDP上下文id，指定当前实例使用的PDP上下文。</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"><varname>&lt;frag_size></varname>
+                            接收到数据后，数据上报的最大分包大小，0-1024，默认0（实际接收包大小输出）。</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"><varname>&lt;interval></varname>
+                            接收到数据后，数据分包输出的时间间隔，0-2000ms，默认0（无间隔）。</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"><varname>&lt;urlencode_mode></varname>
+                            URL编码使能，默认0。</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">
+                            <parml id="parml_sml_zrs_frb">
+                                <plentry>
+                                    <pt>0</pt>
+                                    <pd>不编码</pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>1</pt>
+                                    <pd>编码（不对字母数字以及进行-_.!~*'();/?:@&amp;=+$,#编码）</pd>
+                                </plentry>
+                            </parml>
+                        </entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">示例</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"> 测试命令
+                            <msgblock id="codeblock_zlq_d1t_yqb"><cmdname>AT+MHTTPCFG=?</cmdname>+MHTTPCFG: ("header","chunked","cached","timeout","encoding","ssl","cid","fragment","urlencode"),(0-3),
+OK</msgblock>
+                            header设置<msgblock id="codeblock_ul5_f1t_yqb"><cmdname>AT+MHTTPCFG="header",0,"Connection: close"</cmdname>
+OK</msgblock>
+                            header查询<msgblock id="codeblock_nbk_g1t_yqb"><cmdname>AT+MHTTPCFG="header",0</cmdname>
++MHTTPCFG: "header",0,19,Connection: close
+OK</msgblock></entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        <section id="section_bch_41t_yqb">
+            <title/>
+            <note id="note_r1y_p1t_yqb"
+                ><?oxy_comment_start author="zhouziwei@cmiot.cmcc" timestamp="20211012T161831+0800" comment="建议该部分内容调整为脚注，请告知应标注的正确位置"?>1、模组默认报头中，普通模式包含Host、Content-Length字段，<?oxy_comment_start author="zhouziwei@cmiot.cmcc" timestamp="20211012T170456+0800" comment="大小写用法与前文不一致"?>chunked<?oxy_comment_end?>模式包含Host、Transfer-Encoding字段。</note>
+            <note id="note_nql_51t_yqb">2、报头设置可通过两条<?oxy_insert_start author="zhouziwei@cmiot.cmcc" timestamp="20211012T170513+0800"?>命<?oxy_insert_end?><?oxy_delete author="zhouziwei@cmiot.cmcc" timestamp="20211012T170512+0800" content="指"?>令实现，AT+MHTTPCFG="header"<?oxy_insert_start author="zhouziwei@cmiot.cmcc" timestamp="20211012T170519+0800"?>
+                <?oxy_insert_end?>用于设置通用报头，应用于实例生命周期<?oxy_delete author="zhouziwei@cmiot.cmcc" timestamp="20211012T170524+0800" content="，"?><?oxy_insert_start author="zhouziwei@cmiot.cmcc" timestamp="20211012T170524+0800"?>；<?oxy_insert_end?>AT+MHTTPHEADER<?oxy_insert_start author="zhouziwei@cmiot.cmcc" timestamp="20211012T170528+0800"?>
+                <?oxy_insert_end?>用于设置特定报头，单次请求有效，主要用于在不同请求时设置变化的字段<?oxy_insert_start author="zhouziwei@cmiot.cmcc" timestamp="20211012T170547+0800"?>。<?oxy_insert_end?><?oxy_delete author="zhouziwei@cmiot.cmcc" timestamp="20211012T170547+0800" content="，"?>如果通用报头中存在特定报头相同字段，模组将在发送请求时自动替换为特定报头设置值。<?oxy_comment_end?></note>
+        </section>
+    </refbody>
+</reference>
+<?oxy_options track_changes="on"?>

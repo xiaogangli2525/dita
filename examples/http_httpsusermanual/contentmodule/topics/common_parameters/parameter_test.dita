@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="parameter_test">
+    <title>参数引用测试</title>
+    <shortdesc>测试产品参数库的conref引用功能</shortdesc>
+    <body>
+        <section id="test_basic_references">
+            <title>基本参数引用测试</title>
+            <p>以下内容通过conref引用产品参数：</p>
+            
+            <p><b>ML307C封装类型：</b><ph conref="product_parameters.dita#product_parameters/package_lcc48_lga61"/></p>
+            <p><b>ML307C尺寸规格：</b><ph conref="product_parameters.dita#product_parameters/dimensions_17_7x15_8x2_2"/></p>
+            <p><b>ML307C重量规格：</b><ph conref="product_parameters.dita#product_parameters/weight_1_2g"/></p>
+            <p><b>ML307C发射功率：</b><ph conref="product_parameters.dita#product_parameters/power_23dbm"/></p>
+            
+            <p><b>M5310-E封装类型：</b><ph conref="product_parameters.dita#product_parameters/package_lcc_lga"/></p>
+            <p><b>M5310-E尺寸规格：</b><ph conref="product_parameters.dita#product_parameters/dimensions_19x18_4x2_2"/></p>
+            <p><b>M5310-E重量规格：</b><ph conref="product_parameters.dita#product_parameters/weight_1_5g"/></p>
+            <p><b>M5310-E工作电压：</b><ph conref="product_parameters.dita#product_parameters/voltage_21_42"/></p>
+        </section>
+        
+        <section id="test_configuration_references">
+            <title>配置表引用测试</title>
+            <p>以下内容通过conref引用产品配置表：</p>
+            
+            <p><b>ML307C完整配置：</b></p>
+            <p>封装：<ph conref="product_configurations.dita#product_configurations/package_lcc48_lga61"/></p>
+            <p>尺寸：<ph conref="product_configurations.dita#product_configurations/dimensions_17_7x15_8x2_2"/></p>
+            <p>重量：<ph conref="product_configurations.dita#product_configurations/weight_1_2g"/></p>
+            
+            <p><b>M5310-E完整配置：</b></p>
+            <p>封装：<ph conref="product_configurations.dita#product_configurations/package_lcc_lga"/></p>
+            <p>尺寸：<ph conref="product_configurations.dita#product_configurations/dimensions_19x18_4x2_2"/></p>
+            <p>重量：<ph conref="product_configurations.dita#product_configurations/weight_1_5g"/></p>
+        </section>
+        
+        <section id="verification_notes">
+            <title>验证说明</title>
+            <p>如果conref引用正常工作，上述内容应该显示具体的参数值，而不是"[Conref was not expanded]"错误信息。</p>
+            <p>每个参数值都应该与对应的产品型号匹配，确保参数引用的准确性。</p>
+        </section>
+    </body>
+</topic>

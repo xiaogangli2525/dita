@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- 由 Microsoft Visio, SVG Export 生成 mu305a-dc_circuit_block_diagram.svg 页-1 -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ev="http://www.w3.org/2001/xml-events"
+		xmlns:v="http://schemas.microsoft.com/visio/2003/SVGExtensions/" width="12.9483in" height="8.18758in"
+		viewBox="0 0 932.281 589.506" xml:space="preserve" color-interpolation-filters="sRGB" class="st14">
+	<v:documentProperties v:langID="2052" v:metric="true" v:viewMarkup="false"/>
+
+	<style type="text/css">
+	<![CDATA[
+		.st1 {fill:#ffffff;stroke:#000000;stroke-dasharray:5.25,3.75;stroke-width:0.75}
+		.st2 {fill:#ffffff;stroke:#000000;stroke-width:0.75}
+		.st3 {fill:#000000;font-family:Calibri;font-size:1.99999em}
+		.st4 {font-family:黑体;font-size:1em}
+		.st5 {fill:#000000;font-family:黑体;font-size:1.99999em}
+		.st6 {font-family:Calibri;font-size:1em}
+		.st7 {font-size:1em}
+		.st8 {stroke:#000000;stroke-linecap:round;stroke-linejoin:round;stroke-width:1}
+		.st9 {stroke:#000000;stroke-width:1}
+		.st10 {stroke:#ff0000;stroke-width:1}
+		.st11 {stroke:#ff0000;stroke-linecap:round;stroke-linejoin:round;stroke-width:1}
+		.st12 {fill:none;stroke:none;stroke-width:0.25}
+		.st13 {fill:#ff0000;font-family:Calibri;font-size:1.99999em}
+		.st14 {fill:none;fill-rule:evenodd;font-size:12px;overflow:visible;stroke-linecap:square;stroke-miterlimit:3}
+	]]>
+	</style>
+
+	<g v:mID="0" v:index="1" v:groupContext="foregroundPage">
+		<title>页-1</title>
+		<v:pageProperties v:drawingScale="0.0393701" v:pageScale="0.0393701" v:drawingUnits="24" v:shadowOffsetX="8.50394"
+				v:shadowOffsetY="-8.50394"/>
+		<v:layer v:name="连接线" v:index="0"/>
+		<g id="shape576-1" v:mID="576" v:groupContext="shape" transform="translate(174.724,-18.75)">
+			<title>矩形.576</title>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+			</v:userDefs>
+			<path d="M0 589.51 L595.28 589.51 L595.28 37.5 L0 37.5 L0 589.51 Z" class="st1"/>
+		</g>
+		<g id="shape577-3" v:mID="577" v:groupContext="shape" transform="translate(231.417,-350.515)">
+			<title>矩形.577</title>
+			<desc>CAT1芯片</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="99.2126" cy="526.845" width="198.43" height="125.321"/>
+			<rect x="0" y="464.185" width="198.425" height="125.321" class="st2"/>
+			<text x="49.94" y="534.83" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>CAT1<tspan
+						class="st4">芯片</tspan></text>		</g>
+		<g id="shape578-7" v:mID="578" v:groupContext="shape" transform="translate(231.417,-73.0185)">
+			<title>矩形.578</title>
+			<desc>低轨卫星芯片</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="99.2126" cy="526.845" width="198.43" height="125.321"/>
+			<rect x="0" y="464.185" width="198.425" height="125.321" class="st2"/>
+			<text x="27.21" y="534.83" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>低轨卫星芯片</text>		</g>
+		<g id="shape579-10" v:mID="579" v:groupContext="shape" transform="translate(514.882,-73.0185)">
+			<title>矩形.579</title>
+			<desc>射频电路2</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="99.2126" cy="526.845" width="198.43" height="125.321"/>
+			<rect x="0" y="464.185" width="198.425" height="125.321" class="st2"/>
+			<text x="45.13" y="534.83" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>射频电路<tspan
+						class="st6">2</tspan></text>		</g>
+		<g id="shape580-14" v:mID="580" v:groupContext="shape" transform="translate(514.882,-350.515)">
+			<title>矩形.580</title>
+			<desc>射频电路1</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="99.2126" cy="526.845" width="198.43" height="125.321"/>
+			<rect x="0" y="464.185" width="198.425" height="125.321" class="st2"/>
+			<text x="45.13" y="534.83" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>射频电路<tspan
+						class="st6">1</tspan></text>		</g>
+		<g id="shape581-18" v:mID="581" v:groupContext="shape" transform="translate(231.417,-241.978)">
+			<title>矩形.581</title>
+			<desc>电源 开关</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="42.5197" cy="557.616" width="85.04" height="63.7795"/>
+			<rect x="0" y="525.726" width="85.0394" height="63.7795" class="st2"/>
+			<text x="18.52" y="549.63" class="st5" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>电源<v:newlineChar/><tspan
+						x="18.52" dy="1.331em" class="st7">开关</tspan></text>		</g>
+		<g id="shape582-22" v:mID="582" v:groupContext="shape" transform="translate(429.842,-413.176)">
+			<title>工作表.582</title>
+			<path d="M0 589.51 L85.04 589.51" class="st8"/>
+		</g>
+		<g id="shape583-25" v:mID="583" v:groupContext="shape" transform="translate(429.842,-135.679)">
+			<title>工作表.583</title>
+			<path d="M0 589.51 L85.04 589.51" class="st8"/>
+		</g>
+		<g id="shape584-28" v:mID="584" v:groupContext="shape" transform="translate(821.023,-498.514)">
+			<title>工作表.584</title>
+			<path d="M0 572.5 L17.01 589.51 L34.02 572.5" class="st9"/>
+		</g>
+		<g id="shape585-31" v:mID="585" v:groupContext="shape" transform="translate(713.307,-413.176)">
+			<title>工作表.585</title>
+			<path d="M0 589.51 L124.67 589.51" class="st8"/>
+		</g>
+		<g id="shape586-34" v:mID="586" v:groupContext="shape" transform="translate(1427.25,88.757) rotate(89.8103)">
+			<title>工作表.586</title>
+			<path d="M0 589.51 L85.62 589.51" class="st8"/>
+		</g>
+		<g id="shape587-37" v:mID="587" v:groupContext="shape" transform="translate(821.023,-219.679)">
+			<title>工作表.587</title>
+			<path d="M0 572.5 L17.01 589.51 L34.02 572.5" class="st9"/>
+		</g>
+		<g id="shape588-40" v:mID="588" v:groupContext="shape" transform="translate(713.307,-134.341)">
+			<title>工作表.588</title>
+			<path d="M0 589.51 L124.67 589.51" class="st8"/>
+		</g>
+		<g id="shape589-43" v:mID="589" v:groupContext="shape" transform="translate(1427.25,367.592) rotate(89.8103)">
+			<title>工作表.589</title>
+			<path d="M0 589.51 L85.62 589.51" class="st8"/>
+		</g>
+		<g id="shape590-46" v:mID="590" v:groupContext="shape" transform="translate(962.655,238.99) rotate(90)">
+			<title>工作表.590</title>
+			<path d="M0 589.51 L152.18 589.51" class="st8"/>
+		</g>
+		<g id="shape591-49" v:mID="591" v:groupContext="shape" transform="translate(94.3992,-413.176)">
+			<title>工作表.591</title>
+			<path d="M137.02 589.51 L0 589.51 L0 498.5" class="st10"/>
+		</g>
+		<g id="shape592-52" v:mID="592" v:groupContext="shape" transform="translate(80.0768,-504.183)">
+			<title>工作表.592</title>
+			<path d="M0 589.51 L29.24 589.51" class="st11"/>
+		</g>
+		<g id="shape593-55" v:mID="593" v:groupContext="shape" transform="translate(781.238,176.33) rotate(90)">
+			<title>工作表.593</title>
+			<path d="M0 589.51 L139.08 589.51" class="st11"/>
+		</g>
+		<g id="shape594-58" v:mID="594" v:groupContext="shape" transform="translate(192.36,-273.868)">
+			<title>工作表.594</title>
+			<path d="M0 589.51 L39.06 589.51" class="st11"/>
+		</g>
+		<g id="shape595-61" v:mID="595" v:groupContext="shape" transform="translate(316.456,-198.34)">
+			<title>工作表.595</title>
+			<path d="M0 513.98 L28.35 513.98 L28.35 589.51" class="st10"/>
+		</g>
+		<g id="shape596-64" v:mID="596" v:groupContext="shape" transform="translate(-315.569,283.748) rotate(-90)">
+			<title>工作表.596</title>
+			<path d="M0 589.51 L44.76 589.51" class="st8"/>
+		</g>
+		<g id="shape597-67" v:mID="597" v:groupContext="shape" transform="translate(231.417,-314.104)">
+			<title>工作表.597</title>
+			<desc>GPIO</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="76" cy="579.506" width="152" height="20"/>
+			<rect x="0" y="569.506" width="152" height="20" class="st12"/>
+			<text x="51.26" y="586.71" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>GPIO</text>		</g>
+		<g id="shape598-70" v:mID="598" v:groupContext="shape" transform="translate(330.63,-263.868)">
+			<title>工作表.598</title>
+			<desc>UART</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="76" cy="579.506" width="152" height="20"/>
+			<rect x="0" y="569.506" width="152" height="20" class="st12"/>
+			<text x="48.99" y="586.71" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>UART</text>		</g>
+		<g id="shape599-73" v:mID="599" v:groupContext="shape" transform="translate(759.732,-532.53)">
+			<title>工作表.599</title>
+			<desc>MAIN_ANT</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="76" cy="579.506" width="152" height="20"/>
+			<rect x="0" y="569.506" width="152" height="20" class="st12"/>
+			<text x="21.51" y="586.71" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>MAIN_ANT</text>		</g>
+		<g id="shape600-76" v:mID="600" v:groupContext="shape" transform="translate(762.031,-257.947)">
+			<title>工作表.600</title>
+			<desc>NTN_ANT</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="76" cy="579.506" width="152" height="20"/>
+			<rect x="0" y="569.506" width="152" height="20" class="st12"/>
+			<text x="28.15" y="586.71" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>NTN_ANT</text>		</g>
+		<g id="shape610-79" v:mID="610" v:groupContext="shape" transform="translate(18.25,-516.118)">
+			<title>工作表.610</title>
+			<desc>VBAT</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="76" cy="579.506" width="152" height="20"/>
+			<rect x="0" y="569.506" width="152" height="20" class="st12"/>
+			<text x="49.87" y="586.71" class="st13" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>VBAT</text>		</g>
+	</g>
+</svg>

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE bookmap PUBLIC "-//OASIS//DTD DITA BookMap//EN" "bookmap.dtd">
+<bookmap>
+    <booktitle>  
+      <mainbooktitle>复用内容模块</mainbooktitle>
+    </booktitle>
+    <bookmeta>
+        <author/>
+        <critdates>
+            <created date="2022-03-11"/>
+            <revised modified="2023-02-14"/>
+        </critdates>
+        <bookid>
+            <edition>V1.0.0</edition>
+        </bookid>
+    </bookmeta>
+    <frontmatter>
+        <booklists>
+            <toc/>
+            <tablelist navtitle="表格索引" locktitle="yes"/>
+            <figurelist navtitle="图示索引" locktitle="yes"/>
+        </booklists>
+    </frontmatter>
+    <chapter navtitle="Product Information Set" locktitle="yes">
+        <topicgroup>
+            <topicref href="topics/g_product_design.dita"/>
+            <topicref href="topics/g_product_description.dita"/>
+            <topicref href="topics/module_interface_list.dita"/>
+            <topicref href="topics/module_function_list.dita"/>
+        </topicgroup>
+    </chapter>
+    <chapter navtitle="Reusable Hardware Assets" locktitle="yes">
+        <topicgroup>
+            <topicref href="topics/reusable_hardware/g_pin_definition.dita"/>
+            <topicref href="topics/reusable_hardware/c_pin_description.dita"/>
+        </topicgroup>
+    </chapter>
+    <chapter navtitle="Reusable Software Assets" locktitle="yes">
+        <topicgroup>
+           
+        </topicgroup>
+    </chapter>
+    <chapter navtitle="Reusable Fragments" locktitle="yes">
+        <topicgroup>
+            <topicref href="topics/reusable_notes.dita"/>
+        </topicgroup>
+    </chapter>
+    <chapter navtitle="Concept Topics" locktitle="yes">
+        <topicgroup>
+            <topicref href="topics/c_typical_work_mode.dita"/>
+        </topicgroup>
+    </chapter>
+    <chapter navtitle="Framework Topics" locktitle="yes">
+        <topicgroup>
+            <topicref href="topics/g_document_statement_cn.dita"/>
+            <topicref href="topics/g_document_statement_en.dita"/>
+            <topicref href="topics/g_service_and_support_cn.dita"/>
+            <topicref href="topics/g_service_and_support_en.dita"/>
+            <topicref href="topics/c_at_command_overview_cn.dita"/>
+            <topicref href="topics/c_at_command_overview_en.dita"/>
+            <topicref href="topics/c_at_command_syntax_format_cn.dita"/>
+            <topicref href="topics/c_at_command_syntax_format_en.dita"/>
+            <topicref href="topics/c_at_command_response_cn.dita"/>
+            <topicref href="topics/c_at_command_response_en.dita"/>
+        </topicgroup>
+    </chapter>
+    <chapter navtitle="Templates" locktitle="yes">
+        <topicgroup/>
+        <topicref href="topics/c_text_n_figure.dita"/>
+        <topicref href="topics/g_applicable_model.dita"/>
+        <topicref href="topics/r_appendix.dita"/>
+        <topicref href="topics/r_at_commands.dita"/>
+        <topicref href="topics/r_at_example.dita"/>
+        <topicref href="topics/r_error_codes.dita"/>
+        <topicref href="topics/g_about_the_document_cn.dita"/>
+        <topicref href="topics/g_about_the_document_en.dita"/>
+        <topicref href="topics/table_template_module_overview.dita"/>
+    </chapter>
+    <backmatter/>
+</bookmap>

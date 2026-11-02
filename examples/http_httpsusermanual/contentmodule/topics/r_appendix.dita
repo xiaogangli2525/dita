@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="reference_nwt_g24_qqb">
+    <title>附录</title>
+    <refbody>
+        <table id="table_wpp_hyp_qqb">
+            <title>缩略语</title>
+            <tgroup cols="3">
+                <colspec colname="c1" colnum="1" colwidth="1*"/>
+                <colspec colname="c2" colnum="2" colwidth="2*"/>
+                <colspec colname="newCol3" colnum="3" colwidth="2*"/>
+                <thead>
+                    <row>
+                        <entry>缩写</entry>
+                        <entry>英文全称</entry>
+                        <entry>中文解释</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>SIM</entry>
+                        <entry>Subscriber Identity Module</entry>
+                        <entry>用户身份识别模块</entry>
+                    </row>
+                    <row>
+                        <entry>GSM</entry>
+                        <entry>Global System for Mobile communication</entry>
+                        <entry>全球移动通信系统</entry>
+                    </row>
+                    <row>
+                        <entry>RF</entry>
+                        <entry>Radio Frequency </entry>
+                        <entry>射频</entry>
+                    </row>
+                    <row>
+                        <entry>TX</entry>
+                        <entry>Transmission</entry>
+                        <entry>发送</entry>
+                    </row>
+                    <row>
+                        <entry>RX</entry>
+                        <entry>Receive</entry>
+                        <entry>接收</entry>
+                    </row>
+                    <row>
+                        <entry>PCB</entry>
+                        <entry>Printed Circuit Board </entry>
+                        <entry>印制电路板</entry>
+                    </row>
+                    <row>
+                        <entry>MIC</entry>
+                        <entry>Microphone </entry>
+                        <entry>麦克风</entry>
+                    </row>
+                    <row>
+                        <entry>SPK</entry>
+                        <entry>Speaker</entry>
+                        <entry>扬声器</entry>
+                    </row>
+                    <row>
+                        <entry>EMI</entry>
+                        <entry>Electro Magnetic Interference </entry>
+                        <entry>电磁干扰</entry>
+                    </row>
+                    <row>
+                        <entry>ESD</entry>
+                        <entry>Electro-Static discharge </entry>
+                        <entry>静电释放</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </refbody>
+</reference>

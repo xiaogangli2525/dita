@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="reference_qq2_dmg_grb">
+    <title>HTTP示例</title>
+    <shortdesc>本节主要介绍HTTP相关的操作流程，其中包含实例创建、通用参数配置、GET/PUT/POST请求等相关流程。</shortdesc>
+    <refbody>
+        <section id="section_u4s_prg_grb">
+            <title>创建实例和参数设置</title>
+                <msgblock id="msgblock_m1w_qrg_grb"><cmdname>AT+MHTTPCREATE="http://120.27.12.119:10080"</cmdname>   //创建实例
++MHTTPCREATE: 0
+OK
+<cmdname>AT+MHTTPCFG="header",0,"Connection: close"</cmdname>   //报头设置（根据实际需求设置）
+OK
+<cmdname>AT+MHTTPCFG="header",0</cmdname>
++MHTTPCFG: "header",0,19,Connection: close
+OK
+<cmdname>AT+MHTTPHEADER=0,0,1,"api-key: FC9B69m4prHH2j7ljBbA=hHlbMI="</cmdname>
+OK</msgblock>
+          <note id="note_jfb_1sg_grb" type="important"
+                ><?oxy_comment_start author="zhouziwei@cmiot.cmcc" timestamp="20211014T180830+0800" comment="请完善描述"?>请求前可进行通用参数配置。<?oxy_comment_end?></note>   
+      </section>
+        <section id="section_sx4_xvg_grb">
+            <title>GET请求</title>
+            <msgblock id="msgblock_lck_yvg_grb"><cmdname>AT+MHTTPREQUEST=0,1,1,/get"</cmdname>   //GET请求
+OK
++MHTTPURC: "header",0,200,225,HTTP/1.1 200 OK
+Server: nginx/1.18.0
+Date: Mon, 26 Jul 2021 06:18:46 GMT
+Content-Type: application/json
+Content-Length: 145
+Connection: close
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Credentials: true
++MHTTPURC: "content",0,145,145,145,{"args":{},"headers":{"Connection":"close","Content-Length":"0","Host":"localhost:6000"},"origin":"127.0.0.1","url":"http://localhost:6000/get"}</msgblock>
+        </section>
+        <section id="section_s3l_msg_grb">
+            <title>POST请求</title>
+            <msgblock id="msgblock_plm_nsg_grb"><cmdname>AT+MHTTPCONTENT=0,0,1,"{"id":"speed1"\r,"tags":["mobile"],"unit":"m/s"\r,"unit_symbol":"m/s"}"</cmdname>    //content设置
+OK
+<cmdname>AT+MHTTPREQUEST=0,2,1,"/post"</cmdname>   //POST请求
+OK
++MHTTPURC: "header",0,200,220,HTTP/1.1 200 OK
+Server: nginx/1.18.0
+Date: Mon, 26 Jul 2021 06:25:23 GMT
+Content-Type: application/json
+Content-Length: 278
+Connection: close
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Credentials: true
++MHTTPURC: "content",0,278,278,278,{"args":{},"data":"{\"id\":\"speed1\"\\r,\"tags\":[\"mobile\"],\"unit\":\"m/s\"\\r,\"unit_symbol\":\"m/s\"}","files":{},"form":{},"headers":{"Connection":"close","Content-Length":"70","Host":"localhost:6000"},"json":null,"origin":"127.0.0.1","url":"http://localhost:6000/post"}</msgblock>
+        </section>
+        <section id="section_scg_ssg_grb">
+            <title>PUT请求</title>
+            <msgblock id="msgblock_zzg_tsg_grb"><cmdname>AT+MHTTPCONTENT=0,0,1,"{"id":"speed1"\r,"tags":["mobile"],"unit":"m/s"\r,"unit_symbol":"m/s"}"</cmdname>   //content设置
+OK
+<cmdname>AT+MHTTPREQUEST=0,3,1,"/put"</cmdname>   //PUT请求
+OK
++MHTTPURC: "header",0,200,220,HTTP/1.1 200 OK
+Server: nginx/1.18.0
+Date: Mon, 26 Jul 2021 06:26:42 GMT
+Content-Type: application/json
+Content-Length: 277
+Connection: close
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Credentials: true
++MHTTPURC: "content",0,277,277,277,{"args":{},"data":"{\"id\":\"speed1\"\\r,\"tags\":[\"mobile\"],\"unit\":\"m/s\"\\r,\"unit_symbol\":\"m/s\"}","files":{},"form":{},"headers":{"Connection":"close","Content-Length":"70","Host":"localhost:6000"},"json":null,"origin":"127.0.0.1","url":"http://localhost:6000/put"}</msgblock>
+        </section>
+        <section id="section_ijh_5sg_grb">
+            <title>Chunked模式下的POST请求</title>
+            <msgblock id="msgblock_rhp_vsg_grb"><cmdname>AT+MHTTPCFG="chunked",0,1   </cmdname>//设置为chunked模式
+OK
+<cmdname>AT+MHTTPREQUEST=0,2,1,"/post"</cmdname>   //发送POST请求
+OK
+<cmdname>AT+MHTTPCONTENT=0,0,1,"{"id":"speed1"\r,"tags":["mobile"],"unit":"m/s"\r,"unit_symbol":"m/s"}"</cmdname>   //发送content数据
+OK
++MHTTPURC: "header",0,200,220,HTTP/1.1 200 OK
+Server: nginx/1.18.0
+Date: Mon, 26 Jul 2021 06:25:23 GMT
+Content-Type: application/json
+Content-Length: 278
+Connection: close
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Credentials: true
++MHTTPURC: "content",0,278,278,278,{"args":{},"data":"{\"id\":\"speed1\"\\r,\"tags\":[\"mobile\"],\"unit\":\"m/s\"\\r,\"unit_symbol\":\"m/s\"}","files":{},"form":{},"headers":{"Connection":"close","Content-Length":"70","Host":"localhost:6000"},"json":null,"origin":"127.0.0.1","url":"http://localhost:6000/post"}</msgblock>
+        </section>
+        <section id="section_owv_wsg_grb">
+            <title>请求过程中终止请求</title>
+            <msgblock id="msgblock_okr_xsg_grb"><cmdname>AT+MHTTPREQUEST=0,1,1,"/get"</cmdname>
+OK
+<cmdname>AT+MHTTPTERM=0</cmdname>
+OK</msgblock>
+        </section>
+        <section id="section_uv4_ysg_grb">
+            <title>删除实例</title>
+            <msgblock id="msgblock_sm2_zsg_grb"><cmdname>AT+MHTTPDEL=0</cmdname>
+OK</msgblock>
+        </section>
+    </refbody>
+</reference>

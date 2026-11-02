@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="concept_btx_2lz_j5b">
+    <title>Typical Operating Mode</title>
+    <shortdesc></shortdesc>
+    <conbody>
+      <table id="table_typical_work_mode">
+                <title>Description of the typical operating mode</title>
+                <tgroup cols="2">
+                    <colspec colnum="1" colwidth="3*" colname="col1" align="left"/>
+                    <colspec colnum="2" colwidth="7*" colname="col2" align="left"/>
+                    <thead> <row> <entry>Operating Mode</entry> <entry>Description</entry> </row> </thead> <tbody> <row> <entry>Active</entry> <entry>In the Active mode, the module is fully functional and data transmission is available, meanwhile, the module can be switched to either Idle or PSM mode. </entry> </row> <row> <entry>Idle</entry> <entry>In the Idle mode, the module is in the DRX or eDRX state, with a connected network and able to receive paging messages, meanwhile, the module can be switched to either Active or PSM mode. </entry> </row> <row> <entry>PSM</entry> <entry>In the PSM mode, the module is in the minimal power consumption state, with disconnected network and unable to receive the paging messages. </entry> </row> </tbody>
+                </tgroup>
+            </table>
+    </conbody>
+</concept>

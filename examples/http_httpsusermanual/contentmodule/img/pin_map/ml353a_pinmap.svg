@@ -1,0 +1,2144 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- 由 Microsoft Visio, SVG Export 生成 ML353A_pinmap_20260730.svg Page-1 -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ev="http://www.w3.org/2001/xml-events"
+		xmlns:v="http://schemas.microsoft.com/visio/2003/SVGExtensions/" width="8.79311in" height="11.1059in"
+		viewBox="0 0 633.104 799.628" xml:space="preserve" color-interpolation-filters="sRGB" class="st22">
+	<v:documentProperties v:langID="2052" v:metric="true" v:viewMarkup="false">
+		<v:userDefs>
+			<v:ud v:nameU="msvNoAutoConnect" v:val="VT0(1):26"/>
+			<v:ud v:nameU="msvConvertTheme"/>
+		</v:userDefs>
+	</v:documentProperties>
+
+	<style type="text/css">
+	<![CDATA[
+		.st1 {fill:none;stroke:#646464;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5}
+		.st2 {fill:#bfbfbf;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24}
+		.st3 {fill:#000000;font-family:Aileron;font-size:0.416656em}
+		.st4 {font-size:1em}
+		.st5 {fill:#feb8c2;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24}
+		.st6 {fill:#0085d0;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24}
+		.st7 {fill:#6fcde2;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24}
+		.st8 {font-size:0.800044em}
+		.st9 {fill:#e94dac;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24}
+		.st10 {fill:#706ca9;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24}
+		.st11 {fill:#abd25f;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24}
+		.st12 {fill:#15a6b1;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24}
+		.st13 {fill:#feec97;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24}
+		.st14 {fill:#ef5964;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24}
+		.st15 {fill:#f9b04f;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24}
+		.st16 {fill:#bfbfbf;stroke:#bfbfbf;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.75}
+		.st17 {fill:#000000;font-family:Aileron;font-size:0.499992em}
+		.st18 {fill:#000000;font-family:Aileron;font-size:0.666664em}
+		.st19 {fill:none;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:1}
+		.st20 {fill:#404040;font-family:微软雅黑;font-size:1.00001em;font-weight:bold}
+		.st21 {font-family:Microsoft Sans Serif;font-size:1em}
+		.st22 {fill:none;fill-rule:evenodd;font-size:12px;overflow:visible;stroke-linecap:square;stroke-miterlimit:3}
+	]]>
+	</style>
+
+	<g v:mID="7" v:index="1" v:groupContext="foregroundPage">
+		<title>页-1</title>
+		<v:pageProperties v:drawingScale="0.0393701" v:pageScale="0.0393701" v:drawingUnits="24" v:shadowOffsetX="8.50394"
+				v:shadowOffsetY="-8.50394"/>
+		<v:layer v:name="PART_TOP_2DLINE_00" v:index="0" v:print="false" v:snap="false" v:glue="false"/>
+		<v:layer v:name="PADS_XR_123" v:index="1" v:print="false" v:snap="false" v:glue="false"/>
+		<g id="shape575-1" v:mID="575" v:groupContext="shape" v:layerMember="0" transform="translate(72.9369,-126.075)">
+			<title>框.27</title>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+			</v:userDefs>
+			<rect x="0" y="144.825" width="541.417" height="654.803" class="st1"/>
+		</g>
+		<g id="group16-3" transform="translate(81.4408,-732.689)" v:mID="16" v:groupContext="group">
+			<title>工作表.16</title>
+			<g id="shape17-4" v:mID="17" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.17</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 779.79 L0 779.79 L0 799.63 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="shape13-6" v:mID="13" v:groupContext="shape" transform="translate(81.4408,-732.689)">
+			<title>工作表.13</title>
+			<desc>1 GND</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="14.1732" cy="789.707" width="28.35" height="19.8425"/>
+			<text x="12.72" y="788.21" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>1<v:lf/><tspan
+						x="8.83" dy="1.2em" class="st4">GND</tspan></text>		</g>
+		<g id="group21-9" transform="translate(81.4408,-698.673)" v:mID="21" v:groupContext="group">
+			<title>工作表.21</title>
+			<g id="shape22-10" v:mID="22" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.22</title>
+				<desc>2 GND</desc>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="14.1732" cy="789.707" width="28.35" height="19.8425"/>
+				<path d="M0 799.63 L28.35 799.63 L28.35 779.79 L0 779.79 L0 799.63 Z" class="st2"/>
+				<text x="12.72" y="788.21" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>2<v:lf/><tspan
+							x="8.83" dy="1.2em" class="st4">GND</tspan></text>			</g>
+		</g>
+		<g id="group26-14" transform="translate(81.4408,-664.657)" v:mID="26" v:groupContext="group">
+			<title>工作表.26</title>
+			<g id="shape27-15" v:mID="27" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.27</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 779.79 L0 779.79 L0 799.63 Z" class="st5"/>
+			</g>
+		</g>
+		<g id="shape23-17" v:mID="23" v:groupContext="shape" transform="translate(81.4408,-664.657)">
+			<title>工作表.23</title>
+			<desc>3 GPIO0</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="14.1732" cy="789.707" width="28.35" height="19.8425"/>
+			<text x="12.72" y="788.21" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>3<v:lf/><tspan
+						x="6.95" dy="1.2em" class="st4">GPIO0</tspan></text>		</g>
+		<g id="group31-20" transform="translate(81.4408,-630.642)" v:mID="31" v:groupContext="group">
+			<title>工作表.31</title>
+			<g id="shape32-21" v:mID="32" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.32</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 779.79 L0 779.79 L0 799.63 Z" class="st5"/>
+			</g>
+		</g>
+		<g id="shape28-23" v:mID="28" v:groupContext="shape" transform="translate(81.4408,-630.642)">
+			<title>工作表.28</title>
+			<desc>4 GPIO1</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="14.1732" cy="789.707" width="28.35" height="19.8425"/>
+			<text x="12.72" y="788.21" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>4<v:lf/><tspan
+						x="6.95" dy="1.2em" class="st4">GPIO1</tspan></text>		</g>
+		<g id="group36-26" transform="translate(81.4408,-596.626)" v:mID="36" v:groupContext="group">
+			<title>工作表.36</title>
+			<g id="shape37-27" v:mID="37" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.37</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 779.79 L0 779.79 L0 799.63 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="shape33-29" v:mID="33" v:groupContext="shape" transform="translate(81.4408,-596.626)">
+			<title>工作表.33</title>
+			<desc>5 GND</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="14.1732" cy="789.707" width="28.35" height="19.8425"/>
+			<text x="12.72" y="788.21" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>5<v:lf/><tspan
+						x="8.83" dy="1.2em" class="st4">GND</tspan></text>		</g>
+		<g id="group46-32" transform="translate(81.4408,-528.595)" v:mID="46" v:groupContext="group">
+			<title>工作表.46</title>
+			<desc>7 GND</desc>
+			<g id="shape47-33" v:mID="47" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.47</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 779.79 L0 779.79 L0 799.63 Z" class="st2"/>
+			</g>
+			<g id="shape46-35" v:mID="46" v:groupContext="groupContent">
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="14.1732" cy="789.707" width="28.35" height="19.8425"/>
+				<text x="12.72" y="788.21" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>7<v:lf/><tspan
+							x="8.83" dy="1.2em" class="st4">GND</tspan></text>			</g>
+		</g>
+		<g id="group61-38" transform="translate(81.4408,-426.547)" v:mID="61" v:groupContext="group">
+			<title>工作表.61</title>
+			<desc>10 DBG_TXD</desc>
+			<g id="shape62-39" v:mID="62" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.62</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 779.79 L0 779.79 L0 799.63 Z" class="st6"/>
+			</g>
+			<g id="shape61-41" v:mID="61" v:groupContext="groupContent">
+				<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197"/>
+				<v:textRect cx="14.1732" cy="789.707" width="28.35" height="19.8425"/>
+				<text x="11.27" y="788.21" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>10<v:lf/><tspan
+							x="2.94" dy="1.2em" class="st4">DBG_TXD</tspan></text>			</g>
+		</g>
+		<g id="group66-44" transform="translate(81.4408,-392.532)" v:mID="66" v:groupContext="group">
+			<title>工作表.66</title>
+			<g id="shape67-45" v:mID="67" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.67</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 779.79 L0 779.79 L0 799.63 Z" class="st6"/>
+			</g>
+		</g>
+		<g id="shape63-47" v:mID="63" v:groupContext="shape" transform="translate(81.4408,-392.532)">
+			<title>工作表.63</title>
+			<desc>11 DBG_RXD</desc>
+			<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197"/>
+			<v:textRect cx="14.1732" cy="789.707" width="28.35" height="19.8425"/>
+			<text x="11.27" y="788.21" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>11<v:lf/><tspan
+						x="2.93" dy="1.2em" class="st4">DBG_RXD</tspan></text>		</g>
+		<g id="group71-50" transform="translate(81.4408,-358.516)" v:mID="71" v:groupContext="group">
+			<title>工作表.71</title>
+			<g id="shape72-51" v:mID="72" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.72</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 779.79 L0 779.79 L0 799.63 Z" class="st6"/>
+			</g>
+		</g>
+		<g id="shape68-53" v:mID="68" v:groupContext="shape" transform="translate(81.4408,-358.516)">
+			<title>工作表.68</title>
+			<desc>12 UART0_TXD</desc>
+			<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197"/>
+			<v:textRect cx="14.1732" cy="789.707" width="28.35" height="19.8425"/>
+			<text x="11.27" y="788.21" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>12<v:lf/><tspan
+						x="0.23" dy="1.2em" class="st4">UART0_TXD</tspan></text>		</g>
+		<g id="group76-56" transform="translate(81.4408,-324.5)" v:mID="76" v:groupContext="group">
+			<title>工作表.76</title>
+			<g id="shape77-57" v:mID="77" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.77</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 779.79 L0 779.79 L0 799.63 Z" class="st6"/>
+			</g>
+		</g>
+		<g id="shape73-59" v:mID="73" v:groupContext="shape" transform="translate(81.4408,-324.5)">
+			<title>工作表.73</title>
+			<desc>13 UART0_RXD</desc>
+			<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197"/>
+			<v:textRect cx="14.1732" cy="789.707" width="28.35" height="19.8425"/>
+			<text x="11.27" y="788.21" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>13<v:lf/><tspan
+						x="0.21" dy="1.2em" class="st4">UART0_RXD</tspan></text>		</g>
+		<g id="group81-62" transform="translate(81.4408,-290.484)" v:mID="81" v:groupContext="group">
+			<title>工作表.81</title>
+			<g id="shape82-63" v:mID="82" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.82</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 779.79 L0 779.79 L0 799.63 Z" class="st6"/>
+			</g>
+		</g>
+		<g id="shape78-65" v:mID="78" v:groupContext="shape" transform="translate(81.4408,-290.484)">
+			<title>工作表.78</title>
+			<desc>14 UART0_CTS</desc>
+			<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197"/>
+			<v:textRect cx="14.1732" cy="789.707" width="28.35" height="19.8425"/>
+			<text x="11.27" y="788.21" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>14<v:lf/><tspan
+						x="0.35" dy="1.2em" class="st4">UART0_CTS</tspan></text>		</g>
+		<g id="group86-68" transform="translate(81.4408,-256.469)" v:mID="86" v:groupContext="group">
+			<title>工作表.86</title>
+			<g id="shape87-69" v:mID="87" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.87</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 779.79 L0 779.79 L0 799.63 Z" class="st6"/>
+			</g>
+		</g>
+		<g id="shape83-71" v:mID="83" v:groupContext="shape" transform="translate(81.4408,-256.469)">
+			<title>工作表.83</title>
+			<desc>15 UART0_RTS</desc>
+			<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197"/>
+			<v:textRect cx="14.1732" cy="789.707" width="28.35" height="19.8425"/>
+			<text x="11.27" y="788.21" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>15<v:lf/><tspan
+						x="0.55" dy="1.2em" class="st4">UART0_RTS</tspan></text>		</g>
+		<g id="group91-74" transform="translate(81.4408,-222.453)" v:mID="91" v:groupContext="group">
+			<title>工作表.91</title>
+			<g id="shape92-75" v:mID="92" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.92</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 779.79 L0 779.79 L0 799.63 Z" class="st7"/>
+			</g>
+		</g>
+		<g id="shape88-77" v:mID="88" v:groupContext="shape" transform="translate(81.4408,-222.453)">
+			<title>工作表.88</title>
+			<desc>16 BOOT_MODE</desc>
+			<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197"/>
+			<v:textRect cx="14.1732" cy="789.707" width="28.35" height="19.8425"/>
+			<text x="11.27" y="788.81" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>16<v:lf/><tspan
+						x="1.95" dy="1.275em" class="st8">BOOT_MODE</tspan></text>		</g>
+		<g id="group96-80" transform="translate(81.4408,-188.437)" v:mID="96" v:groupContext="group">
+			<title>工作表.96</title>
+			<g id="shape97-81" v:mID="97" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.97</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 779.79 L0 779.79 L0 799.63 Z" class="st5"/>
+			</g>
+		</g>
+		<g id="shape93-83" v:mID="93" v:groupContext="shape" transform="translate(81.4408,-188.437)">
+			<title>工作表.93</title>
+			<desc>17 PWM0</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="14.1732" cy="789.707" width="28.35" height="19.8425"/>
+			<text x="11.27" y="788.21" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>17<v:lf/><tspan
+						x="6.68" dy="1.2em" class="st4">PWM0</tspan></text>		</g>
+		<g id="group101-86" transform="translate(81.4408,-154.421)" v:mID="101" v:groupContext="group">
+			<title>工作表.101</title>
+			<g id="shape102-87" v:mID="102" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.102</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 779.79 L0 779.79 L0 799.63 Z" class="st5"/>
+			</g>
+		</g>
+		<g id="shape98-89" v:mID="98" v:groupContext="shape" transform="translate(81.4408,-154.421)">
+			<title>工作表.98</title>
+			<desc>18 PWM1</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="14.1732" cy="789.707" width="28.35" height="19.8425"/>
+			<text x="11.27" y="788.21" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>18<v:lf/><tspan
+						x="6.68" dy="1.2em" class="st4">PWM1</tspan></text>		</g>
+		<g id="group106-92" transform="translate(-650.156,660.797) rotate(-90)" v:mID="106" v:groupContext="group">
+			<title>工作表.106</title>
+			<g id="shape107-93" v:mID="107" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.107</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="shape103-95" v:mID="103" v:groupContext="shape" transform="translate(129.63,-134.579)">
+			<title>工作表.103</title>
+			<desc>19 GND</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="9.92126" cy="785.455" width="19.85" height="28.3465" transform="rotate(-180)"/>
+			<text x="-6.92" y="-788.35" writing-mode="tb-rl" transform="rotate(180)" class="st3" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>19<v:lf/><tspan dx="-1.2em" y="-158.163em -157.453em -156.735em" class="st4">GND</tspan></text>		</g>
+		<g id="group111-98" transform="translate(-616.14,660.797) rotate(-90)" v:mID="111" v:groupContext="group">
+			<title>工作表.111</title>
+			<g id="shape112-99" v:mID="112" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.112</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st9"/>
+			</g>
+		</g>
+		<g id="shape108-101" v:mID="108" v:groupContext="shape" transform="translate(163.646,-134.579)">
+			<title>工作表.108</title>
+			<desc>20 WIFI_ANT</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="9.92126" cy="785.455" width="19.85" height="28.3465" transform="rotate(-180)"/>
+			<text x="-7.52" y="-788.35" writing-mode="tb-rl" transform="rotate(180)" class="st3" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>20<v:lf/><tspan dx="-1.35em" y="-198.616em -197.664em -197.4em -196.833em -196.569em
+							 -196.069em -195.43em -194.712em" class="st8">WIFI_ANT</tspan></text>		</g>
+		<g id="group116-104" transform="translate(-582.124,660.797) rotate(-90)" v:mID="116" v:groupContext="group">
+			<title>工作表.116</title>
+			<g id="shape117-105" v:mID="117" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.117</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="shape113-107" v:mID="113" v:groupContext="shape" transform="translate(197.661,-134.579)">
+			<title>工作表.113</title>
+			<desc>21 GND</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="9.92126" cy="785.455" width="19.85" height="28.3465" transform="rotate(-180)"/>
+			<text x="-6.92" y="-788.35" writing-mode="tb-rl" transform="rotate(180)" class="st3" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>21<v:lf/><tspan dx="-1.2em" y="-158.163em -157.453em -156.735em" class="st4">GND</tspan></text>		</g>
+		<g id="group121-110" transform="translate(-548.108,660.797) rotate(-90)" v:mID="121" v:groupContext="group">
+			<title>工作表.121</title>
+			<g id="shape122-111" v:mID="122" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.122</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st10"/>
+			</g>
+		</g>
+		<g id="shape118-113" v:mID="118" v:groupContext="shape" transform="translate(231.677,-134.579)">
+			<title>工作表.118</title>
+			<desc>22 IIC1_SCL</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="9.92126" cy="785.455" width="19.85" height="28.3465" transform="rotate(-180)"/>
+			<text x="-7.52" y="-788.35" writing-mode="tb-rl" transform="rotate(180)" class="st3" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>22<v:lf/><tspan dx="-1.35em" y="-198.441em -198.177em -197.913em -197.214em
+							 -196.634em -196.134em -195.549em -194.85em" class="st8">IIC1_SCL</tspan></text>		</g>
+		<g id="group126-116" transform="translate(-514.093,660.797) rotate(-90)" v:mID="126" v:groupContext="group">
+			<title>工作表.126</title>
+			<g id="shape127-117" v:mID="127" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.127</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st10"/>
+			</g>
+		</g>
+		<g id="shape123-119" v:mID="123" v:groupContext="shape" transform="translate(265.693,-134.579)">
+			<title>工作表.123</title>
+			<desc>23 IIC1_SDA</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="9.92126" cy="785.455" width="19.85" height="28.3465" transform="rotate(-180)"/>
+			<text x="-7.52" y="-788.35" writing-mode="tb-rl" transform="rotate(180)" class="st3" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>23<v:lf/><tspan dx="-1.35em" y="-198.478em -198.214em -197.95em -197.251em
+							 -196.671em -196.171em -195.586em -194.877em" class="st8">IIC1_SDA</tspan></text>		</g>
+		<g id="group131-122" transform="translate(-480.077,660.797) rotate(-90)" v:mID="131" v:groupContext="group">
+			<title>工作表.131</title>
+			<g id="shape132-123" v:mID="132" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.132</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st11"/>
+			</g>
+		</g>
+		<g id="shape128-125" v:mID="128" v:groupContext="shape" transform="translate(299.709,-134.579)">
+			<title>工作表.128</title>
+			<desc>24 USIM0_CLK</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="9.92126" cy="785.455" width="19.85" height="28.3465" transform="rotate(-180)"/>
+			<text x="-3.92" y="-788.35" writing-mode="tb-rl" transform="rotate(180)" class="st3" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>24<v:lf/><tspan dx="-1.2em" y="-158.833em -158.151em -157.566em -157.302em
+							 -156.436em -155.856em" class="st4">USIM0_</tspan><tspan dx="-1.2em" y="-158.036em -157.337em -156.762em"
+						class="st4">CLK</tspan></text>		</g>
+		<g id="group136-129" transform="translate(-446.061,660.797) rotate(-90)" v:mID="136" v:groupContext="group">
+			<title>工作表.136</title>
+			<g id="shape137-130" v:mID="137" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.137</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st11"/>
+			</g>
+		</g>
+		<g id="shape133-132" v:mID="133" v:groupContext="shape" transform="translate(333.724,-134.579)">
+			<title>工作表.133</title>
+			<desc>25 USIM0_DET</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="9.92126" cy="785.455" width="19.85" height="28.3465" transform="rotate(-180)"/>
+			<text x="-3.92" y="-788.35" writing-mode="tb-rl" transform="rotate(180)" class="st3" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>25<v:lf/><tspan dx="-1.2em" y="-158.833em -158.151em -157.566em -157.302em
+							 -156.436em -155.856em" class="st4">USIM0_</tspan><tspan dx="-1.2em" y="-158.049em -157.34em -156.753em"
+						class="st4">DET</tspan></text>		</g>
+		<g id="group141-136" transform="translate(-412.045,660.797) rotate(-90)" v:mID="141" v:groupContext="group">
+			<title>工作表.141</title>
+			<g id="shape142-137" v:mID="142" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.142</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st12"/>
+			</g>
+		</g>
+		<g id="shape138-139" v:mID="138" v:groupContext="shape" transform="translate(367.74,-134.579)">
+			<title>工作表.138</title>
+			<desc>26 USB_DET</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="9.92126" cy="785.455" width="19.85" height="28.3465" transform="rotate(-180)"/>
+			<text x="-7.52" y="-788.35" writing-mode="tb-rl" transform="rotate(180)" class="st3" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>26<v:lf/><tspan dx="-1.35em" y="-198.509em -197.827em -197.242em -196.615em
+							 -196.115em -195.406em -194.819em" class="st8">USB_DET</tspan></text>		</g>
+		<g id="group146-142" transform="translate(-378.03,660.797) rotate(-90)" v:mID="146" v:groupContext="group">
+			<title>工作表.146</title>
+			<g id="shape147-143" v:mID="147" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.147</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st12"/>
+			</g>
+		</g>
+		<g id="shape143-145" v:mID="143" v:groupContext="shape" transform="translate(401.756,-134.579)">
+			<title>工作表.143</title>
+			<desc>27 USB_DM</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="9.92126" cy="785.455" width="19.85" height="28.3465" transform="rotate(-180)"/>
+			<text x="-6.92" y="-788.35" writing-mode="tb-rl" transform="rotate(180)" class="st3" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>27<v:lf/><tspan dx="-1.2em" y="-159.079em -158.397em -157.812em -157.185em
+							 -156.685em -155.976em" class="st4">USB_DM</tspan></text>		</g>
+		<g id="group151-148" transform="translate(-344.014,660.797) rotate(-90)" v:mID="151" v:groupContext="group">
+			<title>工作表.151</title>
+			<g id="shape152-149" v:mID="152" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.152</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st12"/>
+			</g>
+		</g>
+		<g id="shape148-151" v:mID="148" v:groupContext="shape" transform="translate(435.772,-134.579)">
+			<title>工作表.148</title>
+			<desc>28 USB_DP</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="9.92126" cy="785.455" width="19.85" height="28.3465" transform="rotate(-180)"/>
+			<text x="-6.92" y="-788.35" writing-mode="tb-rl" transform="rotate(180)" class="st3" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>28<v:lf/><tspan dx="-1.2em" y="-158.945em -158.263em -157.678em -157.051em
+							 -156.551em -155.842em" class="st4">USB_DP</tspan></text>		</g>
+		<g id="group156-154" transform="translate(-309.998,660.797) rotate(-90)" v:mID="156" v:groupContext="group">
+			<title>工作表.156</title>
+			<g id="shape157-155" v:mID="157" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.157</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="shape153-157" v:mID="153" v:groupContext="shape" transform="translate(469.787,-134.579)">
+			<title>工作表.153</title>
+			<desc>29 GND</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="9.92126" cy="785.455" width="19.85" height="28.3465" transform="rotate(-180)"/>
+			<text x="-6.92" y="-788.35" writing-mode="tb-rl" transform="rotate(180)" class="st3" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>29<v:lf/><tspan dx="-1.2em" y="-158.163em -157.453em -156.735em" class="st4">GND</tspan></text>		</g>
+		<g id="group161-160" transform="translate(-275.982,660.797) rotate(-90)" v:mID="161" v:groupContext="group">
+			<title>工作表.161</title>
+			<g id="shape162-161" v:mID="162" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.162</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st13"/>
+			</g>
+		</g>
+		<g id="shape158-163" v:mID="158" v:groupContext="shape" transform="translate(503.803,-134.579)">
+			<title>工作表.158</title>
+			<desc>30 ADC0</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="9.92126" cy="785.455" width="19.85" height="28.3465" transform="rotate(-180)"/>
+			<text x="-6.92" y="-788.35" writing-mode="tb-rl" transform="rotate(180)" class="st3" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>30<v:lf/><tspan dx="-1.2em" y="-158.408em -157.769em -157.06em -156.361em"
+						class="st4">ADC0</tspan></text>		</g>
+		<g id="group166-166" transform="translate(-241.967,660.797) rotate(-90)" v:mID="166" v:groupContext="group">
+			<title>工作表.166</title>
+			<g id="shape167-167" v:mID="167" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.167</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st13"/>
+			</g>
+		</g>
+		<g id="shape163-169" v:mID="163" v:groupContext="shape" transform="translate(537.819,-134.579)">
+			<title>工作表.163</title>
+			<desc>31 ADC1</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="9.92126" cy="785.455" width="19.85" height="28.3465" transform="rotate(-180)"/>
+			<text x="-6.92" y="-788.35" writing-mode="tb-rl" transform="rotate(180)" class="st3" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>31<v:lf/><tspan dx="-1.2em" y="-158.408em -157.769em -157.06em -156.361em"
+						class="st4">ADC1</tspan></text>		</g>
+		<g id="group171-172" transform="translate(577.504,-154.421)" v:mID="171" v:groupContext="group">
+			<title>工作表.171</title>
+			<g id="shape172-173" v:mID="172" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.172</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 779.79 L0 779.79 L0 799.63 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="shape168-175" v:mID="168" v:groupContext="shape" transform="translate(577.504,-154.421)">
+			<title>工作表.168</title>
+			<desc>32 GND</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="14.1732" cy="789.707" width="28.35" height="19.8425"/>
+			<text x="11.27" y="788.21" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>32<v:lf/><tspan
+						x="8.83" dy="1.2em" class="st4">GND</tspan></text>		</g>
+		<g id="group176-178" transform="translate(577.504,-188.437)" v:mID="176" v:groupContext="group">
+			<title>工作表.176</title>
+			<g id="shape177-179" v:mID="177" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.177</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 779.79 L0 779.79 L0 799.63 Z" class="st14"/>
+			</g>
+		</g>
+		<g id="shape173-181" v:mID="173" v:groupContext="shape" transform="translate(577.504,-188.437)">
+			<title>工作表.173</title>
+			<desc>33 VBAT</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="14.1732" cy="789.707" width="28.35" height="19.8425"/>
+			<text x="11.27" y="788.21" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>33<v:lf/><tspan
+						x="7.92" dy="1.2em" class="st4">VBAT</tspan></text>		</g>
+		<g id="group181-184" transform="translate(577.504,-222.453)" v:mID="181" v:groupContext="group">
+			<title>工作表.181</title>
+			<g id="shape182-185" v:mID="182" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.182</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 779.79 L0 779.79 L0 799.63 Z" class="st14"/>
+			</g>
+		</g>
+		<g id="shape178-187" v:mID="178" v:groupContext="shape" transform="translate(577.504,-222.453)">
+			<title>工作表.178</title>
+			<desc>34 VBAT</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="14.1732" cy="789.707" width="28.35" height="19.8425"/>
+			<text x="11.27" y="788.21" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>34<v:lf/><tspan
+						x="7.92" dy="1.2em" class="st4">VBAT</tspan></text>		</g>
+		<g id="group186-190" transform="translate(577.504,-256.469)" v:mID="186" v:groupContext="group">
+			<title>工作表.186</title>
+			<g id="shape187-191" v:mID="187" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.187</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 779.79 L0 779.79 L0 799.63 Z" class="st14"/>
+			</g>
+		</g>
+		<g id="shape183-193" v:mID="183" v:groupContext="shape" transform="translate(577.504,-256.469)">
+			<title>工作表.183</title>
+			<desc>35 VBAT</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="14.1732" cy="789.707" width="28.35" height="19.8425"/>
+			<text x="11.27" y="788.21" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>35<v:lf/><tspan
+						x="7.92" dy="1.2em" class="st4">VBAT</tspan></text>		</g>
+		<g id="group191-196" transform="translate(577.504,-290.484)" v:mID="191" v:groupContext="group">
+			<title>工作表.191</title>
+			<g id="shape192-197" v:mID="192" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.192</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 779.79 L0 779.79 L0 799.63 Z" class="st14"/>
+			</g>
+		</g>
+		<g id="shape188-199" v:mID="188" v:groupContext="shape" transform="translate(577.504,-290.484)">
+			<title>工作表.188</title>
+			<desc>36 VBAT</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="14.1732" cy="789.707" width="28.35" height="19.8425"/>
+			<text x="11.27" y="788.21" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>36<v:lf/><tspan
+						x="7.92" dy="1.2em" class="st4">VBAT</tspan></text>		</g>
+		<g id="group196-202" transform="translate(577.504,-324.5)" v:mID="196" v:groupContext="group">
+			<title>工作表.196</title>
+			<g id="shape197-203" v:mID="197" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.197</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 779.79 L0 779.79 L0 799.63 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="shape193-205" v:mID="193" v:groupContext="shape" transform="translate(577.504,-324.5)">
+			<title>工作表.193</title>
+			<desc>37 GND</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="14.1732" cy="789.707" width="28.35" height="19.8425"/>
+			<text x="11.27" y="788.21" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>37<v:lf/><tspan
+						x="8.83" dy="1.2em" class="st4">GND</tspan></text>		</g>
+		<g id="group201-208" transform="translate(577.504,-358.516)" v:mID="201" v:groupContext="group">
+			<title>工作表.201</title>
+			<g id="shape202-209" v:mID="202" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.202</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 779.79 L0 779.79 L0 799.63 Z" class="st7"/>
+			</g>
+		</g>
+		<g id="shape198-211" v:mID="198" v:groupContext="shape" transform="translate(577.504,-358.516)">
+			<title>工作表.198</title>
+			<desc>38 PWR_ON/OFF</desc>
+			<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197"/>
+			<v:textRect cx="14.1732" cy="789.707" width="28.35" height="19.8425"/>
+			<text x="11.27" y="788.21" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>38<v:lf/><tspan
+						x="1.58" dy="1.5em" class="st8">PWR_ON/OFF</tspan></text>		</g>
+		<g id="group206-214" transform="translate(577.504,-392.532)" v:mID="206" v:groupContext="group">
+			<title>工作表.206</title>
+			<g id="shape207-215" v:mID="207" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.207</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 779.79 L0 779.79 L0 799.63 Z" class="st7"/>
+			</g>
+		</g>
+		<g id="shape203-217" v:mID="203" v:groupContext="shape" transform="translate(577.504,-392.532)">
+			<title>工作表.203</title>
+			<desc>39 RESET</desc>
+			<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197"/>
+			<v:textRect cx="14.1732" cy="789.707" width="28.35" height="19.8425"/>
+			<text x="11.27" y="788.21" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>39<v:lf/><tspan
+						x="6.7" dy="1.2em" class="st4">RESET</tspan></text>		</g>
+		<g id="group211-220" transform="translate(577.504,-426.547)" v:mID="211" v:groupContext="group">
+			<title>工作表.211</title>
+			<g id="shape212-221" v:mID="212" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.212</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 779.79 L0 779.79 L0 799.63 Z" class="st7"/>
+			</g>
+		</g>
+		<g id="shape208-223" v:mID="208" v:groupContext="shape" transform="translate(577.504,-426.547)">
+			<title>工作表.208</title>
+			<desc>40 USB_PWRKEY</desc>
+			<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197"/>
+			<v:textRect cx="14.1732" cy="789.707" width="28.35" height="19.8425"/>
+			<text x="11.27" y="788.21" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>40<v:lf/><tspan
+						x="1.49" dy="1.5em" class="st8">USB_PWRKEY</tspan></text>		</g>
+		<g id="group226-226" transform="translate(577.504,-528.595)" v:mID="226" v:groupContext="group">
+			<title>工作表.226</title>
+			<desc>43 SPI0_CS</desc>
+			<g id="shape227-227" v:mID="227" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.227</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 779.79 L0 779.79 L0 799.63 Z" class="st15"/>
+			</g>
+			<g id="shape226-229" v:mID="226" v:groupContext="groupContent">
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="14.1732" cy="789.707" width="28.35" height="19.8425"/>
+				<text x="11.27" y="788.21" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>43<v:lf/><tspan
+							x="4.65" dy="1.2em" class="st4">SPI0_CS</tspan></text>			</g>
+		</g>
+		<g id="group256-232" transform="translate(577.504,-732.689)" v:mID="256" v:groupContext="group">
+			<title>工作表.256</title>
+			<g id="shape257-233" v:mID="257" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.257</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 779.79 L0 779.79 L0 799.63 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="shape253-235" v:mID="253" v:groupContext="shape" transform="translate(577.504,-732.689)">
+			<title>工作表.253</title>
+			<desc>49 GND</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="14.1732" cy="789.707" width="28.35" height="19.8425"/>
+			<text x="11.27" y="788.21" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>49<v:lf/><tspan
+						x="8.83" dy="1.2em" class="st4">GND</tspan></text>		</g>
+		<g id="group261-238" transform="translate(-241.967,51.3484) rotate(-90)" v:mID="261" v:groupContext="group">
+			<title>工作表.261</title>
+			<g id="shape262-239" v:mID="262" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.262</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st16"/>
+			</g>
+		</g>
+		<g id="shape258-241" v:mID="258" v:groupContext="shape" transform="translate(537.819,-744.028)">
+			<title>工作表.258</title>
+			<desc>50 GND</desc>
+			<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197"/>
+			<v:textRect cx="9.92126" cy="785.455" width="19.85" height="28.3465" transform="rotate(-90)"/>
+			<text x="-788.35" y="8.42" transform="rotate(-90)" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>50<v:lf/><tspan
+						x="-790.8" dy="1.2em" class="st4">GND</tspan></text>		</g>
+		<g id="group266-244" transform="translate(-275.982,51.3484) rotate(-90)" v:mID="266" v:groupContext="group">
+			<title>工作表.266</title>
+			<g id="shape267-245" v:mID="267" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.267</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st9"/>
+			</g>
+		</g>
+		<g id="shape263-247" v:mID="263" v:groupContext="shape" transform="translate(503.803,-744.028)">
+			<title>工作表.263</title>
+			<desc>51 ANT_DIV</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="9.92126" cy="785.455" width="19.85" height="28.3465" transform="rotate(-180)"/>
+			<text x="-6.92" y="-788.35" writing-mode="tb-rl" transform="rotate(180)" class="st3" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>51<v:lf/><tspan dx="-1.5em" y="-198.39em -197.751em -197.033em -196.421em -195.921em
+							 -195.212em -194.948em" class="st8">ANT_DIV</tspan></text>		</g>
+		<g id="group271-250" transform="translate(-309.998,51.3484) rotate(-90)" v:mID="271" v:groupContext="group">
+			<title>工作表.271</title>
+			<g id="shape272-251" v:mID="272" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.272</title>
+				<desc>52 GND</desc>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+				<v:textRect cx="9.92126" cy="789.707" width="19.85" height="19.8425" transform="rotate(-90)"/>
+				<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st2"/>
+				<text x="-786.71" y="7.02" writing-mode="tb-rl" transform="rotate(-90)" class="st3" v:langID="2052"><v:paragraph
+							v:horizAlign="1"/><v:tabList/>52<v:lf/><tspan dx="-1.2em" y="0.916em 1.626em 2.344em" class="st4">GND</tspan></text>			</g>
+		</g>
+		<g id="group276-255" transform="translate(-344.014,51.3484) rotate(-90)" v:mID="276" v:groupContext="group">
+			<title>工作表.276</title>
+			<g id="shape277-256" v:mID="277" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.277</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st5"/>
+			</g>
+		</g>
+		<g id="shape273-258" v:mID="273" v:groupContext="shape" transform="translate(435.772,-744.028)">
+			<title>工作表.273</title>
+			<desc>53 GPIO2</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="9.92126" cy="785.455" width="19.85" height="28.3465" transform="rotate(-180)"/>
+			<text x="-6.92" y="-788.35" writing-mode="tb-rl" transform="rotate(180)" class="st3" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>53<v:lf/><tspan dx="-1.2em" y="-158.539em -157.829em -157.231em -156.967em
+							 -156.23em" class="st4">GPIO2</tspan></text>		</g>
+		<g id="group281-261" transform="translate(-378.03,51.3484) rotate(-90)" v:mID="281" v:groupContext="group">
+			<title>工作表.281</title>
+			<g id="shape282-262" v:mID="282" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.282</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st5"/>
+			</g>
+		</g>
+		<g id="shape278-264" v:mID="278" v:groupContext="shape" transform="translate(401.756,-744.028)">
+			<title>工作表.278</title>
+			<desc>54 GPIO3</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="9.92126" cy="785.455" width="19.85" height="28.3465" transform="rotate(-180)"/>
+			<text x="-6.92" y="-788.35" writing-mode="tb-rl" transform="rotate(180)" class="st3" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>54<v:lf/><tspan dx="-1.2em" y="-158.539em -157.829em -157.231em -156.967em
+							 -156.23em" class="st4">GPIO3</tspan></text>		</g>
+		<g id="group286-267" transform="translate(-412.045,51.3484) rotate(-90)" v:mID="286" v:groupContext="group">
+			<title>工作表.286</title>
+			<g id="shape287-268" v:mID="287" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.287</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st5"/>
+			</g>
+		</g>
+		<g id="shape283-270" v:mID="283" v:groupContext="shape" transform="translate(367.74,-744.028)">
+			<title>工作表.283</title>
+			<desc>55 GPIO4</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="9.92126" cy="785.455" width="19.85" height="28.3465" transform="rotate(-180)"/>
+			<text x="-6.92" y="-788.35" writing-mode="tb-rl" transform="rotate(180)" class="st3" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>55<v:lf/><tspan dx="-1.2em" y="-158.539em -157.829em -157.231em -156.967em
+							 -156.23em" class="st4">GPIO4</tspan></text>		</g>
+		<g id="group291-273" transform="translate(-446.061,51.3484) rotate(-90)" v:mID="291" v:groupContext="group">
+			<title>工作表.291</title>
+			<g id="shape292-274" v:mID="292" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.292</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st5"/>
+			</g>
+		</g>
+		<g id="shape288-276" v:mID="288" v:groupContext="shape" transform="translate(333.724,-744.028)">
+			<title>工作表.288</title>
+			<desc>56 GPIO5</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="9.92126" cy="785.455" width="19.85" height="28.3465" transform="rotate(-180)"/>
+			<text x="-6.92" y="-788.35" writing-mode="tb-rl" transform="rotate(180)" class="st3" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>56<v:lf/><tspan dx="-1.2em" y="-158.539em -157.829em -157.231em -156.967em
+							 -156.23em" class="st4">GPIO5</tspan></text>		</g>
+		<g id="group296-279" transform="translate(-480.077,51.3484) rotate(-90)" v:mID="296" v:groupContext="group">
+			<title>工作表.296</title>
+			<g id="shape297-280" v:mID="297" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.297</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st5"/>
+			</g>
+		</g>
+		<g id="shape293-282" v:mID="293" v:groupContext="shape" transform="translate(299.709,-744.028)">
+			<title>工作表.293</title>
+			<desc>57 GPIO6</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="9.92126" cy="785.455" width="19.85" height="28.3465" transform="rotate(-180)"/>
+			<text x="-6.92" y="-788.35" writing-mode="tb-rl" transform="rotate(180)" class="st3" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>57<v:lf/><tspan dx="-1.2em" y="-158.539em -157.829em -157.231em -156.967em
+							 -156.23em" class="st4">GPIO6</tspan></text>		</g>
+		<g id="shape302-285" v:mID="302" v:groupContext="shape" v:layerMember="1"
+				transform="translate(-514.093,51.3484) rotate(-90)">
+			<title>工作表.302</title>
+			<v:userDefs>
+				<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+				<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+			</v:userDefs>
+			<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st5"/>
+		</g>
+		<g id="shape298-287" v:mID="298" v:groupContext="shape" transform="translate(265.693,-744.028)">
+			<title>工作表.298</title>
+			<desc>58 GPIO7</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="9.92126" cy="785.455" width="19.85" height="28.3465" transform="rotate(-180)"/>
+			<text x="-6.92" y="-788.35" writing-mode="tb-rl" transform="rotate(180)" class="st3" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>58<v:lf/><tspan dx="-1.2em" y="-158.539em -157.829em -157.231em -156.967em
+							 -156.23em" class="st4">GPIO7</tspan></text>		</g>
+		<g id="shape307-290" v:mID="307" v:groupContext="shape" v:layerMember="1"
+				transform="translate(-548.108,51.3484) rotate(-90)">
+			<title>工作表.307</title>
+			<v:userDefs>
+				<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+				<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+			</v:userDefs>
+			<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st2"/>
+		</g>
+		<g id="shape303-292" v:mID="303" v:groupContext="shape" transform="translate(231.677,-744.028)">
+			<title>工作表.303</title>
+			<desc>59 GND</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="9.92126" cy="785.455" width="19.85" height="28.3465" transform="rotate(-180)"/>
+			<text x="-6.92" y="-788.35" writing-mode="tb-rl" transform="rotate(180)" class="st3" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>59<v:lf/><tspan dx="-1.2em" y="-158.163em -157.453em -156.735em" class="st4">GND</tspan></text>		</g>
+		<g id="shape312-295" v:mID="312" v:groupContext="shape" v:layerMember="1"
+				transform="translate(-582.124,51.3484) rotate(-90)">
+			<title>工作表.312</title>
+			<v:userDefs>
+				<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+				<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+			</v:userDefs>
+			<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st2"/>
+		</g>
+		<g id="shape308-297" v:mID="308" v:groupContext="shape" transform="translate(197.661,-744.028)">
+			<title>工作表.308</title>
+			<desc>60 GND</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="9.92126" cy="785.455" width="19.85" height="28.3465" transform="rotate(-180)"/>
+			<text x="-6.92" y="-788.35" writing-mode="tb-rl" transform="rotate(180)" class="st3" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>60<v:lf/><tspan dx="-1.2em" y="-158.163em -157.453em -156.735em" class="st4">GND</tspan></text>		</g>
+		<g id="shape317-300" v:mID="317" v:groupContext="shape" v:layerMember="1"
+				transform="translate(-616.14,51.3484) rotate(-90)">
+			<title>工作表.317</title>
+			<v:userDefs>
+				<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+				<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+			</v:userDefs>
+			<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st9"/>
+		</g>
+		<g id="shape313-302" v:mID="313" v:groupContext="shape" transform="translate(163.646,-744.028)">
+			<title>工作表.313</title>
+			<desc>61 ANT_MAIN</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="9.92126" cy="785.455" width="19.85" height="28.3465" transform="rotate(-180)"/>
+			<text x="-7.52" y="-788.35" writing-mode="tb-rl" transform="rotate(180)" class="st3" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>61<v:lf/><tspan dx="-1.35em" y="-198.836em -198.197em -197.479em -196.867em
+							 -196.367em -195.501em -194.862em -194.598em" class="st8">ANT_MAIN</tspan></text>		</g>
+		<g id="shape322-305" v:mID="322" v:groupContext="shape" v:layerMember="1"
+				transform="translate(-650.156,51.3484) rotate(-90)">
+			<title>工作表.322</title>
+			<v:userDefs>
+				<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+				<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+			</v:userDefs>
+			<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st2"/>
+		</g>
+		<g id="shape318-307" v:mID="318" v:groupContext="shape" transform="translate(129.63,-744.028)">
+			<title>工作表.318</title>
+			<desc>62 GND</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="9.92126" cy="785.455" width="19.85" height="28.3465" transform="rotate(-180)"/>
+			<text x="-6.92" y="-788.35" writing-mode="tb-rl" transform="rotate(180)" class="st3" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>62<v:lf/><tspan dx="-1.2em" y="-158.163em -157.453em -156.735em" class="st4">GND</tspan></text>		</g>
+		<g id="group326-310" transform="translate(-275.982,122.215) rotate(-90)" v:mID="326" v:groupContext="group">
+			<title>工作表.326</title>
+			<g id="shape327-311" v:mID="327" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.327</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st5"/>
+			</g>
+		</g>
+		<g id="shape323-313" v:mID="323" v:groupContext="shape" transform="translate(503.803,-673.161)">
+			<title>工作表.323</title>
+			<desc>63 GPIO8</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="9.92126" cy="785.455" width="19.85" height="28.3465" transform="rotate(-180)"/>
+			<text x="-6.92" y="-788.35" writing-mode="tb-rl" transform="rotate(180)" class="st3" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>63<v:lf/><tspan dx="-1.2em" y="-158.539em -157.829em -157.231em -156.967em
+							 -156.23em" class="st4">GPIO8</tspan></text>		</g>
+		<g id="group331-316" transform="translate(-309.998,122.215) rotate(-90)" v:mID="331" v:groupContext="group">
+			<title>工作表.331</title>
+			<g id="shape332-317" v:mID="332" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.332</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st5"/>
+			</g>
+		</g>
+		<g id="shape328-319" v:mID="328" v:groupContext="shape" transform="translate(469.787,-673.161)">
+			<title>工作表.328</title>
+			<desc>64 GPIO10</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="9.92126" cy="785.455" width="19.85" height="28.3465" transform="rotate(-180)"/>
+			<text x="-6.92" y="-788.35" writing-mode="tb-rl" transform="rotate(180)" class="st3" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>64<v:lf/><tspan dx="-1.2em" y="-158.829em -158.119em -157.521em -157.257em
+							 -156.52em -155.94em" class="st4">GPIO10</tspan></text>		</g>
+		<g id="group336-322" transform="translate(-344.014,122.215) rotate(-90)" v:mID="336" v:groupContext="group">
+			<title>工作表.336</title>
+			<g id="shape337-323" v:mID="337" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.337</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st5"/>
+			</g>
+		</g>
+		<g id="shape333-325" v:mID="333" v:groupContext="shape" transform="translate(435.772,-673.161)">
+			<title>工作表.333</title>
+			<desc>65 GPIO10</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="9.92126" cy="785.455" width="19.85" height="28.3465" transform="rotate(-180)"/>
+			<text x="-6.92" y="-788.35" writing-mode="tb-rl" transform="rotate(180)" class="st3" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>65<v:lf/><tspan dx="-1.2em" y="-158.829em -158.119em -157.521em -157.257em
+							 -156.52em -155.94em" class="st4">GPIO10</tspan></text>		</g>
+		<g id="group341-328" transform="translate(-378.03,122.215) rotate(-90)" v:mID="341" v:groupContext="group">
+			<title>工作表.341</title>
+			<g id="shape342-329" v:mID="342" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.342</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st14"/>
+			</g>
+		</g>
+		<g id="shape338-331" v:mID="338" v:groupContext="shape" transform="translate(401.756,-673.161)">
+			<title>工作表.338</title>
+			<desc>66 VDD_3V3</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="9.92126" cy="785.455" width="19.85" height="28.3465" transform="rotate(-180)"/>
+			<text x="-7.52" y="-788.35" writing-mode="tb-rl" transform="rotate(180)" class="st3" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>66<v:lf/><tspan dx="-1.35em" y="-198.519em -197.897em -197.188em -196.479em
+							 -195.979em -195.399em -194.777em" class="st8">VDD_3V3</tspan></text>		</g>
+		<g id="group346-334" transform="translate(-412.045,122.215) rotate(-90)" v:mID="346" v:groupContext="group">
+			<title>工作表.346</title>
+			<g id="shape347-335" v:mID="347" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.347</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st5"/>
+			</g>
+		</g>
+		<g id="shape343-337" v:mID="343" v:groupContext="shape" transform="translate(367.74,-673.161)">
+			<title>工作表.343</title>
+			<desc>67 GPIO11</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="9.92126" cy="785.455" width="19.85" height="28.3465" transform="rotate(-180)"/>
+			<text x="-6.92" y="-788.35" writing-mode="tb-rl" transform="rotate(180)" class="st3" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>67<v:lf/><tspan dx="-1.2em" y="-158.829em -158.119em -157.521em -157.257em
+							 -156.52em -155.94em" class="st4">GPIO11</tspan></text>		</g>
+		<g id="group351-340" transform="translate(-446.061,122.215) rotate(-90)" v:mID="351" v:groupContext="group">
+			<title>工作表.351</title>
+			<g id="shape352-341" v:mID="352" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.352</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st5"/>
+			</g>
+		</g>
+		<g id="shape348-343" v:mID="348" v:groupContext="shape" transform="translate(333.724,-673.161)">
+			<title>工作表.348</title>
+			<desc>68 GPIO12</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="9.92126" cy="785.455" width="19.85" height="28.3465" transform="rotate(-180)"/>
+			<text x="-6.92" y="-788.35" writing-mode="tb-rl" transform="rotate(180)" class="st3" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>68<v:lf/><tspan dx="-1.2em" y="-158.829em -158.119em -157.521em -157.257em
+							 -156.52em -155.94em" class="st4">GPIO12</tspan></text>		</g>
+		<g id="group356-346" transform="translate(-480.077,122.215) rotate(-90)" v:mID="356" v:groupContext="group">
+			<title>工作表.356</title>
+			<g id="shape357-347" v:mID="357" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.357</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st5"/>
+			</g>
+		</g>
+		<g id="shape353-349" v:mID="353" v:groupContext="shape" transform="translate(299.709,-673.161)">
+			<title>工作表.353</title>
+			<desc>69 GPIO13</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="9.92126" cy="785.455" width="19.85" height="28.3465" transform="rotate(-180)"/>
+			<text x="-6.92" y="-788.35" writing-mode="tb-rl" transform="rotate(180)" class="st3" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>69<v:lf/><tspan dx="-1.2em" y="-158.829em -158.119em -157.521em -157.257em
+							 -156.52em -155.94em" class="st4">GPIO13</tspan></text>		</g>
+		<g id="group361-352" transform="translate(-514.093,122.215) rotate(-90)" v:mID="361" v:groupContext="group">
+			<title>工作表.361</title>
+			<g id="shape362-353" v:mID="362" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.362</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st5"/>
+			</g>
+		</g>
+		<g id="shape358-355" v:mID="358" v:groupContext="shape" transform="translate(265.693,-673.161)">
+			<title>工作表.358</title>
+			<desc>70 GPIO14</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="9.92126" cy="785.455" width="19.85" height="28.3465" transform="rotate(-180)"/>
+			<text x="-6.92" y="-788.35" writing-mode="tb-rl" transform="rotate(180)" class="st3" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>70<v:lf/><tspan dx="-1.2em" y="-158.829em -158.119em -157.521em -157.257em
+							 -156.52em -155.94em" class="st4">GPIO14</tspan></text>		</g>
+		<g id="group366-358" transform="translate(-548.108,122.215) rotate(-90)" v:mID="366" v:groupContext="group">
+			<title>工作表.366</title>
+			<g id="shape367-359" v:mID="367" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.367</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st5"/>
+			</g>
+		</g>
+		<g id="shape363-361" v:mID="363" v:groupContext="shape" transform="translate(231.677,-673.161)">
+			<title>工作表.363</title>
+			<desc>71 GPIO15</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="9.92126" cy="785.455" width="19.85" height="28.3465" transform="rotate(-180)"/>
+			<text x="-6.92" y="-788.35" writing-mode="tb-rl" transform="rotate(180)" class="st3" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>71<v:lf/><tspan dx="-1.2em" y="-158.829em -158.119em -157.521em -157.257em
+							 -156.52em -155.94em" class="st4">GPIO15</tspan></text>		</g>
+		<g id="group371-364" transform="translate(-582.124,122.215) rotate(-90)" v:mID="371" v:groupContext="group">
+			<title>工作表.371</title>
+			<g id="shape372-365" v:mID="372" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.372</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st5"/>
+			</g>
+		</g>
+		<g id="shape368-367" v:mID="368" v:groupContext="shape" transform="translate(197.661,-673.161)">
+			<title>工作表.368</title>
+			<desc>72 GPIO16</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="9.92126" cy="785.455" width="19.85" height="28.3465" transform="rotate(-180)"/>
+			<text x="-6.92" y="-788.35" writing-mode="tb-rl" transform="rotate(180)" class="st3" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>72<v:lf/><tspan dx="-1.2em" y="-158.829em -158.119em -157.521em -157.257em
+							 -156.52em -155.94em" class="st4">GPIO16</tspan></text>		</g>
+		<g id="group376-370" transform="translate(-616.14,122.215) rotate(-90)" v:mID="376" v:groupContext="group">
+			<title>工作表.376</title>
+			<g id="shape377-371" v:mID="377" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.377</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st5"/>
+			</g>
+		</g>
+		<g id="shape373-373" v:mID="373" v:groupContext="shape" transform="translate(163.646,-673.161)">
+			<title>工作表.373</title>
+			<desc>73 GPIO17</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="9.92126" cy="785.455" width="19.85" height="28.3465" transform="rotate(-180)"/>
+			<text x="-6.92" y="-788.35" writing-mode="tb-rl" transform="rotate(180)" class="st3" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>73<v:lf/><tspan dx="-1.2em" y="-158.829em -158.119em -157.521em -157.257em
+							 -156.52em -155.94em" class="st4">GPIO17</tspan></text>		</g>
+		<g id="group421-376" transform="translate(-344.014,589.931) rotate(-90)" v:mID="421" v:groupContext="group">
+			<title>工作表.421</title>
+			<desc>82 GND</desc>
+			<g id="shape422-377" v:mID="422" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.422</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st2"/>
+			</g>
+			<g id="shape421-379" v:mID="421" v:groupContext="groupContent">
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+				<v:textRect cx="9.92126" cy="789.707" width="19.85" height="19.8425" transform="rotate(-90)"/>
+				<text x="-786.71" y="7.02" writing-mode="tb-rl" transform="rotate(-90)" class="st3" v:langID="2052"><v:paragraph
+							v:horizAlign="1"/><v:tabList/>82<v:lf/><tspan dx="-1.2em" y="0.916em 1.626em 2.344em" class="st4">GND</tspan></text>			</g>
+		</g>
+		<g id="group426-382" transform="translate(-309.998,589.931) rotate(-90)" v:mID="426" v:groupContext="group">
+			<title>工作表.426</title>
+			<g id="shape427-383" v:mID="427" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.427</title>
+				<desc>83 UART1_RXD</desc>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197" v:verticalText="true"/>
+				<v:textRect cx="9.92126" cy="789.707" width="19.85" height="19.8425" transform="rotate(-90)"/>
+				<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st6"/>
+				<text x="-783.71" y="7.02" writing-mode="tb-rl" transform="rotate(-90)" class="st3" v:langID="2052"><v:paragraph
+							v:horizAlign="1"/><v:tabList/>83<v:lf/><tspan dx="-1.2em" y="0.168em 0.85em 1.489em 2.108em 2.72em 3.3em"
+							class="st4">UART1_</tspan><tspan dx="-1.2em" y="1.008em 1.627em 2.252em" class="st4">RXD</tspan></text>			</g>
+		</g>
+		<g id="group431-388" transform="translate(-275.982,589.931) rotate(-90)" v:mID="431" v:groupContext="group">
+			<title>工作表.431</title>
+			<desc>84 UART1_TXD</desc>
+			<g id="shape432-389" v:mID="432" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.432</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st6"/>
+			</g>
+			<g id="shape431-391" v:mID="431" v:groupContext="groupContent">
+				<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197" v:verticalText="true"/>
+				<v:textRect cx="9.92126" cy="789.707" width="19.85" height="19.8425" transform="rotate(-90)"/>
+				<text x="-783.71" y="7.02" writing-mode="tb-rl" transform="rotate(-90)" class="st3" v:langID="2052"><v:paragraph
+							v:horizAlign="1"/><v:tabList/>84<v:lf/><tspan dx="-1.2em" y="0.168em 0.85em 1.489em 2.108em 2.72em 3.3em"
+							class="st4">UART1_</tspan><tspan dx="-1.2em" y="1.011em 1.623em 2.248em" class="st4">TXD</tspan></text>			</g>
+		</g>
+		<g id="group436-395" transform="translate(216.087,-552.689)" v:mID="436" v:groupContext="group">
+			<title>工作表.436</title>
+			<g id="shape437-396" v:mID="437" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.437</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 771.28 L0 771.28 L0 799.63 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="shape433-398" v:mID="433" v:groupContext="shape" transform="translate(216.087,-552.689)">
+			<title>工作表.433</title>
+			<desc>85</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="14.1732" cy="785.455" width="28.35" height="28.3465" transform="rotate(-90)"/>
+			<text x="-785.45" y="10.69" writing-mode="tb-rl" transform="rotate(-90)" class="st17" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>85</text>		</g>
+		<g id="group441-400" transform="translate(216.087,-495.996)" v:mID="441" v:groupContext="group">
+			<title>工作表.441</title>
+			<g id="shape442-401" v:mID="442" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.442</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 771.28 L0 771.28 L0 799.63 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="shape438-403" v:mID="438" v:groupContext="shape" transform="translate(216.087,-495.996)">
+			<title>工作表.438</title>
+			<desc>86</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="14.1732" cy="785.455" width="28.35" height="28.3465" transform="rotate(-90)"/>
+			<text x="-785.45" y="10.69" writing-mode="tb-rl" transform="rotate(-90)" class="st17" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>86</text>		</g>
+		<g id="group446-405" transform="translate(216.087,-439.303)" v:mID="446" v:groupContext="group">
+			<title>工作表.446</title>
+			<g id="shape447-406" v:mID="447" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.447</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 771.28 L0 771.28 L0 799.63 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="shape443-408" v:mID="443" v:groupContext="shape" transform="translate(216.087,-439.303)">
+			<title>工作表.443</title>
+			<desc>87</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="14.1732" cy="785.455" width="28.35" height="28.3465" transform="rotate(-90)"/>
+			<text x="-785.45" y="10.69" writing-mode="tb-rl" transform="rotate(-90)" class="st17" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>87</text>		</g>
+		<g id="group451-410" transform="translate(216.087,-382.61)" v:mID="451" v:groupContext="group">
+			<title>工作表.451</title>
+			<g id="shape452-411" v:mID="452" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.452</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 771.28 L0 771.28 L0 799.63 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="shape448-413" v:mID="448" v:groupContext="shape" transform="translate(216.087,-382.61)">
+			<title>工作表.448</title>
+			<desc>88</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="14.1732" cy="785.455" width="28.35" height="28.3465" transform="rotate(-90)"/>
+			<text x="-785.45" y="10.69" writing-mode="tb-rl" transform="rotate(-90)" class="st17" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>88</text>		</g>
+		<g id="group456-415" transform="translate(216.087,-325.917)" v:mID="456" v:groupContext="group">
+			<title>工作表.456</title>
+			<g id="shape457-416" v:mID="457" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.457</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 771.28 L0 771.28 L0 799.63 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="shape453-418" v:mID="453" v:groupContext="shape" transform="translate(216.087,-325.917)">
+			<title>工作表.453</title>
+			<desc>89</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="14.1732" cy="785.455" width="28.35" height="28.3465" transform="rotate(-90)"/>
+			<text x="-785.45" y="10.69" writing-mode="tb-rl" transform="rotate(-90)" class="st17" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>89</text>		</g>
+		<g id="group461-420" transform="translate(272.779,-325.917)" v:mID="461" v:groupContext="group">
+			<title>工作表.461</title>
+			<g id="shape462-421" v:mID="462" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.462</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 771.28 L0 771.28 L0 799.63 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="shape458-423" v:mID="458" v:groupContext="shape" transform="translate(272.779,-325.917)">
+			<title>工作表.458</title>
+			<desc>90</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="14.1732" cy="785.455" width="28.35" height="28.3465" transform="rotate(-90)"/>
+			<text x="-785.45" y="10.69" writing-mode="tb-rl" transform="rotate(-90)" class="st17" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>90</text>		</g>
+		<g id="group466-425" transform="translate(329.472,-325.917)" v:mID="466" v:groupContext="group">
+			<title>工作表.466</title>
+			<g id="shape467-426" v:mID="467" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.467</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 771.28 L0 771.28 L0 799.63 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="shape463-428" v:mID="463" v:groupContext="shape" transform="translate(329.472,-325.917)">
+			<title>工作表.463</title>
+			<desc>91</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="14.1732" cy="785.455" width="28.35" height="28.3465" transform="rotate(-90)"/>
+			<text x="-785.45" y="10.69" writing-mode="tb-rl" transform="rotate(-90)" class="st17" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>91</text>		</g>
+		<g id="group471-430" transform="translate(386.165,-325.917)" v:mID="471" v:groupContext="group">
+			<title>工作表.471</title>
+			<g id="shape472-431" v:mID="472" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.472</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 771.28 L0 771.28 L0 799.63 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="shape468-433" v:mID="468" v:groupContext="shape" transform="translate(386.165,-325.917)">
+			<title>工作表.468</title>
+			<desc>92</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="14.1732" cy="785.455" width="28.35" height="28.3465" transform="rotate(-90)"/>
+			<text x="-785.45" y="10.69" writing-mode="tb-rl" transform="rotate(-90)" class="st17" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>92</text>		</g>
+		<g id="group476-435" transform="translate(442.858,-325.917)" v:mID="476" v:groupContext="group">
+			<title>工作表.476</title>
+			<g id="shape477-436" v:mID="477" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.477</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 771.28 L0 771.28 L0 799.63 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="shape473-438" v:mID="473" v:groupContext="shape" transform="translate(442.858,-325.917)">
+			<title>工作表.473</title>
+			<desc>93</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="14.1732" cy="785.455" width="28.35" height="28.3465" transform="rotate(-90)"/>
+			<text x="-785.45" y="10.69" writing-mode="tb-rl" transform="rotate(-90)" class="st17" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>93</text>		</g>
+		<g id="group481-440" transform="translate(442.858,-382.61)" v:mID="481" v:groupContext="group">
+			<title>工作表.481</title>
+			<g id="shape482-441" v:mID="482" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.482</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 771.28 L0 771.28 L0 799.63 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="shape478-443" v:mID="478" v:groupContext="shape" transform="translate(442.858,-382.61)">
+			<title>工作表.478</title>
+			<desc>94</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="14.1732" cy="785.455" width="28.35" height="28.3465" transform="rotate(-90)"/>
+			<text x="-785.45" y="10.69" writing-mode="tb-rl" transform="rotate(-90)" class="st17" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>94</text>		</g>
+		<g id="group486-445" transform="translate(442.858,-439.303)" v:mID="486" v:groupContext="group">
+			<title>工作表.486</title>
+			<g id="shape487-446" v:mID="487" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.487</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 771.28 L0 771.28 L0 799.63 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="shape483-448" v:mID="483" v:groupContext="shape" transform="translate(442.858,-439.303)">
+			<title>工作表.483</title>
+			<desc>95</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="14.1732" cy="785.455" width="28.35" height="28.3465" transform="rotate(-90)"/>
+			<text x="-785.45" y="10.69" writing-mode="tb-rl" transform="rotate(-90)" class="st17" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>95</text>		</g>
+		<g id="group491-450" transform="translate(442.858,-495.996)" v:mID="491" v:groupContext="group">
+			<title>工作表.491</title>
+			<g id="shape492-451" v:mID="492" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.492</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 771.28 L0 771.28 L0 799.63 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="shape488-453" v:mID="488" v:groupContext="shape" transform="translate(442.858,-495.996)">
+			<title>工作表.488</title>
+			<desc>96</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="14.1732" cy="785.455" width="28.35" height="28.3465" transform="rotate(-90)"/>
+			<text x="-785.45" y="10.69" writing-mode="tb-rl" transform="rotate(-90)" class="st17" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>96</text>		</g>
+		<g id="group496-455" transform="translate(442.858,-552.689)" v:mID="496" v:groupContext="group">
+			<title>工作表.496</title>
+			<g id="shape497-456" v:mID="497" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.497</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 771.28 L0 771.28 L0 799.63 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="shape493-458" v:mID="493" v:groupContext="shape" transform="translate(442.858,-552.689)">
+			<title>工作表.493</title>
+			<desc>97</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="14.1732" cy="785.455" width="28.35" height="28.3465" transform="rotate(-90)"/>
+			<text x="-785.45" y="10.69" writing-mode="tb-rl" transform="rotate(-90)" class="st17" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>97</text>		</g>
+		<g id="group501-460" transform="translate(386.165,-552.689)" v:mID="501" v:groupContext="group">
+			<title>工作表.501</title>
+			<g id="shape502-461" v:mID="502" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.502</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 771.28 L0 771.28 L0 799.63 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="shape498-463" v:mID="498" v:groupContext="shape" transform="translate(386.165,-552.689)">
+			<title>工作表.498</title>
+			<desc>98</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="14.1732" cy="785.455" width="28.35" height="28.3465" transform="rotate(-90)"/>
+			<text x="-785.45" y="10.69" writing-mode="tb-rl" transform="rotate(-90)" class="st17" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>98</text>		</g>
+		<g id="group506-465" transform="translate(329.472,-552.689)" v:mID="506" v:groupContext="group">
+			<title>工作表.506</title>
+			<g id="shape507-466" v:mID="507" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.507</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 771.28 L0 771.28 L0 799.63 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="shape503-468" v:mID="503" v:groupContext="shape" transform="translate(329.472,-552.689)">
+			<title>工作表.503</title>
+			<desc>99</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="14.1732" cy="785.455" width="28.35" height="28.3465" transform="rotate(-90)"/>
+			<text x="-785.45" y="10.69" writing-mode="tb-rl" transform="rotate(-90)" class="st17" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>99</text>		</g>
+		<g id="group511-470" transform="translate(272.779,-552.689)" v:mID="511" v:groupContext="group">
+			<title>工作表.511</title>
+			<g id="shape512-471" v:mID="512" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.512</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 771.28 L0 771.28 L0 799.63 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="shape508-473" v:mID="508" v:groupContext="shape" transform="translate(272.779,-552.689)">
+			<title>工作表.508</title>
+			<desc>100</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="14.1732" cy="785.455" width="28.35" height="28.3465" transform="rotate(-90)"/>
+			<text x="-785.45" y="8.95" writing-mode="tb-rl" transform="rotate(-90)" class="st17" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>100</text>		</g>
+		<g id="group516-475" transform="translate(272.779,-495.996)" v:mID="516" v:groupContext="group">
+			<title>工作表.516</title>
+			<g id="shape517-476" v:mID="517" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.517</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 771.28 L0 771.28 L0 799.63 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="shape513-478" v:mID="513" v:groupContext="shape" transform="translate(272.779,-495.996)">
+			<title>工作表.513</title>
+			<desc>101</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="14.1732" cy="785.455" width="28.35" height="28.3465" transform="rotate(-90)"/>
+			<text x="-785.45" y="8.95" writing-mode="tb-rl" transform="rotate(-90)" class="st17" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>101</text>		</g>
+		<g id="group521-480" transform="translate(272.779,-439.303)" v:mID="521" v:groupContext="group">
+			<title>工作表.521</title>
+			<g id="shape522-481" v:mID="522" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.522</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 771.28 L0 771.28 L0 799.63 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="shape518-483" v:mID="518" v:groupContext="shape" transform="translate(272.779,-439.303)">
+			<title>工作表.518</title>
+			<desc>102</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="14.1732" cy="785.455" width="28.35" height="28.3465" transform="rotate(-90)"/>
+			<text x="-785.45" y="8.95" writing-mode="tb-rl" transform="rotate(-90)" class="st17" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>102</text>		</g>
+		<g id="group526-485" transform="translate(272.779,-382.61)" v:mID="526" v:groupContext="group">
+			<title>工作表.526</title>
+			<g id="shape527-486" v:mID="527" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.527</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 771.28 L0 771.28 L0 799.63 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="shape523-488" v:mID="523" v:groupContext="shape" transform="translate(272.779,-382.61)">
+			<title>工作表.523</title>
+			<desc>103</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="14.1732" cy="785.455" width="28.35" height="28.3465" transform="rotate(-90)"/>
+			<text x="-785.45" y="8.95" writing-mode="tb-rl" transform="rotate(-90)" class="st17" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>103</text>		</g>
+		<g id="shape532-490" v:mID="532" v:groupContext="shape" v:layerMember="1" transform="translate(329.472,-382.61)">
+			<title>工作表.532</title>
+			<v:userDefs>
+				<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+				<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+			</v:userDefs>
+			<path d="M0 799.63 L28.35 799.63 L28.35 771.28 L0 771.28 L0 799.63 Z" class="st2"/>
+		</g>
+		<g id="shape528-492" v:mID="528" v:groupContext="shape" transform="translate(329.472,-382.61)">
+			<title>工作表.528</title>
+			<desc>104</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="14.1732" cy="785.455" width="28.35" height="28.3465" transform="rotate(-90)"/>
+			<text x="-785.45" y="8.95" writing-mode="tb-rl" transform="rotate(-90)" class="st17" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>104</text>		</g>
+		<g id="group536-494" transform="translate(386.165,-382.61)" v:mID="536" v:groupContext="group">
+			<title>工作表.536</title>
+			<g id="shape537-495" v:mID="537" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.537</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 771.28 L0 771.28 L0 799.63 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="shape533-497" v:mID="533" v:groupContext="shape" transform="translate(386.165,-382.61)">
+			<title>工作表.533</title>
+			<desc>105</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="14.1732" cy="785.455" width="28.35" height="28.3465" transform="rotate(-90)"/>
+			<text x="-785.45" y="8.95" writing-mode="tb-rl" transform="rotate(-90)" class="st17" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>105</text>		</g>
+		<g id="group541-499" transform="translate(386.165,-439.303)" v:mID="541" v:groupContext="group">
+			<title>工作表.541</title>
+			<g id="shape542-500" v:mID="542" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.542</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 771.28 L0 771.28 L0 799.63 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="shape538-502" v:mID="538" v:groupContext="shape" transform="translate(386.165,-439.303)">
+			<title>工作表.538</title>
+			<desc>106</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="14.1732" cy="785.455" width="28.35" height="28.3465" transform="rotate(-90)"/>
+			<text x="-785.45" y="8.95" writing-mode="tb-rl" transform="rotate(-90)" class="st17" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>106</text>		</g>
+		<g id="group546-504" transform="translate(386.165,-495.996)" v:mID="546" v:groupContext="group">
+			<title>工作表.546</title>
+			<g id="shape547-505" v:mID="547" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.547</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 771.28 L0 771.28 L0 799.63 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="shape543-507" v:mID="543" v:groupContext="shape" transform="translate(386.165,-495.996)">
+			<title>工作表.543</title>
+			<desc>107</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="14.1732" cy="785.455" width="28.35" height="28.3465" transform="rotate(-90)"/>
+			<text x="-785.45" y="8.95" writing-mode="tb-rl" transform="rotate(-90)" class="st17" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>107</text>		</g>
+		<g id="group551-509" transform="translate(329.472,-495.996)" v:mID="551" v:groupContext="group">
+			<title>工作表.551</title>
+			<g id="shape552-510" v:mID="552" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.552</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 771.28 L0 771.28 L0 799.63 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="shape548-512" v:mID="548" v:groupContext="shape" transform="translate(329.472,-495.996)">
+			<title>工作表.548</title>
+			<desc>108</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="14.1732" cy="785.455" width="28.35" height="28.3465" transform="rotate(-90)"/>
+			<text x="-785.45" y="8.95" writing-mode="tb-rl" transform="rotate(-90)" class="st17" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>108</text>		</g>
+		<g id="group556-514" transform="translate(329.472,-439.303)" v:mID="556" v:groupContext="group">
+			<title>工作表.556</title>
+			<g id="shape557-515" v:mID="557" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.557</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 771.28 L0 771.28 L0 799.63 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="shape553-517" v:mID="553" v:groupContext="shape" transform="translate(329.472,-439.303)">
+			<title>工作表.553</title>
+			<desc>109</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197" v:verticalText="true"/>
+			<v:textRect cx="14.1732" cy="785.455" width="28.35" height="28.3465" transform="rotate(-90)"/>
+			<text x="-785.45" y="8.95" writing-mode="tb-rl" transform="rotate(-90)" class="st17" v:langID="2052"><v:paragraph
+						v:horizAlign="1"/><v:tabList/>109</text>		</g>
+		<g id="group584-519" transform="translate(81.4407,-460.563)" v:mID="584" v:groupContext="group">
+			<title>工作表.584</title>
+			<g id="shape585-520" v:mID="585" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.585</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 779.79 L0 779.79 L0 799.63 Z" class="st10"/>
+			</g>
+		</g>
+		<g id="shape581-522" v:mID="581" v:groupContext="shape" transform="translate(81.4407,-460.563)">
+			<title>工作表.581</title>
+			<desc>9 IIC0_SDA</desc>
+			<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197"/>
+			<v:textRect cx="14.1732" cy="789.707" width="28.35" height="19.8425"/>
+			<text x="12.72" y="788.21" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>9<v:lf/><tspan
+						x="3.57" dy="1.2em" class="st4">IIC0_SDA</tspan></text>		</g>
+		<g id="group604-525" transform="translate(81.4407,-494.579)" v:mID="604" v:groupContext="group">
+			<title>工作表.604</title>
+			<g id="shape605-526" v:mID="605" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.605</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 779.79 L0 779.79 L0 799.63 Z" class="st10"/>
+			</g>
+		</g>
+		<g id="shape601-528" v:mID="601" v:groupContext="shape" transform="translate(81.4407,-494.579)">
+			<title>工作表.601</title>
+			<desc>8 IIC0_SCL</desc>
+			<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197"/>
+			<v:textRect cx="14.1732" cy="789.707" width="28.35" height="19.8425"/>
+			<text x="12.72" y="788.21" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>8<v:newlineChar/><tspan
+						x="3.76" dy="1.2em" class="st4">IIC0_SCL</tspan></text>		</g>
+		<g id="group609-531" transform="translate(81.4407,-562.61)" v:mID="609" v:groupContext="group">
+			<title>工作表.609</title>
+			<g id="shape610-532" v:mID="610" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.610</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 779.79 L0 779.79 L0 799.63 Z" class="st14"/>
+			</g>
+		</g>
+		<g id="shape606-534" v:mID="606" v:groupContext="shape" transform="translate(81.4407,-562.61)">
+			<title>工作表.606</title>
+			<desc>6 VDD_1V8</desc>
+			<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197"/>
+			<v:textRect cx="14.1732" cy="789.707" width="28.35" height="19.8425"/>
+			<text x="12.72" y="788.21" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>6<v:newlineChar/><tspan
+						x="3.37" dy="1.2em" class="st4">VDD_1V8</tspan></text>		</g>
+		<g id="group621-537" transform="translate(-378.03,589.931) rotate(-90)" v:mID="621" v:groupContext="group">
+			<title>工作表.621</title>
+			<g id="shape622-538" v:mID="622" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.622</title>
+				<desc>81 USIM0_PWR</desc>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197" v:verticalText="true"/>
+				<v:textRect cx="9.92126" cy="789.707" width="19.85" height="19.8425" transform="rotate(-90)"/>
+				<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st11"/>
+				<text x="-783.71" y="7.02" writing-mode="tb-rl" transform="rotate(-90)" class="st3" v:langID="2052"><v:paragraph
+							v:horizAlign="1"/><v:tabList/>81<v:lf/><tspan dx="-1.2em" y="0.246em 0.928em 1.513em 1.777em 2.643em
+								 3.223em" class="st4">USIM0_</tspan><tspan dx="-1.2em" y="0.9em 1.498em 2.45em" class="st4">PWR</tspan></text>			</g>
+		</g>
+		<g id="group626-543" transform="translate(-412.045,589.931) rotate(-90)" v:mID="626" v:groupContext="group">
+			<title>工作表.626</title>
+			<g id="shape627-544" v:mID="627" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.627</title>
+				<desc>80 USIM0_DATA</desc>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197" v:verticalText="true"/>
+				<v:textRect cx="9.92126" cy="789.707" width="19.85" height="19.8425" transform="rotate(-90)"/>
+				<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st11"/>
+				<text x="-783.71" y="7.02" writing-mode="tb-rl" transform="rotate(-90)" class="st3" v:langID="2052"><v:paragraph
+							v:horizAlign="1"/><v:tabList/>80<v:lf/><tspan dx="-1.2em" y="0.246em 0.928em 1.513em 1.777em 2.643em
+								 3.223em" class="st4">USIM0_</tspan><tspan dx="-1.2em" y="0.685em 1.394em 2.033em 2.645em"
+							class="st4">DATA</tspan></text>			</g>
+		</g>
+		<g id="group632-549" transform="translate(-446.061,589.931) rotate(-90)" v:mID="632" v:groupContext="group">
+			<title>工作表.632</title>
+			<g id="shape633-550" v:mID="633" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.633</title>
+				<desc>79 USIM0_RST</desc>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197" v:verticalText="true"/>
+				<v:textRect cx="9.92126" cy="789.707" width="19.85" height="19.8425" transform="rotate(-90)"/>
+				<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st11"/>
+				<text x="-783.71" y="7.02" writing-mode="tb-rl" transform="rotate(-90)" class="st3" v:langID="2052"><v:paragraph
+							v:horizAlign="1"/><v:tabList/>79<v:lf/><tspan dx="-1.2em" y="0.246em 0.928em 1.513em 1.777em 2.643em
+								 3.223em" class="st4">USIM0_</tspan><tspan dx="-1.2em" y="1.076em 1.695em 2.28em" class="st4">RST</tspan></text>			</g>
+		</g>
+		<g id="group637-555" transform="translate(-480.077,589.931) rotate(-90)" v:mID="637" v:groupContext="group">
+			<title>工作表.637</title>
+			<g id="shape638-556" v:mID="638" v:groupContext="shape" v:layerMember="1" transform="translate(0,1.01062E-05)">
+				<title>工作表.638</title>
+				<desc>78 USIM1_DET</desc>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197" v:verticalText="true"/>
+				<v:textRect cx="9.92126" cy="789.707" width="19.85" height="19.8425" transform="rotate(-90)"/>
+				<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st11"/>
+				<text x="-783.71" y="7.02" writing-mode="tb-rl" transform="rotate(-90)" class="st3" v:langID="2052"><v:paragraph
+							v:horizAlign="1"/><v:tabList/>78<v:lf/><tspan dx="-1.2em" y="0.246em 0.928em 1.513em 1.777em 2.643em
+								 3.223em" class="st4">USIM1_</tspan><tspan dx="-1.2em" y="1.03em 1.739em 2.326em" class="st4">DET</tspan></text>			</g>
+		</g>
+		<g id="group642-561" transform="translate(-514.093,589.931) rotate(-90)" v:mID="642" v:groupContext="group">
+			<title>工作表.642</title>
+			<g id="shape643-562" v:mID="643" v:groupContext="shape" v:layerMember="1" transform="translate(0,1.01062E-05)">
+				<title>工作表.643</title>
+				<desc>77 USIM1_PWR</desc>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197" v:verticalText="true"/>
+				<v:textRect cx="9.92126" cy="789.707" width="19.85" height="19.8425" transform="rotate(-90)"/>
+				<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st11"/>
+				<text x="-783.71" y="7.02" writing-mode="tb-rl" transform="rotate(-90)" class="st3" v:langID="2052"><v:paragraph
+							v:horizAlign="1"/><v:tabList/>77<v:lf/><tspan dx="-1.2em" y="0.246em 0.928em 1.513em 1.777em 2.643em
+								 3.223em" class="st4">USIM1_</tspan><tspan dx="-1.2em" y="0.9em 1.498em 2.45em" class="st4">PWR</tspan></text>			</g>
+		</g>
+		<g id="group647-567" transform="translate(-548.108,589.931) rotate(-90)" v:mID="647" v:groupContext="group">
+			<title>工作表.647</title>
+			<g id="shape648-568" v:mID="648" v:groupContext="shape" v:layerMember="1" transform="translate(0,1.01062E-05)">
+				<title>工作表.648</title>
+				<desc>76 USIM1_RST</desc>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197" v:verticalText="true"/>
+				<v:textRect cx="9.92126" cy="789.707" width="19.85" height="19.8425" transform="rotate(-90)"/>
+				<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st11"/>
+				<text x="-783.71" y="7.02" writing-mode="tb-rl" transform="rotate(-90)" class="st3" v:langID="2052"><v:paragraph
+							v:horizAlign="1"/><v:tabList/>76<v:lf/><tspan dx="-1.2em" y="0.246em 0.928em 1.513em 1.777em 2.643em
+								 3.223em" class="st4">USIM1_</tspan><tspan dx="-1.2em" y="1.076em 1.695em 2.28em" class="st4">RST</tspan></text>			</g>
+		</g>
+		<g id="group653-573" transform="translate(-582.124,589.931) rotate(-90)" v:mID="653" v:groupContext="group">
+			<title>工作表.653</title>
+			<g id="shape654-574" v:mID="654" v:groupContext="shape" v:layerMember="1" transform="translate(0,1.01062E-05)">
+				<title>工作表.654</title>
+				<desc>75 USIM1_CLK</desc>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197" v:verticalText="true"/>
+				<v:textRect cx="9.92126" cy="789.707" width="19.85" height="19.8425" transform="rotate(-90)"/>
+				<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st11"/>
+				<text x="-783.71" y="7.02" writing-mode="tb-rl" transform="rotate(-90)" class="st3" v:langID="2052"><v:paragraph
+							v:horizAlign="1"/><v:tabList/>75<v:lf/><tspan dx="-1.2em" y="0.246em 0.928em 1.513em 1.777em 2.643em
+								 3.223em" class="st4">USIM1_</tspan><tspan dx="-1.2em" y="1.043em 1.742em 2.317em" class="st4">CLK</tspan></text>			</g>
+		</g>
+		<g id="group658-579" transform="translate(-616.14,589.931) rotate(-90)" v:mID="658" v:groupContext="group">
+			<title>工作表.658</title>
+			<g id="shape659-580" v:mID="659" v:groupContext="shape" v:layerMember="1" transform="translate(0,1.01062E-05)">
+				<title>工作表.659</title>
+				<desc>74 USIM1_DATA</desc>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197" v:verticalText="true"/>
+				<v:textRect cx="9.92126" cy="789.707" width="19.85" height="19.8425" transform="rotate(-90)"/>
+				<path d="M0 799.63 L19.84 799.63 L19.84 779.79 L0 779.79 L0 799.63 Z" class="st11"/>
+				<text x="-783.71" y="7.02" writing-mode="tb-rl" transform="rotate(-90)" class="st3" v:langID="2052"><v:paragraph
+							v:horizAlign="1"/><v:tabList/>74<v:lf/><tspan dx="-1.2em" y="0.246em 0.928em 1.513em 1.777em 2.643em
+								 3.223em" class="st4">USIM1_</tspan><tspan dx="-1.2em" y="0.685em 1.394em 2.033em 2.645em"
+							class="st4">DATA</tspan></text>			</g>
+		</g>
+		<g id="group663-585" transform="translate(577.504,-460.563)" v:mID="663" v:groupContext="group">
+			<title>工作表.663</title>
+			<g id="shape664-586" v:mID="664" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.664</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 779.79 L0 779.79 L0 799.63 Z" class="st15"/>
+			</g>
+		</g>
+		<g id="shape660-588" v:mID="660" v:groupContext="shape" transform="translate(577.504,-460.563)">
+			<title>工作表.660</title>
+			<desc>41 SPI0_MOSI</desc>
+			<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197"/>
+			<v:textRect cx="14.1732" cy="789.707" width="28.35" height="19.8425"/>
+			<text x="11.27" y="788.21" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>41<v:lf/><tspan
+						x="1.73" dy="1.2em" class="st4">SPI0_MOSI</tspan></text>		</g>
+		<g id="group668-591" transform="translate(577.504,-494.579)" v:mID="668" v:groupContext="group">
+			<title>工作表.668</title>
+			<g id="shape669-592" v:mID="669" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.669</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 779.79 L0 779.79 L0 799.63 Z" class="st15"/>
+			</g>
+		</g>
+		<g id="shape665-594" v:mID="665" v:groupContext="shape" transform="translate(577.504,-494.579)">
+			<title>工作表.665</title>
+			<desc>42 SPI0_MISO</desc>
+			<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197"/>
+			<v:textRect cx="14.1732" cy="789.707" width="28.35" height="19.8425"/>
+			<text x="11.27" y="788.21" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>42<v:lf/><tspan
+						x="1.73" dy="1.2em" class="st4">SPI0_MISO</tspan></text>		</g>
+		<g id="group680-597" transform="translate(577.504,-562.61)" v:mID="680" v:groupContext="group">
+			<title>工作表.680</title>
+			<g id="shape681-598" v:mID="681" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.681</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 779.79 L0 779.79 L0 799.63 Z" class="st15"/>
+			</g>
+		</g>
+		<g id="shape677-600" v:mID="677" v:groupContext="shape" transform="translate(577.504,-562.61)">
+			<title>工作表.677</title>
+			<desc>44 SPI0_CLK</desc>
+			<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197"/>
+			<v:textRect cx="14.1732" cy="789.707" width="28.35" height="19.8425"/>
+			<text x="11.27" y="788.21" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>44<v:lf/><tspan
+						x="3.15" dy="1.2em" class="st4">SPI0_CLK</tspan></text>		</g>
+		<g id="group690-603" transform="translate(577.504,-596.626)" v:mID="690" v:groupContext="group">
+			<title>工作表.690</title>
+			<g id="shape691-604" v:mID="691" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.691</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 779.79 L0 779.79 L0 799.63 Z" class="st15"/>
+			</g>
+		</g>
+		<g id="shape687-606" v:mID="687" v:groupContext="shape" transform="translate(577.504,-596.626)">
+			<title>工作表.687</title>
+			<desc>45 SPI1_MOSI</desc>
+			<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197"/>
+			<v:textRect cx="14.1732" cy="789.707" width="28.35" height="19.8425"/>
+			<text x="11.27" y="788.21" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>45<v:lf/><tspan
+						x="1.73" dy="1.2em" class="st4">SPI1_MOSI</tspan></text>		</g>
+		<g id="group695-609" transform="translate(577.504,-630.642)" v:mID="695" v:groupContext="group">
+			<title>工作表.695</title>
+			<g id="shape696-610" v:mID="696" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.696</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 779.79 L0 779.79 L0 799.63 Z" class="st15"/>
+			</g>
+		</g>
+		<g id="shape692-612" v:mID="692" v:groupContext="shape" transform="translate(577.504,-630.642)">
+			<title>工作表.692</title>
+			<desc>46 SPI1_MISO</desc>
+			<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197"/>
+			<v:textRect cx="14.1732" cy="789.707" width="28.35" height="19.8425"/>
+			<text x="11.27" y="788.21" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>46<v:lf/><tspan
+						x="1.73" dy="1.2em" class="st4">SPI1_MISO</tspan></text>		</g>
+		<g id="group705-615" transform="translate(577.504,-664.658)" v:mID="705" v:groupContext="group">
+			<title>工作表.705</title>
+			<g id="shape706-616" v:mID="706" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.706</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 779.79 L0 779.79 L0 799.63 Z" class="st15"/>
+			</g>
+		</g>
+		<g id="shape702-618" v:mID="702" v:groupContext="shape" transform="translate(577.504,-664.658)">
+			<title>工作表.702</title>
+			<desc>47 SPI1_CLK</desc>
+			<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197"/>
+			<v:textRect cx="14.1732" cy="789.707" width="28.35" height="19.8425"/>
+			<text x="11.27" y="788.21" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>47<v:lf/><tspan
+						x="3.15" dy="1.2em" class="st4">SPI1_CLK</tspan></text>		</g>
+		<g id="group710-621" transform="translate(577.504,-698.673)" v:mID="710" v:groupContext="group">
+			<title>工作表.710</title>
+			<desc>48 SPI1_CS</desc>
+			<g id="shape711-622" v:mID="711" v:groupContext="shape" v:layerMember="1">
+				<title>工作表.711</title>
+				<v:userDefs>
+					<v:ud v:nameU="DWGOriginalColor" v:prompt="This shapes Original DWG color." v:val="VT4(256)"/>
+					<v:ud v:nameU="DWGOriginalLayer" v:prompt="This shapes Original DWG layer." v:val="VT4(PADS_XR_123)"/>
+				</v:userDefs>
+				<path d="M0 799.63 L28.35 799.63 L28.35 779.79 L0 779.79 L0 799.63 Z" class="st15"/>
+			</g>
+			<g id="shape710-624" v:mID="710" v:groupContext="groupContent">
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="14.1732" cy="789.707" width="28.35" height="19.8425"/>
+				<text x="11.27" y="788.21" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>48<v:lf/><tspan
+							x="4.65" dy="1.2em" class="st4">SPI1_CS</tspan></text>			</g>
+		</g>
+		<g id="group558-627" transform="translate(18.5,-18.12)" v:mID="558" v:groupContext="group">
+			<title>工作表.558</title>
+			<g id="shape559-628" v:mID="559" v:groupContext="shape" transform="translate(76.142,-28.2987)">
+				<title>框.31</title>
+				<desc>GND</desc>
+				<v:userDefs>
+					<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+					<v:ud v:nameU="visNavOrder" v:val="VT0(232000):26"/>
+				</v:userDefs>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="45.7823" cy="788.717" width="91.57" height="21.8217"/>
+				<rect x="0" y="777.806" width="91.5645" height="21.8217" class="st2"/>
+				<text x="37.23" y="791.12" class="st18" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>GND</text>			</g>
+			<g id="shape560-631" v:mID="560" v:groupContext="shape" transform="translate(493.587,-28.2987)">
+				<title>框.33</title>
+				<desc>POWER</desc>
+				<v:userDefs>
+					<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+					<v:ud v:nameU="visNavOrder" v:val="VT0(233000):26"/>
+				</v:userDefs>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="45.7823" cy="788.717" width="91.57" height="21.8217"/>
+				<rect x="0" y="777.806" width="91.5645" height="21.8217" class="st14"/>
+				<text x="31.81" y="791.12" class="st18" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>POWER</text>			</g>
+			<g id="shape562-634" v:mID="562" v:groupContext="shape" transform="translate(0,-54.9364)">
+				<title>框.36</title>
+				<desc>图 例</desc>
+				<v:userDefs>
+					<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+					<v:ud v:nameU="visNavOrder" v:val="VT0(235000):26"/>
+				</v:userDefs>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="33.1876" cy="787.766" width="66.38" height="23.7246"/>
+				<rect x="0" y="775.903" width="66.3752" height="23.7246" class="st19"/>
+				<text x="17.99" y="791.41" class="st20" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>图<tspan
+							class="st21">  </tspan>例</text>			</g>
+			<g id="shape564-638" v:mID="564" v:groupContext="shape" transform="translate(389.226,-56.5974)">
+				<title>框.39</title>
+				<desc>USIM</desc>
+				<v:userDefs>
+					<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+					<v:ud v:nameU="visNavOrder" v:val="VT0(237000):26"/>
+				</v:userDefs>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="45.7823" cy="788.717" width="91.57" height="21.8217"/>
+				<rect x="0" y="777.806" width="91.5645" height="21.8217" class="st11"/>
+				<text x="36.19" y="791.12" class="st18" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>USIM</text>			</g>
+			<g id="shape565-641" v:mID="565" v:groupContext="shape" transform="translate(76.142,-56.5974)">
+				<title>框.40</title>
+				<desc>Analog</desc>
+				<v:userDefs>
+					<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+					<v:ud v:nameU="visNavOrder" v:val="VT0(238000):26"/>
+				</v:userDefs>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="45.7823" cy="788.717" width="91.57" height="21.8217"/>
+				<rect x="0" y="777.806" width="91.5645" height="21.8217" class="st13"/>
+				<text x="32.94" y="791.12" class="st18" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>Analog</text>			</g>
+			<g id="shape566-644" v:mID="566" v:groupContext="shape" transform="translate(76.1421,-3.41061E-13)">
+				<title>框.41</title>
+				<desc>RF</desc>
+				<v:userDefs>
+					<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+					<v:ud v:nameU="visNavOrder" v:val="VT0(239000):26"/>
+				</v:userDefs>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="45.7823" cy="788.717" width="91.57" height="21.8217"/>
+				<rect x="0" y="777.806" width="91.5645" height="21.8217" class="st9"/>
+				<text x="41.04" y="791.12" class="st18" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>RF</text>			</g>
+			<g id="shape567-647" v:mID="567" v:groupContext="shape" transform="translate(284.865,-28.2987)">
+				<title>框.42</title>
+				<desc>IIC</desc>
+				<v:userDefs>
+					<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+					<v:ud v:nameU="visNavOrder" v:val="VT0(240000):26"/>
+				</v:userDefs>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="45.7823" cy="788.717" width="91.57" height="21.8217"/>
+				<rect x="0" y="777.806" width="91.5645" height="21.8217" class="st10"/>
+				<text x="40.87" y="791.12" class="st18" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>IIC</text>			</g>
+			<g id="shape568-650" v:mID="568" v:groupContext="shape" transform="translate(180.503,-28.2987)">
+				<title>框.43</title>
+				<desc>GPIO</desc>
+				<v:userDefs>
+					<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+					<v:ud v:nameU="visNavOrder" v:val="VT0(241000):26"/>
+				</v:userDefs>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="45.7823" cy="788.717" width="91.57" height="21.8217"/>
+				<rect x="0" y="777.806" width="91.5645" height="21.8217" class="st5"/>
+				<text x="36.55" y="791.12" class="st18" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>GPIO</text>			</g>
+			<g id="shape569-653" v:mID="569" v:groupContext="shape" transform="translate(493.587,-56.5974)">
+				<title>框.44</title>
+				<desc>CONTROL</desc>
+				<v:userDefs>
+					<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+					<v:ud v:nameU="visNavOrder" v:val="VT0(242000):26"/>
+				</v:userDefs>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="45.7823" cy="788.717" width="91.57" height="21.8217"/>
+				<rect x="0" y="777.806" width="91.5645" height="21.8217" class="st7"/>
+				<text x="26.99" y="791.12" class="st18" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>CONTROL</text>			</g>
+			<g id="shape570-656" v:mID="570" v:groupContext="shape" transform="translate(389.226,-28.2988)">
+				<title>框.45</title>
+				<desc>UART</desc>
+				<v:userDefs>
+					<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+					<v:ud v:nameU="visNavOrder" v:val="VT0(243000):26"/>
+				</v:userDefs>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="45.7823" cy="788.717" width="91.57" height="21.8217"/>
+				<rect x="0" y="777.806" width="91.5645" height="21.8217" class="st6"/>
+				<text x="35.57" y="791.12" class="st18" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>UART</text>			</g>
+			<g id="shape571-659" v:mID="571" v:groupContext="shape" transform="translate(180.503,-56.5974)">
+				<title>框.46</title>
+				<desc>USB</desc>
+				<v:userDefs>
+					<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+					<v:ud v:nameU="visNavOrder" v:val="VT0(244000):26"/>
+				</v:userDefs>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="45.7823" cy="788.717" width="91.57" height="21.8217"/>
+				<rect x="0" y="777.806" width="91.5645" height="21.8217" class="st12"/>
+				<text x="38.21" y="791.12" class="st18" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>USB</text>			</g>
+			<g id="shape574-662" v:mID="574" v:groupContext="shape" transform="translate(284.865,-56.5974)">
+				<title>框.38</title>
+				<desc>SPI</desc>
+				<v:userDefs>
+					<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+					<v:ud v:nameU="visNavOrder" v:val="VT0(247000):26"/>
+				</v:userDefs>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="45.7823" cy="788.717" width="91.57" height="21.8217"/>
+				<rect x="0" y="777.806" width="91.5645" height="21.8217" class="st15"/>
+				<text x="39.99" y="791.12" class="st18" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>SPI</text>			</g>
+		</g>
+	</g>
+</svg>

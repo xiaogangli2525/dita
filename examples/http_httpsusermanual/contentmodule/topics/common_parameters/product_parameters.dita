@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="product_parameters">
+    <title>产品参数库</title>
+    <shortdesc>包含所有产品模组的标准参数，支持conref引用和知识图谱构建</shortdesc>
+    <body>
+        <section id="package_types">
+            <title>封装类型</title>
+            <p>以下是所有产品模组的封装类型：</p>
+            <ul>
+                <li id="package_lcc_lga">LCC+LGA</li>
+                <li id="package_lcc48_lga61">LCC48+LGA61</li>
+                <li id="package_lcc44_lga50">LCC44+LGA50</li>
+                <li id="package_lcc76_lga24">LCC76+LGA24</li>
+                <li id="package_lga128_lcc146">LGA128+LCC146</li>
+            </ul>
+        </section>
+        
+        <section id="dimensions">
+            <title>尺寸规格</title>
+            <p>以下是各产品模组的尺寸规格：</p>
+            <ul>
+                <li id="dimensions_19x18_4x2_2">尺寸（长*宽*高）：19mm±0.2mm*18.4mm±0.2mm*2.2mm±0.2mm</li>
+                <li id="dimensions_17_7x15_8x2_2">尺寸（长*宽*高）：17.7mm*15.8mm*2.2mm</li>
+                <li id="dimensions_17_7x15_8x2_4">尺寸（长*宽*高）：17.7mm*15.8mm*2.4mm</li>
+                <li id="dimensions_22_9x21_9x2_4">尺寸（长*宽*高）：22.9mm*21.9mm*2.4mm</li>
+                <li id="dimensions_40_5x40_5x2_85">尺寸（长*宽*高）：(40.5mm ± 0.15mm)*(40.5 mm ± 0.15mm)*(2.85mm ± 0.2mm)</li>
+            </ul>
+        </section>
+        
+        <section id="weight_specs">
+            <title>重量规格</title>
+            <p>以下是各产品模组的重量规格：</p>
+            <ul>
+                <li id="weight_1_2g">重量：约1.2g</li>
+                <li id="weight_1_5g">重量：约1.5g</li>
+                <li id="weight_2_0g">重量：约2.0g</li>
+                <li id="weight_2_3g">重量：2.3g</li>
+                <li id="weight_2_9g">重量：约2.9g</li>
+                <li id="weight_9_5g">重量：约9.5g</li>
+            </ul>
+        </section>
+        
+        <section id="power_specs">
+            <title>功率规格</title>
+            <p>以下是各产品模组的功率规格：</p>
+            <ul>
+                <li id="power_23dbm">23dBm±2dB</li>
+                <li id="power_26dbm">26dBm±2dB</li>
+            </ul>
+        </section>
+        
+        <section id="temperature_specs">
+            <title>温度规格</title>
+            <p>以下是各产品模组的温度规格：</p>
+            <ul>
+                <li id="temp_normal_30_75">正常工作温度：-30℃ ~ +75℃</li>
+                <li id="temp_normal_35_75">正常工作温度：-35℃ ~ +75℃</li>
+                <li id="temp_extended_40_85">扩展工作温度：-40℃ ~ +85℃</li>
+                <li id="temp_storage_45_90">存储温度：-45℃ ~ +90℃</li>
+            </ul>
+        </section>
+        
+        <section id="voltage_specs">
+            <title>电压规格</title>
+            <p>以下是各产品模组的电压规格：</p>
+            <ul>
+                <li id="voltage_34_45">DC3.4V ~ 4.5V（典型值3.8V）</li>
+                <li id="voltage_33_42">DC3.3V ~ 4.2V（典型值3.8V）</li>
+                <li id="voltage_21_42">DC2.1V ~ 4.2V（推荐3.0V/3.6V）</li>
+                <li id="voltage_32_42">DC3.2V ~ 4.2V（典型值3.7V）</li>
+            </ul>
+        </section>
+        
+        <section id="frequency_bands">
+            <title>频段规格</title>
+            <p>以下是各产品模组的频段规格：</p>
+            <ul>
+                <li id="bands_nb_iot_b3_b5_b8">NB-IoT：Band 3/Band 5/Band 8</li>
+                <li id="bands_lte_fdd_basic">LTE-FDD： Band 1/Band 3/Band 5/Band 8</li>
+                <li id="bands_lte_tdd_basic">LTE-TDD： Band 34/Band 38/Band 39/Band 40/Band 41</li>
+            </ul>
+        </section>
+        
+        <section id="data_rates">
+            <title>数据速率</title>
+            <p>以下是各产品模组的数据速率：</p>
+            <ul>
+                <li id="rate_cat1_fdd_10_5">LTE-FDD：最大下行速率10Mbps，最大上行速率5Mbps</li>
+                <li id="rate_cat1_tdd_9_3">LTE-TDD：最大下行速率9.010Mbps，最大上行速率3.096Mbps</li>
+                <li id="rate_nb_iot_single_tone">NB-IoT Single-tone：25.2kbps（下行），15.625kbps（上行）</li>
+                <li id="rate_nb_iot_extended_tbs">NB-IoT Extended TBS：125kbps（下行），150kbps（上行）</li>
+            </ul>
+        </section>
+    </body>
+</topic>

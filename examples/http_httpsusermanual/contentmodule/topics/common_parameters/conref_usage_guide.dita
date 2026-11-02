@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="conref_usage_guide">
+    <title>Conref使用指南</title>
+    <shortdesc>详细说明如何在保留描述性文字的同时使用conref引用</shortdesc>
+    <body>
+        <section id="problem_description">
+            <title>问题描述</title>
+            <p>在使用DITA的conref机制时，经常会遇到以下问题：</p>
+            <ul>
+                <li>希望保留描述性文字（如"尺寸（长*宽*高）："）</li>
+                <li>同时显示conref引用的参数值</li>
+                <li>避免conref完全替换元素内容</li>
+            </ul>
+        </section>
+        
+        <section id="solution_methods">
+            <title>解决方案</title>
+            
+            <section id="method1_ph_element">
+                <title>方法1：使用&lt;ph&gt;元素（推荐）</title>
+                <p>在需要保留描述性文字的情况下，使用&lt;ph&gt;元素进行conref引用：</p>
+                
+                <codeblock>&lt;li&gt;尺寸（长*宽*高）：&lt;ph conref="product_parameters.dita#product_parameters/dimensions_17_7x15_8x2_2"/&gt;&lt;/li&gt;</codeblock>
+                
+                <p><b>结果：</b>尺寸（长*宽*高）：17.7mm*15.8mm*2.2mm</p>
+                
+                <p><b>优点：</b></p>
+                <ul>
+                    <li>保留描述性文字</li>
+                    <li>显示参数值</li>
+                    <li>灵活性高</li>
+                </ul>
+            </section>
+            
+            <section id="method2_parameter_with_description">
+                <title>方法2：参数库包含描述性文字</title>
+                <p>在参数库中直接包含描述性文字：</p>
+                
+                <codeblock>&lt;li id="dimensions_17_7x15_8x2_2"&gt;尺寸（长*宽*高）：17.7mm*15.8mm*2.2mm&lt;/li&gt;</codeblock>
+                
+                <p>使用时直接引用：</p>
+                <codeblock>&lt;li&gt;&lt;ph conref="product_parameters.dita#product_parameters/dimensions_17_7x15_8x2_2"/&gt;&lt;/li&gt;</codeblock>
+                
+                <p><b>结果：</b>尺寸（长*宽*高）：17.7mm*15.8mm*2.2mm</p>
+                
+                <p><b>优点：</b></p>
+                <ul>
+                    <li>参数库自包含描述性文字</li>
+                    <li>引用简单</li>
+                    <li>确保描述性文字的一致性</li>
+                </ul>
+            </section>
+            
+            <section id="method3_element_conref">
+                <title>方法3：元素级conref（不推荐）</title>
+                <p>直接在元素上使用conref：</p>
+                
+                <codeblock>&lt;li conref="product_parameters.dita#product_parameters/dimensions_17_7x15_8x2_2"&gt;尺寸（长*宽*高）：&lt;/li&gt;</codeblock>
+                
+                <p><b>结果：</b>17.7mm*15.8mm*2.2mm（描述性文字被完全替换）</p>
+                
+                <p><b>缺点：</b></p>
+                <ul>
+                    <li>描述性文字被完全替换</li>
+                    <li>无法保留模板中的默认文字</li>
+                </ul>
+            </section>
+        </section>
+        
+        <section id="recommended_approach">
+            <title>推荐方案</title>
+            <p>基于我们的参数文件结构，推荐使用<strong>方法2</strong>：</p>
+            
+            <ol>
+                <li><b>参数库设计：</b>在参数库中直接包含描述性文字</li>
+                <li><b>引用方式：</b>使用&lt;ph&gt;元素进行conref引用</li>
+                <li><b>模板使用：</b>模板中直接引用完整的参数（包含描述性文字）</li>
+            </ol>
+            
+            <p><b>示例：</b></p>
+            <codeblock>&lt;!-- 参数库中定义 --&gt;
+&lt;li id="dimensions_17_7x15_8x2_2"&gt;尺寸（长*宽*高）：17.7mm*15.8mm*2.2mm&lt;/li&gt;
+
+&lt;!-- 模板中使用 --&gt;
+&lt;li&gt;&lt;ph conref="product_parameters.dita#product_parameters/dimensions_17_7x15_8x2_2"/&gt;&lt;/li&gt;</codeblock>
+        </section>
+        
+        <section id="implementation_example">
+            <title>实现示例</title>
+            <p>以下是实际实现的示例：</p>
+            
+            <table>
+                <title>Conref使用示例</title>
+                <tgroup cols="3">
+                    <colspec colname="c1" colnum="1" colwidth="2*" align="left"/>
+                    <colspec colname="c2" colnum="2" colwidth="3*" align="left"/>
+                    <colspec colname="c3" colnum="3" colwidth="5*" align="left"/>
+                    <thead>
+                        <row>
+                            <entry>参数类型</entry>
+                            <entry>参数库定义</entry>
+                            <entry>模板使用</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>尺寸规格</entry>
+                            <entry>&lt;li id="dimensions_17_7x15_8x2_2"&gt;尺寸（长*宽*高）：17.7mm*15.8mm*2.2mm&lt;/li&gt;</entry>
+                            <entry>&lt;li&gt;&lt;ph conref="product_parameters.dita#product_parameters/dimensions_17_7x15_8x2_2"/&gt;&lt;/li&gt;</entry>
+                        </row>
+                        <row>
+                            <entry>重量规格</entry>
+                            <entry>&lt;li id="weight_1_2g"&gt;重量：约1.2g&lt;/li&gt;</entry>
+                            <entry>&lt;li&gt;&lt;ph conref="product_parameters.dita#product_parameters/weight_1_2g"/&gt;&lt;/li&gt;</entry>
+                        </row>
+                        <row>
+                            <entry>发射功率</entry>
+                            <entry>&lt;li id="power_23dbm"&gt;23dBm±2dB&lt;/li&gt;</entry>
+                            <entry>&lt;li&gt;发射功率：&lt;ph conref="product_parameters.dita#product_parameters/power_23dbm"/&gt;&lt;/li&gt;</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+        
+        <section id="best_practices">
+            <title>最佳实践</title>
+            <ul>
+                <li><b>一致性：</b>在参数库中保持描述性文字的一致性</li>
+                <li><b>简洁性：</b>避免重复的描述性文字</li>
+                <li><b>灵活性：</b>根据需要在模板中添加额外的描述性文字</li>
+                <li><b>维护性：</b>参数更新时确保描述性文字也得到更新</li>
+            </ul>
+        </section>
+    </body>
+</topic>
