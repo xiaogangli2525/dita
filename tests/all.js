@@ -37,3 +37,5 @@ require('./pdf-fonts.test');
 require('./document-rendering.test');
 
 require('./demo-workspace.test');
+
+require('./model-discovery.test');

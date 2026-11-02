@@ -345,7 +345,7 @@
   <dialog id="projectDialog" class="workspace-dialog" aria-labelledby="projectHeading"><form id="projectForm">
     <h2 id="projectHeading">项目型号清单</h2><p>每行一个型号。配置保存在当前 Git 仓库，清单仅用于校验，不会批量改动文档。留空表示尚未启用清单校验。</p>
     <label>有效型号<textarea id="projectModels" rows="9" placeholder="M100&#10;M200&#10;M300"></textarea></label>
-    <button id="projectDiscover" type="button">从当前手册导入已有型号</button><p id="projectError" class="form-error" role="alert"></p>
+    <button id="projectDiscover" type="button">从当前手册识别型号</button><p id="projectDiscoverySummary" class="muted" role="status">识别 product 中的型号及“模组系列／模组子型号”表的系列名；不从注脚文字推断适用范围。</p><p id="projectError" class="form-error" role="alert"></p>
     <div class="dialog-actions"><button id="projectClose" type="button">取消</button><button type="submit" class="primary-action">保存清单</button></div>
   </form></dialog>
   <dialog id="draftDialog" class="workspace-dialog" aria-labelledby="draftHeading">
@@ -418,6 +418,7 @@
   <script src="/document-store.js"></script>
   <script src="/workspace-client.js"></script>
   <script src="/publication-resolver.js"></script>
+  <script src="/model-discovery.js"></script>
   <script src="/publication-core.js"></script>
   <script src="/delivery-core.js"></script>
   <script src="/diff-core.js"></script>

@@ -169,7 +169,7 @@
         notes = data.notes;
         const previous = $('footnoteModel').value;
         $('footnoteModel').replaceChildren(new Option('全部型号', ''));
-        const models = new Set([...(A.project?.value.models || []), ...data.models]);
+        const models = new Set(([...(A.project?.value.models || []), ...data.models]).filter(root.DitaModelDiscovery.isModel));
         for (const model of [...models].sort()) $('footnoteModel').add(new Option(model, model));
         if (Array.from($('footnoteModel').options).some(option => option.value === previous)) $('footnoteModel').value = previous;
         draw();

@@ -7,6 +7,7 @@
   const xml = typeof module !== 'undefined' ? require('./xml-source') : root.DitaXmlSource;
   const store = typeof module !== 'undefined' ? require('./document-store') : root.DitaDocumentStore;
   const profiling = typeof module !== 'undefined' ? require('./profiling-core') : root.DitaProfiling;
+  const discovery = typeof module !== 'undefined' ? require('./model-discovery') : root.DitaModelDiscovery;
   /** @param {import('./contracts').ManualPorts} A */
   function createManualService(A) {
     async function capture(path = A.state.activePath, { resources = false, filterPath = '' } = {}) {
@@ -86,10 +87,10 @@
         return { ...source, sourceNote: source, index, number: published.number, label: published.label, text: rendered.text, conditions: published.conditions, common: published.common,
           unmarked: published.unmarked, reused: Boolean(published.key) || published.path !== origin.path || source.referenced, publicationPath: published.path };
       });
-      const locations = new Map(), models = new Set();
+      const locations = new Map();
       for (const [path, file] of snapshot.files) {
         const nodes = new Map();
-        const visit = (node, indexes) => { nodes.set(node.start, { xmlPath: indexes.join('/'), name: node.name }); const product = domain.decode(node.attrs.product || ''); if (!/[()]/.test(product)) product.split(/\s+/).filter(Boolean).forEach(model => models.add(model)); node.children.filter(child => child.kind === 'element').forEach((child, index) => visit(child, [...indexes, index])); };
+        const visit = (node, indexes) => { nodes.set(node.start, { xmlPath: indexes.join('/'), name: node.name }); node.children.filter(child => child.kind === 'element').forEach((child, index) => visit(child, [...indexes, index])); };
         visit(xml.inspectSource(file.current), []); locations.set(path, nodes);
       }
       const calls = data.calls.flatMap(call => {
@@ -109,7 +110,7 @@
         bySource.set(sourceKey, uses);
       }
       for (const note of notes) note.usages = [...(bySource.get(note.path + '\n' + note.xmlPath)?.values() || [])];
-      return { notes, calls, models: [...models], report: data.report };
+      return { notes, calls, models: publication.listModels(snapshot.files, snapshot.filter && profiling.compile(snapshot.filter.current)), report: data.report };
     }
     function saveCandidates(snapshot) {
       return [...new Set([snapshot.path, ...snapshot.files.keys(), ...(snapshot.filter ? [snapshot.filter.path] : [])])].map(path => snapshot.buffers.get(path)).filter(file => file?.dirty);
@@ -120,7 +121,11 @@
       if (!response.ok) throw new Error(await A.api.error(response));
       return response.json();
     }
-    return { capture, current, prepare, listNotes, saveCandidates, listFilters, listModels: snapshot => publication.listModels(snapshot.files, snapshot.filter && profiling.compile(snapshot.filter.current)),
+    function discoverModels(snapshot) {
+      const profile = snapshot.filter ? profiling.compile(snapshot.filter.current) : null;
+      return discovery.discover(resolver.resolveConrefsDetailed(snapshot.files, profile).files, profile);
+    }
+    return { capture, current, prepare, listNotes, saveCandidates, listFilters, discoverModels, listModels: snapshot => discoverModels(snapshot).models,
       scopePath: () => /\.ditamap$/i.test(A.state.activePath) ? A.state.activePath : A.state.selectedMap || A.state.activePath };
   }
   const api = { createManualService };
