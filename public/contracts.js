@@ -40,7 +40,7 @@
  * @property {string|null} projectContent Exact model-config comparison base.
  *
  * @typedef {Object} ManualService
- * @property {(path?:string)=>Promise<ManualSnapshot>} capture
+ * @property {(path?:string,options?:{resources?:boolean})=>Promise<ManualSnapshot>} capture
  * @property {(snapshot:ManualSnapshot)=>boolean} current
  * @property {(snapshot:ManualSnapshot, model?:string)=>Object} prepare
  * @property {(snapshot:ManualSnapshot, model?:string)=>{notes:Object[],calls:Object[],models:string[],report:Object}} listNotes First-use labels, source-scoped occurrences and deduplicated per-source usages with inherited conditions.

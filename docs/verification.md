@@ -170,3 +170,12 @@ The GitHub Actions workflow runs the suite on Node 20 and 22. The browser workfl
 Browser coverage verifies that clicking, selecting and arrow movement do not open contextual tools; Alt+/ opens/toggles them and Escape restores selection. The Help menu opens a visible shortcut dialog, traps focus, closes with Escape/button, preserves the underlying notes panel and fits a 390px viewport. Document shortcuts do not run behind modal help.
 
 Final regression for the keyboard/help change: 164 unit/HTTP checks and 139 Chromium checks passed, with no skips.
+
+
+## Contextual actions and existing public note insertion
+
+- Domain checks cover public definition eligibility/identity, escaped relative references, duplicate ID rejection and model delivery with differently scoped calls to one public source.
+- Browser checks cover paragraph and list/note/code conversion, table row/column/header commands and merged-table refusal, partial mixed-format clearing with protected content, link editing/unlink, resource-only unused note discovery, insertion without changing source, filtering/cancellation and stale public buffers, exact undo and compact keyboard layouts.
+- Public-note discovery is scoped to the current manual/dependencies and explicit resource-only entries; arbitrary repositories and full DTD processing are not included.
+
+Full regression: 167 unit/HTTP checks and 146 Chromium checks passed. An additional focused check verifies format clearing inside a link retains that link and its model condition.

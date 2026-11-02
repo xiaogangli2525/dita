@@ -24,6 +24,40 @@
       if (end < node.length) fragment.append(document.createTextNode(node.data.slice(end)));
       node.replaceWith(fragment);
     }
+    function clearFormat() {
+      return guard(() => {
+        const target = selection.capture(), { copy, range } = selection.clone(target);
+        const block = selection.validateRange(range, copy, { selected: true, formatting: true });
+        const parts = selection.textParts(range, block), ancestors = new Set(), tags = new Set(['b', 'i', 'codeph']);
+        const name = node => node.dataset.ditaSource || node.localName;
+        for (const part of parts) for (let node = part.node.parentElement; node && node !== block; node = node.parentElement) if (tags.has(name(node))) ancestors.add(node);
+        if (!ancestors.size) { setStatus('所选文字没有需要清除的粗体、斜体或行内代码'); return; }
+        const begin = selection.offset(block, range.startContainer, range.startOffset), end = selection.offset(block, range.endContainer, range.endOffset);
+        const formats = node => { const result = []; for (let parent = node.parentElement; parent && parent !== block; parent = parent.parentElement) if (ancestors.has(parent)) result.unshift(name(parent)); return result; };
+        const records = [], walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT); let node;
+        while ((node = walker.nextNode())) {
+          if (node.parentElement.closest(selection.PROTECTED)) continue;
+          const keep = formats(node); if (!keep.length) continue;
+          const part = parts.find(part => part.node === node); records.push({ node, keep, start: part?.start ?? 0, end: part?.end ?? 0 });
+        }
+        const protectedNodes = [...block.querySelectorAll(selection.PROTECTED + ',img')].filter(node => !node.parentElement.closest(selection.PROTECTED)).map(node => ({ node, keep: formats(node) })).filter(item => item.keep.length);
+        for (const parent of ancestors) {
+          const phrase = document.createElement('span');
+          for (const attr of parent.attributes) phrase.setAttribute(attr.name, attr.value);
+          phrase.dataset.ditaSource = 'ph'; phrase.ditaSourcePath = parent.ditaSourcePath;
+          phrase.append(...parent.childNodes); parent.replaceWith(phrase);
+        }
+        function formatted(node, keep) { for (const tag of [...keep].reverse()) { const span = document.createElement('span'); span.dataset.ditaSource = tag; span.append(node); node = span; } return node; }
+        for (const { node, keep, start, end } of records) {
+          const fragment = document.createDocumentFragment(), append = (text, preserve) => { if (text) fragment.append(preserve ? formatted(document.createTextNode(text), keep) : document.createTextNode(text)); };
+          if (!end) append(node.data, true);
+          else { append(node.data.slice(0, start), true); append(node.data.slice(start, end), false); append(node.data.slice(end), true); }
+          node.replaceWith(fragment);
+        }
+        for (const { node, keep } of protectedNodes) { const placeholder = document.createTextNode(''); node.replaceWith(placeholder); placeholder.replaceWith(formatted(node, keep)); }
+        selection.commit(target, copy, block, begin, end); setStatus('已清除所选文字格式，保留链接、标识和型号条件；可撤销');
+      });
+    }
     function format(tag) {
       return guard(() => {
         if (!['b', 'i', 'codeph', 'ph'].includes(tag)) return;
@@ -394,7 +428,7 @@ function replaceAllSource() {
     dom.contextToolbar.addEventListener('mousedown', event => { if (event.target.closest('[data-context-action="bold"],[data-context-action="italic"],[data-context-action="code-inline"]')) event.preventDefault(); });
     A.events.on('document:changed', file => { if (scope?.path !== file.path || dom.editSearchPanel.hidden) return; const ticket = ++generation; queueMicrotask(() => { if (ticket === generation) refreshFind({ reset: false }); }); });
     for (const name of ['workspace:willChange', 'file:opened', 'file:closed']) A.events.on(name, closeFind);
-    return { insert, format, openFind, closeFind, nextFind, replace, syncMode };
+    return { insert, format, clearFormat, openFind, closeFind, nextFind, replace, syncMode };
   }
   root.DitaEditorTools = { createController };
 })(window);

@@ -66,7 +66,8 @@
       feature('authorNotes', 'DitaAuthorNotes', 'createController', 'state dom events ditaCore project authorSelection footnotes shell applyAuthorEdit setStatus toast', ['project', 'authorSelection', 'footnotes']),
       feature('authorBlocks', 'DitaAuthorBlocks', 'createController', 'state dom events authorSelection setStatus toast', ['authorSelection']),
       feature('editorTools', 'DitaEditorTools', 'createController', 'state dom api events authorSelection authorNotes resources authorBlocks setStatus setFileContent setMode toast', ['authorSelection', 'authorNotes', 'resources', 'authorBlocks']),
-      feature('authorContext', 'DitaAuthorContext', 'createController', 'state dom events authorSelection editorTools setStatus', ['authorSelection', 'editorTools']),
+      feature('noteReuse', 'DitaNoteReuse', 'createController', 'state dom api events ditaCore manual notePresentation authorSelection setStatus', ['manual', 'notePresentation', 'authorSelection']),
+      feature('authorContext', 'DitaAuthorContext', 'createController', 'state dom events authorSelection editorTools authorBlocks authorCommands resources noteReuse setStatus', ['authorSelection', 'editorTools', 'authorBlocks', 'authorCommands', 'resources', 'noteReuse']),
       feature('clipboard', 'DitaClipboard', 'createController', 'state dom ditaCore authorSelection setStatus toast', ['authorSelection'], {
         create: typeof catalog.DitaClipboard?.createController === 'function' ? c => catalog.DitaClipboard.createController({ state: c.state, dom: c.dom, core: c.ditaCore, selection: c.authorSelection, status: c.setStatus, toast: c.toast }) : undefined
       }),

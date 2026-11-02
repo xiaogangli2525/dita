@@ -260,3 +260,13 @@
 .shortcut-help-dialog kbd { font:inherit; color:#285c43; }
 .shortcut-help-dialog p { color:#64776b; font-size:12px; line-height:1.8; }
 .shortcut-help-note { padding:10px 12px; border-radius:7px; background:#f1f6f3; }
+
+.author-quick-tools { box-sizing:border-box; width:max-content; max-width:min(580px,calc(100vw - 16px)); }
+.quick-more-actions { flex:1 0 100%; display:flex; flex-wrap:wrap; gap:3px; padding-top:5px; border-top:1px solid #e0e9e3; }
+.author-quick-tools button:disabled { opacity:.5; cursor:not-allowed; }
+.reuse-note-preview { margin-top:12px; padding:12px; border:1px solid #dce8df; border-radius:8px; background:#f2f7f4; white-space:pre-wrap; overflow-wrap:anywhere; }
+.reuse-note-preview p { margin:5px 0; }
+#reuseNoteTarget { min-height:140px; }
+
+.workspace-dialog button.primary-action { background:var(--accent); border-color:var(--accent); color:#fff; }
+.workspace-dialog button.primary-action:hover:not(:disabled) { background:#106150; }
