@@ -67,7 +67,7 @@ html, body { height: 100%; margin: 0; }
 .dita-preview .note.important { border-color: var(--danger); background: #fff0f0; }
 .dita-preview hr { border: 0; border-top: 1px solid #e4e7ea; margin: 40px 0; }
 .dita-preview .preview-error { color: var(--danger); }
-.dita-preview pre { background: #111827; color: #edf2f7; padding: 12px; overflow: auto; border-radius: 6px; }
+.dita-preview pre { background: #f5f7f9; color: #263b48; padding: 12px; overflow: auto; border-radius: 6px; }
 .dita-preview code { font-family: Consolas, monospace; }
 
 .diff { overflow: auto; background: #fff; font-family: Consolas, "Cascadia Mono", monospace; font-size: 13px; }
@@ -138,9 +138,9 @@ html, body { height: 100%; margin: 0; }
    code text on a white background as soon as the block is clicked. */
 .visual-editor pre.author-selected,
 .visual-editor pre[data-dita-source="codeblock"].author-selected {
-  background: #111827;
-  color: #edf2f7;
-  caret-color: #f8fafc;
+  background: #f5f7f9;
+  color: #263b48;
+  caret-color: #263b48;
   outline-color: #62a6d2;
 }
 .visual-editor pre.author-selected::selection,
@@ -202,33 +202,6 @@ textarea:focus-visible, [tabindex]:focus-visible {
   outline: 2px solid var(--focus-ring);
   outline-offset: 1px;
 }
-
-/* A focused code block must retain its dark code-editor treatment.  The
-   generic Author selection highlight otherwise replaces its background. */
-.visual-editor pre,
-.visual-editor pre:focus,
-.visual-editor pre.author-selected,
-.visual-editor.preview-editable pre.author-selected {
-  background: #111827 !important;
-  color: #edf2f7 !important;
-  border: 1px solid #273449;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.04);
-}
-.visual-editor pre {
-  min-height: 2.5em;
-  padding: 14px 16px;
-  font-family: Consolas, "Cascadia Mono", monospace;
-  font-size: 13px;
-  line-height: 1.6;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-}
-.visual-editor pre.author-selected,
-.visual-editor pre:focus {
-  outline: 2px solid #67a9ca;
-  outline-offset: 2px;
-}
-.visual-editor pre::selection { background: #3d6381; color: #fff; }
 
 /* Topic Author pages sit on a quiet gray canvas, like Oxygen's editing
    workspace, while the document itself remains an easy-to-read white page. */

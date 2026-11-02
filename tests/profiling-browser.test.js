@@ -6,7 +6,7 @@ const {chromium}=require('playwright-core'),{unzipSync,strFromU8}=require('fflat
 test('real author compatibility and DITAVAL delivery share captured source and output rules',async t=>{
  const temp=await fs.mkdtemp(path.join(os.tmpdir(),'dita-profiling-')),repo=path.join(temp,'docs');await fs.mkdir(path.join(repo,'filters'),{recursive:true});
  const intro="<?xml version='1.0' encoding='UTF-8'?>\r\n<concept id='intro'><title>引言</title><shortdesc>手册摘要</shortdesc><prolog><author>A</author></prolog></concept>";
- const topic='<topic id="t"><title>HTTP 指令</title><shortdesc>参数说明</shortdesc><body><p>Public<fn>FIRST_NOTE</fn><ph product="tbd">PRIVATE_INLINE</ph></p><div product="tbd"><p>PRIVATE_BODY<fn>PRIVATE_NOTE</fn><image href="missing.png"/><xref href="missing.dita"/></p></div><fn id="private" product="tbd">PRIVATE_DEFINITION</fn><p>Reference<xref type="fn" href="#t/private"/>Tail<fn>LAST_NOTE</fn></p><p><image href="logo.svg" scale="30"/></p><table><tgroup cols="2"><colspec colname="c1"/><colspec colname="c2"/><tbody><row><entry namest="c1" nameend="c2">MERGED 中文</entry></row></tbody></tgroup></table></body></topic>';
+ const topic='<topic id="t"><title>HTTP 指令</title><shortdesc>参数说明</shortdesc><body><p>Public<fn>FIRST_NOTE</fn><ph product="tbd">PRIVATE_INLINE</ph></p><div product="tbd"><p>PRIVATE_BODY<fn>PRIVATE_NOTE</fn><image href="missing.png"/><xref href="missing.dita"/></p></div><fn id="private" product="tbd">PRIVATE_DEFINITION</fn><p>Reference<xref type="fn" href="#t/private"/>Tail<fn>LAST_NOTE</fn></p><p><image href="logo.svg" scale="30"/></p><table><tgroup cols="2"><colspec colname="c1"/><colspec colname="c2"/><tbody><row><entry namest="c1" nameend="c2">MERGED 中文</entry></row></tbody></tgroup></table><msgblock id="response">+HTTP: 0,0\n  OK</msgblock><note id="typed-note" type="note"><p>Rich <b>note</b> content.</p></note></body></topic>';
  const filter='<val><prop att="product" val="tbd" action="exclude"/></val>';
  for(const [name,content]of Object.entries({'intro.dita':intro,'a.dita':topic,'main.ditamap':'<map><title>HTTP 手册</title><topicref href="intro.dita"/><topicref href="a.dita"/></map>','filters/release.ditaval':filter,'filters/invalid.ditaval':'<val><prop att="product" action="flag"/></val>','logo.svg':'<svg xmlns="http://www.w3.org/2000/svg" width="40" height="20"><rect width="40" height="20" fill="green"/></svg>'}))await fs.writeFile(path.join(repo,name),content);
  for(const args of [['init'],['add','.'],['-c','user.name=Test','-c','user.email=test@example.invalid','commit','-qm','fixture']])execFileSync('git',args,{cwd:repo,stdio:'ignore'});
@@ -34,6 +34,20 @@ test('real author compatibility and DITAVAL delivery share captured source and o
  });
  await t.test('images without alt and root summaries roundtrip exactly in the actual browser DOM',async()=>{
   const result=await page.evaluate(({topic,intro})=>{const c=window.DitaApp.ditaCore;return [topic,intro].map(source=>c.updateCurrentFromVisual(null,{visualEditor:c.createAuthorTopic(source,document,false,'a.dita')},source)===source);},{topic,intro});assert.deepEqual(result,[true,true]);
+ });
+ await t.test('all note types switch safely and selected response blocks stay readable',async()=>{
+  await open('a.dita');
+  const baseline=await page.evaluate(()=>window.DitaApp.state.filesMap.get('a.dita').current);
+  const note=page.locator('#visualEditor [data-dita-source=note]');await note.click();await page.click('#inspectorToggleButton');
+  assert.equal(await page.locator('#contentNoteType option').count(),13);
+  for(const type of ['tip','important','attention','caution','warning','danger','notice','restriction','remember','fastpath','trouble','other']){
+   await note.click();await page.selectOption('#contentNoteType',type);assert.ok((await note.getAttribute('class')).split(/\s+/).includes(type));
+   if(type==='other'){await page.fill('#contentNoteTitle','固件兼容性');await page.locator('#contentNoteTitle').press('Tab');assert.equal(await note.getAttribute('data-dita-note-label'),'固件兼容性');await page.click('#authorUndoButton');}
+   await page.click('#authorUndoButton');assert.equal(await page.evaluate(()=>window.DitaApp.state.filesMap.get('a.dita').current),baseline);
+  }
+  await page.click('#inspectorCloseButton');await page.locator('#visualEditor pre').click();
+  const contrast=await page.locator('#visualEditor pre').evaluate(node=>{const s=getComputedStyle(node);const lum=rgb=>{const a=rgb.match(/[\d.]+/g).slice(0,3).map(n=>{n=Number(n)/255;return n<=.04045?n/12.92:((n+.055)/1.055)**2.4;});return a[0]*.2126+a[1]*.7152+a[2]*.0722;};const a=lum(s.color),b=lum(s.backgroundColor);return (Math.max(a,b)+.05)/(Math.min(a,b)+.05);});assert.ok(contrast>=4.5,'selected code remains legible');
+  assert.equal(await page.locator('#visualEditor pre').innerText(),'+HTTP: 0,0\n  OK');
  });
  await open('main.ditamap');
  const delivery=async()=>{await page.click('#exportMenuButton');await page.locator('#exportModel:not(:disabled)').waitFor();};

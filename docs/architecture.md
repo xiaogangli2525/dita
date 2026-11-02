@@ -213,3 +213,10 @@ Format clearing changes only b/i/codeph within the selected text. Original attri
 `note-reuse-core` indexes eligible source definitions and builds escaped relative references without UI or IO. `note-reuse` owns the asynchronous picker and stale selection/snapshot guards. Manual capture optionally includes explicitly declared resource-only topics. Reuse validates a detached publication before one source-preserving insertion; public source buffers remain untouched. The publication engine filters each xref occurrence by its inherited model conditions as well as the target definition conditions; usage summaries retain both constraints.
 
 Automatic note presentation captures run only when Author contains note markers; opening a manual without notes does not launch redundant background document reads. Explicit note panels and reuse pickers still capture on demand.
+
+
+## Document presentation
+
+`document-presentation.js` owns the standard note labels/tones and preformatted block vocabulary shared by Author, inspector, conversions and delivery. `document.css` owns the document typography separately from shell/panel layout. Generated Author labels use projection metadata and CSS, never editable text nodes.
+
+Author renders codeblock, msgblock, screen, pre and lines as preformatted surfaces while retaining inline XML nodes, exact whitespace and source mappings. Delivery preserves response blocks in HTML/Markdown and emits CALS colgroups for proportional column widths. Note types and custom othertype labels flow through the existing source-preserving attribute command and undo history.
