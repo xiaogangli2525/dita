@@ -1,5 +1,5 @@
 'use strict';
-const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const test=require('node:test'),assert=require('node:assert/strict'),path=require('node:path');
 const rules=require('../public/note-rules-core'),notes=require('../public/footnotes-core'),publication=require('../public/publication-core');
 const {buildMockDom}=require('./visual-harness'),core=require('../public/app-core');
 const makeRule=(n,decisions)=>({path:n.path,xmlPath:n.xmlPath,expectedNote:n.before,expectedContext:n.context,expectedConditions:n.conditions,confirmed:true,decisions});
@@ -23,6 +23,13 @@ test('changed note, context or conditions invalidate rules, and another manual n
 test('whole-model suggestions require confirmation and reject invalid sources or partitions',()=>{
  const source='<topic><body><p><fn>BX-7 不支持。BX-70 支持。通用。</fn></p></body></topic>',n=notes.listFootnotes(source,'mqtt.dita')[0],s=rules.suggest(n,['BX-7','BX-70']);assert.deepEqual(s.map(p=>p.models),[['BX-7'],['BX-70'],[]]);assert.ok(s.every(p=>p.scope==='pending'));assert.throws(()=>rules.validate({schema:1,rules:[makeRule(n,s.map(p=>({scope:p.scope,models:p.models})))]}),/确认/);const wrong=makeRule(n,[forModel('BX-7')]);assert.throws(()=>rules.validate({schema:1,rules:[wrong]}),/片段/);wrong.path='../outside.dita';assert.throws(()=>rules.validate({schema:1,rules:[wrong]}),/来源/);
 });
-test('all 37 real HTTP notes partition without altering text or markup',()=>{
- let count=0;function visit(dir){for(const e of fs.readdirSync(dir,{withFileTypes:true})){const p=path.join(dir,e.name);if(e.isDirectory())visit(p);else if(p.endsWith('.dita')){const source=fs.readFileSync(p,'utf8');for(const n of notes.listFootnotes(source,p)){const parts=rules.partition(n);assert.equal(notes.textOf(parts.render(parts.parts.map(()=>common),'CHECK')),notes.textOf(n.inner));assert.equal(source.slice(n.start,n.end),n.before);count++;}}}}visit(path.join(__dirname,'../examples/http_httpsusermanual'));assert.equal(count,37);
+test('all 37 notes in the HTTP manual dependency closure partition without altering text or markup',()=>{
+ const {collectDemoFiles}=require('../scripts/demo-workspace'),{decodeXmlBuffer}=require('../lib/document-files');
+ const files=collectDemoFiles(path.join(__dirname,'../examples/http_httpsusermanual'),'http_httpsusermanual.ditamap');
+ let count=0;for(const [p,bytes]of files)if(p.endsWith('.dita')){
+  const source=decodeXmlBuffer(bytes);for(const n of notes.listFootnotes(source,p)){
+   const parts=rules.partition(n);assert.equal(parts.render(parts.parts.map(()=>common),'CHECK'),n.inner);
+   assert.equal(source.slice(n.start,n.end),n.before);count++;
+  }
+ }assert.equal(count,37);
 });
