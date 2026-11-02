@@ -60,12 +60,13 @@
         .finally(() => { if (pending?.promise === promise) pending = null; });
       pending = { generation: started, promise }; return promise;
     }
-    function schedule() { clearTimeout(timer); timer = setTimeout(() => { ready().catch(() => {}); }, 40); }
+    function hasMarkers() { return Boolean(A.dom.visualEditor.querySelector('.fn-ref')); }
+    function schedule() { clearTimeout(timer); timer = setTimeout(() => { if (hasMarkers()) ready().catch(() => {}); }, 40); }
     function setScope(path) {
       if (scope !== path) { scope = path; snapshot = data = null; locations.clear(); generation++; }
       apply(); if (scope) schedule();
     }
-    A.events.on('author:rendered', () => { apply(); ready().catch(() => {}); });
+    A.events.on('author:rendered', () => { apply(); if (hasMarkers()) ready().catch(() => {}); });
     A.events.on('document:changed', file => { if (file.path === scope || snapshot?.files.has(file.path)) { generation++; schedule(); } });
     A.events.on('project:changed', () => { generation++; schedule(); });
     A.events.on('file:closed', () => { generation++; snapshot = data = null; if (!A.state.filesMap.has(scope) && !A.state.maps.some(map => map.path === scope)) scope = A.state.activePath; schedule(); });

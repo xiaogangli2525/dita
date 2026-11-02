@@ -30,3 +30,5 @@ require('./footnote-numbering.test');
 
 require('./remote-repositories.test');
 require('./remote-api.test');
+
+require('./note-reuse.test');

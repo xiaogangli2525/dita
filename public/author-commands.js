@@ -36,6 +36,13 @@
     function context(target, action, value) {
       let node = target.node;
       const table = node.closest('table');
+      if (action === 'unlink') {
+        if (node.localName !== 'xref' || node.getAttribute('type') === 'fn') throw new Error('请先选择普通链接');
+        const span = spanAt(root.DitaXmlSource.inspectSource(target.current), target.xmlPath), phrase = target.document.createElement('ph');
+        for (const attr of node.attributes) if (!['href', 'keyref', 'scope', 'format', 'type', 'query', 'reftitle'].includes(attr.name)) phrase.setAttribute(attr.name, attr.value);
+        const opening = serialize(phrase).replace(/\/>$/, '>');
+        commit(target, target.xmlPath, opening + (span.close ? target.current.slice(span.end, span.close.start) : '') + '</ph>'); return;
+      }
       if (action === 'delete' && table) node = table;
       if (['delete', 'remove'].includes(action)) {
         if (['title', 'body', 'conbody', 'taskbody', 'refbody'].includes(node.localName)) throw new Error('此结构不能直接删除');
@@ -44,7 +51,8 @@
       if (/^(row-|col-)|^(header|width)$/.test(action)) {
         if (!table) throw new Error('请先选择表格单元格');
         const path = corePath(table); root.DitaTableCore.apply(table, node.closest('entry'), action, value);
-        commit(target, path, serialize(table)); return;
+        const cell = node.closest('entry'), after = cell ? { start: { block: corePath(cell), offset: 0 }, end: { block: corePath(cell), offset: 0 } } : null;
+        commit(target, path, serialize(table), after); return;
       }
       throw new Error('不支持的内容操作，请使用正文插入工具');
     }

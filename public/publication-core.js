@@ -40,7 +40,9 @@
           }
           if (node.name === 'xref' && decode(node.attrs.type) === 'fn') {
             if (insideNote) throw new Error('暂不支持注脚内再次引用注脚');
-            const ref = { node, key: referenceKey(decode(node.attrs.href), path) };
+            const conditions = manual.conditions(node, ancestors);
+            if (model && conditions.some(value => /[()]/.test(value))) throw new Error('型号导出暂不支持分组 product 条件');
+            const ref = { node, conditions, allowed: manual.matches(conditions, model), key: referenceKey(decode(node.attrs.href), path) };
             refs.push(ref); sequence.push({ ref, site: resolved.sites.get(path)[sequence.length] });
           }
         });
@@ -54,7 +56,7 @@
         const target = definitions.get(ref.key);
         if (!target) throw new Error(path + '：找不到注脚引用：' + ref.key);
         referenced.add(ref.key);
-        if (!target.allowed) remove(record, ref.node); else used.add(ref.key);
+        if (!target.allowed || !ref.allowed) remove(record, ref.node); else used.add(ref.key);
       }
     }
     const noteDefinitions = new Map(), prepared = new Map(), publicationNotes = new Map();
@@ -77,6 +79,7 @@
     // definition is numbered at its first xref, and all of its calls share it.
     const ordered = [], numbered = new Map(), occurrences = [];
     for (const path of published) for (const call of records.get(path).sequence) {
+      if (call.ref && !call.ref.allowed) continue;
       const note = call.note || definitions.get(call.ref.key);
       if (!publicationNotes.has(note)) continue;
       if (!call.definition && !numbered.has(note)) {
@@ -86,7 +89,7 @@
       }
       occurrences.push({ ...call, target: note });
     }
-    const calls = occurrences.filter(call => numbered.has(call.target)).map(call => ({ site: call.site, number: numbered.get(call.target).number, definition: Boolean(call.definition) }));
+    const calls = occurrences.filter(call => numbered.has(call.target)).map(call => ({ site: call.site, number: numbered.get(call.target).number, definition: Boolean(call.definition), conditions: [...call.target.conditions, ...(call.ref?.conditions || [])] }));
     // Source editors can open a resource-only definition while retaining Map scope.
     for (const item of ordered) calls.push({ site: { ...item.origin, name: 'fn' }, number: item.number, definition: Boolean(item.key), origin: true });
     return { files: prepared, report, noteDefinitions, notes: ordered, calls };

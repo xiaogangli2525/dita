@@ -8,7 +8,7 @@
   const store = typeof module !== 'undefined' ? require('./document-store') : root.DitaDocumentStore;
   /** @param {import('./contracts').ManualPorts} A */
   function createManualService(A) {
-    async function capture(path = A.state.activePath) {
+    async function capture(path = A.state.activePath, { resources = false } = {}) {
       if (!path) throw new Error('请先打开文档或功能手册');
       const workspace = A.api.token;
       await A.project?.ready?.();
@@ -30,6 +30,10 @@
       } else map = { title: path.split('/').pop(), path, children: [{ type: 'file', path }] };
       const files = new Map();
       for (const entry of A.ditaCore.collectPreviewPaths(map.children || [])) files.set(entry.path, { path: entry.path, current: await read(entry.path) });
+      if (resources) {
+        async function include(nodes) { for (const node of nodes) { if (node.type === 'file' && /\.(dita|xml)$/i.test(node.path) && !files.has(node.path)) files.set(node.path, { path: node.path, current: await read(node.path) }); if (node.children) await include(node.children); } }
+        await include(map.children || []);
+      }
       const loaded = await resolver.loadDependencies(files, read);
       const snapshot = { capturedAt: new Date().toISOString(), path, content, map, files: loaded, workspace, buffers, project: A.project?.value || { schema: 1, models: [] }, projectError: A.project?.error, projectContent: A.project?.expectedContent, root: A.state.root, branch: A.state.currentBranch };
       if (!current(snapshot)) throw new Error('内容已变化，请重新打开以更新快照');
@@ -90,7 +94,7 @@
         if (!note || !location || location.name !== call.site.name) continue;
         const sourceKey = note.path + '\n' + note.xmlPath, uses = bySource.get(sourceKey) || new Map();
         const id = call.site.path + '\n' + location.xmlPath;
-        if (!uses.has(id)) uses.set(id, { path: call.site.path, xmlPath: location.xmlPath, label: note.label, conditions: note.conditions });
+        if (!uses.has(id)) uses.set(id, { path: call.site.path, xmlPath: location.xmlPath, label: note.label, conditions: call.conditions || note.conditions });
         bySource.set(sourceKey, uses);
       }
       for (const note of notes) note.usages = [...(bySource.get(note.path + '\n' + note.xmlPath)?.values() || [])];

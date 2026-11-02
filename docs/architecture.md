@@ -194,3 +194,14 @@ Clone runs in a hidden sibling staging directory and cleans failures before publ
 `footnotes` owns single-click detail previews, the shared source/impact view and the existing editor. `note-scope` supplies live applicability feedback from the original ancestor restrictions, current selection and project registry. Mounted public sources edit in place and restore the original call selection on apply/cancel. Other public-source navigation uses `bodyNavigation.remember` to preserve a return location. All popovers stay outside the XML projection and cannot create document/history changes.
 
 Shortcut help is a native dialog owned by `workspace-shell`; the menu delegates to that controller rather than writing an unobtrusive status line. Dialog focus and Escape stay within the native modal boundary; application-level document shortcuts defer while a dialog is open.
+
+
+## Expanded contextual commands and reusable notes
+
+The contextual controller routes paragraph insertion/format clearing to `editor-tools`, conversions to `author-blocks`, existing link editing to `resources`, and table/unlink commands to `author-commands`. It owns visibility and keyboard positioning only. Additional actions expand within the same bounded toolbar. Table commands restore the source cell's new XML path after row/column/header movement.
+
+Format clearing changes only b/i/codeph within the selected text. Original attributes stay on neutral ph nodes; unselected emphasis and protected inline nodes retain their formatting. Unlink patches the xref wrapper into a ph while preserving raw inner XML and non-link attributes.
+
+`note-reuse-core` indexes eligible source definitions and builds escaped relative references without UI or IO. `note-reuse` owns the asynchronous picker and stale selection/snapshot guards. Manual capture optionally includes explicitly declared resource-only topics. Reuse validates a detached publication before one source-preserving insertion; public source buffers remain untouched. The publication engine filters each xref occurrence by its inherited model conditions as well as the target definition conditions; usage summaries retain both constraints.
+
+Automatic note presentation captures run only when Author contains note markers; opening a manual without notes does not launch redundant background document reads. Explicit note panels and reuse pickers still capture on demand.
