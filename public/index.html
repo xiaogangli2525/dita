@@ -275,6 +275,7 @@
   </section>
   <dialog id="modelExportDialog" class="footnote-dialog" aria-labelledby="modelExportHeading">
     <form id="modelExportForm">
+      <div class="delivery-dialog-content">
       <h2 id="modelExportHeading">交付功能手册</h2>
       <nav class="delivery-steps" aria-label="交付步骤">
         <button type="button" data-delivery-step="configure" aria-current="step">1 配置</button>
@@ -304,6 +305,7 @@
         <p>预览和导出使用同一份内容。包含当前未保存修改，导出不会代替保存。</p>
       </section>
       <p id="modelExportError" class="footnote-edit-error" role="alert"></p>
+      </div>
       <div class="footnote-dialog-actions"><button id="modelExportCancel" type="button">取消</button><button type="submit" value="check">发布前检查</button><button type="submit" value="preview">交付预览</button><button type="submit" value="download" class="primary-action">导出文件</button></div>
     </form>
   </dialog>
@@ -485,6 +487,12 @@
   <script src="/remote-libraries.js"></script>
   <script src="/application.js"></script>
   <script src="/footnote-presentation.js"></script>
+  <script src="/app-dom.js"></script>
+  <script src="/workspace-view.js"></script>
+  <script src="/workspace-controller.js"></script>
+  <script src="/document-navigation.js"></script>
+  <script src="/menu-controller.js"></script>
+  <script src="/app-actions.js"></script>
   <script src="/app.js"></script>
 </body>
 </html>

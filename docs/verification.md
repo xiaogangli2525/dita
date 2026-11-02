@@ -228,3 +228,14 @@ The actual browser downloads the real HTTP manual for ML307G, ML307N and MN319-A
 Browser workflows also check Chinese summaries of real filter rules, refusal of unchecked mixed-model text delivery, HTML/MD/PDF/DOCX sharing the selected prefix policy, invalidation of checked output when the policy changes, all-model preservation, and navigation from ambiguous text to independent-rule review. Existing DITAVAL race, editing, save/draft, Git and export regression remains covered.
 
 Prefix interpretation is explicitly enabled and requires preview review. It follows the displayed source-format convention; it does not infer arbitrary technical applicability, rewrite body prose, automatically confirm sidecar rules or change original DITA.
+
+
+## Workspace composition and UI reliability
+
+Full local regression: **216 unit/HTTP checks** and **191 Chromium checks**, zero failures/skips. The browser suite includes the actual HTTP-manual delivery regression, original-byte preservation, model/profile note filtering and HTML/Markdown/PDF/DOCX workflows. A focused workspace/UI, foundation and document-transition run passed all 34 checks.
+
+New domain checks cover per-instance workspace state, overlapping-switch refusal, active-save/dirty-buffer guards, failed-switch recovery, branch-named default Maps, changed-identity refresh rejection and delayed source navigation. Module-load tests verify that all six new factories register without accessing DOM or the application facade during load.
+
+New browser checks cover menu roles, disabled actions, keyboard/focus behavior and Escape without closing an auxiliary panel; document/navigation tab keys; source-aligned outlines excluding metadata titles and updating through edit/undo; pending-switch interaction locks and retained buffers after failure; partial rule choices across rows and close confirmation; delayed writes freezing fields and delayed reads cancelling without reopening; visible delivery actions and bounded menus at 390 × 520; and handled failed document opens. The compact delivery screenshot was visually inspected.
+
+The entry point now assembles explicit services and view/action ports. Existing editor/history, publication and save services remain responsible for their established workflows; this refactor does not replace them or add AI/multi-user services. Original DITA is unchanged. Browser checks use Chromium and do not certify physical IME, assistive technology or every manual specialization.

@@ -165,3 +165,9 @@ kbd { border:1px solid var(--border); border-radius:4px; padding:2px 4px; font-s
   .document-actions { width:100%; }
   .document-actions .save-badge { margin-right:auto; }
 }
+
+.menu-popup { max-width:calc(100vw - 16px); max-height:calc(100dvh - 16px); overflow:auto; }
+.menu-popup button:focus-visible { outline:2px solid var(--accent); outline-offset:-2px; background:var(--accent-soft); }
+.menu-popup button:disabled { opacity:.45; cursor:default; }
+.tab:focus-visible { outline:2px solid var(--accent); outline-offset:-2px; }
+.layout[aria-busy=true] { cursor:wait; }

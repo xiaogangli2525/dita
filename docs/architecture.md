@@ -1,5 +1,23 @@
 # Workspace architecture
 
+## Workspace entry-point decomposition
+
+`app.js` now creates shared state and assembles explicit ports for the editor, workspace services and feature composition. It contains no DOM event installation or workspace HTTP implementation. The existing `DitaApp` facade and proposal/save/editor interfaces remain available. Bootstrap view callbacks resolve services after construction, while factories keep their own per-instance state.
+
+| Module | Responsibility |
+| --- | --- |
+| `app-dom.js` | DOM handles only; no listeners, network or application state |
+| `workspace-controller.js` | Initialization, repository/branch switching, token adoption and safe directory refresh |
+| `document-navigation.js` | Last-request-wins document opens, close behavior and guarded source jumps |
+| `workspace-view.js` | Header/save status, tabs, outline, filename search and switching feedback |
+| `app-actions.js` | Delegate toolbar and global keyboard commands to existing feature/editor controllers |
+| `menu-controller.js` | Menu availability, keyboard navigation, focus restoration, bounds and async-action errors |
+
+Workspace switching prevents overlapping requests, rejects switching during an active save, and makes the header/layout inert while a confirmed switch is pending. Failed switches retain current buffers and restore interaction. Directory refresh rejects a different workspace identity before mutating state. Navigation refuses a delayed source jump after a newer document wins. No HTTP/domain work is moved into the view.
+
+UI follow-up includes source-identity outline targets (metadata titles cannot shift headings), keyboard document/navigation tabs, panel-safe menu Escape, outside-click capture, no-file action availability and handled failed opens. Rule review retains partial choices per source during the open session, confirms discarding them on close, freezes editing/selection during writes and allows cancelling slow reads. Delivery content scrolls independently from always-reachable actions; step changes reset content scroll.
+
+
 ## Explicit prose-model export policy
 
 `model-note-text.js` is an opt-in, source-format projection for footnote text. It recognizes complete model-label lists and limited explicit only/unsupported clauses, carries textual scope through continuation sentences and nested containers, and compacts retained labels through XML text spans. Balanced Oxygen insertion spans remain paired; deletion revisions and ambiguous known-model comparisons require review. It does not change the stored fragment-rule schema or source buffers.
@@ -77,7 +95,7 @@ The application remains a local Node server and buildless browser client. This c
 | Server tools | `lib/workspace-tools.js` | Model config, bounded plaintext search, source provenance and image IO; receives the current root and existing IO/response helpers from the authenticated router |
 | HTTP and Git boundaries | `lib/api-router.js`, `lib/http-utils.js`, `lib/git-service.js` | Shared request guard and API dispatch, bounded JSON/response helpers, and repository/branch/Git baseline operations |
 
-`app.js` creates the compatibility `DitaApp` facade, delegates feature assembly to `application.js` and owns remaining navigation and DOM bindings. `workspace-shell.js` owns panel visibility and resizing; `inspector.js` owns element properties and table controls. `editor-controller.js` owns document history, modes, Topic/Map synchronization and review coordination. `editor-tools.js` owns Author selection formatting, body find/replace, structural insertion and explicit Source find/insertion; `author-selection.js` owns guarded ranges and detached-clone commits. Feature controllers receive declared capability subsets, while integration/browser callers retain the compatibility facade.
+`app.js` creates the compatibility `DitaApp` facade and delegates feature assembly to `application.js`. Workspace IO, navigation, presentation and event installation live in the controllers listed above. `workspace-shell.js` owns panel visibility and resizing; `inspector.js` owns element properties and table controls. `editor-controller.js` owns document history, modes, Topic/Map synchronization and review coordination. `editor-tools.js` owns Author selection formatting, body find/replace, structural insertion and explicit Source find/insertion; `author-selection.js` owns guarded ranges and detached-clone commits. Feature controllers receive declared capability subsets, while integration/browser callers retain the compatibility facade.
 
 ## Workspace presentation contract
 

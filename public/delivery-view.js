@@ -7,6 +7,7 @@
     let step = 'configure', ready = false, busy = false;
     const sections = { configure: 'deliveryConfigure', check: 'deliveryCheck', export: 'deliveryReady' };
     function show(next) {
+      const previous=step;
       step = next === 'export' && !ready ? 'check' : next;
       for (const [name, id] of Object.entries(sections)) get(id).hidden = name !== step;
       document.querySelectorAll('[data-delivery-step]').forEach(button => {
@@ -14,6 +15,7 @@
         if (button.dataset.deliveryStep === step) button.setAttribute('aria-current', 'step');
         else button.removeAttribute('aria-current');
       });
+      if(previous!==step){const content=get('modelExportDialog').querySelector('.delivery-dialog-content');if(content)content.scrollTop=0;}
     }
     document.querySelectorAll('[data-delivery-step]').forEach(button => button.addEventListener('click', () => show(button.dataset.deliveryStep)));
     function invalidate() {

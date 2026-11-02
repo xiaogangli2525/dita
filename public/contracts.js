@@ -60,6 +60,19 @@
  * @property {()=>void} apply Update protected display markers without editing XML.
  * @property {(path:string,xmlPath:string)=>Promise<Object|null>} resolve
  *
+ * @typedef {Object} WorkspaceLifecycle
+ * @property {boolean} busy Read-only guard during initialization and switching.
+ * @property {()=>Promise<void>} initialize
+ * @property {(result:Object)=>Promise<void>} reloadWorkspace Adopt an acknowledged workspace and invalidate old UI requests.
+ * @property {()=>Promise<void>} selectRepository
+ * @property {()=>Promise<void>} selectBranch
+ * @property {()=>Promise<void>} refreshWorkspaceTree Refresh directories without replacing working buffers.
+ *
+ * @typedef {Object} DocumentNavigation
+ * @property {(path:string,options?:{preserveFootnotesScope?:boolean})=>Promise<DocumentState|null>} openFile Null means a newer navigation won.
+ * @property {(path:string)=>void} closeFile
+ * @property {(path:string,start?:number,end?:number,expected?:string)=>Promise<void>} navigateToSource Rejects stale navigation before moving focus/selection.
+ *
  * @typedef {Object} ProjectService
  * @property {ProjectConfig} value
  * @property {string} error
