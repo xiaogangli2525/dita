@@ -4,7 +4,8 @@
     const get = id => document.getElementById(id), pending = new Map();
     const scope = () => ({ root: A.state.root, branch: A.state.currentBranch });
     let store, timer, failed = false;
-    try { store = root.DitaDraftStore.createDraftStore(root.localStorage); } catch {}
+    try { store = root.DitaDraftStore.createDraftStore(root.localStorage); }
+    catch (error) { console.warn('草稿存储初始化失败：', error.name); }
     function guarded(action) {
       try { if (!store) throw new Error('浏览器存储不可用'); action(); failed = false; }
       catch { if (!failed) A.toast('草稿备份不可用或空间不足，请及时保存或下载文档', 'error'); failed = true; }
@@ -28,10 +29,11 @@
     }
     function download(draft) { A.downloadXML(draft.current, draft.path.split('/').pop().replace(/\.(dita|xml|ditamap)$/i, '-draft.xml')); }
     function show() {
-      flush(); get('draftList').replaceChildren();
+      flush(); get('draftList').replaceChildren(); get('draftError').textContent = '';
       guarded(() => {
         const drafts = store.list(scope());
-        if (!drafts.length) get('draftList').textContent = '当前仓库和分支没有待恢复草稿。';
+        get('draftError').textContent = store.warnings?.length ? `${store.warnings.length} 份草稿无法读取；原始数据仍保留。` : '';
+        if (!drafts.length) get('draftList').textContent = store.warnings?.length ? '没有可直接恢复的有效草稿。' : '当前仓库和分支没有待恢复草稿。';
         for (const draft of drafts) {
           const row = document.createElement('article'), title = document.createElement('strong'), time = document.createElement('small');
           title.textContent = draft.path; time.textContent = new Date(draft.updatedAt).toLocaleString(); row.append(title, time);
@@ -59,7 +61,7 @@
           row.append(recover, save, discard); get('draftList').append(row);
         }
       });
-      get('draftError').textContent = '';
+      if (failed) get('draftError').textContent = '草稿存储无法读取，请保留当前内容并保存或下载文档。';
       if (!get('draftDialog').open) get('draftDialog').showModal();
     }
     A.events.on('document:changed', changed);

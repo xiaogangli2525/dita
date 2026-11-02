@@ -12,9 +12,8 @@ const VISUAL_TO_DITA = new Map(Object.entries({
   span: 'ph', div: 'p', a: 'xref', strong: 'b', em: 'i'
 }));
 
-let _ctx = { topicPath: '', imageDataCache: new Map(), fnCounter: 0, mdFnCounter: 0, mdFootnotes: [] };
-function resolveAssetPath(href, ctx) {
-  ctx = ctx || _ctx;
+function createAuthorContext(topicPath = '') { return { topicPath, fnCounter: 0 }; }
+function resolveAssetPath(href, ctx = { topicPath: '' }) {
   if (!href) return '';
   let raw = decodeURIComponent(href.split('?')[0].split('#')[0]);
   if (/^(https?:|data:|\/)/i.test(raw)) return raw;
@@ -420,33 +419,31 @@ function updateVisualFromXml(state, dom, source, documentRef = document, normali
 }
 
 
-function resetFnCounter() { _ctx.fnCounter = 0; }
-function authorHeading(node, documentRef, tag = 'h3') {
+function authorHeading(node, documentRef, tag = 'h3', ctx) {
   const heading = documentRef.createElement(tag);
   heading.ditaSourcePath = xmlNodePath(node);
   for (const attr of Array.from(node.attributes || [])) heading.setAttribute(attr.name, attr.value);
-  for (const child of node.childNodes) { const rendered = renderDitaNode(child, documentRef); if (rendered) heading.appendChild(rendered); }
+  for (const child of node.childNodes) { const rendered = renderDitaNode(child, documentRef, ctx); if (rendered) heading.appendChild(rendered); }
   return heading;
 }
 function createAuthorTopic(source, documentRef = document, normalizeOxy = false, topicPath = '', parsed = null) {
-  _ctx.topicPath = topicPath;
-  resetFnCounter();
+  const ctx = createAuthorContext(topicPath);
   const doc = parsed || parseXml(source);
   if (normalizeOxy) normalizeOxyPIs(doc, true);
   const root = doc.documentElement;
   const container = documentRef.createElement('article');
   container.ditaSourceContent = source;
   const sourceTitle = Array.from(root.childNodes).find(node => node.localName === 'title');
-  const title = sourceTitle ? authorHeading(sourceTitle, documentRef, 'h2') : documentRef.createElement('h2');
+  const title = sourceTitle ? authorHeading(sourceTitle, documentRef, 'h2', ctx) : documentRef.createElement('h2');
   container.appendChild(title);
   const summary = Array.from(root.childNodes).find(node => node.localName === 'shortdesc');
-  if (summary) container.appendChild(renderDitaNode(summary, documentRef));
+  if (summary) container.appendChild(renderDitaNode(summary, documentRef, ctx));
   const body = Array.from(root.childNodes).find(node => BODY_TAGS.has(node.localName));
   const bodyContainer = documentRef.createElement('div');
   bodyContainer.setAttribute('data-dita-body', 'true');
   if (body) {
     for (const node of body.childNodes) {
-      const rendered = renderDitaNode(node, documentRef);
+      const rendered = renderDitaNode(node, documentRef, ctx);
       if (rendered) bodyContainer.appendChild(rendered);
     }
   }
@@ -459,26 +456,26 @@ function createAuthorTopic(source, documentRef = document, normalizeOxy = false,
   return container;
 }
 
-function renderFootnoteMarker(node, documentRef, inline) {
+function renderFootnoteMarker(node, documentRef, inline, ctx) {
   const marker = documentRef.createElement('sup'); marker.className = 'fn-ref';
   marker.setAttribute('data-dita-source', node.localName);
   marker.setAttribute('data-dita-original', serializeXmlNode(node));
   if (node.localName === 'xref') marker.setAttribute('type', 'fn');
   else if (!inline) marker.setAttribute('data-fn-definition', 'true');
   marker.setAttribute('contenteditable', 'false'); marker.setAttribute('role', 'button'); marker.setAttribute('tabindex', '0');
-  const label = inline ? String(++_ctx.fnCounter) : node.localName === 'fn' ? '定义' : '?';
+  const label = inline ? String(++ctx.fnCounter) : node.localName === 'fn' ? '定义' : '?';
   marker.setAttribute('aria-label', '注脚 ' + label + '，双击或按 Enter 编辑'); marker.textContent = '[' + label + ']';
   marker.title = node.textContent.trim() + ' · 双击编辑'; marker.setAttribute('data-fn-text', node.textContent.trim());
   return marker;
 }
 
-function renderDitaNode(node, documentRef = document) {
-  const rendered = renderAuthorNode(node, documentRef);
+function renderDitaNode(node, documentRef = document, ctx = createAuthorContext()) {
+  const rendered = renderAuthorNode(node, documentRef, ctx);
   if (rendered && node.nodeType === 1) rendered.ditaSourcePath = xmlNodePath(node);
   return rendered;
 }
 
-function renderAuthorNode(node, documentRef = document) {
+function renderAuthorNode(node, documentRef, ctx) {
   if (node.nodeType === 3) {
     const text = node.data.replace(/\s+/g, ' ');
     if (text.trim()) return documentRef.createTextNode(text);
@@ -492,7 +489,7 @@ function renderAuthorNode(node, documentRef = document) {
     element.setAttribute('data-dita-source', 'shortdesc');
     for (const attribute of Array.from(node.attributes || [])) element.setAttribute(attribute.name, attribute.value);
     for (const child of node.childNodes) {
-      const rendered = renderDitaNode(child, documentRef);
+      const rendered = renderDitaNode(child, documentRef, ctx);
       if (rendered) element.appendChild(rendered);
     }
     return element;
@@ -507,7 +504,7 @@ function renderAuthorNode(node, documentRef = document) {
       if (attribute.name !== 'type') element.setAttribute(attribute.name, attribute.value);
     }
     for (const child of node.childNodes) {
-      const rendered = renderDitaNode(child, documentRef);
+      const rendered = renderDitaNode(child, documentRef, ctx);
       if (rendered) element.appendChild(rendered);
     }
     return element;
@@ -518,7 +515,7 @@ function renderAuthorNode(node, documentRef = document) {
     for (const attribute of Array.from(node.attributes || [])) element.setAttribute(attribute.name, attribute.value);
     function exactChild(child) {
       if (child.nodeType === 3 || child.nodeType === 4) return documentRef.createTextNode(child.data);
-      const rendered = renderDitaNode(child, documentRef);
+      const rendered = renderDitaNode(child, documentRef, ctx);
       if (rendered && child.nodeType === 1 && child.localName !== 'image' && child.localName !== 'fn' && !(child.localName === 'xref' && child.getAttribute('type') === 'fn')) {
         rendered.replaceChildren(...Array.from(child.childNodes).map(exactChild).filter(Boolean));
       }
@@ -530,7 +527,7 @@ function renderAuthorNode(node, documentRef = document) {
   if (tag === 'image') {
     const element = documentRef.createElement('img');
     const href = node.getAttribute('href') || '';
-    element.src = '/api/asset?path=' + encodeURIComponent(resolveAssetPath(href));
+    element.src = '/api/asset?path=' + encodeURIComponent(resolveAssetPath(href, ctx));
     const presentation = assetCore.imagePresentation(node);
     element.alt = presentation.alt;
     const dimensions = ['width', 'height'].filter(name => presentation[name]).map(name => name + ':' + presentation[name] + ';').join('');
@@ -552,7 +549,7 @@ function renderAuthorNode(node, documentRef = document) {
     wrapper.setAttribute('data-dita-original', serializeXmlNode(node));
     for (const attribute of Array.from(node.attributes || [])) wrapper.setAttribute(attribute.name, attribute.value);
     const sourceTitle = Array.from(node.childNodes).find(child => child.localName === 'title');
-    if (sourceTitle) wrapper.appendChild(authorHeading(sourceTitle, documentRef));
+    if (sourceTitle) wrapper.appendChild(authorHeading(sourceTitle, documentRef, 'h3', ctx));
     const rows = [];
     const collectRows = (current, section = 'tbody') => {
       for (const child of Array.from(current.childNodes || [])) {
@@ -595,7 +592,7 @@ function renderAuthorNode(node, documentRef = document) {
         for (const child of entry.childNodes || []) {
           const rendered = child.nodeType === 3
             ? documentRef.createTextNode(child.data)
-            : renderDitaNode(child, documentRef);
+            : renderDitaNode(child, documentRef, ctx);
           if (rendered) cell.appendChild(rendered);
         }
         tr.appendChild(cell);
@@ -623,12 +620,12 @@ function renderAuthorNode(node, documentRef = document) {
         item.setAttribute('data-dita-source', child.localName === 'sli' ? 'sli' : 'li');
         for (const attr of Array.from(child.attributes || [])) item.setAttribute(attr.name, attr.value);
         for (const nested of child.childNodes) {
-          const rendered = renderDitaNode(nested, documentRef);
+          const rendered = renderDitaNode(nested, documentRef, ctx);
           if (rendered) item.appendChild(rendered);
         }
         element.appendChild(item);
       } else {
-        const rendered = renderDitaNode(child, documentRef);
+        const rendered = renderDitaNode(child, documentRef, ctx);
         if (rendered) element.appendChild(rendered);
       }
     }
@@ -644,22 +641,22 @@ function renderAuthorNode(node, documentRef = document) {
         // heading in the visual tree also lets the source serializer map it
         // back to the original DITA <title> without forcing source editing.
         if (tag !== 'p') {
-          element.appendChild(authorHeading(child, documentRef));
+          element.appendChild(authorHeading(child, documentRef, 'h3', ctx));
         }
         continue;
       }
-      const rendered = renderDitaNode(child, documentRef);
+      const rendered = renderDitaNode(child, documentRef, ctx);
       if (rendered) element.appendChild(rendered);
     }
     return element;
   }
-  if (tag === 'xref' && node.getAttribute('type') === 'fn') return renderFootnoteMarker(node, documentRef, false);
+  if (tag === 'xref' && node.getAttribute('type') === 'fn') return renderFootnoteMarker(node, documentRef, false, ctx);
   if (tag === 'xref' || ['ph', 'b', 'i', 'u', 'codeph', 'keyword', 'term', 'cite'].includes(tag)) {
     const element = documentRef.createElement(tag === 'xref' ? 'a' : 'span');
     element.setAttribute('data-dita-source', tag);
     for (const attribute of Array.from(node.attributes || [])) element.setAttribute(attribute.name, attribute.value);
     for (const child of node.childNodes) {
-      const rendered = renderDitaNode(child, documentRef);
+      const rendered = renderDitaNode(child, documentRef, ctx);
       if (rendered) element.appendChild(rendered);
     }
     return element;
@@ -681,7 +678,7 @@ function renderAuthorNode(node, documentRef = document) {
             dt.ditaSourcePath = xmlNodePath(entry);
             for (const attr of Array.from(entry.attributes || [])) dt.setAttribute(attr.name, attr.value);
             dt.setAttribute('data-dita-source', 'dt');
-            for (const child of entry.childNodes) { const rendered = renderDitaNode(child, documentRef); if (rendered) dt.appendChild(rendered); }
+            for (const child of entry.childNodes) { const rendered = renderDitaNode(child, documentRef, ctx); if (rendered) dt.appendChild(rendered); }
             el.appendChild(dt);
           } else if (entry.localName === 'dd') {
             const dd = documentRef.createElement('dd');
@@ -689,7 +686,7 @@ function renderAuthorNode(node, documentRef = document) {
             for (const attr of Array.from(entry.attributes || [])) dd.setAttribute(attr.name, attr.value);
             dd.setAttribute('data-dita-source', 'dd');
             for (const dc of entry.childNodes) {
-              const r = renderDitaNode(dc, documentRef);
+              const r = renderDitaNode(dc, documentRef, ctx);
               if (r) dd.appendChild(r);
             }
             el.appendChild(dd);
@@ -700,7 +697,7 @@ function renderAuthorNode(node, documentRef = document) {
     return el;
   }
   if (tag === 'fn') {
-    return renderFootnoteMarker(node, documentRef, !node.hasAttribute('id'));
+    return renderFootnoteMarker(node, documentRef, !node.hasAttribute('id'), ctx);
   }
   if (tag === 'filepath') {
     const el = documentRef.createElement('code');
@@ -716,7 +713,7 @@ function renderAuthorNode(node, documentRef = document) {
     if (node.hasAttribute('data-oxy-index')) el.dataset.oxyIndex = node.getAttribute('data-oxy-index');
     if (node.hasAttribute('data-author')) el.title = '插入 — ' + node.getAttribute('data-author');
     for (const child of node.childNodes) {
-      const rendered = renderDitaNode(child, documentRef);
+      const rendered = renderDitaNode(child, documentRef, ctx);
       if (rendered) el.appendChild(rendered);
     }
     return el;
@@ -737,7 +734,7 @@ function renderAuthorNode(node, documentRef = document) {
     if (node.hasAttribute('data-oxy-index')) el.dataset.oxyIndex = node.getAttribute('data-oxy-index');
     if (comment) el.title = (author ? author + '：' : '') + comment;
     for (const child of node.childNodes) {
-      const rendered = renderDitaNode(child, documentRef);
+      const rendered = renderDitaNode(child, documentRef, ctx);
       if (rendered) el.appendChild(rendered);
     }
     return el;
@@ -749,10 +746,10 @@ function renderAuthorNode(node, documentRef = document) {
   for (const attribute of Array.from(node.attributes || [])) element.setAttribute(attribute.name, attribute.value);
   for (const child of node.childNodes) {
     if (child.localName === 'title') {
-      element.appendChild(authorHeading(child, documentRef));
+      element.appendChild(authorHeading(child, documentRef, 'h3', ctx));
       continue;
     }
-    const rendered = renderDitaNode(child, documentRef);
+    const rendered = renderDitaNode(child, documentRef, ctx);
     if (rendered) element.appendChild(rendered);
   }
   return element;

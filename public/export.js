@@ -66,13 +66,20 @@
         const data = service().prepare(configuration.snapshot, get('exportModel').value);
         get('modelExportSummary').textContent = `包含 ${data.report.included} 条注脚；排除 ${data.report.excluded} 条；保留 ${data.report.unmarked} 条待确认注脚。` + (data.report.unused ? ` ${data.report.unused} 条未引用定义不输出。` : '') + (configuration.snapshot.filter ? ` DITAVAL 排除 ${data.report.filteredElements} 处内容。` : '') + (get('exportModel').value && data.report.unmarked ? ' 型号仅筛选已标注的适用范围；注脚中的文字差异不会自动识别，待确认内容继续保留。' : '');
         const warnings = data.notes.filter(note => note.unmarked).map(note => ({ path: note.origin.path, severity: 'warning', message: '注脚尚未确认适用范围，将保留在交付中' }));
+        if (configuration.source.warning) warnings.unshift({ path: '', severity: 'warning', message: configuration.source.warning });
         for (const [path, file] of configuration.snapshot.files) if (/oxy_(insert|delete|comment)/.test(file.current)) warnings.push({ path, severity: 'warning', message: '含 Oxygen 修订或批注，请检查是否适合交付' });
         showIssues(warnings); get('modelExportError').textContent = '';
       } catch (error) { view().invalidate(); get('modelExportSummary').textContent = ''; get('modelExportError').textContent = error.message; showIssues(issue(error, configuration.snapshot)); }
     }
     async function provenance() {
-      try { const response = await A.api.request('/api/provenance'); if (response.ok) return response.json(); } catch {}
-      return { commit: null, branch: null, dirty: null };
+      try {
+        const response = await A.api.request('/api/provenance');
+        if (!response.ok) throw new Error('来源服务不可用');
+        return await response.json();
+      } catch (error) {
+        console.warn('交付来源信息读取失败：', error.name);
+        return { commit: null, branch: null, dirty: null, warning: '来源信息读取失败，本次交付无法核对 Git 版本' };
+      }
     }
     function useSnapshot(snapshot, source, selectedModel) {
       const models = [...new Set(([...(snapshot.project.models || []), ...service().listModels(snapshot)]).filter(root.DitaModelDiscovery.isModel))].sort();
@@ -139,10 +146,9 @@
       }
     }
     async function convert(snapshot, model, format, version) {
-      const failures = [], publicationData = service().prepare(snapshot, model);
+      const publicationData = service().prepare(snapshot, model);
       let output = await (format === 'md' ? A.ditaCore.exportMapToMarkdown : A.ditaCore.exportMapToHtml)({ map: snapshot.map, files: snapshot.files, model, version, title: snapshot.map.title, publicationData,
-        loadImageBytes: async path => { try { return await (loadImageBytes || browserLoadImageBytes)(path, abortController?.signal); } catch (error) { failures.push({ path, severity: 'error', message: '图片无法读取：' + path }); return null; } } });
-      if (failures.length) throw Object.assign(new Error('图片无法读取，请检查问题清单'), { issues: failures });
+        loadImageBytes: path => (loadImageBytes || browserLoadImageBytes)(path, abortController?.signal) });
       let previewHtml;
       if (format === 'pdf' || format === 'docx') {
         previewHtml = root.DitaOfficeExport.printable(output);
@@ -255,12 +261,16 @@
     function history() {
       const list = get('releaseList'); list.replaceChildren();
       let records = [];
-      try { records = root.DitaReleaseStore.createReleaseStore(root.localStorage).list(A.state.root); } catch {}
+      try { records = root.DitaReleaseStore.createReleaseStore(root.localStorage).list(A.state.root); }
+      catch (error) { list.textContent = '交付记录读取失败；原始浏览器数据仍保留，请勿清空。'; A.setStatus('交付记录读取失败', true); get('releaseDialog').showModal(); return; }
       if (!records.length) list.textContent = '当前浏览器没有此仓库的交付记录。预览不计入记录。';
       for (const item of records) {
         const row = document.createElement('article'), title = document.createElement('strong'), detail = document.createElement('p'), button = document.createElement('button');
-        title.textContent = item.filename; detail.textContent = `${item.createdAt} · ${item.source.branch || '未知分支'} · ${item.source.commit?.slice(0, 8) || '无 Git 版本'} · ${item.unsavedPaths.length} 个未保存文件 · 下载已发起`;
-        button.type = 'button'; button.textContent = '下载记录 JSON'; button.addEventListener('click', () => A.downloadText(JSON.stringify(item, null, 2), item.filename + '.record.json', 'application/json;charset=utf-8'));
+        const source = item.source || {}, name = typeof item.filename === 'string' ? item.filename : item.manualPath;
+        const complete = typeof item.filename === 'string' && Array.isArray(item.unsavedPaths) && item.source && typeof item.source === 'object';
+        title.textContent = name;
+        detail.textContent = complete ? `${item.createdAt} · ${source.branch || '未知分支'} · ${typeof source.commit === 'string' ? source.commit.slice(0, 8) : '无 Git 版本'} · ${item.unsavedPaths.length} 个未保存文件 · 下载已发起` : '记录字段不完整；原始数据仍保留，可下载 JSON 检查。';
+        button.type = 'button'; button.textContent = '下载记录 JSON'; button.addEventListener('click', () => A.downloadText(JSON.stringify(item, null, 2), name + '.record.json', 'application/json;charset=utf-8'));
         row.append(title, detail, button); list.append(row);
       }
       get('releaseDialog').showModal();

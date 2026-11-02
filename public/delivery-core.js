@@ -4,7 +4,7 @@
   const assets = typeof module !== 'undefined' ? require('./asset-core') : root.DitaAssetCore;
   const presentation = typeof module !== 'undefined' ? require('./document-presentation') : root.DitaDocumentPresentation;
   function createDeliveryCore({ parseXml, normalizeOxyPIs, resolveAssetPath }) {
-    const _ctx = { topicPath: '', imageDataCache: new Map(), mdFootnotes: [] };
+    const createContext = () => ({ topicPath: '', imageDataCache: new Map(), fnCounter: 0, mdFnCounter: 0, mdFootnotes: [] });
 const PREVIEW_TOPIC_EXTENSIONS = /\.(dita|xml)$/i;
 
 function collectPreviewPaths(nodes, paths = [], seen = new Set()) {
@@ -118,7 +118,6 @@ function footnoteReference(node, ctx) {
 }
 
 function ditaToHtml(node, ctx) {
-  ctx = ctx || _ctx;
   if (node.nodeType === 3) return node.data.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   if (node.nodeType === 7) return '';
   if (node.nodeType === 8) return '<!--' + node.data + '-->';
@@ -214,38 +213,39 @@ function serializeOxyNode(node, ctx) {
   return ditaToHtml(node, ctx);
 }
 
+async function loadPublicationImages(entries, prepared, files, ctx, loadImageBytes) {
+  if (!loadImageBytes) return;
+  const paths = new Set();
+  const sources = [...entries.map(entry => ({ path: entry.path, current: files.get(entry.path)?.current })), ...Array.from(prepared.noteDefinitions.values(), note => ({ path: note.path, current: note.xml }))];
+  for (const entry of sources) {
+    const doc = parseXml(entry.current);
+    for (const img of doc.querySelectorAll('image')) {
+      const resolved = resolveAssetPath(img.getAttribute('href') || '', { topicPath: entry.path });
+      if (resolved && !/^(https?:|data:|\x2f)/i.test(resolved)) paths.add(resolved);
+    }
+  }
+  const issues = (await Promise.all([...paths].map(async path => {
+    try {
+      const bytes = await loadImageBytes(path);
+      if (typeof bytes !== 'string' || !/^data:image\/[a-z0-9.+-]+;base64,[a-z0-9+/=\s]+$/i.test(bytes)) throw new Error('未取得有效的内嵌图片数据');
+      ctx.imageDataCache.set(path, bytes); return null;
+    } catch (error) {
+      if (error.name === 'AbortError') throw error;
+      return { path, severity: 'error', message: '图片无法读取：' + path };
+    }
+  }))).filter(Boolean);
+  if (issues.length) throw Object.assign(new Error('图片无法读取，请检查问题清单'), { issues });
+}
+
 async function exportMapToHtml({ map, files, title, loadImageBytes, model = '', version = '', publicationData }) {
   const prepared = publicationData || publication.preparePublication({ map, files, model }, collectPreviewPaths);
   files = prepared.files;
-  const ctx = { topicPath: '', imageDataCache: new Map(), fnCounter: 0, mdFnCounter: 0, mdFootnotes: [] };
+  const ctx = createContext();
   ctx.noteDefinitions = publicationDefinitions(prepared);
   const entries = collectPreviewPaths(map.children || []).filter(entry => !prepared.files.get(entry.path)?.excluded);
   ctx.anchors = publicationAnchors(prepared, entries);
   const sections = [];
-  const failures = [];
-  ctx.imageDataCache = new Map();
-  if (loadImageBytes) {
-    const imagePaths = new Set();
-    const imageEntries = [...entries.map(entry => ({ path: entry.path, current: files.get(entry.path)?.current })), ...Array.from(prepared.noteDefinitions.values(), note => ({ path: note.path, current: note.xml }))];
-    for (const entry of imageEntries) {
-      try {
-        const cached = entry;
-        if (!cached) throw new Error('not loaded');
-        const preDoc = parseXml(cached.current);
-        ctx.topicPath = entry.path;
-        for (const img of preDoc.querySelectorAll('image')) {
-          const r2 = resolveAssetPath(img.getAttribute('href') || '', ctx);
-          if (r2 && !/^(https?:|data:|\x2f)/i.test(r2)) imagePaths.add(r2);
-        }
-      } catch (e) { console.warn('image pre-fetch parse error:', e.message); }
-    }
-    await Promise.all(Array.from(imagePaths).map(async (p) => {
-      try {
-        const dataUri = await loadImageBytes(p);
-        if (dataUri) ctx.imageDataCache.set(p, dataUri);
-      } catch (e) { console.warn('image fetch failed:', p, e.message); }
-    }));
-  }
+  await loadPublicationImages(entries, prepared, files, ctx, loadImageBytes);
   for (const entry of entries) {
     try {
       const cached = files.get(entry.path);
@@ -326,8 +326,6 @@ async function exportMapToHtml({ map, files, title, loadImageBytes, model = '', 
     if (i < sections.length - 1) body += '<hr>\n';
   });
   if (ctx.htmlFootnotes?.length) body += '<section class="export-footnotes"><h2>注脚</h2><ol>' + ctx.htmlFootnotes.map((text, i) => '<li id="fn-' + (i + 1) + '">' + text + ' <a href="#fnref-' + (i + 1) + '-1" aria-label="返回正文">↩</a></li>').join('') + '</ol></section>';
-  let failuresHtml = '';
-  if (failures.length) failuresHtml = '<p class="error">\u4ee5\u4e0b topic \u52a0\u8f7d\u5931\u8d25\uff1a' + failures.map(escapeHtmlAttr).join(', ') + '</p>';
   const html = [
     '<!DOCTYPE html>',
     '<html lang="zh-CN"><head><meta charset="utf-8"/>',
@@ -339,7 +337,6 @@ async function exportMapToHtml({ map, files, title, loadImageBytes, model = '', 
     version ? '<p>文档版本：' + escapeHtmlAttr(version) + '</p>' : '',
     toc,
     body,
-    failuresHtml,
     '</body></html>'
   ].join('\n');
   validatePublicationLinks(html, ctx);
@@ -367,12 +364,10 @@ function markdownFootnote(node, ctx) {
 }
 
 function mdInline(node, ctx) {
-  ctx = ctx || _ctx;
   const anchor = publicationAnchor(node, ctx);
   return (anchor ? '<a id="' + escapeHtmlAttr(anchor) + '"></a>' : '') + renderMdInline(node, ctx);
 }
 function renderMdInline(node, ctx) {
-  ctx = ctx || _ctx;
   if (node.nodeType === 3) return node.data;
   if (node.nodeType !== 1) return '';
   const tag = node.localName;
@@ -396,13 +391,11 @@ function renderMdInline(node, ctx) {
 
 
 
-function ditaToMarkdown(node, ctx) {
-  ctx = ctx || _ctx;
+function ditaToMarkdown(node, ctx = createContext()) {
   const anchor = publicationAnchor(node, ctx);
   return (anchor ? '<a id="' + escapeHtmlAttr(anchor) + '"></a>\n' : '') + renderDitaMarkdown(node, ctx);
 }
 function renderDitaMarkdown(node, ctx) {
-  ctx = ctx || _ctx;
   if (node.nodeType === 3) { const t = node.data.replace(/\s+/g, ' '); return t; }
   if (node.nodeType === 7 || node.nodeType === 8) return '';
   if (node.nodeType !== 1) return '';
@@ -469,7 +462,6 @@ function renderDitaMarkdown(node, ctx) {
 
 
 function mdList(node, ordered, ctx) {
-  ctx = ctx || _ctx;
   const items = Array.from(node.childNodes).filter(n => n.localName === 'li' || n.localName === 'sli');
   if (!items.length) return '';
   let r = '';
@@ -488,7 +480,6 @@ function mdList(node, ordered, ctx) {
 }
 
 function mdTable(node, ctx) {
-  ctx = ctx || _ctx;
   const tgroup = Array.from(node.childNodes).find(n => n.localName === 'tgroup') || node;
   const thead = Array.from(tgroup.childNodes).find(n => n.localName === 'thead');
   const tbody = Array.from(tgroup.childNodes).find(n => n.localName === 'tbody') || tgroup;
@@ -509,7 +500,6 @@ function mdTable(node, ctx) {
 }
 
 function mdDl(node, ctx) {
-  ctx = ctx || _ctx;
   const entries = Array.from(node.childNodes).filter(n => ['dlentry', 'plentry'].includes(n.localName));
   if (!entries.length) return '';
   let r = '\n';
@@ -525,36 +515,14 @@ function mdDl(node, ctx) {
 async function exportMapToMarkdown({ map, files, title, loadImageBytes, model = '', version = '', publicationData }) {
   const prepared = publicationData || publication.preparePublication({ map, files, model }, collectPreviewPaths);
   files = prepared.files;
-  const ctx = { topicPath: '', imageDataCache: new Map(), fnCounter: 0, mdFnCounter: 0, mdFootnotes: [] };
+  const ctx = createContext();
   ctx.mdFnCounter = 0;
   ctx.mdFootnotes = [];
   ctx.noteDefinitions = publicationDefinitions(prepared);
   const entries = collectPreviewPaths(map.children || []).filter(entry => !prepared.files.get(entry.path)?.excluded);
   ctx.anchors = publicationAnchors(prepared, entries);
   const sections = [];
-  const failures = [];
-    if (loadImageBytes) {
-    const imagePaths = new Set();
-    const imageEntries = [...entries.map(entry => ({ path: entry.path, current: files.get(entry.path)?.current })), ...Array.from(prepared.noteDefinitions.values(), note => ({ path: note.path, current: note.xml }))];
-    for (const entry of imageEntries) {
-      try {
-        const cached = entry;
-        if (!cached) throw new Error('not loaded');
-        const preDoc = parseXml(cached.current);
-        ctx.topicPath = entry.path;
-        for (const img of preDoc.querySelectorAll('image')) {
-          const r = resolveAssetPath(img.getAttribute('href') || '', ctx);
-          if (r && !/^(https?:|data:|\x2f)/i.test(r)) imagePaths.add(r);
-        }
-      } catch (e) { console.warn('warn:', e.message); }
-    }
-    await Promise.all(Array.from(imagePaths).map(async (p) => {
-      try {
-        const dataUri = await loadImageBytes(p);
-        if (dataUri) ctx.imageDataCache.set(p, dataUri);
-      } catch (e) { console.warn('warn:', e.message); }
-    }));
-  }
+  await loadPublicationImages(entries, prepared, files, ctx, loadImageBytes);
   for (const entry of entries) {
     try {
       const cached = files.get(entry.path);
@@ -585,7 +553,6 @@ async function exportMapToMarkdown({ map, files, title, loadImageBytes, model = 
     md += '\n---\n\n**脚注**\n\n';
     ctx.mdFootnotes.forEach(f => { md += f + '\n'; });
   }
-  if (failures.length) md += '\n> 以下 topic 加载失败：' + failures.join(', ') + '\n';
   validatePublicationLinks(md, ctx);
   return md;
 }

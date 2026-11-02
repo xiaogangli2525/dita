@@ -227,3 +227,12 @@ Author renders codeblock, msgblock, screen, pre and lines as preformatted surfac
 `model-discovery.js` shares candidate discovery between project setup, footnote filters and delivery. It reads product tokens and explicit CALS applicability tables headed 模组系列 / 模组子型号. Table discovery uses the first column as the series name; it does not split or infer submodels or parse natural-language footnotes. Evidence records retain the source path and declaration kind.
 
 `tbd` is a release marker, omitted from model candidates and registry validation. Rows restricted entirely to that marker remain pending rather than imported as supported models. DITAVAL and source publication behavior are unchanged. Existing registry values are projected without the marker; the stored file stays untouched until explicit Save. Discovery only fills the editable registry form, and unassigned footnotes continue to be retained with an explicit delivery warning.
+
+
+## Export and recovery failures
+
+Author projections own an explicit context per render, passed through headings, inline nodes, images and footnote markers. Delivery owns a context per export; the public standalone Markdown conversion creates a fresh one. Neither module retains a fallback context across operations. Reentrant Author projections and overlapping exports are regression-tested.
+
+HTML and Markdown share image preparation. When an embedding loader is provided, failed, empty or invalid results stop the export with image-path issues. Calls without a loader retain the existing reference-based API behavior. The controller adds cancellation and UI state; it no longer duplicates image-failure policy. Git provenance failures remain warnings bound to the captured delivery record.
+
+Release history read/format errors propagate so the UI can distinguish unavailable history from an empty list; appending never overwrites corrupted history. Draft listing returns recoverable entries plus warnings, preserves damaged entries, and propagates storage-access failures. Messages and diagnostics do not include document content.
