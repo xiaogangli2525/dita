@@ -40,7 +40,8 @@
   function validate(config){
     if(!config||config.schema!==1||!Array.isArray(config.rules)||config.rules.length>500||JSON.stringify(config).length>1000000)throw Error('导出注脚规则格式无效或超过限制');
     const seen=new Set();const rules=config.rules.map(rule=>{
-      if(!rule||typeof rule.path!=='string'||rule.path.length>500||!/\.(dita|xml)$/i.test(rule.path)||/^(?:[a-z]+:|[\/\\])|(?:^|\/)\.\.(?:\/|$)|[\\\x00-\x1f]/i.test(rule.path)||typeof rule.xmlPath!=='string'||!/^\d+(?:\/\d+)*$/.test(rule.xmlPath)||typeof rule.expectedNote!=='string'||rule.expectedNote.length>100000||typeof rule.expectedContext!=='string'||rule.expectedContext.length>20000||!Array.isArray(rule.expectedConditions)||rule.expectedConditions.some(value=>typeof value!=='string'||value.length>1000)||rule.confirmed!==true)throw Error('规则的来源或确认状态无效');
+      // eslint-disable-next-line no-control-regex -- Reject control characters in untrusted input.
+      if(!rule||typeof rule.path!=='string'||rule.path.length>500||!/\.(dita|xml)$/i.test(rule.path)||/^(?:[a-z]+:|[/\\])|(?:^|\/)\.\.(?:\/|$)|[\\\x00-\x1f]/i.test(rule.path)||typeof rule.xmlPath!=='string'||!/^\d+(?:\/\d+)*$/.test(rule.xmlPath)||typeof rule.expectedNote!=='string'||rule.expectedNote.length>100000||typeof rule.expectedContext!=='string'||rule.expectedContext.length>20000||!Array.isArray(rule.expectedConditions)||rule.expectedConditions.some(value=>typeof value!=='string'||value.length>1000)||rule.confirmed!==true)throw Error('规则的来源或确认状态无效');
       const parsed=notes.listFootnotes(rule.expectedNote,rule.path);
       if(parsed.length!==1||xml.inspectSource(rule.expectedNote).name!=='fn')throw Error('规则必须绑定一条完整原始注脚');
       const parts=partition(parsed[0]).parts;

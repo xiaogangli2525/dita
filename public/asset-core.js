@@ -3,6 +3,7 @@
   const xml = typeof module !== 'undefined' ? require('./xml-source') : root.DitaXmlSource;
   const domain = typeof module !== 'undefined' ? require('./manual-core') : root.DitaManualCore;
   function safeLinkHref(value) {
+    // eslint-disable-next-line no-control-regex -- Reject control characters in untrusted input.
     const compact = String(value || '').replace(/[\x00-\x20\x7f]/g, '');
     return /^[a-z][a-z\d+.-]*:/i.test(compact) && !/^(https?:|mailto:|tel:|ftp:)/i.test(compact) ? '' : String(value || '');
   }
@@ -13,7 +14,8 @@
   }
   function validateImage(name, bytes) {
     const invalid = message => { throw Object.assign(new Error(message), { code: 'INVALID_IMAGE' }); };
-    if (typeof name !== 'string' || !name || name.length > 150 || /[\/\\:*?"<>|\x00-\x1f]/.test(name) || name.startsWith('.')) invalid('图片文件名无效');
+    // eslint-disable-next-line no-control-regex -- Reject control characters in untrusted input.
+    if (typeof name !== 'string' || !name || name.length > 150 || /[/\\:*?"<>|\x00-\x1f]/.test(name) || name.startsWith('.')) invalid('图片文件名无效');
     if (!/\.(png|jpe?g|gif|bmp|svg|webp)$/i.test(name) || !bytes.length || bytes.length > 2 * 1024 * 1024) invalid('图片须为 PNG/JPEG/GIF/BMP/SVG/WebP，且不超过 2 MiB');
     const ascii = (a, b) => String.fromCharCode(...bytes.subarray(a, b));
     const ext = name.toLowerCase().split('.').pop();

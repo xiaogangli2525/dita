@@ -64,5 +64,22 @@ test('workspace UI keeps keyboard focus, pending choices and long-dialog control
   await page.locator('#tabs [data-path="b.dita"] .close').click();await page.click('.view-tab[data-view=search]');await page.fill('#workspaceSearchInput','b.dita');
   const handler=route=>route.fulfill({status:404,body:'missing'});await page.route('**/api/file?path=b.dita',handler);await page.locator('.workspace-result').click();await page.waitForFunction(()=>document.getElementById('status').textContent.includes('missing'));await page.unroute('**/api/file?path=b.dita',handler);assert.equal(await page.evaluate(()=>window.DitaApp.state.activePath),'a.dita');
  });
+ await check('project loading can be cancelled without a late response reopening the dialog',async()=>{
+  let release,reached;const gate=new Promise(resolve=>{release=resolve;}),pending=new Promise(resolve=>{reached=resolve;});
+  const handler=async route=>{const response=await route.fetch();reached();await gate;await route.fulfill({response});};await page.route('**/api/project',handler);
+  try{await page.click('#projectButton');await pending;assert.equal(await page.locator('#projectDialog').isVisible(),true);assert.equal(await page.locator('#projectModels').isDisabled(),true);await page.click('#projectClose');const response=page.waitForResponse(r=>r.url().endsWith('/api/project'));release();await response;assert.equal(await page.locator('#projectDialog').isVisible(),false);}finally{release();await page.unroute('**/api/project',handler);}
+ });
+ await check('project saves block duplicate submission and preserve the form after a failed write',async()=>{
+  await page.click('#projectButton');await page.locator('#projectModels:not(:disabled)').waitFor();const draft='M100\nM300\nM500';await page.fill('#projectModels',draft);
+  let release,reached,count=0;const gate=new Promise(resolve=>{release=resolve;}),pending=new Promise(resolve=>{reached=resolve;});
+  const handler=async route=>{if(route.request().method()!=='PUT')return route.continue();count++;reached();await gate;await route.fulfill({status:503,contentType:'application/json',body:'{"error":"模拟保存失败"}'});};await page.route('**/api/project',handler);
+  try{await page.click('#projectForm button[type=submit]');await pending;assert.equal(await page.locator('#projectModels').isDisabled(),true);assert.equal(await page.locator('#projectClose').isDisabled(),true);await page.keyboard.press('Escape');assert.equal(await page.locator('#projectDialog').isVisible(),true);await page.locator('#projectForm').evaluate(form=>form.dispatchEvent(new Event('submit',{cancelable:true,bubbles:true})));assert.equal(count,1);release();await page.waitForFunction(()=>document.getElementById('projectError').textContent.includes('模拟保存失败'));assert.equal(await page.inputValue('#projectModels'),draft);assert.equal(await page.locator('#projectModels').isDisabled(),false);}finally{release();await page.unroute('**/api/project',handler);}await page.click('#projectClose');
+ });
+ await check('a failed configuration load after a real branch switch cannot reuse the previous model list',async()=>{
+  execFileSync('git',['add','.'],{cwd:repo,stdio:'ignore'});execFileSync('git',['-c','user.name=Test','-c','user.email=test@example.invalid','commit','-qm','reviewed note rules'],{cwd:repo,stdio:'ignore'});
+  const handler=route=>route.fulfill({status:503,contentType:'application/json',body:'{"error":"模拟配置读取失败"}'});await page.route('**/api/project',handler);
+  try{await page.selectOption('#branchSelect','feature');await page.waitForFunction(()=>!window.DitaApp.workspace.busy&&window.DitaApp.state.currentBranch==='feature');assert.deepEqual(await page.evaluate(()=>window.DitaApp.project.value.models),[]);assert.equal(await page.evaluate(()=>window.DitaApp.project.expectedContent),null);await page.click('#projectButton');await page.waitForFunction(()=>document.getElementById('projectError').textContent.includes('模拟配置读取失败'));assert.equal(await page.inputValue('#projectModels'),'');assert.equal(await page.locator('#projectForm button[type=submit]').isDisabled(),true);await page.click('#projectClose');}finally{await page.unroute('**/api/project',handler);}
+  await page.click('#projectButton');await page.locator('#projectModels:not(:disabled)').waitFor();assert.equal(await page.inputValue('#projectModels'),'M100\nM300');await page.click('#projectClose');
+ });
  assert.deepEqual(errors,[]);assert.equal(await fs.readFile(path.join(repo,'a.dita'),'utf8'),source);
 });

@@ -262,7 +262,7 @@ async function exportMapToHtml({ map, files, title, loadImageBytes, model = '', 
       }
       sections.push({ path: entry.path, title: topicTitle?.textContent?.trim() || entry.title || entry.path, body: inner });
     } catch (error) {
-      throw new Error(entry.path + '：' + error.message);
+      throw new Error(entry.path + '：' + error.message, { cause: error });
     }
   }
   const css = [
@@ -336,7 +336,7 @@ async function exportMapToHtml({ map, files, title, loadImageBytes, model = '', 
 }
 
 function mdEscape(text) {
-  return String(text || '').replace(/([\\`*{}\[\]()#+\-.!])/g, '\\$1');
+  return String(text || '').replace(/([\\`*{}[\]()#+\-.!])/g, '\\$1');
 }
 
 function markdownFootnote(node, ctx) {
@@ -480,7 +480,7 @@ function mdTable(node, ctx) {
   const allRows = [...headRows, ...bodyRows];
   if (!allRows.length) return '';
   if (allRows.some(row => Array.from(row.childNodes).some(cell => Number(cell.getAttribute?.('morerows')) > 0 || cell.getAttribute?.('namest') || cell.getAttribute?.('nameend')))) throw new Error('Markdown 表格不支持合并单元格，请选择 HTML 导出');
-  const matrix = allRows.map(row => Array.from(row.childNodes).filter(n => n.localName === 'entry' || n.localName === 'stentry').map(e => Array.from(e.childNodes).map(function(n) { return mdInline(n, ctx); }).join('').trim().replace(/\|/g, '\\\|')));
+  const matrix = allRows.map(row => Array.from(row.childNodes).filter(n => n.localName === 'entry' || n.localName === 'stentry').map(e => Array.from(e.childNodes).map(function(n) { return mdInline(n, ctx); }).join('').trim().replace(/\|/g, '\\|')));
   const cols = Math.max(...matrix.map(r => r.length));
   let r = '\n';
   matrix.forEach((row, i) => {
@@ -531,7 +531,7 @@ async function exportMapToMarkdown({ map, files, title, loadImageBytes, model = 
       }
       sections.push({ path: entry.path, title: topicTitle?.textContent?.trim() || entry.title || entry.path, body });
     } catch (error) {
-      throw new Error(entry.path + '：' + error.message);
+      throw new Error(entry.path + '：' + error.message, { cause: error });
     }
   }
   let md = '# ' + (title || map.title || map.path) + '\n\n';

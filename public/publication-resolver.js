@@ -8,7 +8,8 @@
   function localTarget(href, path) {
     const hash = href.indexOf('#');
     const raw = decodeURIComponent(hash < 0 ? href : href.slice(0, hash));
-    if (/^[a-z][a-z\d+.-]*:|^[\/\\]|[\\?\x00-\x1f]/i.test(raw)) throw new Error('仅支持工作区内的相对引用：' + href);
+    // eslint-disable-next-line no-control-regex -- Reject control characters in untrusted input.
+    if (/^[a-z][a-z\d+.-]*:|^[/\\]|[\\?\x00-\x1f]/i.test(raw)) throw new Error('仅支持工作区内的相对引用：' + href);
     const parts = raw ? path.split('/').slice(0, -1) : [];
     if (raw) for (const part of raw.split('/')) {
       if (part === '..') { if (!parts.length) throw new Error('引用超出工作区：' + href); parts.pop(); }
@@ -41,7 +42,7 @@
         for (const dependency of dependencies(file.current, path, profile)) if (!loaded.has(dependency)) {
           loaded.set(dependency, { path: dependency, current: await read(dependency) });
         }
-      } catch (e) { throw new Error(path + '：' + e.message); }
+      } catch (e) { throw new Error(path + '：' + e.message, { cause: e }); }
     }
     return loaded;
   }
@@ -142,7 +143,7 @@
         if (content.length > 4 * 1024 * 1024) throw new Error('展开后的 Topic 超过 4 MiB');
         indexIds(xml.inspectSource(content), path);
         output.set(path, { ...file, current: content }); origins.set(path, activeOrigins); sites.set(path, activeSites);
-      } catch (e) { throw new Error(path + '：' + e.message); }
+      } catch (e) { throw new Error(path + '：' + e.message, { cause: e }); }
     }
     return { files: output, origins, sites };
   }

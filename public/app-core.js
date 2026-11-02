@@ -17,7 +17,7 @@ function resolveAssetPath(href, ctx = { topicPath: '' }) {
   if (!href) return '';
   let raw = decodeURIComponent(href.split('?')[0].split('#')[0]);
   if (/^(https?:|data:|\/)/i.test(raw)) return raw;
-  const topicDir = ctx.topicPath ? ctx.topicPath.replace(/[^\/]+$/, '') : '';
+  const topicDir = ctx.topicPath ? ctx.topicPath.replace(/[^/]+$/, '') : '';
   const combined = topicDir + raw;
   const parts = combined.split('/');
   const result = [];
@@ -416,8 +416,7 @@ function updateCurrentFromVisual(state, dom, source) {
 
 function updateVisualFromXml(state, dom, source, documentRef = document, normalizeOxy = false, topicPath = '') {
   const doc = parseXml(source);
-  const root = doc.documentElement;
-  const container = createAuthorTopic(source, documentRef, normalizeOxy, topicPath);
+  const container = createAuthorTopic(source, documentRef, normalizeOxy, topicPath, doc);
   dom.visualEditor.replaceChildren(...container.childNodes);
   dom.visualEditor.ditaSourceContent = source;
 }

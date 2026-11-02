@@ -5,6 +5,7 @@
   const manual = typeof module !== 'undefined' ? require('./manual-core') : root.DitaManualCore;
   // A workflow marker is not a model. This does not change publication rules.
   const isPlaceholder = manual.isModelMarker;
+  // eslint-disable-next-line no-control-regex -- Reject control characters in untrusted input.
   const isModel = value => typeof value === 'string' && Boolean(value) && value.length <= 80 && !isPlaceholder(value) && !/[\s()<>"'&/\\\x00-\x1f]/.test(value);
   function discover(files, profile) {
     const models = new Set(), tableModels = new Set(), pending = new Set(), ignored = new Set(), evidence = [];

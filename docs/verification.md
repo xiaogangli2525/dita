@@ -1,5 +1,7 @@
 # Verification
 
+The entries below record validation at each change milestone. Their test counts, fixture descriptions and then-current feature limits are historical; they are not cumulative or current limitations. Current acceptance includes the supplied HTTP manual, with the latest maintenance result recorded at the end. See `publication-compatibility.md` for supported publication boundaries.
+
 ## Real HTTP library: DITAVAL, author compatibility and PDF fonts
 
 - Base: remote `f7db02e`, including the uploaded `contentmodule`. Acceptance used an isolated copy of the actual HTTP topics plus all reachable common content and images; the company library was not copied to the hosted demo. Six stale references in the two WebHelp Maps now point to the existing matching common/telecom files.
@@ -155,7 +157,7 @@ The GitHub Actions workflow runs the suite on Node 20 and 22. The browser workfl
 
 - `npm test`: **143 passing unit/HTTP checks**. Added boundary cases verify history-free immutable snapshots with distinct disk/Git bases; declared-only feature contexts and the explicit writable busy flag; lazy service resolution; startup-plan validation before feature construction; independent application results and live compatibility getters; missing factory diagnostics; side-effect-free delivery script loading; and domain independence from application/UI controllers.
 - `npm run test:browser`: **82 passing Chromium checks**, zero failures/skips. The complete Source/Author/Map, notes, clipboard, table, draft, Git/workspace, shell/resizing and HTML/MD/PDF/DOCX suite passes through the actual new composition root. Export-flow unit tests construct the delivery controller explicitly and inject image IO.
-- JSDoc contracts are interface documentation for editors/review, not a claim of whole-project static type checking. Browser global factory namespaces and the DitaApp integration facade remain compatibility boundaries. No real company corpus has been supplied; existing fictional/temporary fixtures remain the validation inputs.
+- JSDoc contracts are interface documentation for editors/review, not a claim of whole-project static type checking. Browser global factory namespaces and the DitaApp integration facade remain compatibility boundaries. At this architecture milestone only fictional/temporary fixtures were available. Later HTTP-manual acceptance is recorded separately below.
 
 ## Remote Git document libraries
 
@@ -239,3 +241,12 @@ New domain checks cover per-instance workspace state, overlapping-switch refusal
 New browser checks cover menu roles, disabled actions, keyboard/focus behavior and Escape without closing an auxiliary panel; document/navigation tab keys; source-aligned outlines excluding metadata titles and updating through edit/undo; pending-switch interaction locks and retained buffers after failure; partial rule choices across rows and close confirmation; delayed writes freezing fields and delayed reads cancelling without reopening; visible delivery actions and bounded menus at 390 × 520; and handled failed document opens. The compact delivery screenshot was visually inspected.
 
 The entry point now assembles explicit services and view/action ports. Existing editor/history, publication and save services remain responsible for their established workflows; this refactor does not replace them or add AI/multi-user services. Original DITA is unchanged. Browser checks use Chromium and do not certify physical IME, assistive technology or every manual specialization.
+
+
+## Maintenance cleanup and project-model settings
+
+Full local regression: **216 unit/HTTP checks** and **194 Chromium checks**, zero failures/skips. `npm run lint` passes with zero warnings; a stdin probe containing both an unused variable and an undefined capability fails with the expected two errors. GitHub Actions now runs lint before unit tests on Node 20 and 22. Existing real HTTP-manual delivery, byte preservation, model/profile note filtering, editing/save/draft/Git and HTML/MD/PDF/DOCX workflows remain green.
+
+Three additional browser scenarios verify cancellable project-setting reads with no late dialog reopen; locked fields/close and deduplicated submits during a delayed write, with form retention after failure; and an actual branch switch followed by a configuration-read failure, which must clear the previous model list/comparison base, disable saving and recover on reopening after the API succeeds. These checks exercise the visible controls and actual temporary Git repository.
+
+Cleanup removes an obsolete source-find closer, unused bindings/ports and redundant default assignments, reuses the existing XML parse during Author refresh, and retains original error causes when adding publication source paths. Intentional path-control filters remain unchanged in behavior and have local lint explanations. `.editorconfig` sets basic code conventions without changing manual encoding; original DITA and vendor source are unchanged. Architecture/compatibility descriptions now distinguish current HTTP acceptance from historical MQTT fixture milestones. No new AI service or broader DITA capability is implied.

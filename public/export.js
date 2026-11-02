@@ -280,7 +280,7 @@
     get('modelExportForm')?.addEventListener('submit', event => { event.preventDefault(); publish(event.submitter?.value === 'preview' ? true : event.submitter?.value === 'check' ? 'check' : false); });
     function history() {
       const list = get('releaseList'); list.replaceChildren();
-      let records = [];
+      let records;
       try { records = root.DitaReleaseStore.createReleaseStore(root.localStorage).list(A.state.root); }
       catch (error) { list.textContent = '交付记录读取失败；原始浏览器数据仍保留，请勿清空。'; A.setStatus('交付记录读取失败', true); get('releaseDialog').showModal(); return; }
       if (!records.length) list.textContent = '当前浏览器没有此仓库的交付记录。预览不计入记录。';

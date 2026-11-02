@@ -253,7 +253,7 @@ function groupDiffRows(rows, contextSize = 3) {
   return groups;
 }
 
-function applyDiffGroups(oldText, newText, decisions, contextSize = 0) {
+function applyDiffGroups(oldText, newText, decisions, _contextSize = 0) {
   // `groupDiffRows` may trim unchanged context between review blocks for a
   // compact display.  That projection must never be used to rebuild the
   // document: omitted context lines would be silently deleted whenever a

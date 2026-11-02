@@ -58,7 +58,7 @@
           }
         });
         records.set(path, { file, source, notes, refs, sequence, removals, excludedRoot });
-      } catch (e) { throw new Error(path + '：' + e.message); }
+      } catch (e) { throw new Error(path + '：' + e.message, { cause: e }); }
     }
     const remove = (record, node) => record.removals.push([node.start, node.close?.end ?? node.end]);
     for (const path of published) {

@@ -447,7 +447,7 @@ function renderMapReview(file) {
         reset.type = 'button';
         reset.className = 'reset-review';
         reset.textContent = '撤销决定';
-        reset.addEventListener('click', () => resetReviewedMapGroup(file, topic, decisionKey, groupIndex));
+        reset.addEventListener('click', () => resetReviewedMapGroup(file, topic, decisionKey));
         actions.append(reset);
       }
       block.append(actions);
@@ -509,7 +509,7 @@ function applyReviewedMapGroup(file, topic, decisionKey, groupIndex, accept) {
   setStatus(accept ? `已接受 ${topic.path} 的所选变更块` : `已拒绝 ${topic.path} 的所选变更块`);
 }
 
-function resetReviewedMapGroup(file, topic, decisionKey, groupIndex) {
+function resetReviewedMapGroup(file, topic, decisionKey) {
   if (!file || !topic) return;
   const previousDecisions = new Map(state.reviewDecisions || []);
   const decisions = new Map(state.reviewDecisions || []);
