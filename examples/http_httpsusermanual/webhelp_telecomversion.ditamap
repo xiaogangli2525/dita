@@ -21,7 +21,7 @@
         <topicref href="topics/telecomversion_topics/g_telecomversion_applicable_model.dita"
             outputclass="topic/apb"/>
     </chapter>
-    <chapter href="reusable/c_telecomversion_at_command_overview.dita">
+    <chapter href="topics/telecomversion_topics/c_telecomversion_at_command_overview.dita">
         <topicref href="topics/telecomversion_topics/c_telecomversion_at_command_syntax_format.dita"/>
         <topicref href="topics/telecomversion_topics/c_telecomversion_at_command_response.dita"/>
     </chapter>
@@ -42,6 +42,6 @@
         <?oxy_delete author="dailizhi@exiot.cmcc" timestamp="20230113T145443+0800" content="&lt;topicref href=&quot;topics/telecomversion_topics/r_telecomversion_https_example.dita&quot;/&gt;"?>
         <topicref href="topics/telecomversion_topics/r_telecomversion_cache_mode_example.dita"/>
     </chapter>
-    <chapter href="reusable/r_telecomversion_error_codes.dita"/>
+    <chapter href="topics/telecomversion_topics/r_telecomversion_error_codes.dita"/>
     <backmatter/>
 </bookmap>

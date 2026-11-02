@@ -283,10 +283,12 @@
       <p id="modelExportScope"></p><p id="deliverySource" class="muted"></p>
       <section id="deliveryConfigure" aria-label="配置交付范围">
       <label>适用型号<select id="exportModel"><option value="">全部型号</option></select></label>
+      <label>正文条件过滤<select id="exportFilter"><option value="">不使用 DITAVAL</option></select></label>
+      <p id="exportFilterHint" class="muted">选择文档库中的 DITAVAL，过滤正文及注脚中不适用的内容。</p>
       <label>文件格式<select id="exportFormat"><option value="html">HTML（推荐交付）</option><option value="pdf">PDF</option><option value="docx">Word（.docx）</option><option value="md">Markdown</option></select></label>
       <p id="exportFormatHint" class="muted"></p>
       <label>文档版本<input id="exportVersion" maxlength="80" placeholder="例如 V1.2，可留空"/></label>
-      <p>选择型号后，仅筛选注脚的适用范围，正文保持完整。未标注型号的注脚会保留。</p>
+      <p>型号选择筛选注脚；DITAVAL 可进一步过滤正文、图片和注脚。未标注型号的注脚会保留，除非被 DITAVAL 排除。</p>
       </section>
       <p id="modelExportSummary" role="status"></p>
       <section id="deliveryCheck" aria-label="交付检查" hidden>
@@ -405,6 +407,7 @@
   <script src="/vendor/sax.js"></script>
   <script src="/xml-source.js"></script>
   <script src="/manual-core.js"></script>
+  <script src="/profiling-core.js"></script>
   <script src="/reference-paths.js"></script>
   <script src="/asset-core.js"></script>
   <script src="/footnotes-core.js"></script>

@@ -1,5 +1,13 @@
 # Workspace architecture
 
+## DITAVAL and real-library compatibility
+
+`profiling-core.js` is a pure, shared conditional-processing module. `manual-service` reads an explicitly selected workspace DITAVAL into its own snapshot field, filters Map references before resolution and skips excluded dependency branches. `publication-core` applies the same profile to expanded Topics, preserves original note origins and merges overlapping removal ranges. Whole excluded Topics are omitted from delivery entries; their source buffers remain intact. No DITAVAL is inferred from filenames or imported from an Oxygen project. Branch `ditavalref`, custom profiling specializations and flagging are explicit unsupported boundaries.
+
+The delivery controller guards asynchronous profile changes by operation, workspace and selection generation, invalidates cached previews/checks, and records the captured profile's path/hash with source hashes. Invalid profile settings remain editable in the configuration step. `/api/filters` is a bounded, symlink-skipping workspace listing, and `/api/file` allows read-only DITAVAL access through the existing real-path checks.
+
+Author rendering includes root `shortdesc` and an empty, non-persisted paragraph for bodyless Topics. Writing a first paragraph creates the appropriate body after metadata; title/summary-only edits leave absent bodies absent. Image presentation does not introduce a synthetic empty `alt` into the XML. `pdf-fonts.js` checks actual Han-character coverage on Linux before native export; it uses DOM text rather than layout-dependent `innerText`, which can be empty when all glyphs are missing. `npm run check:pdf` verifies the local renderer/font setup without writing a deliverable.
+
 ## Document loading, navigation and relocation
 
 `document-loader.js` owns a single pending load per workspace/path for both tab opens and Map topics. It returns an existing buffer instead of replacing it, invalidates old workspaces and closed-document requests, and creates new document state through `document-store`. The editor owns one loader instance; the application adds a separate navigation revision so a delayed read can be cached without taking focus from a newer open/close action.

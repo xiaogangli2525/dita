@@ -200,7 +200,7 @@ async function exportMapToHtml({ map, files, title, loadImageBytes, model = '', 
   files = prepared.files;
   const ctx = { topicPath: '', imageDataCache: new Map(), fnCounter: 0, mdFnCounter: 0, mdFootnotes: [] };
   ctx.noteDefinitions = publicationDefinitions(prepared);
-  const entries = collectPreviewPaths(map.children || []);
+  const entries = collectPreviewPaths(map.children || []).filter(entry => !prepared.files.get(entry.path)?.excluded);
   ctx.anchors = publicationAnchors(prepared, entries);
   const sections = [];
   const failures = [];
@@ -510,7 +510,7 @@ async function exportMapToMarkdown({ map, files, title, loadImageBytes, model = 
   ctx.mdFnCounter = 0;
   ctx.mdFootnotes = [];
   ctx.noteDefinitions = publicationDefinitions(prepared);
-  const entries = collectPreviewPaths(map.children || []);
+  const entries = collectPreviewPaths(map.children || []).filter(entry => !prepared.files.get(entry.path)?.excluded);
   ctx.anchors = publicationAnchors(prepared, entries);
   const sections = [];
   const failures = [];

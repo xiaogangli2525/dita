@@ -10,30 +10,38 @@
     if (!/^[^/]+\/[^/]+$/.test(target.fragment)) throw new Error('注脚引用须使用 #TopicID/注脚ID：' + href);
     return target.path + '#' + target.fragment;
   }
-  function preparePublication({ map, files, model = '' }, collectPaths) {
+  function preparePublication({ map, files, model = '', profile }, collectPaths) {
     resolver.validateMap(map.source, model);
-    const resolved = resolver.resolveConrefsDetailed(files), expanded = resolved.files;
-    const published = new Set(collectPaths(map.children || []).map(entry => entry.path));
+    const resolved = resolver.resolveConrefsDetailed(files, profile), expanded = resolved.files;
+    const published = new Set(collectPaths(map.children || []).filter(entry => !profile || !expanded.has(entry.path) || profile.keep(xml.inspectSource(expanded.get(entry.path).current))).map(entry => entry.path));
+    if (profile && !published.size) throw new Error('DITAVAL 排除了所有正文，请检查过滤规则和手册范围');
     const records = new Map(), definitions = new Map(), used = new Set(), referenced = new Set();
     const report = { model, excluded: 0, unmarked: 0, included: 0, unused: 0 };
+    if (profile) report.filteredElements = 0;
     for (const path of published) if (!expanded.has(path)) throw new Error('无法读取：' + path);
     for (const [path, file] of expanded) {
       const notes = [], refs = [], sequence = [], removals = [], source = file.current;
       const tree = xml.inspectSource(source);
+      const excludedRoot = Boolean(profile && !profile.keep(tree));
       try {
         walk(tree, (node, ancestors) => {
           const topic = [...ancestors, node].reverse().find(parent => topicTags.has(parent.name));
           const insideNote = ancestors.some(parent => parent.name === 'fn');
+          const profileAllowed = !profile || [...ancestors, node].every(parent => profile.keep(parent));
+          if (profile && !profile.keep(node) && ancestors.every(parent => profile.keep(parent))) {
+            report.filteredElements++;
+            if (!excludedRoot) removals.push([node.start, node.close?.end ?? node.end]);
+          }
           if (node.name === 'fn') {
             if (insideNote) throw new Error('注脚不能包含嵌套注脚');
             // An excluded ancestor cannot be overridden by a matching child.
-            // Only footnotes are filtered; body containers remain intact.
+            // Model selection scopes notes; the explicit DITAVAL scopes all elements.
             const conditions = manual.conditions(node, ancestors);
             if (manual.common(node.attrs) && conditions.length) throw new Error('通用注脚与型号条件冲突，请检查注脚或祖先条件');
-            if (model && conditions.some(value => /[()]/.test(value))) throw new Error('型号导出暂不支持分组 product 条件，请使用空格分隔的型号');
+            if (profileAllowed && model && conditions.some(value => /[()]/.test(value))) throw new Error('型号导出暂不支持分组 product 条件，请使用空格分隔的型号');
             const note = { node, path, key: node.attrs.id ? path + '#' + decode(topic?.attrs.id) + '/' + decode(node.attrs.id) : '',
               conditions, common: manual.common(node.attrs), origin: resolved.origins.get(path)[notes.length],
-              allowed: manual.matches(conditions, model), unmarked: !conditions.length && !manual.common(node.attrs) };
+              allowed: profileAllowed && manual.matches(conditions, model), unmarked: !conditions.length && !manual.common(node.attrs) };
             notes.push(note);
             sequence.push({ note, site: resolved.sites.get(path)[sequence.length], definition: Boolean(note.key) });
             if (note.key) { if (definitions.has(note.key)) throw new Error('重复的注脚 ID：' + note.key); definitions.set(note.key, note); }
@@ -41,18 +49,19 @@
           if (node.name === 'xref' && decode(node.attrs.type) === 'fn') {
             if (insideNote) throw new Error('暂不支持注脚内再次引用注脚');
             const conditions = manual.conditions(node, ancestors);
-            if (model && conditions.some(value => /[()]/.test(value))) throw new Error('型号导出暂不支持分组 product 条件');
-            const ref = { node, conditions, allowed: manual.matches(conditions, model), key: referenceKey(decode(node.attrs.href), path) };
+            if (profileAllowed && model && conditions.some(value => /[()]/.test(value))) throw new Error('型号导出暂不支持分组 product 条件');
+            const ref = { node, conditions, allowed: profileAllowed && manual.matches(conditions, model), key: profileAllowed ? referenceKey(decode(node.attrs.href), path) : '' };
             refs.push(ref); sequence.push({ ref, site: resolved.sites.get(path)[sequence.length] });
           }
         });
-        records.set(path, { file, source, notes, refs, sequence, removals });
+        records.set(path, { file, source, notes, refs, sequence, removals, excludedRoot });
       } catch (e) { throw new Error(path + '：' + e.message); }
     }
     const remove = (record, node) => record.removals.push([node.start, node.close?.end ?? node.end]);
     for (const path of published) {
       const record = records.get(path);
       for (const ref of record.refs) {
+        if (!ref.allowed) { remove(record, ref.node); continue; }
         const target = definitions.get(ref.key);
         if (!target) throw new Error(path + '：找不到注脚引用：' + ref.key);
         referenced.add(ref.key);
@@ -72,8 +81,13 @@
         }
       }
       let content = record.source;
-      for (const [start, end] of record.removals.sort((a, b) => b[0] - a[0])) content = content.slice(0, start) + content.slice(end);
-      xml.validateXml(content); prepared.set(path, { ...record.file, current: content });
+      const ranges = [];
+      for (const range of record.removals.sort((a, b) => a[0] - b[0] || b[1] - a[1])) {
+        if (ranges.length && range[0] <= ranges.at(-1)[1]) ranges.at(-1)[1] = Math.max(range[1], ranges.at(-1)[1]);
+        else ranges.push([...range]);
+      }
+      if (!record.excludedRoot) for (const [start, end] of ranges.reverse()) content = content.slice(0, start) + content.slice(end);
+      xml.validateXml(content); prepared.set(path, { ...record.file, current: content, ...(record.excludedRoot ? { excluded: true } : {}) });
     }
     // First use owns the automatic number, as in HTML/Markdown delivery. A named
     // definition is numbered at its first xref, and all of its calls share it.
@@ -99,9 +113,10 @@
     const data = preparePublication({ map, files, model }, nodes => nodes);
     return { content: data.files.get(path).current, report: data.report };
   }
-  function listModels(files) {
+  function listModels(files, profile) {
     const models = new Set();
-    for (const file of resolver.resolveConrefs(files).values()) walk(xml.inspectSource(file.current), node => {
+    for (const file of resolver.resolveConrefsDetailed(files, profile).files.values()) walk(xml.inspectSource(file.current), (node, ancestors) => {
+      if (profile && [...ancestors, node].some(parent => !profile.keep(parent))) return;
       const value = decode(node.attrs.product);
       if (!/[()]/.test(value)) value.split(/\s+/).filter(Boolean).forEach(model => models.add(model));
     });

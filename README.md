@@ -41,7 +41,7 @@ The static hosted demonstration has no filesystem Git backend. Its remote contro
   iconv-lite.encode() so Chinese text is preserved on save. Without this
   dependency, GBK files would be silently converted to UTF-8 and corrupted.
 - **docx** — generates editable Word paragraphs, tables, images and internal links in the browser. The server serves only the three fixed UMD entry points; no CDN is required.
-- **playwright-core** — renders PDF with a local headless Chromium. Run `npx playwright-core install chromium` once, or set `DITA_CHROMIUM_EXECUTABLE` to an installed Chromium executable. On Linux install Chinese fonts, for example `fonts-noto-cjk`, to render Chinese correctly.
+- **playwright-core** — renders PDF with a local headless Chromium. Run `npx playwright-core install chromium` once, or set `DITA_CHROMIUM_EXECUTABLE` to an installed Chromium executable. On Linux install `fontconfig` and Chinese fonts, for example `sudo apt-get install fontconfig fonts-noto-cjk`. Run `npm run check:pdf` to verify Chromium and Chinese font readiness. Native Linux PDF generation checks coverage of the actual Han characters and stops with an actionable error if fonts are missing, rather than downloading a file with empty boxes.
 
 The browser and server share a vendored copy of **sax 1.6.1** for XML validation. Its source, license and provenance are in `public/vendor/`. External DTDs/entities are not loaded.
 
@@ -171,7 +171,11 @@ Open the function's Map, then choose **交付…**. Select a model and HTML or M
 <p>Shared limit<fn product="M100 M200">Check the firmware release notes.</fn></p>
 ```
 
-Publication evaluates `product` on the footnote and its Topic ancestors. A note must match every applicable ancestor condition; a child cannot restore a note excluded by its parent. Notes with no conditions are retained, and body content is retained. This is footnote-scoped publication, not a complete DITA conditional-processing pipeline. Grouped product expressions and Map-level profiling stop model export explicitly.
+Model selection evaluates `product` on the footnote and its Topic ancestors. A note must match every applicable ancestor condition; a child cannot restore a note excluded by its parent. Without a DITAVAL, body content and notes without conditions are retained. Grouped product expressions and Map-level model selection still stop model export explicitly.
+
+In **交付功能手册 → 正文条件过滤**, select a workspace `.ditaval` file to apply conditional processing to Map branches, Topic bodies, inline text, images and notes. For the real HTTP library, choose `filters/filter_tbd.ditaval` (or `filters/telecomversion.ditaval` for that delivery). This removes content marked only `product="tbd"`. No profile is selected automatically from filenames or Oxygen `.xpr` settings. The selected profile is remembered for that manual during the workspace session; choose **不使用 DITAVAL** to retain unfiltered body content.
+
+Supported rules are `prop action="include|exclude|passthrough"` for `audience`, `platform`, `product`, `props`, `otherprops` and `deliveryTarget`, with attribute/global defaults and groups. Multiple values in one group use OR; groups and attributes use AND. Excluded ancestors exclude their contents. Flagging, revision flags, custom profiling specializations and branch `ditavalref` are not implemented and fail explicitly. The same captured profile applies to check, preview and all export formats; changing an opened profile buffer invalidates the delivery. Delivery records include its path and SHA-256, alongside the source document hashes. Filtering never writes back to the source library.
 
 An `fn` with an `id` is a reusable definition. Reference it with `xref type="fn"`; unreferenced definitions are omitted, repeated references share one number, and HTML callouts link to one footnote entry and back. The MQTT publishing sample demonstrates repeated references:
 

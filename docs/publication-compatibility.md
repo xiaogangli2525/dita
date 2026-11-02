@@ -27,6 +27,7 @@ The fixture contains an independent function Map, two Topics, a resource-only re
 | Local Topic/element links | Rewrite HTML and Markdown to explicit anchors; reject missing/out-of-Map targets |
 | CALS/simple tables, list/table footnotes | Preserve content and publication context; HTML retains valid CALS row/column spans |
 | Invalid or unsafe input | Report the file/reason and stop; no partial download |
+| Explicit workspace DITAVAL | Filter Map branches and Topic/inline/image/note elements with standard `prop` include/exclude/passthrough rules; captured profile path/hash included in delivery record |
 
 Dependency loading is bounded to 128 files and 8M UTF-16 code units. Expansion is bounded to 24 references in a chain, 1,024 substitutions per publication preparation and 4M UTF-16 code units per expanded document. Paths must remain inside the selected workspace, with the HTTP server still enforcing real-path containment.
 
@@ -35,7 +36,7 @@ Dependency loading is bounded to 128 files and 8M UTF-16 code units. Expansion i
 This remains a lightweight publisher, not DITA-OT or a DTD/schema-validating processor. Common direct local reuse is supported; complete DITA processing is not claimed.
 
 - Key-based reuse (`keyref`/`conkeyref`), push/range conrefs (`conaction`/`conrefend`), `xml:base`, child Maps/key scopes and Map-level model profiling are rejected. Map Topic-fragment selection is also rejected rather than ignored.
-- Grouped product expressions are rejected for model footnotes. `audience`, `platform`, `props`, DITAVAL and other profiles are not used to filter Topic body content. The UI states that body content remains complete.
+- Grouped product expressions remain unsupported for model-footnote selection. An explicitly selected DITAVAL supports `audience`, `platform`, `product`, `props`, `otherprops`, `deliveryTarget`, defaults and groups. Unknown/unconfigured values default to inclusion. Flagging (`flag`, `revprop`), custom profiling specializations and branch `ditavalref` are rejected. Oxygen `.xpr` transformation settings are not imported; select the intended profile in the delivery dialog.
 - Reused content with fragment-only xrefs needing ID relocation, duplicate IDs introduced by reuse, nested footnotes and footnote references inside other footnotes are rejected. DITA specialization generalization and external entity expansion are not implemented.
 - Ordinary local links must point into the published Topics; a link whose target anchor cannot be emitted by the chosen format stops export. Other attachments are not packaged. HTML has valid explicit anchors; Markdown uses raw HTML anchors, so consumers must use a renderer that permits them.
 - Markdown cannot represent merged table cells reliably, so it stops with a recommendation to export HTML. Images remain embedded in both formats. Nested list notes are rendered once and share the same numbering context.

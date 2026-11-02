@@ -36,11 +36,13 @@
  * @property {Object} map
  * @property {Map<string,{path:string,current:string}>} files Resolved dependency scope.
  * @property {Map<string,DocumentSnapshot>} buffers Captured opened-file values, never live history.
+ * @property {{path:string,current:string}|null} filter Captured DITAVAL, independently versioned from topic dependencies.
  * @property {ProjectConfig} project
  * @property {string|null} projectContent Exact model-config comparison base.
  *
  * @typedef {Object} ManualService
- * @property {(path?:string,options?:{resources?:boolean})=>Promise<ManualSnapshot>} capture
+ * @property {(path?:string,options?:{resources?:boolean,filterPath?:string})=>Promise<ManualSnapshot>} capture
+ * @property {()=>Promise<{files:string[],truncated?:boolean}>} listFilters
  * @property {(snapshot:ManualSnapshot)=>boolean} current
  * @property {(snapshot:ManualSnapshot, model?:string)=>Object} prepare
  * @property {(snapshot:ManualSnapshot, model?:string)=>{notes:Object[],calls:Object[],models:string[],report:Object}} listNotes First-use labels, source-scoped occurrences and deduplicated per-source usages with inherited conditions.
