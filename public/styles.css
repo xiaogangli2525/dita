@@ -167,6 +167,8 @@ html, body { height: 100%; margin: 0; }
 .map-topic-header small { color: #8597a2; font-size: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .map-topic-surface { min-height: 70px; padding: 18px 28px 26px; outline: none; line-height: 1.68; }
 .map-topic-surface:focus { box-shadow: inset 0 0 0 2px #b7dbef; }
+#visualEditor > [data-dita-source="shortdesc"], .map-topic-surface > [data-dita-source="shortdesc"] { color: var(--muted); padding: 8px 12px; background: var(--surface); border-left: 3px solid var(--border); border-radius: 3px; }
+[data-dita-body] > [data-dita-placeholder] { min-height: 1.6em; }
 .map-author-empty { max-width: 860px; margin: 30px auto; color: #667882; }
 .review-meta { font-size: 12px; color: #63542f; }
 .map-review-topic { margin: 10px; border: 1px solid #d9e1e8; border-radius: 5px; background: #fff; overflow: hidden; }

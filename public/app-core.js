@@ -85,7 +85,7 @@ function convertVisualElement(node, documentRef, preserveAttributes = false) {
     const alt = Array.from(image.children).find(child => child.localName === 'alt');
     for (const attr of Array.from(node.attributes)) {
       if (attr.name === 'data-dita-href') image.setAttribute('href', attr.value);
-      else if (attr.name === 'alt') { if (alt) { if (alt.textContent !== attr.value) alt.textContent = attr.value; } else image.setAttribute('alt', attr.value); }
+      else if (attr.name === 'alt') { if (alt) { if (alt.textContent !== attr.value) alt.textContent = attr.value; } else if (image.hasAttribute('alt') || attr.value) image.setAttribute('alt', attr.value); }
       else if (!['src', 'class', 'style', 'contenteditable'].includes(attr.name) && !attr.name.startsWith('data-')) image.setAttribute(attr.name, attr.value);
     }
     return image;
@@ -202,21 +202,30 @@ function updateDitaBody(root, visualContainer, document) {
   const sourceBody = BODY_TAGS.has(root.localName)
     ? root
     : Array.from(root.childNodes).find(node => BODY_TAGS.has(node.localName));
-  if (!sourceBody) throw new Error(`No DITA body found in <${root.localName}>`);
-
-  const bodyClone = cloneDitaNode(sourceBody, document);
+  const bodyName = { topic: 'body', concept: 'conbody', reference: 'refbody', task: 'taskbody' }[root.localName];
+  if (!sourceBody && !bodyName) throw new Error(`No DITA body found in <${root.localName}>`);
+  const bodyClone = sourceBody ? cloneDitaNode(sourceBody, document) : document.createElement(bodyName);
   const sourceTitle = Array.from(root.childNodes).find(node => node.localName === 'title');
   const visualTitle = Array.from(visualContainer.childNodes).find(node => node.localName === 'h2');
   const bodyContent = Array.from(visualContainer.childNodes).find(node => node.localName === 'div' && node.hasAttribute('data-dita-body'));
+  const sourceSummary = Array.from(root.childNodes).find(node => node.localName === 'shortdesc');
+  const summaries = Array.from(visualContainer.childNodes).filter(node => node.getAttribute?.('data-dita-source') === 'shortdesc');
+  if (summaries.length > 1) throw new Error('摘要不能拆成多个摘要，请在正文中添加段落');
   if (!visualTitle || !bodyContent) throw new Error('Visual editor is missing its editable title or body');
   if (Array.from(visualContainer.childNodes).filter(node => node.localName === 'h2').length !== 1) throw new Error('标题不能拆成多行，请撤销此操作后继续编辑');
 
   const titleElement = visualElementToDita(visualTitle, document, true);
   if (sourceTitle) sourceTitle.replaceWith(titleElement);
-  else root.insertBefore(titleElement, sourceBody);
+  else root.insertBefore(titleElement, root.firstChild);
+  if (summaries.length) {
+    const summary = visualElementToDita(summaries[0], document, true);
+    if (sourceSummary) sourceSummary.replaceWith(summary);
+    else root.insertBefore(summary, titleElement.nextSibling);
+  } else sourceSummary?.remove();
 
   const newContent = [];
   for (const node of bodyContent.childNodes) {
+    if (node.nodeType === 1 && node.hasAttribute('data-dita-placeholder') && !node.textContent.trim() && !node.querySelector('img,.fn-ref') && bodyContent.children.length === 1) continue;
     if (node.nodeType === 3 && node.data.trim()) {
       const paragraph = document.createElement('p');
       paragraph.appendChild(document.createTextNode(node.data));
@@ -229,7 +238,9 @@ function updateDitaBody(root, visualContainer, document) {
     if (converted) newContent.push(converted);
   }
   bodyClone.replaceChildren(...newContent);
-  if (sourceBody !== root) sourceBody.replaceWith(bodyClone);
+  if (!sourceBody) {
+    if (newContent.length) root.insertBefore(bodyClone, Array.from(root.childNodes).find(node => node.localName === 'related-links' || ['topic', 'concept', 'task', 'reference'].includes(node.localName)) || null);
+  } else if (sourceBody !== root) sourceBody.replaceWith(bodyClone);
   else root.replaceChildren(...Array.from(root.childNodes).filter(node => node !== sourceBody), bodyClone);
   return root;
 }
@@ -427,6 +438,8 @@ function createAuthorTopic(source, documentRef = document, normalizeOxy = false,
   const sourceTitle = Array.from(root.childNodes).find(node => node.localName === 'title');
   const title = sourceTitle ? authorHeading(sourceTitle, documentRef, 'h2') : documentRef.createElement('h2');
   container.appendChild(title);
+  const summary = Array.from(root.childNodes).find(node => node.localName === 'shortdesc');
+  if (summary) container.appendChild(renderDitaNode(summary, documentRef));
   const body = Array.from(root.childNodes).find(node => BODY_TAGS.has(node.localName));
   const bodyContainer = documentRef.createElement('div');
   bodyContainer.setAttribute('data-dita-body', 'true');
@@ -435,6 +448,11 @@ function createAuthorTopic(source, documentRef = document, normalizeOxy = false,
       const rendered = renderDitaNode(node, documentRef);
       if (rendered) bodyContainer.appendChild(rendered);
     }
+  }
+  if (!bodyContainer.childNodes.length) {
+    const placeholder = documentRef.createElement('p');
+    placeholder.setAttribute('data-dita-source', 'p'); placeholder.setAttribute('data-dita-placeholder', 'true');
+    bodyContainer.appendChild(placeholder);
   }
   container.appendChild(bodyContainer);
   return container;

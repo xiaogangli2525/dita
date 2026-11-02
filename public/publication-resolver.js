@@ -20,22 +20,25 @@
     visit(node, ancestors);
     for (const child of node.children) if (child.kind === 'element') walk(child, visit, [...ancestors, node]);
   }
-  function dependencies(source, path) {
+  function dependencies(source, path, profile) {
     const found = new Set();
-    walk(xml.inspectSource(source), node => {
+    function visit(node) {
+      if (profile && !profile.keep(node)) return;
       const href = node.attrs.conref || (node.name === 'xref' && decode(node.attrs.type) === 'fn' ? node.attrs.href : '');
       if (href) found.add(localTarget(decode(href), path).path);
-    });
+      node.children.filter(child => child.kind === 'element').forEach(visit);
+    }
+    visit(xml.inspectSource(source));
     return [...found];
   }
-  async function loadDependencies(files, read) {
+  async function loadDependencies(files, read, profile) {
     const loaded = new Map(files);
     let size = 0;
     for (const [path, file] of loaded) {
       size += file.current.length;
       if (loaded.size > 128 || size > 8 * 1024 * 1024) throw new Error('发布依赖超过限制（128 个文件／8 MiB 文本）');
       try {
-        for (const dependency of dependencies(file.current, path)) if (!loaded.has(dependency)) {
+        for (const dependency of dependencies(file.current, path, profile)) if (!loaded.has(dependency)) {
           loaded.set(dependency, { path: dependency, current: await read(dependency) });
         }
       } catch (e) { throw new Error(path + '：' + e.message); }
@@ -50,7 +53,7 @@
       if (node.attrs.href && decode(node.attrs.href).includes('#')) throw new Error('暂不支持 Map 引用指定 Topic 片段，请使用单 Topic 文件');
     });
   }
-  function resolveConrefsDetailed(files) {
+  function resolveConrefsDetailed(files, profile) {
     const documents = new Map(), output = new Map(), origins = new Map(), sites = new Map();
     let activeOrigins = [], activeSites = [];
     function indexIds(tree, path) {
@@ -79,6 +82,15 @@
     let expansions = 0;
     function render(node, origin, destination, chain = []) {
       const doc = documents.get(origin);
+      if (profile && !profile.keep(node)) {
+        // Leave excluded source intact until the publication pass removes it.
+        // Provenance arrays must still line up with its fn/xref source nodes.
+        walk(node, child => {
+          if (child.name === 'fn') activeOrigins.push({ path: origin, start: child.start });
+          if (child.name === 'fn' || child.name === 'xref' && decode(child.attrs.type) === 'fn') activeSites.push({ path: origin, start: child.start, name: child.name });
+        });
+        return doc.source.slice(node.start, node.close?.end ?? node.end);
+      }
       for (const attr of ['conkeyref', 'conrefend', 'conaction', 'keyref', 'xml:base']) if (node.attrs[attr] != null) throw new Error(origin + '：暂未支持 ' + attr + '，请先展开后再发布');
       let attrs = node.attrs, children = node.children, childOrigin = origin, source = doc.source;
       if (attrs.conref != null) {

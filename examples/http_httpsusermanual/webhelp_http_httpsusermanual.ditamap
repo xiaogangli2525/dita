@@ -10,9 +10,9 @@
     <chapter href="topics/c_introduction.dita">
         <topicref href="topics/g_applicable_model.dita" outputclass="topic/apb"/>
     </chapter>
-    <chapter href="contentmodule/topics/c_at_command_overview_cn.dita">
-        <topicref href="contentmodule/topics/c_at_command_syntax_format_cn.dita"/>
-        <topicref href="contentmodule/topics/c_at_command_response_cn.dita"/>
+    <chapter href="contentmodule/topics/reusable_software/c_at_command_overview_cn.dita">
+        <topicref href="contentmodule/topics/reusable_software/c_at_command_syntax_format_cn.dita"/>
+        <topicref href="contentmodule/topics/reusable_software/c_at_command_response_cn.dita"/>
     </chapter>
     <chapter href="topics/g_at_commands_of_http_https_protocol.dita">
         <topicref href="topics/r_at_mhttpcfg.dita"/>
@@ -32,6 +32,6 @@
         <topicref href="topics/r_cache_mode_example.dita"/>
         <topicref href="topics/r_download_file_example.dita"/>
     </chapter>
-    <chapter href="reusable/r_error_codes.dita"/>
+    <chapter href="topics/r_error_codes.dita"/>
     <backmatter/>
 </bookmap>

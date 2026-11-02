@@ -46,11 +46,13 @@
     }
     function enter(ctx) {
       const block = selection.validateRange(ctx.range, ctx.copy), name = tag(block);
-      if (block.matches('h2,h3,h4')) {
-        const container = block.matches('h2') ? ctx.copy.querySelector('[data-dita-body]') : block.parentElement;
+      if (block.matches('h2,h3,h4') || name === 'shortdesc') {
+        const top = block.matches('h2') || name === 'shortdesc' && block.parentElement === ctx.copy;
+        const container = top ? ctx.copy.querySelector('[data-dita-body]') : block.parentElement;
         if (container.closest('[data-dita-source="table"]')) throw new Error('表格标题请保持单行；在单元格中继续编写');
-        let paragraph = block.matches('h2') ? container.firstElementChild : block.nextElementSibling;
-        if (!paragraph?.matches('p[data-dita-source="p"]')) { paragraph = fresh('p'); if (block.matches('h2')) container.prepend(paragraph); else block.after(paragraph); }
+        let paragraph = top ? container.firstElementChild : block.nextElementSibling;
+        if (!paragraph?.matches('p[data-dita-source="p"]')) { paragraph = fresh('p'); if (top) container.prepend(paragraph); else block.after(paragraph); }
+        paragraph.removeAttribute('data-dita-placeholder');
         commit(ctx, paragraph); return;
       }
       if (name === 'codeblock' || block.matches('pre')) {

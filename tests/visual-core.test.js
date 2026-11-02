@@ -5,6 +5,22 @@ const { renderDitaNode, lineDiff } = require('../public/app-core');
 const test = require('node:test');
 const { createTestApp, buildMockDom } = require('./visual-harness');
 
+test('bodyless topics retain exact source until a body is written and summaries stay editable outside the body', () => {
+  for (const [tag, body] of Object.entries({topic:'body',concept:'conbody',reference:'refbody',task:'taskbody'})) {
+    const source = `<?xml version='1.0' encoding='UTF-8'?>\r\n<${tag} id='t'><title>Title</title><shortdesc>Editable summary</shortdesc><prolog><author>A</author></prolog><related-links/></${tag}>`;
+    const app = createTestApp(source); app.updateVisualFromXml(source); app.visualToXml();
+    assert.equal(app.state.filesMap.get('topic.dita').current,source);
+    const summary=app.dom.visualEditor.querySelectorAll('p').find(n=>n.getAttribute('data-dita-source')==='shortdesc');
+    summary.textContent='Changed summary'; app.visualToXml();
+    assert.equal(app.state.filesMap.get('topic.dita').current,source.replace('Editable summary','Changed summary'));
+    app.dom.visualEditor.querySelector('h2').textContent='Changed title';app.visualToXml();
+    assert.match(app.state.filesMap.get('topic.dita').current,/<title>Changed title<\/title>/);
+    const container=app.dom.visualEditor.childNodes.find(n=>n.getAttribute?.('data-dita-body'));
+    container.children[0].textContent='New body';app.visualToXml();
+    assert.match(app.state.filesMap.get('topic.dita').current,new RegExp(`</prolog><${body}><p>New body</p></${body}><related-links`));
+  }
+});
+
 test('visual edits update the current DITA source', () => {
   const source = `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
@@ -19,7 +35,7 @@ test('visual edits update the current DITA source', () => {
   const app = createTestApp(source);
   app.updateVisualFromXml(source);
   app.dom.visualEditor.querySelector('h2').textContent = 'Edited title';
-  app.dom.visualEditor.querySelector('p').textContent = 'Edited paragraph';
+  app.dom.visualEditor.querySelectorAll('p').find(node => node.getAttribute('id') === 'p1').textContent = 'Edited paragraph';
   app.visualToXml();
 
   const file = app.state.filesMap.get('topic.dita');

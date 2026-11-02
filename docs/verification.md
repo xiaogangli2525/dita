@@ -1,5 +1,14 @@
 # Verification
 
+## Real HTTP library: DITAVAL, author compatibility and PDF fonts
+
+- Base: remote `f7db02e`, including the uploaded `contentmodule`. Acceptance used an isolated copy of the actual HTTP topics plus all reachable common content and images; the company library was not copied to the hosted demo. Six stale references in the two WebHelp Maps now point to the existing matching common/telecom files.
+- Full suites: **175 unit/HTTP checks** and **156 Chromium checks**, zero failures/skips. Added cases cover DITAVAL defaults, value/group logic, excluded dependencies and note definitions, preserved origins, all-excluded refusal, workspace-only profile reads, captured/changed filter buffers, invalid-profile recovery, late selection responses, actual HTML/PDF/DOCX downloads and recorded profile/output hashes. A separate real Chromium job with an empty Fontconfig profile proves that Chinese PDF export fails visibly when fonts are missing.
+- All **10 original Map entry points** load and export HTML with the selected existing DITAVAL. Every generated HTML has sequential note numbers, zero duplicate IDs and zero broken internal links. All **263 reachable DITA topics** render and roundtrip without XML changes, including 25 bodyless topics and both Logo declaration pages. All **86 root summaries** display their content, compared with normalized display whitespace.
+- Complete Chinese `http_httpsusermanual.ditamap`: 25 topic files, 37 notes, 15 tables and 142 merged cells. `filters/filter_tbd.ditaval` excludes 32 element branches; the previously retained unique TBD statement is absent from output. Actual HTML, PDF and editable Word downloads succeed. The source working copy remains clean after edit/save/undo restoration. Markdown still refuses merged cells explicitly.
+- The native Chinese PDF is **24 pages** with embedded Noto CJK glyphs. All pages were rendered for layout review, with enlarged title/table/end-note checks; Chinese text is legible and searchable. Word checks cover OOXML text/tables/merges/images and filtering; pagination in Microsoft Word is not certified by these checks.
+- The corpus still uses prose for real model differences: 129 source footnotes have no explicit real-model associations. Filtering does not infer product applicability from that prose. Full DTD/schema validation, custom profiling specializations, flagging and DITA-OT equivalence remain outside this lightweight publisher.
+
 ## Consistent footnote presentation
 
 - Full suites: **163 unit/HTTP checks** and **130 Chromium checks**, zero failures/skips. Five new domain cases cover first-use order, repeated/local/cross-file references, identical text/IDs in different files, conref occurrence/source identity, unused definitions, custom callouts and model-specific delivery numbering.

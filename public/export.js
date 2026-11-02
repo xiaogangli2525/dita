@@ -30,6 +30,9 @@
     let deliveryView;
     const view = () => deliveryView || (deliveryView = createView());
     let configuration = null, configuring = false, compiled = null, operation = 0, abortController = null;
+    let filterGeneration = 0;
+    const selectedFilters = new Map();
+    let configuringScope = '', configuringWorkspace = '';
     const service = () => A.manual;
     const nativePdf = () => A.state.capabilities?.pdf === true;
     function formatHint() {
@@ -61,43 +64,79 @@
       compiled = null; view().invalidate();
       try {
         const data = service().prepare(configuration.snapshot, get('exportModel').value);
-        get('modelExportSummary').textContent = `包含 ${data.report.included} 条注脚；排除 ${data.report.excluded} 条；保留 ${data.report.unmarked} 条待确认注脚。` + (data.report.unused ? ` ${data.report.unused} 条未引用定义不输出。` : '');
+        get('modelExportSummary').textContent = `包含 ${data.report.included} 条注脚；排除 ${data.report.excluded} 条；保留 ${data.report.unmarked} 条待确认注脚。` + (data.report.unused ? ` ${data.report.unused} 条未引用定义不输出。` : '') + (configuration.snapshot.filter ? ` DITAVAL 排除 ${data.report.filteredElements} 处内容。` : '');
         const warnings = data.notes.filter(note => note.unmarked).map(note => ({ path: note.origin.path, severity: 'warning', message: '注脚尚未确认适用范围，将保留在交付中' }));
         for (const [path, file] of configuration.snapshot.files) if (/oxy_(insert|delete|comment)/.test(file.current)) warnings.push({ path, severity: 'warning', message: '含 Oxygen 修订或批注，请检查是否适合交付' });
         showIssues(warnings); get('modelExportError').textContent = '';
-      } catch (error) { view().failed(); get('modelExportSummary').textContent = ''; get('modelExportError').textContent = error.message; showIssues(issue(error, configuration.snapshot)); }
+      } catch (error) { view().invalidate(); get('modelExportSummary').textContent = ''; get('modelExportError').textContent = error.message; showIssues(issue(error, configuration.snapshot)); }
     }
     async function provenance() {
       try { const response = await A.api.request('/api/provenance'); if (response.ok) return response.json(); } catch {}
       return { commit: null, branch: null, dirty: null };
+    }
+    function useSnapshot(snapshot, source, selectedModel) {
+      const models = [...new Set([...(snapshot.project.models || []), ...service().listModels(snapshot)])].sort();
+      get('exportModel').replaceChildren(new Option('全部型号', ''));
+      models.forEach(model => get('exportModel').add(new Option(model, model)));
+      if (models.includes(selectedModel)) get('exportModel').value = selectedModel;
+      configuration = { snapshot, source }; formatHint();
+      get('exportModel').disabled = false; get('exportFilter').disabled = false;
+      get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = false; });
+      get('modelExportScope').textContent = snapshot.map.title + ' · ' + snapshot.path;
+      get('deliverySource').textContent = `${snapshot.files.size} 个正文／依赖文件 · ${service().saveCandidates(snapshot).length} 个未保存` + (source.commit ? ` · Git ${source.commit.slice(0, 8)}${source.dirty ? '（含未提交修改）' : ''}` : ' · 未取得 Git 版本');
+      summary();
     }
     async function openModelExport() {
       if (configuring || exporting) return;
       configuring = true; configuration = null; compiled = null; view().invalidate();
       get('exportModel').replaceChildren(new Option('正在读取…', ''));
       get('exportModel').disabled = true;
+      get('exportFilter').replaceChildren(new Option('正在读取…', '')); get('exportFilter').disabled = true;
       get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = true; });
       get('modelExportError').textContent = ''; get('modelExportSummary').textContent = '正在读取手册及依赖…';
       get('modelExportScope').textContent = ''; get('deliveryChecks').replaceChildren(); get('modelExportDialog').showModal();
+      const generation = operation;
       try {
-        const generation = operation;
-        const snapshot = await service().capture(service().scopePath()), source = await provenance();
+        const scope = service().scopePath(), workspace = A.api.token;
+        configuringScope = scope; configuringWorkspace = workspace;
+        const filters = await service().listFilters();
+        if (generation !== operation || workspace !== A.api.token || !get('modelExportDialog').open) return;
+        get('exportFilter').replaceChildren(new Option('不使用 DITAVAL', ''));
+        filters.files.forEach(path => get('exportFilter').add(new Option(path, path)));
+        const selectedFilter = selectedFilters.get(workspace + '\n' + scope) || '';
+        get('exportFilter').value = filters.files.includes(selectedFilter) ? selectedFilter : '';
+        get('exportFilter').disabled = false;
+        get('exportFilterHint').textContent = filters.truncated ? '文件列表过长，仅显示部分 DITAVAL。请缩小文档库范围后重试。' : filters.files.length ? '按所选 DITAVAL 过滤正文、图片和注脚；源文档保持不变。' : '文档库中未找到 DITAVAL；当前保留全部正文。';
+        const snapshot = await service().capture(scope, { filterPath: get('exportFilter').value }), source = await provenance();
         if (generation !== operation || !get('modelExportDialog').open) return;
         if (!service().current(snapshot)) throw new Error('内容已变化，请重新打开交付设置');
-        const models = [...new Set([...(snapshot.project.models || []), ...service().listModels(snapshot)])].sort();
-        get('exportModel').replaceChildren(new Option('全部型号', ''));
-        models.forEach(model => get('exportModel').add(new Option(model, model)));
-        const selected = get('footnoteModel')?.value || ''; if (models.includes(selected)) get('exportModel').value = selected;
-        configuration = { snapshot, source };
-        formatHint();
-        get('exportModel').disabled = false;
-        get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = false; });
-        get('modelExportScope').textContent = snapshot.map.title + ' · ' + snapshot.path;
-        const dirty = service().saveCandidates(snapshot).length;
-        get('deliverySource').textContent = `${snapshot.files.size} 个正文／依赖文件 · ${dirty} 个未保存` + (source.commit ? ` · Git ${source.commit.slice(0, 8)}${source.dirty ? '（含未提交修改）' : ''}` : ' · 未取得 Git 版本');
-        summary();
-      } catch (error) { view().failed(); get('modelExportSummary').textContent = ''; get('modelExportError').textContent = error.message; showIssues(issue(error)); }
-      finally { configuring = false; }
+        useSnapshot(snapshot, source, get('footnoteModel')?.value || '');
+      } catch (error) { if (generation === operation) { view().invalidate(); get('modelExportSummary').textContent = ''; get('modelExportError').textContent = error.message; showIssues(issue(error)); } }
+      finally { if (generation === operation) configuring = false; }
+    }
+    async function changeFilter() {
+      if (!get('modelExportDialog').open || exporting) return;
+      const scope = configuringScope, workspace = A.api.token;
+      if (workspace !== configuringWorkspace) { configuration = null; get('modelExportError').textContent = '工作区已切换，请重新打开交付设置'; get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = true; }); return; }
+      const filterPath = get('exportFilter').value, generation = ++filterGeneration, operationId = ++operation;
+      const selectedModel = get('exportModel').value;
+      configuration = null; compiled = null; configuring = true; view().invalidate();
+      get('modelExportSummary').textContent = '正在应用条件过滤…'; get('modelExportError').textContent = '';
+      get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = true; });
+      try {
+        const snapshot = await service().capture(scope, { filterPath }), source = await provenance();
+        if (generation !== filterGeneration || operationId !== operation || workspace !== A.api.token || !get('modelExportDialog').open) return;
+        if (!service().current(snapshot)) throw new Error('内容已变化，请重新打开交付设置');
+        useSnapshot(snapshot, source, selectedModel); selectedFilters.set(workspace + '\n' + scope, filterPath);
+      } catch (error) {
+        if (generation !== filterGeneration || operationId !== operation) return;
+        view().invalidate(); get('modelExportSummary').textContent = ''; get('modelExportError').textContent = error.message;
+      } finally {
+        if (generation === filterGeneration && operationId === operation) {
+          configuring = false;
+          get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = !configuration; });
+        }
+      }
     }
     async function convert(snapshot, model, format, version) {
       const failures = [], publicationData = service().prepare(snapshot, model);
@@ -123,8 +162,9 @@
     }
     async function record(snapshot, source, data, model, format, version, name) {
       const documents = new Map([[snapshot.path, snapshot.content], ...Array.from(snapshot.files, ([path, file]) => [path, file.current])]);
+      if (snapshot.filter) documents.set(snapshot.filter.path, snapshot.filter.current);
       const record = { schema: 1, createdAt: new Date().toISOString(), state: 'download-initiated', manualPath: snapshot.path, model, format, version, filename: name,
-        source, capturedAt: snapshot.capturedAt, unsavedPaths: service().saveCandidates(snapshot).map(file => file.path), report: data.report,
+        source, capturedAt: snapshot.capturedAt, filterPath: snapshot.filter?.path || '', unsavedPaths: service().saveCandidates(snapshot).map(file => file.path), report: data.report,
         documents: await Promise.all(Array.from(documents, async ([path, content]) => ({ path, sha256: await root.DitaBrowserFiles.sha256(content) }))),
         projectSha256: await root.DitaBrowserFiles.sha256(JSON.stringify(snapshot.project)), outputSha256: await root.DitaBrowserFiles.sha256(data.output) };
       root.DitaReleaseStore.createReleaseStore(root.localStorage).append(snapshot.root, record); lastDeliveryRecord = record;
@@ -143,7 +183,7 @@
       abortController = new AbortController();
       exporting = true; A.showLoading?.();
       if (!legacy) get('modelExportError').textContent = '';
-      if (!legacy) { view().pending(); for (const id of ['exportModel', 'exportFormat', 'exportVersion']) get(id).disabled = true; get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = true; }); }
+      if (!legacy) { view().pending(); for (const id of ['exportModel', 'exportFilter', 'exportFormat', 'exportVersion']) get(id).disabled = true; get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = true; }); }
       try {
         const key = JSON.stringify([model, format, version]);
         const data = compiled?.key === key ? compiled.data : await convert(snapshot, model, format, version);
@@ -192,7 +232,7 @@
         if (generation !== operation) return;
         if (!legacy) { view().failed(); get('modelExportError').textContent = error.message; showIssues(issue(error, snapshot)); }
         A.setStatus(error.message, true); A.toast?.(error.message, 'error');
-      } finally { exporting = false; abortController = null; A.hideLoading?.(); if (!legacy && configuration) { view().settled(); for (const id of ['exportModel', 'exportFormat', 'exportVersion']) get(id).disabled = false; get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = false; }); } }
+      } finally { exporting = false; abortController = null; A.hideLoading?.(); if (!legacy && configuration) { view().settled(); for (const id of ['exportModel', 'exportFilter', 'exportFormat', 'exportVersion']) get(id).disabled = false; get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = false; }); } }
     }
     async function legacyExport(format, preview) {
       if (!/\.ditamap$/i.test(A.state.activePath)) { A.setStatus('请先打开一个 Map 文档，再预览或导出', true); return; }
@@ -201,12 +241,13 @@
     }
 
     get('exportModel')?.addEventListener('change', summary); get('exportFormat')?.addEventListener('change', () => { compiled = null; formatHint(); view().invalidate(); });
+    get('exportFilter')?.addEventListener('change', changeFilter);
     get('exportVersion')?.addEventListener('input', () => { compiled = null; view().invalidate(); });
     get('printDeliveryButton')?.addEventListener('click', () => {
       A.dom.htmlPreviewFrame.contentWindow.focus(); A.dom.htmlPreviewFrame.contentWindow.print();
       A.setStatus('已请求浏览器打印，请在打印窗口选择“另存为 PDF”。');
     });
-    function cancelDelivery() { operation++; abortController?.abort(); }
+    function cancelDelivery() { operation++; filterGeneration++; configuring = false; abortController?.abort(); }
     get('modelExportCancel')?.addEventListener('click', () => { cancelDelivery(); get('modelExportDialog').close(); });
     get('modelExportDialog')?.addEventListener('cancel', cancelDelivery);
     get('modelExportDialog')?.addEventListener('close', cancelDelivery);

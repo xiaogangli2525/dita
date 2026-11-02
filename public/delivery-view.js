@@ -27,7 +27,7 @@
       ready = true;
       const model = get('exportModel').selectedOptions[0]?.textContent || '全部型号';
       const format = get('exportFormat').selectedOptions[0]?.textContent || '';
-      get('deliveryReadySummary').textContent = [model, format, get('exportVersion').value.trim()].filter(Boolean).join(' · ');
+      get('deliveryReadySummary').textContent = [model, format, get('exportVersion').value.trim(), get('exportFilter')?.value].filter(Boolean).join(' · ');
       show('export');
     }
     function failed() { ready = false; get('deliveryCheckStatus').textContent = '请处理下面的问题后重新检查。'; show('check'); }

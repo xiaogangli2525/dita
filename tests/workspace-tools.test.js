@@ -20,6 +20,14 @@ test('workspace foundation routes preserve boundaries and optimistic writes', as
   const base = 'http://127.0.0.1:' + port, workspace = await (await fetch(base + '/api/workspace')).json();
   const request = (url, method = 'GET', body, headers = {}) => fetch(base + url, { method, headers: { 'x-workspace-token': workspace.workspaceToken, 'content-type': 'application/json', ...headers }, ...(body ? { body: JSON.stringify(body) } : {}) });
   await t.test('provenance reports a real commit and clean worktree', async () => { const result = await (await request('/api/provenance')).json(); assert.match(result.commit, /^[a-f0-9]{40}$/); assert.equal(result.dirty, false); });
+  await t.test('DITAVAL discovery and reads stay inside the workspace',async()=>{
+    await fs.mkdir(path.join(repo,'filters'));const profile='<val><prop att="product" val="tbd" action="exclude"/></val>';
+    await fs.writeFile(path.join(repo,'filters','release.ditaval'),profile);
+    await fs.symlink(path.join(temporary,'outside.ditaval'),path.join(repo,'filters','linked.ditaval'));
+    assert.deepEqual((await (await request('/api/filters')).json()).files,['filters/release.ditaval']);
+    assert.equal(await (await request('/api/file?path=filters%2Frelease.ditaval')).text(),profile);
+    assert.equal((await request('/api/file?path=..%2Foutside.ditaval')).status,403);
+  });
   await t.test('project config is versioned JSON with conflicts, validation and repair support', async () => {
     const initial = await (await request('/api/project')).json(); assert.equal(initial.expectedContent, null);
     const saved = await request('/api/project', 'PUT', { expectedContent: null, config: { schema: 1, models: ['M100', 'M200'] } }); assert.equal(saved.status, 200);
