@@ -204,3 +204,14 @@ Visual acceptance uses the Chinese HTTP manual in an isolated local preview: com
 - HTTP coverage exercises independent config writes, unchanged original document bytes, optimistic conflicts, simultaneous same-base saves, invalid paths and malformed-config preservation.
 - Actual-browser coverage requires review before save, checks per-model HTML/Markdown downloads and rule hashes, keeps unresolved notes, rejects external rule changes before download/save, preserves choices after conflicts, requires fresh confirmation for another manual and blocks rules after unsaved source changes. Follow-up checks verify 390px containment and reachable save controls; wide/compact screenshots were visually inspected.
 - Fragment classification is explicit human review. Inline markup and revision spans are atomic; no prose rewriting or automatic removal of shared model labels is claimed. Rules remain a sidecar and original DITA is unchanged.
+
+
+## Imported-content and local API audit
+
+Full local regression: **204 unit/HTTP checks** and **170 Chromium checks**, zero failures/skips. Follow-up HTTP checks confirm that an explicitly configured reverse-proxy Host still works.
+
+New domain/browser cases verify that imported event handlers, CSS, image src/srcset overrides and editor-reserved attributes do not become active Author HTML. Dispatching click/hover/error events executes no source handlers and causes no source-specified remote resource requests. Unchanged views and adjacent text edits retain the original XML, including those source-only attributes. Markdown href/src and code-language delimiter probes create neither executable links nor event-handler attributes; code remains literal.
+
+HTTP probes reject foreign Host values on workspace bootstrap, source reads and asset reads even when Origin is omitted; loopback and configured proxy access remain available. This is a targeted local-interface check, not a claim of multi-user authentication.
+
+The HTTP note-corpus test now loads the selected manual's dependency closure (37 notes) with encoding-aware reads, rather than recursively counting unrelated manuals (130 notes in the full checkout). Both Node 20/22 and browser CI passed for that correction before PR #24 was merged.

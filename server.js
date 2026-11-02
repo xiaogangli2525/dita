@@ -344,7 +344,7 @@ const handleApi = createApiHandler({
   git, remoteRepositories,
   documents: { checkedResolve, walkFileTree, readXmlFile, writeXmlFile, relativePath, isDitaLike },
   maps: { parseXml, childElement, textOf, mapNodeToTree, applyMapOperation },
-  port: PORT, publicOrigin: process.env.PUBLIC_ORIGIN, demoMode: process.env.DITA_DEMO_MODE === '1'
+  port: PORT, publicOrigin: process.env.PUBLIC_ORIGIN, bindHost: HOST, demoMode: process.env.DITA_DEMO_MODE === '1'
 });
 
 async function serveStatic(res, relative) {
