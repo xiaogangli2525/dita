@@ -2,6 +2,7 @@
 (function (root) {
   const publication = typeof module !== 'undefined' ? require('./publication-core') : root.DitaPublication;
   const assets = typeof module !== 'undefined' ? require('./asset-core') : root.DitaAssetCore;
+  const presentation = typeof module !== 'undefined' ? require('./document-presentation') : root.DitaDocumentPresentation;
   function createDeliveryCore({ parseXml, normalizeOxyPIs, resolveAssetPath }) {
     const _ctx = { topicPath: '', imageDataCache: new Map(), mdFootnotes: [] };
 const PREVIEW_TOPIC_EXTENSIONS = /\.(dita|xml)$/i;
@@ -36,7 +37,7 @@ const DITA_HTML_MAP = {
   'xref': 'a', 'cite': 'cite', 'keyword': 'span', 'term': 'span',
   'ph': 'span', 'b': 'strong', 'i': 'em', 'u': 'u', 'sup': 'sup', 'sub': 'sub',
   'q': 'q', 'boolean': 'span', 'state': 'span',
-  'image': 'img', 'object': 'div', 'pre': 'pre', 'lines': 'pre',
+  'image': 'img', 'object': 'div', 'pre': 'pre', 'lines': 'pre', 'msgblock': 'pre', 'screen': 'pre', 'cmdname': 'code', 'userinput': 'code', 'systemoutput': 'code',
   'menucascade': 'span', 'uicontrol': 'span', 'wintitle': 'span',
   'fn': 'sup', 'abbreviated-form': 'span'
 };
@@ -44,7 +45,7 @@ const DITA_HTML_MAP = {
 const DITA_INLINE_TAGS = new Set([
   'codeph', 'filepath', 'varname', 'parmname', 'msgph', 'keyword', 'term',
   'xref', 'cite', 'ph', 'b', 'i', 'u', 'sup', 'sub', 'q', 'boolean', 'state',
-  'menucascade', 'uicontrol', 'wintitle', 'fn', 'abbreviated-form'
+  'menucascade', 'uicontrol', 'wintitle', 'fn', 'abbreviated-form', 'cmdname', 'userinput', 'systemoutput'
 ]);
 
 function topicIdOf(node) {
@@ -164,11 +165,27 @@ function ditaToHtml(node, ctx) {
     const anchor = publicationAnchor(node, ctx);
     return '<a' + (anchor ? ' id="' + escapeHtmlAttr(anchor) + '"' : '') + ' href="' + escapeHtmlAttr(href) + '">' + Array.from(node.childNodes).map(function(n) { return ditaToHtml(n, ctx); }).join('') + '</a>';
   }
-  if (tag === 'tgroup' || tag === 'colspec') return tag === 'tgroup' ? Array.from(node.childNodes).map(child => ditaToHtml(child, ctx)).join('') : '';
+  if (tag === 'note') {
+    const type = node.getAttribute('type') || 'note', detail = presentation.note(type, node.getAttribute('othertype') || '');
+    const anchor = publicationAnchor(node, ctx);
+    return '<div class="dita-note" data-note-tone="' + detail.tone + '"' + (anchor ? ' id="' + escapeHtmlAttr(anchor) + '"' : '') + '><div class="note-body"><strong class="note-label">' + escapeHtmlAttr(detail.label) + '：</strong>' + Array.from(node.childNodes).map(child => ditaToHtml(child, ctx)).join('') + '</div></div>';
+  }
+  if (tag === 'colspec') return '';
+  if (tag === 'tgroup') {
+    const specs = Array.from(node.childNodes).filter(n => n.localName === 'colspec');
+    const total = specs.reduce((sum, n) => sum + (/^\d+(?:\.\d+)?\*$/.test(n.getAttribute('colwidth') || '') ? parseFloat(n.getAttribute('colwidth')) : 0), 0);
+    const columns = specs.length ? '<colgroup>' + specs.map(spec => {
+      const width = spec.getAttribute('colwidth') || '';
+      const size = /^\d+(?:\.\d+)?(?:mm|cm|in|pt|pc|px)$/.test(width) ? width : /^\d+(?:\.\d+)?\*$/.test(width) && total ? (parseFloat(width) / total * 100) + '%' : '';
+      return '<col' + (size ? ' style="width:' + size + '"' : '') + '/>';
+    }).join('') + '</colgroup>' : '';
+    return columns + Array.from(node.childNodes).map(child => ditaToHtml(child, ctx)).join('');
+  }
   const htmlTag = DITA_HTML_MAP[tag] || 'div';
   const attrs = [];
   const anchor = publicationAnchor(node, ctx);
   if (anchor) attrs.push('id="' + escapeHtmlAttr(anchor) + '"');
+  if (['row', 'table', 'entry'].includes(tag) && node.getAttribute('outputclass')) attrs.push('data-dita-outputclass="' + escapeHtmlAttr(node.getAttribute('outputclass')) + '"');
   if (tag === 'entry') {
     const rows = Number(node.getAttribute('morerows'));
     if (rows > 0) attrs.push('rowspan="' + (rows + 1) + '"');
@@ -264,16 +281,16 @@ async function exportMapToHtml({ map, files, title, loadImageBytes, model = '', 
     'h2 { font-size: 22px; color: #1a73e8; margin-top: 32px; border-bottom: 1px solid #e4e7ea; padding-bottom: 6px; }',
     'h3 { font-size: 18px; color: #385667; margin-top: 24px; }',
     'hr { border: none; border-top: 1px solid #e4e7ea; margin: 32px 0; }',
-    'pre { background: #f8f9fa; padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 13px; }',
+    'pre { background: #f5f7f9; color: #263b48; border: 1px solid #e4e9ed; padding: 12px 14px; border-radius: 4px; font: 13px/1.7 Consolas, "Noto Sans Mono CJK SC", monospace; white-space: pre-wrap; overflow-wrap: anywhere; tab-size: 4; }',
     'code { font-family: Consolas, Courier New, monospace; font-size: 0.9em; }',
     'code.filepath { color: #c5221f; background: #f1f3f4; padding: 1px 4px; border-radius: 3px; }',
     'sup.fn-ref { font-size: 0.8em; color: #1a73e8; cursor: pointer; }',
     'ins.oxy-insert { background: #e6f4ea; border-bottom: 2px solid #34a853; text-decoration: none; }',
     'del.oxy-delete { background: #fce8e6; text-decoration: line-through; color: #d93025; }',
     'span.oxy-comment { border-bottom: 2px dotted #4285f4; cursor: help; background: rgba(66,133,244,0.08); }',
-    'table { border-collapse: collapse; width: 100%; margin: 14px 0; font-size: 14px; }',
+    'table { border-collapse: collapse; table-layout: fixed; width: 100%; margin: 14px 0; font-size: 14px; }',
     'th, td { border: 1px solid #cbd5dd; padding: 7px 9px; vertical-align: top; }',
-    'th { background: #eef2f5; }',
+    'th, thead td { background: #f0f6f9; font-weight: 600; } td, th { overflow-wrap: anywhere; } tr[data-dita-outputclass~="has_bgc"] > td { background: #f5f8fa; font-weight: 600; }',
     'dl { margin: 10px 0; padding-left: 16px; }',
     'dt { font-weight: 600; color: #385667; }',
     'dd { margin: 2px 0 6px 16px; }',
@@ -283,16 +300,16 @@ async function exportMapToHtml({ map, files, title, loadImageBytes, model = '', 
     '.toc a { color: #1a73e8; text-decoration: none; }',
     '.toc a:hover { text-decoration: underline; }',
     '.error { color: #d93025; font-size: 13px; }',
-    '.dita-note { display: flex; gap: 10px; padding: 12px 16px; margin: 14px 0; border-radius: 6px; border-left: 4px solid #4285f4; background: #e8f0fe; }',
+    '.dita-note { display: block; padding: 12px 16px; margin: 18px 0; border-radius: 0 5px 5px 0; border-left: 3px solid #4d7b97; background: #f2f7fa; } .note-label { display: block; margin-bottom: 4px; }',
     '.dita-note .note-icon { font-size: 16px; flex-shrink: 0; margin-top: 2px; }',
     '.dita-note .note-body { flex: 1; }',
     '.dita-note .note-body ul, .dita-note .note-body ol { margin: 4px 0; padding-left: 20px; }',
     '.dita-note.dita-note-tip { border-color: #34a853; background: #e6f4ea; }',
     '.dita-note.dita-note-caution, .dita-note.dita-note-warning { border-color: #d93025; background: #fce8e6; }',
     '.dita-note.dita-note-important { border-color: #f9ab00; background: #fef7e0; }',
-    '.code-block { background: #1e1e2e; color: #cdd6f4; padding: 14px 18px; border-radius: 8px; overflow-x: auto; font-family: Consolas, Fira Code, monospace; font-size: 13px; line-height: 1.55; tab-size: 4; }',
+    '.code-block { background: #f5f7f9; color: #263b48; padding: 12px 14px; border-radius: 4px; overflow-wrap: anywhere; font-family: Consolas, "Noto Sans Mono CJK SC", monospace; font-size: 13px; line-height: 1.7; tab-size: 4; }',
     '.code-block code { color: inherit; font-size: inherit; background: none; padding: 0; }',
-    '.dita-note .code-block { background: #282838; margin: 8px 0; }',
+    '.dita-note .code-block { background: #f5f7f9; margin: 8px 0; } .dita-note[data-note-tone="tip"] { border-color:#308477;background:#f1f8f5; } .dita-note[data-note-tone="attention"] { border-color:#a47a26;background:#fcf8ee; } .dita-note[data-note-tone="danger"] { border-color:#af4d53;background:#fcf3f3; }',
     'figure { margin: 16px 0; text-align: center; }',
     'figure figcaption, .figtitle { font-size: 13px; color: #5f6368; margin-top: 8px; font-style: italic; }',
     'section { margin: 20px 0; }'
@@ -402,11 +419,11 @@ function renderDitaMarkdown(node, ctx) {
     const lang = (node.getAttribute('outputclass') || '').replace('language-', '');
     return '\n```' + lang + '\n' + node.textContent.replace(/\n$/, '') + '\n```\n\n';
   }
-  if (tag === 'pre' || tag === 'lines') return '\n```\n' + node.textContent.replace(/\n$/, '') + '\n```\n\n';
+  if (['pre', 'lines', 'msgblock', 'screen'].includes(tag)) return '\n```\n' + node.textContent.replace(/\n$/, '') + '\n```\n\n';
 
   if (tag === 'note') {
     const type = node.getAttribute('type') || 'note';
-    const label = type.charAt(0).toUpperCase() + type.slice(1);
+    const label = type === 'other' && node.getAttribute('othertype') ? node.getAttribute('othertype') : type.charAt(0).toUpperCase() + type.slice(1);
     const body = Array.from(node.childNodes).map(function(n) { return mdInline(n, ctx); }).join('').trim();
     return '> **' + label + ':** ' + body + '\n\n';
   }

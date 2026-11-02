@@ -2,6 +2,9 @@
 (function (root) {
   function createController(A) {
     const selection = A.authorSelection, get = id => document.getElementById(id);
+    const noteTypes = root.DitaDocumentPresentation.noteTypes;
+    const options = get('noteTypeOptions');
+    for (const [type, label] of Object.entries(noteTypes)) { const option = document.createElement('option'); option.value = type === 'note' ? 'note' : 'note:' + type; option.textContent = label; options.append(option); }
     const source = node => node.getAttribute('data-dita-source') || node.localName;
     const create = (name, html = name) => { const node = document.createElement(html); node.dataset.ditaSource = name; return node; };
     let tableTarget = null;
@@ -26,7 +29,7 @@
     }
     function convert(value) {
       try {
-        if (!['p', 'ul', 'ol', 'note', 'note:tip', 'note:important', 'note:caution', 'note:warning', 'codeblock'].includes(value)) return;
+        if (!['p', 'ul', 'ol', 'note', 'codeblock'].includes(value) && !(value.startsWith('note:') && Object.hasOwn(noteTypes, value.slice(5)))) return;
         const target = selection.capture(), { copy, range } = selection.clone(target);
         let block = selection.blockOf(range.startContainer), end = selection.blockOf(range.endContainer);
         if (!block || !block.closest('[data-dita-body]') || block.matches('h2,h3,h4,td,th') || block.closest(selection.PROTECTED)) throw new Error('请在正文段落、普通列表项、说明或代码块中转换');
@@ -45,6 +48,7 @@
           if (!(value.startsWith('note') && source(block) === 'note')) simple(block);
           const name = value.split(':')[0], replacement = create(name, name === 'codeblock' ? 'pre' : name === 'note' ? 'div' : 'p'); copyAttributes(block, replacement);
           if (name === 'note') { replacement.className = 'note'; if (value.includes(':')) replacement.setAttribute('type', value.split(':')[1]); }
+          else replacement.removeAttribute('othertype');
           if (name === 'codeblock') {
             if (block.querySelector('img,[id],' + selection.PROTECTED)) throw new Error('此段包含图片、锚点或注脚，不能转换为纯文本代码块');
             replacement.textContent = block.textContent;

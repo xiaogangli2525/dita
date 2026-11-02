@@ -20,7 +20,7 @@
     function writeAttribute(name, value) {
       const previous = target, advancedOpen = dom.attributesPanel.querySelector('details')?.open || false;
       if (!previous) return;
-      const focused = dom.attributesPanel.contains(document.activeElement), selector = document.activeElement?.dataset.attribute ? '[data-attribute="' + CSS.escape(name) + '"]' : document.activeElement?.id === 'contentNoteType' ? '#contentNoteType' : null;
+      const focused = dom.attributesPanel.contains(document.activeElement), selector = document.activeElement?.dataset.attribute ? '[data-attribute="' + CSS.escape(name) + '"]' : ['contentNoteType', 'contentNoteTitle'].includes(document.activeElement?.id) ? '#' + document.activeElement.id : null;
       attempt(() => {
         commands.attribute(previous, name, value);
         restoreTarget(previous, advancedOpen);
@@ -75,10 +75,14 @@
         if (node.localName !== 'title') actionButton('remove', '删除' + (names[node.localName] || '当前内容'));
         if (node.localName === 'note') {
           const label = el('label', '说明类型', 'content-setting-field'), select = el('select'); select.id = 'contentNoteType';
-          const types = { note: '说明', tip: '提示', important: '重要', caution: '注意', warning: '警告' }, current = node.getAttribute('type') || 'note';
+          const types = { ...root.DitaDocumentPresentation.noteTypes }, current = node.getAttribute('type') || 'note';
           if (!Object.hasOwn(types, current)) types[current] = '当前类型：' + current;
           for (const [value, text] of Object.entries(types)) { const option = el('option', text); option.value = value; select.append(option); }
           select.value = current; select.addEventListener('change', () => writeAttribute('type', select.value)); label.append(select); dom.attributesPanel.append(label);
+          if (current === 'other') {
+            const label = el('label', '自定义说明标题', 'content-setting-field'), input = el('input'); input.id = 'contentNoteTitle'; input.value = node.getAttribute('othertype') || ''; input.placeholder = '例如：固件兼容性';
+            input.addEventListener('change', () => writeAttribute('othertype', input.value.trim())); label.append(input); dom.attributesPanel.append(label);
+          }
         }
         hint(node.localName === 'codeblock' ? '在正文中编辑代码；Enter 换行，Tab / Shift+Tab 调整缩进。' : '文字直接在正文中修改；新增内容使用顶部“插入…”，调整正文类型使用“转换…”。');
       }

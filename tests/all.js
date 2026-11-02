@@ -34,3 +34,4 @@ require('./remote-api.test');
 require('./note-reuse.test');
 require('./profiling.test');
 require('./pdf-fonts.test');
+require('./document-rendering.test');

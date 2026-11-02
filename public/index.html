@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="/styles.css" />
   <link rel="stylesheet" href="/workspace.css" />
   <link rel="stylesheet" href="/panels.css" />
+  <link rel="stylesheet" href="/document.css" />
 </head>
 <body>
   <header class="app-header">
@@ -157,7 +158,7 @@
         <div id="authoringToolbar" class="authoring-toolbar" hidden>
           <div class="authoring-context"><span class="writing-dot" aria-hidden="true"></span><strong>正文编写 <kbd title="唤出正文快捷工具">Alt+/</kbd></strong><span id="authoringHint">在正文放好光标，新增注脚</span></div>
           <div class="authoring-actions">
-            <select id="authorBlockSelect" aria-label="转换当前正文类型" title="转换当前段落；列表中用 Tab / Shift+Tab 调整层级"><option value="">转换…</option><option value="p">正文段落</option><option value="ul">无序列表</option><option value="ol">有序列表</option><option value="note">说明</option><option value="note:tip">提示</option><option value="note:important">重要</option><option value="note:caution">注意</option><option value="note:warning">警告</option><option value="codeblock">代码块</option></select>
+            <select id="authorBlockSelect" aria-label="转换当前正文类型" title="转换当前段落；列表中用 Tab / Shift+Tab 调整层级"><option value="">转换…</option><option value="p">正文段落</option><option value="ul">无序列表</option><option value="ol">有序列表</option><optgroup id="noteTypeOptions" label="说明类型"></optgroup><option value="codeblock">代码块</option></select>
             <div class="author-format-actions" role="group" aria-label="选中文字格式"><button id="authorBoldButton" type="button" title="加粗／取消粗体 Ctrl/Cmd+B" aria-label="加粗／取消粗体"><strong>B</strong></button><button id="authorItalicButton" type="button" title="斜体／取消斜体 Ctrl/Cmd+I" aria-label="斜体／取消斜体"><em>I</em></button><button id="authorCodeButton" type="button" title="行内代码／取消行内代码" aria-label="行内代码／取消行内代码">&lt;/&gt;</button></div>
             <select id="authorInsertSelect" aria-label="插入正文内容" title="块元素插在当前块之后；图片和链接使用正文光标或选区"><option value="">插入…</option><option value="p">段落</option><option value="ul">无序列表</option><option value="ol">有序列表</option><option value="table">表格</option><option value="section">节</option><option value="note">说明</option><option value="codeblock">代码块</option><optgroup label="光标／选区处"><option value="image">图片</option><option value="xref">链接</option></optgroup></select><button id="authorFindButton" type="button" title="正文查找与替换 Ctrl/Cmd+F">查找</button>
             <button id="authorUndoButton" type="button" title="撤销 Ctrl/Cmd+Z" disabled>撤销</button><button id="authorRedoButton" type="button" title="重做 Ctrl/Cmd+Y" disabled>重做</button><button id="newFootnoteButton" type="button" class="note-create-action" title="新增注脚 Ctrl/Cmd+Alt+N；正文快捷工具 Alt+/">＋ 新增注脚</button></div>
@@ -410,6 +411,7 @@
   <script src="/profiling-core.js"></script>
   <script src="/reference-paths.js"></script>
   <script src="/asset-core.js"></script>
+  <script src="/document-presentation.js"></script>
   <script src="/footnotes-core.js"></script>
   <script src="/footnotes.js"></script>
   <script src="/review.js"></script>

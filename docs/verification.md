@@ -188,3 +188,10 @@ Final regression for the keyboard/help change: 164 unit/HTTP checks and 139 Chro
 - Public-note discovery is scoped to the current manual/dependencies and explicit resource-only entries; arbitrary repositories and full DTD processing are not included.
 
 Full regression: 167 unit/HTTP checks and 146 Chromium checks passed. An additional focused check verifies format clearing inside a link retains that link and its model condition.
+
+
+### Technical-manual presentation
+
+`document-rendering.test.js` covers five preformatted block types, nested command/variable markup, CRLF and exact XML roundtrips, all 13 standard note types, custom labels, CALS 3:7 column proportions and HTML/Markdown response formatting. The profiling browser regression switches every note type through the inspector, edits a custom title, undoes to the exact original XML and checks readable selected-code contrast. Office delivery regressions exercise real PDF and DOCX bytes.
+
+Visual acceptance uses the Chinese HTTP manual in an isolated local preview: command/response tables, summaries and multiline responses. Reference screenshots inform the independently implemented styles; vendor bundles are not shipped.

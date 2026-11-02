@@ -1,6 +1,7 @@
 'use strict';
 const xmlSource = typeof module !== 'undefined' ? require('./xml-source') : window.DitaXmlSource;
 const assetCore = typeof module !== 'undefined' ? require('./asset-core') : window.DitaAssetCore;
+const presentation = typeof module !== 'undefined' ? require('./document-presentation') : window.DitaDocumentPresentation;
 
 const BODY_TAGS = new Set(['body', 'conbody', 'refbody', 'taskbody']);
 const INLINE_TAGS = new Set(['p', 'li', 'entry', 'dt', 'dd', 'note', 'title']);
@@ -293,7 +294,7 @@ function authorSignature(node) {
     if (current.nodeType === 3 || current.nodeType === 4) return preserveSpace || current.data.trim() ? current.data.replace(/\r\n?/g, '\n') : null;
     if (current.nodeType !== 1) return null;
     const attrs = Array.from(current.attributes || []).map(attr => [attr.name, attr.value]).sort();
-    const exact = preserveSpace || ['codeblock', 'pre'].includes(current.localName) || current.getAttribute('xml:space') === 'preserve';
+    const exact = preserveSpace || presentation.preformatted.has(current.localName) || current.getAttribute('xml:space') === 'preserve';
     return [current.localName, attrs, Array.from(current.childNodes).map(child => parts(child, exact)).filter(child => child !== null)];
   }
   return JSON.stringify(parts(node));
@@ -500,6 +501,8 @@ function renderAuthorNode(node, documentRef = document) {
     const element = documentRef.createElement('div');
     element.className = `note ${node.getAttribute('type') || ''}`.trim();
     element.setAttribute('data-dita-source', 'note');
+    const detail = presentation.note(node.getAttribute('type') || 'note', node.getAttribute('othertype') || '');
+    element.setAttribute('data-dita-note-label', detail.label); element.setAttribute('data-dita-note-tone', detail.tone);
     for (const attribute of Array.from(node.attributes || [])) {
       if (attribute.name !== 'type') element.setAttribute(attribute.name, attribute.value);
     }
@@ -509,11 +512,19 @@ function renderAuthorNode(node, documentRef = document) {
     }
     return element;
   }
-  if (tag === 'codeblock') {
+  if (presentation.preformatted.has(tag)) {
     const element = documentRef.createElement('pre');
-    element.setAttribute('data-dita-source', 'codeblock');
+    element.setAttribute('data-dita-source', tag);
     for (const attribute of Array.from(node.attributes || [])) element.setAttribute(attribute.name, attribute.value);
-    element.textContent = node.textContent;
+    function exactChild(child) {
+      if (child.nodeType === 3 || child.nodeType === 4) return documentRef.createTextNode(child.data);
+      const rendered = renderDitaNode(child, documentRef);
+      if (rendered && child.nodeType === 1 && child.localName !== 'image' && child.localName !== 'fn' && !(child.localName === 'xref' && child.getAttribute('type') === 'fn')) {
+        rendered.replaceChildren(...Array.from(child.childNodes).map(exactChild).filter(Boolean));
+      }
+      return rendered;
+    }
+    for (const child of node.childNodes) { const rendered = exactChild(child); if (rendered) element.appendChild(rendered); }
     return element;
   }
   if (tag === 'image') {
@@ -572,6 +583,7 @@ function renderAuthorNode(node, documentRef = document) {
       tr.ditaSourcePath = xmlNodePath(row);
       tr.setAttribute('data-dita-row-attrs', JSON.stringify(Object.fromEntries(Array.from(row.attributes || []).map(attribute => [attribute.name, attribute.value]))));
       tr.setAttribute('data-dita-section', item.section);
+      if (row.getAttribute('outputclass')) tr.setAttribute('data-dita-outputclass', row.getAttribute('outputclass'));
       for (const entry of row.children) {
         const cell = documentRef.createElement(item.section === 'thead' ? 'th' : 'td');
         cell.ditaSourcePath = xmlNodePath(entry);
@@ -691,6 +703,8 @@ function renderAuthorNode(node, documentRef = document) {
   }
   if (tag === 'filepath') {
     const el = documentRef.createElement('code');
+    el.setAttribute('data-dita-source', tag);
+    for (const attr of Array.from(node.attributes || [])) el.setAttribute(attr.name, attr.value);
     el.className = 'filepath';
     el.textContent = node.textContent;
     return el;
@@ -727,7 +741,7 @@ function renderAuthorNode(node, documentRef = document) {
     }
     return el;
   }
-  const inline = new Set(['cmd', 'info', 'term', 'dt', 'dd', 'keyword', 'q', 'sub', 'sup', 'u', 'varname', 'parmname', 'tm', 'menucascade', 'uicontrol', 'state', 'boolean']);
+  const inline = new Set(['cmd', 'info', 'term', 'dt', 'dd', 'keyword', 'q', 'sub', 'sup', 'u', 'varname', 'parmname', 'tm', 'menucascade', 'uicontrol', 'state', 'boolean', 'cmdname', 'userinput', 'systemoutput', 'msgph', 'option', 'apiname']);
   const element = documentRef.createElement(inline.has(tag) ? 'span' : 'div');
   element.setAttribute('data-dita-source', tag);
   for (const attribute of Array.from(node.attributes || [])) element.setAttribute(attribute.name, attribute.value);
