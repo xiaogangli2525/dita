@@ -39,8 +39,8 @@
         const models = new Set([...get('projectModels').value.split(/\s+/).filter(root.DitaModelDiscovery.isModel), ...discovery.models]);
         get('projectModels').value = [...models].sort().join('\n');
         get('projectError').textContent = '';
-        get('projectDiscoverySummary').textContent = `识别到 ${discovery.models.length} 个型号，其中 ${discovery.tableModels.length} 个来自适用型号表（系列名）。` + (discovery.ignored.length ? `已忽略条件标记：${discovery.ignored.join('、')}。` : '') + (discovery.pending.length ? `待发布行未导入：${discovery.pending.join('、')}。` : '') + '请核对后保存；此操作不会自动标注注脚适用范围。';
-      } catch (e) { get('projectError').textContent = e.message; }
+        get('projectDiscoverySummary').textContent = `识别到 ${discovery.models.length} 个型号名称，其中 ${discovery.tableModels.length} 个来自适用型号表（系列名，未拆分子型号）。` + (discovery.models.length ? `识别名称：${discovery.models.join('、')}。` : '') + (discovery.ignored.length ? `已忽略条件标记：${discovery.ignored.join('、')}。` : '') + (discovery.pending.length ? `待发布行未导入：${discovery.pending.join('、')}。` : '') + '识别结果尚未保存。请核对后保存；此操作不会自动标注注脚适用范围。';
+      } catch (e) { get('projectError').textContent = '识别型号失败：' + e.message; }
     });
     get('projectForm').addEventListener('submit', async event => {
       event.preventDefault();
@@ -52,7 +52,7 @@
         if (!response.ok) throw new Error(await A.api.error(response));
         const result = await response.json(); value = { ...result.config, models: result.config.models.filter(root.DitaModelDiscovery.isModel) }; expectedContent = result.expectedContent; error = ''; draw();
         get('projectDialog').close(); A.setStatus(A.state.capabilities.persistence === 'browser' ? '型号清单已保存到当前浏览器' : '型号清单已保存到当前仓库，尚未提交 Git');
-      } catch (e) { get('projectError').textContent = e.message; }
+      } catch (e) { get('projectError').textContent = '保存清单失败，当前填写内容仍保留。' + e.message; }
     });
     return { load, show, ready: () => pending || Promise.resolve(), get value() { return value; }, get error() { return error; }, get expectedContent() { return expectedContent; },
       check(products) { const unknown = root.DitaManualCore.checkModels(products, value); if (unknown.length) throw new Error('型号未登记：' + unknown.join('、') + '。请检查拼写或更新项目型号清单。'); } };
