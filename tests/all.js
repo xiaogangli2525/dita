@@ -40,3 +40,5 @@ require('./demo-workspace.test');
 
 require('./model-discovery.test');
 require('./atomic-write.test');
+require('./export-isolation.test');
+require('./recovery-errors.test');

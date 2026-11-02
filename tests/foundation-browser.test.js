@@ -164,6 +164,17 @@ test('foundation browser workflows', async t => {
     const recordDownload = page.waitForEvent('download'); await row.getByRole('button', { name: '下载记录 JSON' }).click();
     assert.equal(JSON.parse(await fs.readFile(await (await recordDownload).path(), 'utf8')).outputSha256, record.outputSha256);
   });
+  await scenario('unavailable provenance and damaged recovery storage show explicit problems without deleting data', async () => {
+    const denied = route => route.fulfill({status:503,contentType:'application/json',body:'{"error":"unavailable"}'});
+    await page.route('**/api/provenance',denied);await open('main.ditamap');await delivery();
+    assert.match(await page.locator('#deliveryChecks').innerText(),/来源信息读取失败/);await page.click('#modelExportCancel');await page.unroute('**/api/provenance',denied);
+    const stored=await page.evaluate(()=>{const key='dita.releases.v1:'+JSON.stringify(window.DitaApp.state.root);const previous=localStorage.getItem(key);localStorage.setItem(key,'{broken');localStorage.setItem('dita.draft.v1:corrupt','{broken');return{key,previous};});
+    await page.click('#releasesButton');assert.match(await page.locator('#releaseList').innerText(),/读取失败/);assert.doesNotMatch(await page.locator('#releaseList').innerText(),/没有.*记录/);await page.click('#releaseClose');
+    await page.click('#draftsButton');assert.match(await page.locator('#draftError').innerText(),/草稿无法读取/);await page.click('#draftClose');
+    await page.evaluate(key=>localStorage.setItem(key,JSON.stringify([{schema:1,manualPath:'legacy.ditamap'}])),stored.key);await page.click('#releasesButton');assert.match(await page.locator('#releaseList').innerText(),/字段不完整/);await page.click('#releaseClose');await page.evaluate(key=>localStorage.setItem(key,'{broken'),stored.key);
+    assert.equal(await page.evaluate(key=>localStorage.getItem(key),stored.key),'{broken');
+    await page.evaluate(({key,previous})=>{previous===null?localStorage.removeItem(key):localStorage.setItem(key,previous);localStorage.removeItem('dita.draft.v1:corrupt');},stored);
+  });
   await scenario('publication problems are visible and navigate back to their source', async () => {
     await open('topics/connect.dita'); const previous = await current(); await source(previous.replace('</body>', '<p><xref href="missing.dita#t">Missing</xref></p></body>'));
     await open('main.ditamap'); await delivery(); await page.click('#modelExportForm button[value=check]');
