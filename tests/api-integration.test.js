@@ -23,7 +23,7 @@ test('HTTP workflow protects edits, Git baselines, repository boundaries and wor
     server.listen(0, '127.0.0.1', () => { const port = server.address().port; server.close(() => resolve(port)); });
   });
   const child = spawn(process.execPath, ['server.js'], {
-    cwd: path.join(__dirname, '..'), env: { ...process.env, PORT: String(port), DOCS_ROOT: repo, REPOSITORIES_ROOT: temporary },
+    cwd: path.join(__dirname, '..'), env: { ...process.env, PORT: String(port), DOCS_ROOT: repo, REPOSITORIES_ROOT: temporary, PUBLIC_ORIGIN: 'https://docs.example.invalid' },
     stdio: ['ignore', 'pipe', 'pipe']
   });
   t.after(async () => {
@@ -41,6 +41,19 @@ test('HTTP workflow protects edits, Git baselines, repository boundaries and wor
   const request = (url, method = 'GET', body) => fetch(base + url, {
     method, headers: { 'x-workspace-token': token, 'content-type': 'application/json' },
     ...(body ? { body: JSON.stringify(body) } : {})
+  });
+  await t.test('foreign Host cannot bootstrap a workspace or read documents without an Origin header', async () => {
+    const http = require('node:http');
+    const probe = (url, host = 'attacker.example:' + port) => new Promise((resolve, reject) => {
+      const req = http.get(base + url, { headers: { host, 'x-workspace-token': token } }, res => {
+        let content = ''; res.on('data', chunk => { content += chunk; }); res.on('end', () => resolve({ status: res.statusCode, content }));
+      }); req.on('error', reject);
+    });
+    for (const url of ['/api/workspace', '/api/file?path=topics/a.dita', '/api/asset?path=private.png']) {
+      const response = await probe(url); assert.equal(response.status, 403); assert.doesNotMatch(response.content, /workspaceToken|Original/);
+    }
+    assert.equal((await fetch(base + '/api/workspace')).status, 200);
+    assert.equal((await probe('/api/workspace', 'docs.example.invalid')).status, 200);
   });
   await t.test('nested files use the committed Git baseline', async () => {
     const info = await (await request('/api/git?path=topics/a.dita')).json();

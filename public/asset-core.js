@@ -2,6 +2,10 @@
 (function (root) {
   const xml = typeof module !== 'undefined' ? require('./xml-source') : root.DitaXmlSource;
   const domain = typeof module !== 'undefined' ? require('./manual-core') : root.DitaManualCore;
+  function safeLinkHref(value) {
+    const compact = String(value || '').replace(/[\x00-\x20\x7f]/g, '');
+    return /^[a-z][a-z\d+.-]*:/i.test(compact) && !/^(https?:|mailto:|tel:|ftp:)/i.test(compact) ? '' : String(value || '');
+  }
   function imagePresentation(node) {
     const alt = Array.from(node.children || []).find(child => child.localName === 'alt')?.textContent ?? node.getAttribute('alt') ?? '';
     const size = name => { const value = node.getAttribute(name) || ''; return /^\d+(?:\.\d+)?(?:px|pt|pc|mm|cm|in|em|%)?$/.test(value) && parseFloat(value) > 0 ? value + (/\d$/.test(value) ? 'px' : '') : ''; };
@@ -37,6 +41,6 @@
     }
     if (!valid) invalid('图片格式或内容无效');
   }
-  const api = { validateImage, imagePresentation };
+  const api = { validateImage, imagePresentation, safeLinkHref };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaAssetCore = api;
 })(typeof window === 'undefined' ? globalThis : window);

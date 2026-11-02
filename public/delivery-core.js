@@ -587,22 +587,35 @@ function highlightMarkdown(md) {
   return out.join('\n');
 }
 function renderMarkdownToHtml(md) {
-  function esc(t) { return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  const esc = value => escapeHtmlAttr(String(value));
   function imgSrc(src) {
-    if (/^(https?:|data:)/i.test(src)) return src;
-    if (src.startsWith('/')) return src;
+    if (/^data:image\/(?:png|jpe?g|gif|bmp|webp|svg\+xml);base64,[a-z\d+/=]+$/i.test(src)) return src;
+    if (!assets.safeLinkHref(src) || /^[a-z][a-z\d+.-]*:/i.test(src) && !/^https?:/i.test(src)) return '';
+    if (/^https?:/i.test(src) || src.startsWith('/')) return src;
     return '/api/asset?path=' + encodeURIComponent(src);
   }
+  function textStyle(text) {
+    return esc(text).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+      .replace(/~~([^~]+)~~/g, '<del>$1</del>').replace(/\*([^*]+)\*/g, '<em>$1</em>')
+      .replace(/\[\^(\d+)\]/g, '<sup class="fn-ref">[$1]</sup>');
+  }
   function inline(text) {
-    let r = esc(text);
-    r = r.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (m, alt, src) => '<img src="' + imgSrc(src.trim()) + '" alt="' + esc(alt) + '"/>');
-    r = r.replace(/\[([^\]]*)\]\(([^)]+)\)/g, (m, txt, href) => '<a href="' + esc(href.trim()) + '">' + esc(txt) + '</a>');
-    r = r.replace(/`([^`]+)`/g, '<code>$1</code>');
-    r = r.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-    r = r.replace(/~~([^~]+)~~/g, '<del>$1</del>');
-    r = r.replace(/\*([^*]+)\*/g, '<em>$1</em>');
-    r = r.replace(/\[\^(\d+)\]/g, '<sup class="fn-ref">[$1]</sup>');
-    return r;
+    // Parse source tokens once. Formatting must never run over generated tags
+    // or their attribute values, which could turn nested Markdown into HTML.
+    const pattern = /`([^`]+)`|(!?)\[([^\]]*)\]\(([^)]+)\)/g;
+    let result = '', cursor = 0, match;
+    while ((match = pattern.exec(text))) {
+      result += textStyle(text.slice(cursor, match.index));
+      if (match[1] !== undefined) result += '<code>' + esc(match[1]) + '</code>';
+      else {
+        const target = match[2] ? imgSrc(match[4].trim()) : assets.safeLinkHref(match[4].trim());
+        result += !target ? esc(match[3]) : match[2]
+          ? '<img src="' + esc(target) + '" alt="' + esc(match[3]) + '"/>'
+          : '<a href="' + esc(target) + '">' + esc(match[3]) + '</a>';
+      }
+      cursor = pattern.lastIndex;
+    }
+    return result + textStyle(text.slice(cursor));
   }
   const lines = md.split(/\n/);
   let html = '';

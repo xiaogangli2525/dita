@@ -1,5 +1,13 @@
 # Workspace architecture
 
+## Imported-content and local HTTP boundaries
+
+Author attribute copying uses `setAuthorAttribute` before attaching source attributes to HTML. Event handlers, CSS, source resource overrides and editor-reserved attributes stay in inert JSON metadata; conversion restores them only to XML. This preserves original bytes and adjacent text edits without activating source handlers or permitting a source `data-dita-source` to replace editor identity. Generated image dimensions and application markers remain controlled by the renderer. CALS row/cell attributes continue to use their existing inert metadata.
+
+`asset-core.safeLinkHref` rejects executable URL schemes after removing ASCII control/space obfuscation. Author uses it when copying href; the small Markdown HTML renderer tokenizes source once, escapes text and attribute delimiters, and never runs formatting over generated HTML. DITA publication links retain their stricter local-anchor/external-protocol validation.
+
+The API validates Host before workspace bootstrap and asset reads, including same-origin GET requests with no Origin. Trusted hosts come from loopback addresses, an explicit bind address and `PUBLIC_ORIGIN`; wildcard binding alone does not trust arbitrary hosts. Existing Origin, workspace-token, optimistic-write and real-path checks still apply. Disposable demo mode supports the preview proxy; this does not add shared-server user authentication.
+
 ## Independent footnote delivery rules
 
 `note-rules-core.js` is a pure shared module: it validates the versioned sidecar, partitions balanced XML fragments, proposes exact known-model mentions and projects confirmed rules into a new source Map. Source buffers are never edited. Rules bind to source path/XML position plus the original note, surrounding text and inherited product conditions. Changes invalidate the binding rather than triggering a fuzzy match. Inline markup stays atomic; block containers are reconstructed only when retained children remain. Revision PI boundaries stay together.

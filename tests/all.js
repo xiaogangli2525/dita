@@ -43,3 +43,4 @@ require('./atomic-write.test');
 require('./export-isolation.test');
 require('./recovery-errors.test');
 require('./note-rules.test');
+require('./content-safety.test');

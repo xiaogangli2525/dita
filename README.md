@@ -81,6 +81,7 @@ The static online demonstration has no PDF rendering server. Its **PDF（打印�
 |---------|---------|-------------|
 | PORT | 5050 | Server port |
 | HOST | 127.0.0.1 | Bind address |
+| PUBLIC_ORIGIN | unset | Trusted reverse-proxy origin, including its scheme and any non-default port |
 | DOCS_ROOT | ../repo_ml353a | Default DITA repository root |
 | REPOSITORIES_ROOT | parent of DOCS_ROOT | Allowed repo switching scope |
 
@@ -116,7 +117,9 @@ The light workspace separates document navigation, editing and the attribute/rev
 
 Branch switching refuses a dirty Git worktree, including changes already saved by the editor. Commit or stash those changes with Git first. A failed save never intentionally replaces newer working text; download your working copy before reopening a file with a disk conflict.
 
-The HTTP API requires the `workspaceToken` returned by `/api/workspace` in the `x-workspace-token` header for document operations. Updates also require `expectedContent`, the last-read disk content. This is a local single-workspace application, not a shared multi-user server. `PUBLIC_ORIGIN` can explicitly allow a trusted reverse-proxy origin; default access remains localhost.
+The HTTP API validates Host before returning a workspace token, including GET requests that omit Origin, and requires the `workspaceToken` from `/api/workspace` in the `x-workspace-token` header for document operations. Updates also require `expectedContent`, the last-read disk content. This is a local single-workspace application, not a shared multi-user server. `PUBLIC_ORIGIN` explicitly allows a trusted reverse-proxy host and origin; binding `HOST=0.0.0.0` alone does not allow arbitrary hostnames. The disposable demonstration mode supports its preview proxy; default access remains localhost.
+
+Author rendering keeps source event handlers, CSS and editor-reserved attributes as inert metadata; they are preserved in XML without becoming active HTML. Executable link schemes are disabled in Author and Markdown HTML rendering. Markdown URLs and code language names use attribute escaping, and generated HTML is not parsed again as Markdown.
 
 See [architecture and extension boundaries](docs/architecture.md), [verification](docs/verification.md) and the [AI authoring integration plan](docs/ai-editing.md). AI proposal primitives are implemented; no AI provider or generation UI is connected yet.
 
