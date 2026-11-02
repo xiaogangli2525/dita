@@ -39,3 +39,4 @@ require('./document-rendering.test');
 require('./demo-workspace.test');
 
 require('./model-discovery.test');
+require('./atomic-write.test');

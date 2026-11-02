@@ -23,3 +23,7 @@ test('DITAVAL visibility and conrefs apply to discovered declarations', () => {
   const profile = compile('<val><prop att="audience" val="internal" action="exclude"/></val>');
   assert.deepEqual(publication.listModels(input, profile),['M100','M300']);
 });
+test('one declared series remains one candidate rather than guessing slash-separated variants',()=>{
+ const source='<topic><body><table><tgroup><thead><row><entry>模组系列</entry><entry>模组子型号</entry></row></thead><tbody><row><entry>ML353A</entry><entry>ML353A-A/ML353A-B</entry></row></tbody></tgroup></table></body></topic>';
+ assert.deepEqual(discovery.discover(files(source)).models,['ML353A']);
+});

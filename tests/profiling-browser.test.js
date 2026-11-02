@@ -53,6 +53,11 @@ test('real author compatibility and DITAVAL delivery share captured source and o
   await page.click('#projectButton');assert.equal(await page.inputValue('#projectModels'),'');
   await page.click('#projectDiscover');await page.waitForFunction(()=>document.getElementById('projectModels').value.includes('M300'));
   assert.equal(await page.inputValue('#projectModels'),'M100\nM300');assert.match(await page.locator('#projectDiscoverySummary').innerText(),/tbd/);assert.match(await page.locator('#projectDiscoverySummary').innerText(),/M999/);
+  const denied=async route=>{if(route.request().method()==='PUT')return route.fulfill({status:403,contentType:'application/json',body:JSON.stringify({error:'创建临时文件失败（EPERM）'})});return route.continue();};
+  await page.route('**/api/project',denied);await page.click('#projectForm button[type=submit]');await page.waitForFunction(()=>document.getElementById('projectError').textContent.includes('EPERM'));
+  assert.equal(await page.locator('#projectDialog').isVisible(),true);assert.equal(await page.inputValue('#projectModels'),'M100\nM300');assert.match(await page.locator('#projectError').innerText(),/当前填写内容仍保留/);
+  assert.deepEqual(JSON.parse(await fs.readFile(path.join(repo,'.dita-project.json'),'utf8')).models,['tbd']);
+  await page.unroute('**/api/project',denied);
   await page.click('#projectForm button[type=submit]');await page.locator('#projectDialog').waitFor({state:'hidden'});
   assert.deepEqual(JSON.parse(await fs.readFile(path.join(repo,'.dita-project.json'),'utf8')).models,['M100','M300']);
   assert.equal(await page.evaluate(()=>window.DitaApp.state.filesMap.get('a.dita').current),topic);
