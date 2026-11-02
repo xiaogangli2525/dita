@@ -1,6 +1,6 @@
 'use strict';
 (function (root) {
-  function createView(A, { openFile, closeFile, setMode, updateTree }) {
+  function createView(A, { openFile, closeFile, setMode }) {
     const { state, dom, ditaCore } = A;
     const fileNameFromPath = value => String(value || '').split('/').pop() || 'document.dita';
     function setSwitching(busy) {
@@ -74,7 +74,7 @@
         const projected=ditaCore.createAuthorTopic(file.current,document,false,file.path);
         const headings=Array.from(projected.querySelectorAll('h2,h3,h4,h5,h6'));
         const nodePath=node=>{const parts=[];while(node.parentElement){parts.unshift(Array.from(node.parentElement.children).indexOf(node));node=node.parentElement;}return parts.join('/');};
-        titles.forEach((title, index) => {
+        titles.forEach(title => {
           const path=nodePath(title),heading=headings.find(node=>node.ditaSourcePath===path);if(!heading)return;
           const item = document.createElement('button');
           item.type = 'button';

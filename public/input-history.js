@@ -12,7 +12,7 @@
       const frame = composition || ending && /Composition/.test(event.inputType) && ending;
       pending = { file, before: file.current, selection: capture(file), type: event.inputType, composition: frame?.id };
     }
-    function take(file, event) {
+    function take(file) {
       const frame = pending?.file === file && pending.before === file.current ? pending : null; pending = null;
       const after = capture(file), compose = composition || ending;
       const kind = frame?.composition || compose?.file === file && compose.id;

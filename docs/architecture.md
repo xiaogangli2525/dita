@@ -83,13 +83,13 @@ The application remains a local Node server and buildless browser client. This c
 
 | Layer | Modules | Responsibility |
 | --- | --- | --- |
-| Composition and contracts | `application.js`, `contracts.js` | Validate factory/dependency declarations, provide narrow feature contexts, expose compatibility APIs, document shared data contracts |
+| Composition and contracts | `app.js`, `application.js`, `contracts.js` | Validate factory/dependency declarations, provide narrow feature contexts, expose compatibility APIs, document shared data contracts |
 | XML and document state | `xml-source.js`, `document-store.js`, `lib/document-files.js` | Source ranges/validation, undo and acknowledgements, encoding, real-path containment and atomic writes |
 | Shared domain | `manual-core.js`, `footnotes-core.js`, `publication-core.js`, `publication-resolver.js` | Versioned model configuration, applicability, source edits, reuse resolution and publication preparation |
 | Manual service | `manual-service.js` | Freeze buffers, resolve a Map or Topic and its direct local dependencies, check snapshot identity and provide save/note/publication views of that same scope |
 | Editor/rendering | `app-core.js`, `delivery-core.js`, `diff-core.js` | Author/source conversion, stateless HTML/Markdown rendering, and pure diff algorithms respectively |
 | Editor coordination | `editor-controller.js` | One document history across Source, Topic/Map Author and review; surface/mode updates and pending Map-render lifecycle |
-| Workspace presentation | `workspace-shell.js`, `document-label.js`, `delivery-view.js` | Panel visibility, resizing, focus and document labels; presentation of delivery configuration, preflight and export readiness |
+| Workspace presentation | `workspace-view.js`, `workspace-shell.js`, `menu-controller.js`, `app-dom.js`, `document-label.js`, `delivery-view.js` | Panel visibility, resizing, focus and document labels; presentation of delivery configuration, preflight and export readiness |
 | Feature controllers | `save.js`, `drafts.js`, `project.js`, `search.js`, `resources.js`, `export.js`, `map-controller.js`, `documents.js`, `author-notes.js`, `editor-tools.js` | Bind DOM to domain/services; do not implement independent applicability or dependency rules |
 | Persistence adapters | `workspace-client.js`, `draft-store.js`, `release-store.js`, `browser-files.js` | Workspace identity on requests, browser-local recovery/history, download and hashing |
 | Server tools | `lib/workspace-tools.js` | Model config, bounded plaintext search, source provenance and image IO; receives the current root and existing IO/response helpers from the authenticated router |
@@ -186,7 +186,7 @@ The static hosted demonstration is a separate persistence adapter. It reuses the
 
 ## Verified and bounded scope
 
-Unit/HTTP and Chromium checks cover editor/review/export behavior and the model, draft, search, upload, save-scope and delivery workflows. Boundary checks cover independent Git service instances, live repository roots, real repository switches with stale-tab rejection, Map child undo/review identity and disposal of pending Map refreshes. `shell-browser.test.js` additionally verifies panel state, keyboard resizing, document save scope, delivery-check invalidation, modal Escape and narrow-screen navigation. Real company documentation was not accessible; integration uses the fictional MQTT fixture. Existing supported/unsupported DITA boundaries remain documented in `publication-compatibility.md`.
+Unit/HTTP and Chromium checks cover editor/review/export behavior and the model, draft, search, upload, save-scope and delivery workflows. Boundary checks cover independent Git service instances, live repository roots, real repository switches with stale-tab rejection, Map child undo/review identity and disposal of pending Map refreshes. `shell-browser.test.js` additionally verifies panel state, keyboard resizing, document save scope, delivery-check invalidation, modal Escape and narrow-screen navigation. Integration now includes the supplied Chinese HTTP/HTTPS manual and its reachable shared content, images and DITAVAL, plus synthetic fixtures for race, conflict and unsupported-input cases. Historical MQTT fixtures remain test-only. This verifies software behavior, not the technical truth of product specifications. Existing supported/unsupported DITA boundaries remain documented in `publication-compatibility.md`.
 
 Repository search scans at most 2,000 documents / 10 MiB per request, skips files above 1 MiB and returns at most 100 hits (30 per file), with truncation/warning indicators. It decodes actual XML text and entities, maps hits back to source ranges and overlays unsaved buffers in the client. This is bounded on-demand search, not a persistent large-corpus index. Draft and release storage is limited to the current browser and is not a backup service or server-side release archive.
 
@@ -227,7 +227,7 @@ Resources and notes now use the same guarded selection adapter as formatting and
 
 `body-navigation.js` shares rendered source paths between search and footnotes. It reuses a mounted Map child, checks the expected source, highlights the target and retains one preceding writing bookmark. Content not rendered in Author can be located through the explicit Source action in search. This navigation is independent of file persistence.
 
-The current performance check uses a synthetic 400-paragraph Topic and twelve sequential source-preserving edits. Conversion still processes a complete Topic; one redundant XML parse is now removed by passing the existing parsed source into the projection renderer. Large-corpus indexing, Map virtualization and a general incremental document model remain future work to be guided by real company manuals.
+The current performance check uses a synthetic 400-paragraph Topic and twelve sequential source-preserving edits. Conversion still processes a complete Topic; one redundant XML parse is now removed by passing the existing parsed source into the projection renderer. The supplied HTTP manual is covered by delivery acceptance; this synthetic timing check does not benchmark its full library. Large-corpus indexing, Map virtualization and a general incremental document model remain future work guided by measured bottlenecks.
 
 ## Remote library boundary
 
@@ -283,3 +283,10 @@ Author projections own an explicit context per render, passed through headings, 
 HTML and Markdown share image preparation. When an embedding loader is provided, failed, empty or invalid results stop the export with image-path issues. Calls without a loader retain the existing reference-based API behavior. The controller adds cancellation and UI state; it no longer duplicates image-failure policy. Git provenance failures remain warnings bound to the captured delivery record.
 
 Release history read/format errors propagate so the UI can distinguish unavailable history from an empty list; appending never overwrites corrupted history. Draft listing returns recoverable entries plus warnings, preserves damaged entries, and propagates storage-access failures. Messages and diagnostics do not include document content.
+
+
+## Maintenance checks and model-settings lifecycle
+
+`npm run lint` checks first-party JavaScript in the browser, backend, scripts and tests. The pinned ESLint configuration separates Node code from browser/evaluated-browser contexts, excludes vendored source and manual inputs, and requires zero warnings. Intentional control-character filters carry local explanatory exceptions. `.editorconfig` applies text conventions to code/configuration/documentation, leaving DITA encoding untouched. These checks complement runtime contracts and regression tests; they do not add a build step or whole-project type checking.
+
+The project-model controller clears configuration and comparison bases on `workspace:willChange`. Settings open immediately in a loading state so reads can be cancelled; request/view generations prevent late responses from reopening or repopulating a closed dialog. A failed read disables mutation until reopening succeeds. While a save is pending, inputs/discovery/close are locked and repeated submits are ignored; failed writes retain the form. Export continues to use captured configuration and existing stale/conflict checks.

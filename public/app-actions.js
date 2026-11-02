@@ -1,7 +1,7 @@
 'use strict';
 (function (root) {
   function createController(A, view) {
-    const { state, dom, setStatus, setFileContent, setMode, openFile, undoFile, redoFile, markDirty, syncVisualToModel, renderDiff, renderMapReview, reviewAll } = A;
+    const { state, dom, setStatus, setFileContent, setMode, undoFile, redoFile, markDirty, syncVisualToModel, renderDiff, renderMapReview, reviewAll } = A;
     const { setActiveView, renderWorkspaceSearch } = view;
     const saveFile = () => A.save.saveCurrent(), saveAsFile = () => A.documents.saveAsFile(), downloadFile = () => A.documents.downloadFile();
     const createNewDocument = () => A.documents.createNewDocument(), openFindReplace = () => A.editorTools.openFind();

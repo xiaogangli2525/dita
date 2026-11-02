@@ -40,8 +40,7 @@
   }, {
     openFile: (...args) => openFile(...args),
     closeFile: (...args) => navigation.closeFile(...args),
-    setMode: (...args) => setMode(...args),
-    updateTree: (...args) => updateTree(...args)
+    setMode: (...args) => setMode(...args)
   });
   const { updateDocumentChrome, setStatus, toast, renderTabs, renderOutline,
     renderWorkspaceSwitches, setActiveView } = view;
@@ -117,8 +116,7 @@
     }
   });
   window.DitaAppActions.createController({
-    state, dom, events, api: workspaceClient, setStatus, validateXml, setFileContent,
-    setMode, openFile,
+    state, dom, setStatus, validateXml, setFileContent, setMode,
     undoFile: editor.undoFile,
     redoFile: editor.redoFile,
     markDirty: editor.markDirty,

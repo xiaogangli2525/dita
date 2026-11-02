@@ -68,9 +68,9 @@ test('basic writing commands preserve content, structure, applicability and undo
     await select('#rich', 2); await page.keyboard.press('Enter'); const changed = await current(); assert.match(changed, /<p id="rich"><b id="bold">前半<\/b><\/p>\s*<p><b>后半<\/b><\/p>/); await preserved(); await undo(); assert.equal(await current(), original); await redo(); assert.equal(await current(), changed); await undo();
   });
   await t.test('code Enter and Tab preserve literal newlines and indentation without HTML tags', async () => {
-    await select('#code', 20); await page.keyboard.press('Enter'); assert.match(await current(), /    AT\+SEND\r\n    <\/codeblock>/); assert.doesNotMatch(await current(), /<br/); await undo(); assert.equal(await current(), original);
-    await select('#code', 7); await page.keyboard.press('Tab'); assert.match(await current(), /AT\+OPEN    \r\n/); await undo();
-    await select('#code', 0, 20); await page.keyboard.press('Tab'); assert.match(await current(), /    AT\+OPEN\r\n        AT\+SEND/); await page.keyboard.press('Shift+Tab'); assert.equal(await current(), original); await reset();
+    await select('#code', 20); await page.keyboard.press('Enter'); assert.match(await current(), / {4}AT\+SEND\r\n {4}<\/codeblock>/); assert.doesNotMatch(await current(), /<br/); await undo(); assert.equal(await current(), original);
+    await select('#code', 7); await page.keyboard.press('Tab'); assert.match(await current(), /AT\+OPEN {4}\r\n/); await undo();
+    await select('#code', 0, 20); await page.keyboard.press('Tab'); assert.match(await current(), / {4}AT\+OPEN\r\n {8}AT\+SEND/); await page.keyboard.press('Shift+Tab'); assert.equal(await current(), original); await reset();
   });
   await t.test('empty list Enter exits to a paragraph; Tab and Shift+Tab change list hierarchy', async () => {
     await select('#three', 5); await page.keyboard.press('Enter'); await page.keyboard.press('Enter'); assert.match(await current(), /<\/ul>\s*<p\/>\s*<codeblock/); assert.doesNotMatch(await current(), /<div|<br/); await undo(); await undo(); assert.equal(await current(), original);

@@ -35,7 +35,7 @@ test('Author selection formatting, body search and block insertion', async t => 
   const closeFind = async () => { if (await page.locator('#editSearchPanel').isVisible()) await page.click('#editFindCloseButton'); };
   const assertPreserved = async () => {
     const xml = await content(); assert.ok(xml.startsWith('<?xml version="1.0" encoding="GBK"?>\r\n<!--outer-->')); assert.ok(xml.endsWith('\r\n<?tail keep?>'));
-    assert.match(xml, /<codeblock>AT\+OPEN\r\n    KEEP &amp; INDENT<\/codeblock>/);
+    assert.match(xml, /<codeblock>AT\+OPEN\r\n {4}KEEP &amp; INDENT<\/codeblock>/);
     assert.match(xml, /<colspec colname="c1"\/><colspec colname="c2"\/>/); assert.match(xml, /<entry id="merged" namest="c1" nameend="c2">/);
     const ids = await page.evaluate(xml => [...new DOMParser().parseFromString(xml, 'application/xml').querySelectorAll('[id]')].map(node => node.id), xml); assert.equal(ids.length, new Set(ids).size);
   };

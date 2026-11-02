@@ -122,7 +122,7 @@
       if (next) { commit(ctx, next); return; }
       if (out) throw new Error('已经是第一个单元格，可按 Esc 后用 Tab 离开编辑区');
       const row = document.createElement('tr'); row.dataset.ditaSection = 'tbody'; row.dataset.ditaRowAttrs = '{}';
-      for (const old of cell.parentElement.children) { const entry = fresh('entry', 'td'); entry.dataset.ditaEntryAttrs = '{}'; row.append(entry); }
+      for (let column = 0; column < cell.parentElement.children.length; column++) { const entry = fresh('entry', 'td'); entry.dataset.ditaEntryAttrs = '{}'; row.append(entry); }
       table.querySelector('tbody').append(row); commit(ctx, row.firstElementChild);
     }
     host.addEventListener('beforeinput', event => {

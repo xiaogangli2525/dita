@@ -32,7 +32,6 @@ test('contextual writing and model note details preserve source and editing cont
   }
   const marker = (page, text) => page.locator('#visualEditor [data-fn-text="' + text + '"]');
   const ready = page => page.evaluate(() => window.DitaApp.notePresentation.ready());
-  const cards = page => page.locator('#footnoteList .footnote-number').allTextContents();
 
   async function select(page, selector, start, end = start, { summon = true } = {}) {
     await page.locator(selector).evaluate((node, positions) => {

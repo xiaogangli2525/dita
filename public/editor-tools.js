@@ -313,12 +313,6 @@ function openSourceFind() {
   dom.editFindInput.select();
 }
 
-function closeSourceFind() {
-  if (!dom.editSearchPanel) return;
-  dom.editSearchPanel.hidden = true;
-  dom.editFindMeta.textContent = '';
-}
-
 function findNextSource() {
   const query = dom.editFindInput?.value || '';
   const text = dom.editor.value || '';

@@ -29,7 +29,7 @@
       const filter = filterPath ? { path: filterPath, current: await read(filterPath) } : null;
       let profile;
       try { profile = filter && profiling.compile(filter.current); }
-      catch (error) { throw new Error(filterPath + '：' + error.message); }
+      catch (error) { throw new Error(filterPath + '：' + error.message, { cause: error }); }
       let map;
       if (/\.ditamap$/i.test(path)) {
         const mapSource = profile ? profile.filterSource(content) : content;

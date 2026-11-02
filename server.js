@@ -20,7 +20,6 @@ let DOCS_ROOT = path.resolve(process.env.DOCS_ROOT || path.join(__dirname, '..',
 const DEFAULT_DOCS_ROOT = DOCS_ROOT;
 const REPOSITORIES_ROOT = path.resolve(process.env.REPOSITORIES_ROOT || path.dirname(DEFAULT_DOCS_ROOT));
 const PUBLIC_ROOT = path.join(__dirname, 'public');
-const gitError = (message, status = 400) => Object.assign(new Error(message), { status });
 
 function safeResolve(relativePath) {
   const clean = String(relativePath || '').replace(/\\/g, '/').replace(/^\/+/, '');
@@ -47,7 +46,7 @@ async function checkedResolve(relative, options) {
 
 const git = createGitService({ getRoot: () => DOCS_ROOT, repositoriesRoot: REPOSITORIES_ROOT, checkedResolve });
 const remoteRepositories = createRemoteRepositories({ getRoot: () => DOCS_ROOT, repositoriesRoot: REPOSITORIES_ROOT, runGit: git.runGit });
-const { runGit, gitInfo, listRepositories, listBranches, gitWorktreeStatus, resolveSelectedRepository } = git;
+const { gitInfo, listRepositories, listBranches, gitWorktreeStatus, resolveSelectedRepository } = git;
 
 const MAP_REFERENCE_TAGS = new Set(["map", "bookmap", "topicref", "topichead", "topicgroup", "chapter", "appendix", "notices", "preface", "part", "frontmatter", "backmatter", "booklists"]);
 

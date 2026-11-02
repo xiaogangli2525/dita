@@ -8,6 +8,7 @@
   function validateProject(value) {
     if (!value || Array.isArray(value) || typeof value !== 'object' || value.schema !== 1 || !Array.isArray(value.models) || value.models.length > 200) throw new Error('项目配置格式无效');
     const models = value.models.map(model => {
+      // eslint-disable-next-line no-control-regex -- Reject control characters in untrusted input.
       if (typeof model !== 'string' || !model || model.length > 80 || /[\s()<>"'&/\\\x00-\x1f]/.test(model)) throw new Error('型号须为不含空格、括号和路径符号的名称');
       return model;
     });
