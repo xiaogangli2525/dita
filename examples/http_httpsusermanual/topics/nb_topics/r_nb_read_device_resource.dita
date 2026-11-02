@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="reference_j2f_vyg_grb">
+    <title><?oxy_comment_start author="zhangqin1@cmiot.cmcc" timestamp="20241101T142006+0800" comment="该内容模块为基础版本共用，请勿随意删减。若需添加仅适用于某型号的内容，请添加批注说明"?>API-设备即时命令-读设备资源<?oxy_comment_end?></title>
+    <refbody>
+        <section id="section_rw1_xyg_grb">
+            <msgblock id="msgblock_axm_xyg_grb"><cmdname>AT+HTTPHEADER=0,"api-key: ChangeForYourOwnKey \r\nConnection: Close\r\n"</cmdname>/*APIKey需替换实际值*/
+OK
+<cmdname>AT+HTTPSEND=0,0,"/nbiot?imei=865820030265172&amp;obj_id=3200"</cmdname>    /*控制平台下发READ命令*/	
+OK
+CONNECT OK
++MIPLREAD:0,21345,3200,-1,-1    /*模组收到平台下发的READ提示*/
+<cmdname>AT+MIPLREADRSP=0,21345,1,3200,0,5500,5,1,"0",2,1</cmdname>    /*模组回复READ*/
+OK    
+<cmdname>AT+MIPLREADRSP=0,21345,1,3200,0,5501,3,3,"-12",1,2</cmdname>    /*模组回复READ*/
+OK    
+<cmdname>AT+MIPLREADRSP=0,21345,1,3200,0,5750,1,4,"test",0,0</cmdname>    /*模组回复READ并开始传输回复数据*/
+OK
++HTTPNMIH:0,0,148	
+Date: Tue, 23 Oct 2018 02:18:11 GMT
+Content-Type: application/json;charset=UTF-8    /*读设备资源HTTP API返回HTTP数据头*/
+Transfer-Encoding: chunked
+Connection: close
+Pragma: no-cache
++HTTPNMIC:0,1,144,144,144	
+{"errno":0,"error":"succ","data":[{"res":[{"val":false,"res_id":5500},{"val":-12,"res_id":5501},{"val":"test","res_id":5750}],"obj_inst_id":0}]} /*读设备资源HTTP API返回的HTTP内容，为设备回复READ上报值。*/
++HTTPNMIC:0,0,144,144,0
++HTTPDISCON:0	
+<cmdname>AT+MIPLCLOSE=0</cmdname>    /*HTTP连接断开*/	
+OK
+<cmdname>AT+MIPLDELETE=0</cmdname>    /*关闭OneNET连接*/
+OK    </msgblock>
+        </section>
+        <section id="section_cxq_4sb_3cc">
+            <p>当IMEI已被注册时将返回注册错误；即时读设备资源命令当设备不在线将返回设备不在线。当设备长时间不与平台通信可能引起路由信息老化，或处于休眠模式时而无法收到平台下发的数据。当一定时间后未回复响应，API将返回读取超时(<msgph>unsuccess:
+                    TIME_OUT</msgph>)。其他注意事项请参考OneNET平台API手册。</p>
+            <p>以上过程仅用于展示HTTP操作示例，实际运用中应在客户服务端使用OneNET API控制模组进行相应动作。创建设备HTTP
+                    API中需要在Content字段输入json字符串，由于json字符串中存在AT命令解析中会被错误识别的双引号+逗号(”,)，需要将逗号转义，及前文使用的方法，也可在不影响服务器解析的情况下在逗号前插入换行符避免；或者全文使用十六进制转换后输入；<cmdname>+HTTPSEND</cmdname>命令暂不支持此操作，请尽量将此类数据放入content或者header字段上传。</p>
+            <p>举例如下。</p>
+            <msgblock id="msgblock_kql_qsb_3cc"><cmdname>AT+HTTPCONTENT=0,"{"title": "865820030265172"\r,"desc": "865820030265172"\r,"protocol": "LWM2M"\r,"auth_info": {"865820030265172": "460043783403288"},}"</cmdname>
+OK
+<cmdname>AT+HTTPCONTENT=0</cmdname>
++HTTPCONTENT:0,130
+{"title": "865820030265172"
+,"desc": "865820030265172"
+,"protocol": "LWM2M"
+,"auth_info": {"865820030265172": "460043783403288"},}
+OK
+<cmdname>AT+HTTPCONTENT=0,""</cmdname>	/*清空content输入*/
+OK
+<cmdname>AT+HTTPCONTENT=0,7B227469746C65223A2022383635383230303330323635313732222C2264657363223A2022383635383230303330323635313732222C2270726F746F636F6C223A20224C574D324D222C22617574685F696E666F223A207B22383635383230303330323635313732223A2022343630303433373833343033323838227D2C7D,1</cmdname>    /*以16进制字符串输入content*/
+OK
+<cmdname>AT+HTTPCONTENT=0</cmdname>
++HTTPCONTENT:0,127
+{"title":"865820030265172","desc":"865820030265172","protocol":"LWM2M","auth_info":{"865820030265172":"460043783403288"},}    
+OK</msgblock>
+        </section>
+    </refbody>
+</reference>

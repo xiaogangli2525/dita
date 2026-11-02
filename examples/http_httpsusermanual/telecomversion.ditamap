@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE bookmap PUBLIC "-//OASIS//DTD DITA BookMap//EN" "bookmap.dtd">
+<bookmap>
+    <booktitle>
+        <mainbooktitle>HTTP/HTTPS用户手册</mainbooktitle>
+    </booktitle>
+    <bookmeta>
+        <author/>
+        <critdates>
+            <created date="2023-07-03"/>
+            <revised modified="2023-07-03"/>
+        </critdates>
+        <bookid>
+            <edition>V1.0.0</edition>
+        </bookid>
+    </bookmeta>
+    <frontmatter>
+        <notices href="contentmodule/topics/reusable_general_cn/g_service_and_support_cn.dita"/>
+        <notices href="contentmodule/topics/reusable_general_cn/g_document_statement_cn.dita"/>
+        <notices href="topics/telecomversion_topics/g_telecomversion_about_the_document.dita"/>
+        <booklists>
+            <toc/>
+        </booklists>
+    </frontmatter>
+    <chapter href="topics/telecomversion_topics/c_telecomversion_introduction.dita">
+        <topicref href="topics/telecomversion_topics/g_telecomversion_applicable_model.dita"
+            outputclass="topic/apb"/>
+    </chapter>
+    <chapter href="topics/telecomversion_topics/c_telecomversion_at_command_overview.dita">
+        <topicref href="topics/telecomversion_topics/c_telecomversion_at_command_syntax_format.dita"/>
+        <topicref href="topics/telecomversion_topics/c_telecomversion_at_command_response.dita"/>
+    </chapter>
+    <chapter
+        href="topics/telecomversion_topics/g_telecomversion_at_commands_of_http_https_protocol.dita">
+        <topicref href="topics/telecomversion_topics/r_telecomversion_at_mhttpcfg.dita"/>
+        <topicref href="topics/telecomversion_topics/r_telecomversion_at_mhttpcreate.dita"/>
+        <topicref href="topics/telecomversion_topics/r_telecomversion_at_mhttpheader.dita"/>
+        <topicref href="topics/telecomversion_topics/r_telecomversion_at_mhttpcontent.dita"/>
+        <topicref href="topics/telecomversion_topics/r_telecomversion_at_mhttprequest.dita"/>
+        <topicref href="topics/telecomversion_topics/r_telecomversion_at_mhttpread.dita"/>
+        <topicref href="topics/telecomversion_topics/r_telecomversion_at_mhttpdel.dita"/>
+        <topicref href="topics/telecomversion_topics/r_telecomversion_at_mhttpterm.dita"/>
+        <topicref href="topics/telecomversion_topics/r_telecomversion_mhttpurc.dita"/>
+    </chapter>
+    <chapter href="topics/telecomversion_topics/g_telecomversion_examples.dita">
+        <topicref href="topics/telecomversion_topics/r_telecomversion_http_example.dita"/>
+        <topicref href="topics/telecomversion_topics/r_telecomversion_cache_mode_example.dita"/>
+    </chapter>
+    <chapter href="topics/telecomversion_topics/r_telecomversion_error_codes.dita"/>
+    <backmatter/>
+</bookmap>

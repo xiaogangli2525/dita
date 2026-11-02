@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="reference_qd5_gdq_cqb">
+    <title><?oxy_comment_start author="zhangqin1@cmiot.cmcc" timestamp="20241101T141744+0800" comment="该内容模块为基础版本共用，请勿随意删减。若需添加仅适用于某型号的内容，请添加批注说明"?>AT+HTTPCONTENT<?oxy_comment_end?></title>
+    <shortdesc>该命令设置或查询HTTP content信息。</shortdesc>
+    <refbody>
+        <table id="table_btl_krz_3qb">
+            <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="3*" align="left"/>
+                <colspec colname="c2" colnum="2" colwidth="7*" align="left"/>
+                <thead>
+                    <row>
+                        <entry namest="c1" nameend="c2"><cmdname>AT+HTTPCONTENT</cmdname></entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row outputclass="has_bgc">
+                        <entry>语法</entry>
+                        <entry>响应</entry>
+                    </row>
+                    <row>
+                        <entry>设置命令<codeblock><cmdname>AT+HTTPCONTENT=&lt;id>[,&lt;content>[,&lt;encode_method>[,&lt;len>]]</cmdname></codeblock></entry>
+                        <entry>成功<div>如果仅输入id参数字段，如果当前content为空，则返回：</div><msgblock id="msgblock_xmq_xb5_pqb">OK</msgblock>否则将返回已输入的content信息：<msgblock id="msgblock_lt1_jjw_43c">+HTTPCONTENT:&lt;id>,&lt;length>
+&lt;content>
+OK</msgblock>如果设置id以及content的格式正确，设置信息成功返回：<msgblock id="msgblock_xw1_kjw_43c">OK</msgblock>
+                            失败<msgblock id="msgblock_emt_xb5_pqb">ERROR</msgblock></entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">命令描述</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">该命令设置或查询HTTP content信息。</entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">参数描述</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                ><varname>&lt;id></varname>整型，通过<msgph>+HTTPCREATE</msgph>返回的实例索引，范围：0~4。<fn>M5310-E/MN328-B范围：0~1。</fn></entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                    ><varname>&lt;content></varname>字符串，将要配置的content信息。<fn>MN316A取值范围：0-2048；单位：字节。当<varname>&lt;content></varname>为空，且<varname>&lt;encode_method></varname>为0时，模组将进入数据模式，输入长度达到2048，或者发送<msgph>CTRL+Z</msgph>，或者超时20s时结束输入。</fn></entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                ><varname>&lt;encode_method></varname>整型，字符或者十六进制解析，当为字符时，支持转义字符。<fn>MN316A数据模式下只支持该值为0，且为普通字符串。</fn></entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">
+                            <dl>
+                                <dlentry>
+                                    <dt>0</dt>
+                                    <dd>转义字符串（默认值）。</dd>
+                                </dlentry>
+                                <dlentry>
+                                    <dt>1</dt>
+                                    <dd>十六进制字符串。</dd>
+                                </dlentry>
+                            </dl>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                ><varname>&lt;len></varname>整型，数据模式下指定输入数据长度，范围：0~2048，输入时则进入数据模式，<varname>&lt;header></varname>
+                                和<varname>&lt;encode_method></varname>可省略或者设置无效，<varname>&lt;len></varname>设置0时，输入长度达到2048，或者发送<msgph>CTRL+Z</msgph>，或者超时20s时结束输入；<varname>&lt;len></varname>设置大于0，达到设置长度或者超时20s时结束输入。<fn>MN316A不支持该参数。</fn></entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            ><varname>&lt;length></varname>返回已输入的content长度。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        <section id="section_e5m_bg1_3cc">
+            <p>
+                <note id="note_ctt_bg1_3cc"
+                        ><msgph>+HTTPCONTENT</msgph>的用法与<msgph>+HTTPHEADER</msgph>类似，此处不做赘述。</note>
+            </p>
+        </section>
+    </refbody>
+</reference>
+<?oxy_options track_changes="on"?>

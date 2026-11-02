@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="ZH-CN_TOPIC_0000002189261764-chtext">
+        <title>参数说明</title>
+        <body>
+          <table colsep="1" frame="all" rowsep="1">
+            <tgroup cols="2">
+              <colspec colname="col1" colnum="1" colwidth="0.5*"/>
+              <colspec colname="col2" colnum="2" colwidth="1.5*"/>
+              <thead>
+                <row>
+                  <entry>参数名</entry>
+                  <entry>参数解释</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry>&lt;rsptime&gt;</entry>
+                  <entry>
+                    <div>整型。返回 OK
+后，此参数为上报
+URC ^HTTPGET:
+&lt;err&gt;[,&lt;httprspcode&gt;,[&lt;content_length&gt;]]的最大响应时间。</div>
+                    <div>
+范围：1~65535；默认值：60；单位：秒。</div>
+                  </entry>
+                </row>
+                <row>
+                  <entry>&lt;data_length&gt;</entry>
+                  <entry>
+                    <div>整型。HTTP(S) GET
+请求信息的长度，包括
+HTTP GET
+请求头和请求体信息。</div>
+                    <div>
+范围：1~2048；单位：字节。</div>
+                  </entry>
+                </row>
+                <row>
+                  <entry>&lt;input_time&gt;</entry>
+                  <entry>
+                    <div>整型。HTTP(S) GET
+请求信息的最大输入时间，包括
+HTTP GET
+请求头和请求体信息。</div>
+                    <div>
+范围：1~65535；默认值：60；单位：秒。</div>
+                  </entry>
+                </row>
+                <row>
+                  <entry>&lt;httprspcode&gt;</entry>
+                  <entry>
+整型。HTTP服务器响应代码。</entry>
+                </row>
+                <row>
+                  <entry>&lt;request_header&gt;</entry>
+                  <entry>
+                    <div>
+整型。禁用或启用自定义
+HTTP请求头信息。</div>
+                    <ul>
+                      <li>0：禁用</li>
+                      <li>1：启用</li>
+                    </ul>
+                  </entry>
+                </row>
+                <row>
+                  <entry>&lt;content_length&gt;</entry>
+                  <entry>
+整型。HTTP响应体长度。单位：字节。</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </table>
+        </body>
+      </topic>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="ZH-CN_TOPIC_0000002184157588-chtext">
+    <title>输出 HTTP响应头信息</title>
+    <body>
+        <p>模块不自动输出 HTTP 响应头信息，可通过 <b>AT^HTTPCFG</b> 将&lt;response_header&gt;配置为 1 获取 HTTP 响应头信息，然后执行
+                <b>AT^HTTPREAD</b> HTTP响应头信息将以 HTTP 响应体形式输出。</p>
+    </body>
+</topic>

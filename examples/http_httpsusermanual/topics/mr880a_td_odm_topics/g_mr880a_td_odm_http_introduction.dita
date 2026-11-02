@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="ZH-CN_TOPIC_0000002184157604-chtext">
+    <title>HTTP介绍</title>
+    <body>
+        <p>MR880A为 HTTP服务器提供 HTTP应用程序。 HTTP（HyperText Transfer Protocol，超文本传输协议）是一种用于分布式、协作式和超媒体信息系
+            统的应用层协议。</p>
+    </body>
+</topic>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE bookmap PUBLIC "-//OASIS//DTD DITA BookMap//EN" "bookmap.dtd">
+<bookmap>
+    <booktitle>
+        <mainbooktitle><?oxy_comment_start author="zhangqin1@cmiot.cmcc" timestamp="20260828T152411+0800" comment="【版本记录】
+英文版V1.0.0--&gt;中文版V6.1.5
+英文版V1.0.1-&gt;中文版V6.1.7
+英文版V1.0.2-&gt;中文版V6.1.8
+英文版V1.0.3-&gt;中文版V6.2.1"?>HTTP/HTTPS User Manual<?oxy_comment_end?></mainbooktitle>
+    </booktitle>
+    <bookmeta>
+        <author/>
+        <critdates>
+            <created date="2025-07-09"/>
+            <revised modified="2026-09-22"/>
+        </critdates>
+        <bookid>
+            <edition>V1.0.3</edition>
+        </bookid>
+    </bookmeta>
+    <frontmatter>
+        <notices href="contentmodule/topics/reusable_general_en/g_service_and_support_en.dita"/>
+        <notices href="contentmodule/topics/reusable_general_en/g_document_statement_en.dita"/>
+        <notices href="topics/en_topics/g_about_the_document_en.dita"/>
+        <booklists>
+            <toc/>
+        </booklists>
+    </frontmatter>
+    <chapter href="localization/1-projects/http_httpsusermanual_en/target/topics/c_introduction.dita">
+        <topicref href="localization/1-projects/http_httpsusermanual_en/target/topics/g_applicable_model.dita" outputclass="topic/apb"/>
+    </chapter>
+    <chapter href="contentmodule/topics/reusable_software/c_at_command_overview_en.dita">
+        <topicref href="contentmodule/topics/reusable_software/c_at_command_syntax_format_en.dita"/>
+        <topicref href="contentmodule/topics/reusable_software/c_at_command_response_en.dita"/>
+    </chapter>
+    <chapter href="localization/1-projects/http_httpsusermanual_en/target/topics/g_at_commands_of_http_https_protocol.dita">
+        <topicref href="localization/1-projects/http_httpsusermanual_en/target/topics/r_at_mhttpcfg.dita" outputclass="topic/apb"/>
+        <topicref href="localization/1-projects/http_httpsusermanual_en/target/topics/r_at_mhttpcreate.dita"/>
+        <topicref href="localization/1-projects/http_httpsusermanual_en/target/topics/r_at_mhttpheader.dita"/>
+        <topicref href="localization/1-projects/http_httpsusermanual_en/target/topics/r_at_mhttpcontent.dita"/>
+        <topicref href="localization/1-projects/http_httpsusermanual_en/target/topics/r_at_mhttprequest.dita"/>
+        <topicref href="localization/1-projects/http_httpsusermanual_en/target/topics/r_at_mhttpread.dita"/>
+        <topicref href="localization/1-projects/http_httpsusermanual_en/target/topics/r_at_mhttpdel.dita"/>
+        <topicref href="localization/1-projects/http_httpsusermanual_en/target/topics/r_at_mhttpterm.dita"/>
+        <topicref href="localization/1-projects/http_httpsusermanual_en/target/topics/r_at_mhttpdlfile.dita"/>
+        <topicref href="localization/1-projects/http_httpsusermanual_en/target/topics/r_mhttpurc.dita"/>
+    </chapter>
+    <chapter href="localization/1-projects/http_httpsusermanual_en/target/topics/g_examples.dita">
+        <topicref href="localization/1-projects/http_httpsusermanual_en/target/topics/r_http_example.dita" outputclass="topic/apb"/>
+        <topicref href="localization/1-projects/http_httpsusermanual_en/target/topics/r_https_example.dita"/>
+        <topicref href="localization/1-projects/http_httpsusermanual_en/target/topics/r_cache_mode_example.dita"/>
+        <topicref href="localization/1-projects/http_httpsusermanual_en/target/topics/r_download_file_example.dita"/>
+    </chapter>
+    <chapter href="localization/1-projects/http_httpsusermanual_en/target/topics/r_error_codes.dita"/>
+    <backmatter/>
+</bookmap>

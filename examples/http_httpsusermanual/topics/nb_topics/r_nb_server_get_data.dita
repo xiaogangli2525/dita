@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="reference_j2f_vyg_grb">
+    <title><?oxy_comment_start author="zhangqin1@cmiot.cmcc" timestamp="20241101T141942+0800" comment="该内容模块为基础版本共用，请勿随意删减。若需添加仅适用于某型号的内容，请添加批注说明"?>HTTP
+        服务器GET数据<?oxy_comment_end?></title>
+    <refbody>
+        <section id="section_rw1_xyg_grb">
+            <msgblock id="msgblock_axm_xyg_grb">/*创建http实例，可指定URL，除HTTP标识和域名外，其他URL部分将被忽略。*/
+<cmdname>AT+HTTPCREATE="http://iot.10086.cn/"</cmdname>
++HTTPCREATE:0    /*模组返回httpclient id:0*/
+OK
+
+/*配置HTTP头部，注意HTTP协议规定每个头部字段之间有回车换行分隔，部分HTTP服务器要求配置User-Agent字段，不然会拒绝响应。*/
+<cmdname>AT+HTTPHEADER=0,"User-Agent: Unkown\r\nConnection: close\r\n"</cmdname>
+OK
+
+/*发送GET(method参数为0)请求包，URL资源绝对路径“/page/index/name/culture”。*/
+<cmdname>AT+HTTPSEND=0,0,"/page/index/name/culture"</cmdname>    
+OK    /*模组收到发送请求*/
+CONNECT OK    /*连接服务器成功*/
++HTTPNMIH:0,0,313    /*服务器响应头部信息*/
+Server: nginx
+Date: Sun, 10 Jun 2018 02:54:38 GMT
+Content-Type: text/html; charset=utf-8
+Transfer-Encoding: chunked/*本次传输为chunked模式，服务器数据将分片传输，不指定Content-Length。*/
+
+Connection: close
+Set-Cookie: PHPSESSID=7it2op5gurarvshrvf3j29kpr1; path=/; HttpOnly
+Expires: Thu, 19 Nov 1981 08:52:00 GMT
+Pragma: no-cache
+Cache-control: private
+X-Powered-By: ThinkPHP
++HTTPNMIC:0,1,7960,1122,1122	/*服务器响应内容字段，首包数据。*/
+&lt;!DOCTYPE html>    
+&lt;html lang="en">
+&lt;head>
+&lt;meta charset="UTF-8">
+  &lt;link href="/Public/Img/favicon.ico" rel="shortcut icon" type="image/vnd.microsoft.icon"> &lt;meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    &lt;meta name="apple-mobile-web-app-capable" content="yes">
+    &lt;meta name="apple-mobile-web-app-status-bar-style" content="black">
+    &lt;meta name="format-detection" content="telephone=no">
+  &lt;meta name="robots" content="all" />
+……
++HTTPNMIC:0,1,7960,2582,1460	/*服务器响应第二包数据*/
+&lt;meta name="keywords" content="
+……
++HTTPNMIC:0,1,7960,4042,1460    /*下一包数据*/
+ass="navbar-header">
+      &lt;button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#b-menu-1">
+        &lt;span class="sr-only">Toggle navigation&lt;/span>
+        &lt;span class="icon-bar">&lt;/sp
++HTTPNMIC:0,1,7960,4042,1460    /*下一包数据*/
+&lt;div class="navbar-header">
+      &lt;button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#b-menu-1">
+        &lt;span class="sr-only">Togg
+……
+……
++HTTPNMIC:0,1,36632,36632,502    /*另外一包数据*/
+&lt;script type="text/javascript">
+    document.onkeydown=function(event){
+        var e = event || window.event || arguments.callee.caller.arguments[0];
+        
+         if(e &amp;&amp; e.keyCode==13 &amp;&amp;$("#fb_pass").focus()){ // enter 閿?
+             go_group();
+        }
+};
+……
+    $(".btn-close").click(function(){
+
+        window.history.back(-1);
+        $(".fill").hide();
+    });
+&lt;/script>
++HTTPNMIC:0,0,37539,37539,0    /*最后一包数据，chunked传输结束。*/
+
+<cmdname>AT+HTTPHEADER=0,"User-Agent: Unkown\r\nConnection: close\r\n"</cmdname>
+OK
+<cmdname>AT+HTTPSEND=0,0,"/Public/Home/assets/image/chiMod_icon1.png"</cmdname>    /*访问另一资源*/
+OK
++HTTPNMIH:0,0,209
+Server: nginx
+Date: Sun, 10 Jun 2018 03:16:55 GMT
+Content-Type: image/png
+Content-Length: 7862    /*本次传输为非chunked模式，content长度7862Bytes。*/
+
+Last-Modified: Thu, 29 Mar 2018 06:27:39 GMT
+Connection: close
+ETag: "5abc875b-1eb6"
+Accept-Ranges: bytes
++HTTPNMIC:0,1,7862,1460,1460    /*第一包数据*/
+……
+HTTPNMIC:0,0,7862,7862,562    /*最后一包数据*/
+……    
+<cmdname>AT+HTTPSEND=0,0,"/Public/Home/assets/image/chiMod_icon11.png"</cmdname>    /*访问不存在的资源*/
+OK    
++HTTPERR:0,404    /*+HTTPERR提示，提示404 Not Found。*/
+404 Not Found
++HTTPNMIH:0,0,139    
+Server: nginx    /*服务器头部信息*/
+Date: Sun, 10 Jun 2018 03:36:54 GMT
+Content-Type: text/html; charset=UTF-8
+Transfer-Encoding: chunked
+Server: nginx
+Date: Sun, 10 Jun 2018 03:36:54 GMT
+Content-Type: text/html; charset=UTF-8
+Transfer-Encoding: chunked
+Connection: close
++HTTPNMIC:0,0,0,0,0
+<cmdname>AT+HTTPCLOSE=0</cmdname>    /*使用完毕关闭HTTP实例，释放相关资源。*/	
+OK</msgblock>
+        </section>
+        <section id="section_dmj_dpb_3cc">
+            <p>
+                <note id="note_i1s_dpb_3cc"
+                    >如果模组接收数据时出现<msgph>+HTTPDROP:0,1460</msgph>上报，说明模组接收缓冲区满引起数据drop，数据丢失后将出现后续接收过程解析错误，请检测当前是否波特率较低影响数据交互，如可以将波特率调高至115200
+                    bps或230400 bps（波特率高于9600 bps会自动禁止模组进入PSM），HTTP功能使用完毕之后调回较低波特率以恢复使能PSM的状态。</note>
+            </p>
+        </section>
+    </refbody>
+</reference>

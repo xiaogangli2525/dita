@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="concept_ety_hfm_5pb">
+    <title>关于文档</title>
+    <conbody outputclass="bigbox">
+        <section outputclass="ad_record">
+            <title outputclass="ad_title">修订记录</title>
+            <table outputclass="ad_table">
+                <tgroup cols="2">
+                    <colspec colname="c1" colnum="1" colwidth="1.5*"/>
+                    <colspec colname="c4" colnum="2" colwidth="3*"/>
+                    <thead outputclass="ad_th">
+                        <row>
+                            <entry align="left">版本</entry>
+                            <entry align="left">描述</entry>
+                        </row>
+                    </thead>
+                    <tbody outputclass="ad_tb">
+                        <row>
+                            <entry>V1.0.0</entry>
+                            <entry>初版</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+    </conbody>
+</concept>

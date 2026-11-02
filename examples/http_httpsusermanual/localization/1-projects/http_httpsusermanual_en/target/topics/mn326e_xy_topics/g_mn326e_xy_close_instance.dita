@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="Toc6861">
+      <title>Close Instance</title>
+      <body>
+        <table colsep="1" frame="all" rowsep="1">
+                    <tgroup cols="2">
+            <colspec colname="col1" colnum="1" colwidth="1.1*"/>
+            <colspec colname="col2" colnum="2" colwidth="0.9*"/>
+            <thead>
+              <row>
+                <entry>Command</entry>
+                <entry>Response</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>AT+HTTPCLOSE=&lt;id&gt;</entry>
+                <entry>
+                  <div>OK</div>
+                  <div>or ERROR</div>
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+        <p>Command Description:</p>
+        <p>This command closes the HTTP instance. Currently, only one instance is supported. Therefore, the previous instance must be deleted before creating a new one. </p>
+        <p>Parameter Description: </p>
+        <p>
+&lt;id&gt;: Client instance created by the AT+HTTPCREATE command. </p>
+        <p>Typical Example:</p>
+        <table colsep="1" frame="all" rowsep="1">
+          <tgroup cols="1">
+            <colspec colname="col1" colnum="1" colwidth="1*"/>
+            <tbody>
+              <row>
+                <entry>
+                  <p>AT+HTTPCLOSE=0</p>
+                  <p>OK</p>
+                </entry>
+              </row>
+            </tbody>
+         
+          </tgroup>
+        </table>
+      </body>
+    </topic>

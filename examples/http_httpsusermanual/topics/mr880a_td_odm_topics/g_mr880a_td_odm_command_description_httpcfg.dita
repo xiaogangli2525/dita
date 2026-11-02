@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="ZH-CN_TOPIC_0000002224627341-chtext">
+        <title>命令说明</title>
+        <body>
+          <ul>
+            <li>AT^HTTPCFG="requestheader"[,&lt;request_header&gt;] <p> 若省略可选参数，则查询当前配置：
+          </p><p>^HTTPCFG: "requestheader",&lt;request_header&gt; </p><p> 若指定可选参数，则禁用或启用自定义
+          HTTP请求头信息。 </p></li>
+          </ul>
+
+          <ul>
+            <li>AT^HTTPCFG="responseheader"[,&lt;response_header&gt;] <p> 若省略可选参数，则查询当前配置：
+          </p><p>^HTTPCFG: "responseheader",&lt;response_header&gt; </p><p> 若指定可选参数，则禁用或启用输出
+          HTTP响应头信息。 </p></li>
+          </ul>
+
+          <ul>
+            <li>AT^HTTPCFG="sslctxid"[,&lt;sslctxID&gt;] <p> 若省略可选参数，则查询当前配置： </p><p>^HTTPCFG:
+          "sslctxid",&lt;sslctxID&gt; </p><p> 若指定可选参数，则配置用于 HTTP的 SSL 上下文 ID。 </p></li>
+          </ul>
+
+          <ul>
+            <li>AT^HTTPCFG="contenttype"[,&lt;content_type&gt;] <p> 若省略可选参数，则查询当前配置：
+          </p><p>^HTTPCFG: "contenttype",&lt;content_type&gt; </p><p> 若指定可选参数，则配置 HTTP的数据类型。
+        </p></li>
+          </ul>
+
+          <ul>
+            <li>AT^HTTPCFG="rspout/auto"[,&lt;auto_outrsp&gt;] <p> 若省略可选参数，则查询当前配置： </p><p>^HTTPCFG:
+          "rspout/auto",&lt;auto_outrsp&gt; </p><p> 若指定可选参数，则配置 HTTP获取的数据是否自动上报。 </p></li>
+          </ul>
+
+          <ul>
+            <li>AT^HTTPCFG="recvmode"[,&lt;recvmode&gt;] <p> 若省略可选参数，则查询当前配置： </p><p>^HTTPCFG:
+          "recvmode",&lt;recvmode&gt; </p><p> 若指定可选参数，则配置 HTTP获取的数据上报给上位机是否以16机制字串形式上报。</p>
+      </li>
+          </ul>
+
+        </body>
+      </topic>

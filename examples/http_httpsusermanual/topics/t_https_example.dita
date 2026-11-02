@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="task_c2z_ydq_cqb">
+    <title>HTTPS示例</title>
+    <shortdesc>该小结将通过GET请求描述HTTPS使用步骤。</shortdesc>
+    <taskbody>
+        <context>
+            <p>
+                <codeblock id="codeblock_ll3_lj5_pqb"><keyword>SSL证书写入：</keyword>
+
+<keyword>SSL证书选择与认证等级设置：</keyword>
+
+<keyword>创建实例和参数配置</keyword>
+<keyword>AT+MHTTPCREATE="https://120.27.12.119:10443"</keyword>
++MHTTPCREATE: 0
+OK
+<keyword>AT+MHTTPCFG="ssl",0,1,1</keyword>    //HTTPS使能
+OK
+
+<keyword>GET请求：</keyword>
+<keyword>AT+MHTTPREQUEST=0,1,1,"/get"</keyword>
+OK
++MHTTPURC: "header",0,200,225,HTTP/1.1 200 OK
+Server: nginx/1.18.0
+Date: Mon, 26 Jul 2021 06:52:49 GMT
+Content-Type: application/json
+Content-Length: 145
+Connection: keep-alive
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Credentials: true
++MHTTPURC: "content",0,145,145,145,{"args":{},"headers":{"Connection":"close","Content-Length":"0","Host":"localhost:6000"},"origin":"127.0.0.1","url":"http://localhost:6000/get"}</codeblock>
+            </p>
+        </context>
+    </taskbody>
+</task>

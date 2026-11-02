@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="concept_o4y_jfm_gqb">
+    <title>引言</title>
+    <shortdesc>本文档详细介绍了中移物联网基于HTTP/HTTPS通信协议定义的相关AT命令及其操作流程。文档中如有未尽细节，请咨询中移物联网技术支持。</shortdesc>
+</concept>
+<?oxy_options track_changes="on"?>

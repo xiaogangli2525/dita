@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="ZH-CN_TOPIC_0000002224627369-chtext">
+    <title>示例</title>
+    <body>
+        <table colsep="1" frame="all" rowsep="1">
+            <tgroup cols="3">
+                <colspec colname="col1" colnum="1" colwidth="0.7*"/>
+                <colspec colname="col2" colnum="2" colwidth="1*"/>
+                <colspec colname="col3" colnum="3" colwidth="1.3*"/>
+                <thead>
+                    <row>
+                        <entry>示例</entry>
+                        <entry>输入</entry>
+                        <entry>输出</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>设置 HTTP服务器 URL</entry>
+                        <entry>AT^HTTPURL=23,80</entry>
+                        <entry>CONNECT</entry>
+                    </row>
+                    <row>
+                        <entry>输入 URL</entry>
+                        <entry>http://httpbin.org/post</entry>
+                        <entry>OK</entry>
+                    </row>
+                    <row>
+                        <entry>发送 POST 请求到 HTTP服务器</entry>
+                        <entry>AT^HTTPPOST=13,80,80</entry>
+                        <entry>CONNECT</entry>
+                    </row>
+                    <row>
+                        <entry>输入请求体</entry>
+                        <entry>Telephone=139</entry>
+                        <entry>
+                            <div>OK</div>
+                            <div>^HTTPPOST: 0,200,399</div>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry>读取 HTTP服务器响应信息</entry>
+                        <entry>AT^HTTPREAD=80</entry>
+                        <entry>
+                            <div>{</div>
+                            <div>"args": {},</div>
+                            <div>"data": "",</div>
+                            <div>"files": {},</div>
+                            <div>"form": {</div>
+                            <div>"Telephone": "139"</div>
+                            <div>},</div>
+                            <div>"headers": {</div>
+                            <div>"Accept": "*/*",</div>
+                            <div>"Content-Length": "13",</div>
+                            <div>"Content-Type": "application/x-www-form-urlencoded",</div>
+                            <div>"Host": "httpbin.org",</div>
+                            <div>"X-Amzn-Trace-Id": "Root=1-658139d3-6dd2629f77087a811728ed04"</div>
+                            <div>},</div>
+                            <div>"json": null,</div>
+                            <div>"origin": "223.104.220.219",</div>
+                            <div>"url": "http://httpbin.org/post"</div>
+                            <div>}</div>
+                            <div>OK</div>
+                        </entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </body>
+</topic>

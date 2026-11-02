@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="Toc9144">
+      <title>服务器错误类</title>
+      <body>
+        <table colsep="1" frame="all" rowsep="1">
+          <tgroup cols="2">
+            <colspec colname="col1" colnum="1" colwidth="0.5*"/>
+            <colspec colname="col2" colnum="2" colwidth="1.5*"/>
+            <thead>
+              <row>
+                <entry>状态码</entry>
+                <entry>描述</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>500</entry>
+                <entry>Internal Server Error</entry>
+              </row>
+              <row>
+                <entry>501</entry>
+                <entry>Not Implemented</entry>
+              </row>
+              <row>
+                <entry>502</entry>
+                <entry>Bad Gateway</entry>
+              </row>
+              <row>
+                <entry>503</entry>
+                <entry>Service Unavailable</entry>
+              </row>
+              <row>
+                <entry>504</entry>
+                <entry>Gateway Timeout</entry>
+              </row>
+              <row>
+                <entry>505</entry>
+                <entry>HTTP Version Not Supported</entry>
+              </row>
+              <row>
+                <entry>506</entry>
+                <entry>Variant Also Negotiates</entry>
+              </row>
+              <row>
+                <entry>507</entry>
+                <entry>Insufficient Storage</entry>
+              </row>
+              <row>
+                <entry>509</entry>
+                <entry>Bandwidth Limit Exceeded</entry>
+              </row>
+              <row>
+                <entry>510</entry>
+                <entry>Not Extended</entry>
+              </row>
+              <row>
+                <entry>600</entry>
+                <entry>Unparseable Response Headers</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </body>
+    </topic>

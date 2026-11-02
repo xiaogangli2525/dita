@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="ZH-CN_TOPIC_0000002224701865-chtext">
+    <title>示例</title>
+    <body>
+        <table colsep="1" frame="all" rowsep="1">
+            <tgroup cols="3">
+                <colspec colname="col1" colnum="1" colwidth="1*"/>
+                <colspec colname="col2" colnum="2" colwidth="1*"/>
+                <colspec colname="col3" colnum="3" colwidth="1*"/>
+                <thead>
+                    <row>
+                        <entry>示例</entry>
+                        <entry>输入</entry>
+                        <entry>输出</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>结束HTTP会话</entry>
+                        <entry>AT^HTTPSTOP</entry>
+                        <entry>OK</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </body>
+</topic>

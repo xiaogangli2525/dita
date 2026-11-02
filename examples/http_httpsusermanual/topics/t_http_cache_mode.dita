@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="task_hsb_b2q_cqb">
+    <title>缓存模式</title>
+    <shortdesc>该小结主要介绍缓存模式的使用步骤。</shortdesc>
+    <taskbody>
+        <context>
+            <p>
+                <codeblock id="codeblock_m35_5j5_pqb"><keyword>创建实例和参数配置：</keyword>
+<keyword>AT+MHTTPCREATE="http://120.27.12.119:10080"</keyword>
++MHTTPCREATE: 0
+OK
+<keyword>AT+MHTTPCFG="cached",0,1</keyword>    //设置缓存模式
+OK
+AT+MHTTPCFG="cached",0
++MHTTPCFG: "cached",0,1,4096
+OK
+
+<keyword>GET请求：</keyword>
+<keyword>AT+MHTTPREQUEST=0,1,1,"/get"</keyword>
+OK
++MHTTPURC: "recv",0,200,225,145    //请求完成
+
+<keyword>读取缓存数据：</keyword>
+<keyword>AT+MHTTPREAD=0,0,225</keyword>    //读取报头
++MHTTPREAD: 0,0,225,0,HTTP/1.1 200 OK
+Server: nginx/1.18.0
+Date: Mon, 26 Jul 2021 06:58:31 GMT
+Content-Type: application/json
+Content-Length: 145
+Connection: keep-alive
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Credentials: true
+OK
+<keyword>AT+MHTTPREAD=0,1,145</keyword>    //读取content
++MHTTPREAD: 0,1,145,0,{"args":{},"headers":{"Connection":"close","Content-Length":"0","Host":"localhost:6000"},"origin":"127.0.0.1","url":"http://localhost:6000/get"}
+OK</codeblock>
+            </p>
+        </context>
+    </taskbody>
+</task>

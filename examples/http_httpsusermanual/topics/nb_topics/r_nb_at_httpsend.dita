@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="reference_qd5_gdq_cqb">
+    <title><?oxy_comment_start author="zhangqin1@cmiot.cmcc" timestamp="20241101T141753+0800" comment="该内容模块为基础版本共用，请勿随意删减。若需添加仅适用于某型号的内容，请添加批注说明"?>AT+HTTPSEND<?oxy_comment_end?></title>
+    <shortdesc>该命令发送HTTP请求。</shortdesc>
+    <refbody>
+        <table id="table_btl_krz_3qb">
+            <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="3*" align="left"/>
+                <colspec colname="c2" colnum="2" colwidth="7*" align="left"/>
+                <thead>
+                    <row>
+                        <entry namest="c1" nameend="c2"><cmdname>AT+HTTPSEND</cmdname></entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row outputclass="has_bgc">
+                        <entry>语法</entry>
+                        <entry>响应</entry>
+                    </row>
+                    <row>
+                        <entry>设置命令<codeblock><cmdname>AT+HTTPSEND=&lt;id>,&lt;method>,&lt;path></cmdname></codeblock></entry>
+                        <entry>成功<div>如果输入格式正确返回：</div><msgblock id="msgblock_xmq_xb5_pqb">OK</msgblock>失败<msgblock id="msgblock_cv3_cj3_ncc">ERROR</msgblock></entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">命令描述</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">该命令发送HTTP请求。</entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">参数描述</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                ><varname>&lt;id></varname>整型，通过<msgph>+HTTPCREATE</msgph>返回的实例索引，范围：0~4。<fn>M5310-E/MN328-B范围：0~1。</fn></entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            ><varname>&lt;method></varname>整型，HTTP请求类型。</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">
+                            <dl>
+                                <dlentry>
+                                    <dt>0</dt>
+                                    <dd>GET</dd>
+                                </dlentry>
+                                <dlentry>
+                                    <dt>1</dt>
+                                    <dd>POST</dd>
+                                </dlentry>
+                                <dlentry>
+                                    <dt>2</dt>
+                                    <dd>PUT</dd>
+                                </dlentry>
+                                <dlentry>
+                                    <dt>3</dt>
+                                    <dd>DELETE</dd>
+                                </dlentry>
+                                <dlentry>
+                                    <dt>4</dt>
+                                    <dd>HEAD</dd>
+                                </dlentry>
+                            </dl>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"><varname>&lt;path></varname>字符串，请求的URL
+                            path绝对路径参数。</entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">示例</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            >创建实例<div>IPv4:</div><msgblock id="codeblock_l2w_nfj_1rb"><cmdname>AT+HTTPSEND=0,0,"/page/index/name/zhangcheng"</cmdname>
+OK
+CONNECT OK
++HTTPNMIH:0,1,443
+Server: Tengine
+Content-Type: image/svg+xml
+Transfer-Encoding: chunked
+Connection: keep-alive
+……
++HTTPNMIH:0,0,435
+age-class: Standard
+Content-MD5: yW+WEp1yfdf9J59//yKoVg==
+x-oss-server-time: 3
+……
++HTTPNMIC:0,1,906,18
+……
++HTTPNMIC:0,1,906,460
+……
++HTTPNMIC:0,1,906,381
+……
++HTTPNMIC:0,1,927,21
+……
++HTTPNMIC:0,1,937,10
+……
++HTTPNMIC:0,0,937,0
+……</msgblock>IPv6:<msgblock id="msgblock_lyx_hgr_ldc"><cmdname>AT+MDNSCFG="priority",1</cmdname>
+OK
+<cmdname>AT+HTTPCREATE="www.cmiot.store"</cmdname>
++HTTPCREATE:0
+OK
+<cmdname>AT+HTTPSEND=0,0,"/get"</cmdname>
+OK
+CONNECT OK
++HTTPNMIH:0,0,204
+Server: gunicorn
+Date: Thu, 14 Jul 2022 02:33:08 GMT
+Connection: keep-alive
+Content-Type: application/json
+Content-Length: 147
+Access-Control-Allow-Origin:
+Access-Control-Allow-Credentials: true
++HTTPNMIC:0,0,147,147,147
+{
+  "args": {},
+  "headers": {
+    "Host": "www.cmiot.store"
+  },
+  "origin": "2409:8d80:520a:2b18::1",
+  "url": "http://www.cmiot.store/get"
+}
++HTTPDISCONN:0</msgblock></entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        <section id="section_k5s_wg1_3cc">
+            <note id="note_b5c_xg1_3cc">
+                <ul id="ul_cc1_jvr_jcc">
+                    <li>path参数不可为空；</li>
+                    <li>成功发送HTTP请求后，header以及content字段将自动清空以释放空间；</li>
+                    <li>根据ITU规范，AT命令中逗号+双引号（,"及",），双引号+分号(";)为AT命令参数分割符，如需输入需要转义或加间隔处理。</li>
+                </ul>
+            </note>
+        </section>
+    </refbody>
+</reference>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="Toc24423">
+    <title>Overview</title>
+    <body>
+      <p>
+This document describes how to use HTTP AT commands to enable the customer's device to act as an HTTP client, access an HTTP server, and perform various basic interaction operations. </p>
+      <p>
+HTTP (Hypertext Transfer Protocol) is a stateless, application-layer communication protocol based on the request-response model. It allows Hypertext Markup Language (HTML) documents to be transmitted from a web server to a client.  The main features of the HTTP protocol are as follows:</p>
+      <p>
+1. Supports client/server mode.  Supports both basic and secure authentication. </p>
+      <p>
+2. Simple and fast: When a client requests a service from the server, only the request method and path need to be transmitted.  Commonly used request methods include GET, PUT, and POST.  Each method specifies a different type of interaction between the client and the server. </p>
+      <p>3. Flexible: HTTP
+Allows transmission of any type of data object.  The type being transmitted is marked by Content-Type. </p>
+      <p>
+4. HTTP 0.9 and 1.0
+Use non-persistent connection: Each connection handles only one request. The server disconnects after processing the client's request and receiving the client's response.  HTTP1.1
+Use persistent connection: A single connection can handle multiple client requests. </p>
+      <p>
+5. Stateless: HTTP
+The protocol is a stateless protocol.  Stateless means that the protocol has no memory capability for transaction processing. </p>
+      <p>HTTP is typically carried over TCP. When secure transmission is required, it is carried over TLS/SSL, i.e., HTTPS. </p>
+    </body>
+  </topic>

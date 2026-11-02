@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="Toc3316">
+      <title>Instance Configuration</title>
+      <body>
+        <table colsep="1" frame="all" rowsep="1">
+                    <tgroup cols="2">
+            <colspec colname="col1" colnum="1" colwidth="1*"/>
+            <colspec colname="col2" colnum="2" colwidth="1*"/>
+            <thead>
+              <row>
+                <entry>Command</entry>
+                <entry>Response</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+AT+HTTPCFG=&lt;id&gt;,&lt;type&gt;[,&lt;value&gt;[,&lt;encode&gt;]]</entry>
+                <entry>
+                  <div>+HTTPCFG:
+&lt;httpclient_id&gt;,&lt;type&gt;[,&lt;length&gt;]</div>
+                  <div>OK</div>
+                  <div>or ERROR</div>
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+        <p>Command Description:</p>
+        <p>
+Used to query or configure client parameters. </p>
+        <p>
+HTTPS one-way authentication: The terminal verifies the server. Only the server certificate needs to be configured. </p>
+        <p>
+HTTPS two-way authentication: Server cert, client cert, and client private key required (not supported yet). </p>
+        <p>
+Due to limited terminal computing power and storage, two-way authentication may be time-consuming. One-way authentication is recommended for general needs. </p>
+        <p>Parameter Description:</p>
+        <p>
+&lt;id&gt;: Client instance created by the AT+HTTPCREATE command. </p>
+        <p>&lt;type&gt;：</p>
+        <p>1: Server certificate</p>
+        <p>2: Client certificate </p>
+        <p>3: Client PK</p>
+        <p>
+8: Configure print mode: 1 indicates that the received string is printed in hexadecimal format; 0 indicates string mode (default is 0).</p>
+        <p>
+&lt;value&gt;: The value set according to the different type. </p>
+        <p>
+&lt;encode&gt;: Indicates whether to use hexadecimal format when inputting certificate data. The input can be sent either in hexadecimal or as a plain string.  It is recommended to use the default value 1, which indicates that hexadecimal format is used for serial port input. </p>
+        <p>Note</p>
+        <p>1. As the server certificate, client certificate, and client private key have two storage methods, they are handled in the following two cases respectively (HARDCODE_USER_CERT_PK is set to 1 by default). </p>
+        <ul>
+          <li>When HARDCODE_USER_CERT_PK = 0, after HTTP request is successfully sent, server cert, client cert, and client private key configured via AT+HTTPCFG are automatically cleared to free memory and prevent high memory usage. However, they are still consumed during handshake. Reconfiguration is required before re-sending HTTP request. </li>
+          <li>When HARDCODE_USER_CERT_PK = 1, certificates stored in flash (last three 4 KB sectors of FOTA area, max 4 KB each). This avoids high memory usage during handshake. However, FOTA area reuse may cause certificate erasure. Reconfigure before each use is recommended. </li>
+        </ul>
+        <p>
+2. For one-way authentication, only the server certificate needs to be configured.</p>
+        <p>
+3. Client private key and certificate can be generated as follows (using OpenSSL as an example): </p>
+        <p>openssl genrsa 2048 &gt; ./private.pem
+＃Generate private key file</p>
+        <p>openssl req -new -key ./private.pem -out csr.pem
+＃Generate CSR using private key file.</p>
+        <p>openssl x509 -req -days 365 -in csr.pem -signkey ./private.pem
+-out ./file.crt
+＃Generate certificate file using private key and CSR.</p>
+        <p>
+4. When using string input for certificate and private key, do not change certificate format; otherwise, mbedTLS parsing fails. Since some serial tools do not support special chars like \r\n, hex input via serial port is recommended. </p>
+        <p>Typical Example:</p>
+        <p>AT+HTTPCFG=0,1,"-----BEGIN CERTIFICATE-----</p>
+        <p>
+MIIDpTCCAo0CFAa+lYlZUNWy9bHzoHjwfRpUtFuzMA0GCSqGSIb3DQEBCwUAMIGO</p>
+        <p>
+MQswCQYDVQQGEwJDTjEQMA4GA1UECAwHSmlhbmdTdTEQMA4GA1UEBwwHTmFuSmlu</p>
+        <p>
+ZzELMAkGA1UECgwCWFkxGjAYBgNVBAsMEVNvZnR3YXJlIFBsYXRmb3JtMQ4wDAYD</p>
+        <p>
+r8zZme6pOPrGBZqMy0cfTeQqga6d9UjanyrLvb/eepGiDF9byqNgTDTQlR9TgXe</p>
+        <p>......</p>
+        <p>3FD8w+TAixDgg9x23yehUnWQwToXYg2ZHQ==</p>
+        <p>-----END CERTIFICATE-----"</p>
+        <p>OK</p>
+      </body>
+    </topic>

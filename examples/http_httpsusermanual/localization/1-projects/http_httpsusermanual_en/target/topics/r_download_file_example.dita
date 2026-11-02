@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="reference_j2f_vyg_grb">
+    <title>HTTP File Download </title>
+        <shortdesc>This section describes the procedure for downloading data to the file system.  </shortdesc>
+    <refbody>
+        <section id="section_lgp_k32_dtb">
+                        <note id="note_rmx_k32_dtb" type="important"><ph product="tbd"
+                >M5310-E/MN327/MN328/</ph>MN318/MN316/MN319/MN319-A/MN326/MN316A/MN326A/ML307M/ML307H: do not support HTTP file download.  </note>
+        </section>
+        <section id="section_rw1_xyg_grb">
+            <title>Download to the File </title>
+                        <msgblock id="msgblock_axm_xyg_grb"><cmdname>AT+MHTTPDLFILE="http://120.27.12.119:10080/get","/test.txt"</cmdname>
+OK
++MHTTPURC: "header",0,200,225,HTTP/1.1 200 OK    /*header direct print */
+Server: nginx/1.18.0
+Date: Wed, 28 Jul 2021 02:46:45 GMT
+Content-Type: application/json
+Content-Length: 145
+Connection: keep-alive
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Credentials: true
++MHTTPDLFILE: 145,145,100    /*content data download completion */</msgblock>
+        </section>
+        <section id="section_hyn_yyg_grb">
+            <title>Breakpoint Resumable Transmission </title>
+                        <msgblock id="msgblock_okd_zyg_grb"><cmdname>AT+MHTTPDLFILE="http://www.baidu.com:80/","/test.txt",1024,"bytes=0-4095"</cmdname>
+OK
++MHTTPURC: "header",0,206,1010,HTTP/1.1 206 Partial Content
+Cache-Control: no-cache
+Connection: keep-alive
+Content-Length: 4096
+Content-Range: bytes 0-4095/9508
+Content-Type: text/html
+Date: Sat, 08 Oct 2022 07:50:38 GMT
+P3p: CP=" OTI DSP COR IVA OUR IND COM "
+P3p: CP=" OTI DSP COR IVA OUR IND COM "
+Pragma: no-cache
+Server: BWS/1.1
+Set-Cookie: BAIDUID=6DE111457B560799DF64D34146F8D8F7:FG=1; expires=Thu, 31-Dec-37 23:55:55 GMT; max-age=2147483647; path=/; domain=.baidu.com
+Set-Cookie: BIDUPSID=6DE111457B560799DF64D34146F8D8F7; expires=Thu, 31-Dec-37 23:55:55 GMT; max-age=2147483647; path=/; domain=.baidu.com
+Set-Cookie: PSTM=1665215438; expires=Thu, 31-Dec-37 23:55:55 GMT; max-age=2147483647; path=/; domain=.baidu.com
+Set-Cookie: BAIDUID=6DE111457B560799C6BC553E004150D6:FG=1; max-age=31536000; expires=Sun, 08-Oct-23 07:50:38 GMT; domain=.baidu.com; path=/; version=1; comment=bd
+Traceid: 166521543806129891949891895393280359837
+Vary: Accept-Encoding
+X-Frame-Options: sameorigin
+X-Ua-Compatible: IE=Edge,chrome=1
++MHTTPDLFILE: 1908,4096,46,9508
++MHTTPDLFILE: 3368,4096,82,9508
++MHTTPDLFILE: 4096,4096,100,9508
+
+<cmdname>AT+MHTTPDLFILE="http://www.baidu.com:80/","/test.txt",1024,,1</cmdname>
+OK
++MHTTPURC: "header",0,206,1014,HTTP/1.1 206 Partial Content
+Cache-Control: no-cache
+Connection: keep-alive
+Content-Length: 5412
+Content-Range: bytes 4096-9507/9508
+Content-Type: text/html
+Date: Sat, 08 Oct 2022 07:50:47 GMT
+P3p: CP=" OTI DSP COR IVA OUR IND COM "
+P3p: CP=" OTI DSP COR IVA OUR IND COM "
+Pragma: no-cache
+Server: BWS/1.1
+Set-Cookie: BAIDUID=72B840BCD24911564E135B2D9EE39B24:FG=1; expires=Thu, 31-Dec-37 23:55:55 GMT; max-age=2147483647; path=/; domain=.baidu.com
+Set-Cookie: BIDUPSID=72B840BCD24911564E135B2D9EE39B24; expires=Thu, 31-Dec-37 23:55:55 GMT; max-age=2147483647; path=/; domain=.baidu.com
+Set-Cookie: PSTM=1665215447; expires=Thu, 31-Dec-37 23:55:55 GMT; max-age=2147483647; path=/; domain=.baidu.com
+Set-Cookie: BAIDUID=72B840BCD2491156B1186032DA772228:FG=1; max-age=31536000; expires=Sun, 08-Oct-23 07:50:47 GMT; domain=.baidu.com; path=/; version=1; comment=bd
+Traceid: 1665215447039514753010076465853275645890
+Vary: Accept-Encoding
+X-Frame-Options: sameorigin
+X-Ua-Compatible: IE=Edge,chrome=1
++MHTTPDLFILE: 1904,5412,35,9508
++MHTTPDLFILE: 3364,5412,62,9508
++MHTTPDLFILE: 4824,5412,89,9508
++MHTTPDLFILE: 5412,5412,100,9508</msgblock>
+        </section>
+    </refbody>
+</reference>

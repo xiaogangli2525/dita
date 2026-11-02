@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="reference_nt4_3dq_cqb">
+    <title>AT+MHTTPHEADER 设置HTTP特定报头</title>
+    <shortdesc>该命令用于设置特定报头。</shortdesc>
+    <refbody>
+        <table id="table_dp5_nkb_jqb">
+            <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="3*" align="left"/>
+                <colspec colname="c2" colnum="2" colwidth="7*" align="left"/>
+                <thead>
+                    <row>
+                        <entry namest="c1" nameend="c2"><cmdname>AT+MHTTPHEADER</cmdname></entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row outputclass="has_bgc">
+                        <entry>语法</entry>
+                        <entry>响应</entry>
+                    </row>
+                    <row>
+                        <entry>测试命令<codeblock><cmdname>AT+MHTTPHEADER=?</cmdname></codeblock></entry>
+                        <entry>成功<msgblock id="msgblock_qpq_hc5_pqb">+MHTTPHEADER: (list of supported &lt;httpid>s),(list of supported &lt;eof>s),(list of supported &lt;length>s),
+OK</msgblock>
+                            错误<msgblock id="msgblock_og5_gd5_pqb">+CME ERROR: &lt;err></msgblock></entry>
+                    </row>
+                    <row>
+                        <entry>设置命令<codeblock><cmdname>AT+MHTTPHEADER=&lt;httpid>[,&lt;eof>[,&lt;length>[,&lt;header>]]]</cmdname></codeblock></entry>
+                        <entry>成功
+                                <div>只设置<varname>&lt;httpid></varname>，查询当前已设置的报头：</div><msgblock id="msgblock_tsk_kqv_3sb">[+MHTTPHEADER: &lt;httpid>,&lt;length>,&lt;header>]
+OK</msgblock><varname>&lt;eof></varname>设置，<varname>&lt;length></varname>和<varname>&lt;header></varname>不设置，以<keyword>CTRL+Z</keyword>发送数据，以<keyword>ESC</keyword>取消发送：<msgblock id="msgblock_o4b_3c5_pqb">>(输入数据)
+OK</msgblock><varname>&lt;length></varname>设置，<varname>&lt;header></varname>不设置，输入数据达到指定长度或达到超时时间时发送数据：<msgblock id="msgblock_vyd_3c5_pqb">>(输入数据)
+OK</msgblock>所有参数均设置：<msgblock id="msgblock_x33_jc5_pqb">OK</msgblock>
+                            错误<msgblock id="msgblock_f1h_kc5_pqb">+CME ERROR: &lt;err></msgblock></entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">命令描述</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                >单次请求有效，请求结束后自动清空。特定报头主要为在不同请求中存在变化的字段，如果通用报头中同样存在该字段，将在发送请求时自动替换为特定报头的值。设置命令中不带<varname>&lt;header></varname>参数时，模组将进入数据模式，以<keyword>></keyword>提示，然后输入数据。<fn><cmdname>AT+MHTTPCFG="encoding"</cmdname>中设置的<varname>&lt;input_format></varname>参数，只对直接命令中带<varname>&lt;header></varname>的输入模式有效，对数据模式输入无效，数据模式直接使用原始数据。</fn></entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">参数描述</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                    ><varname>&lt;httpid></varname>客户端实例id，0~3。<fn>MN319/MN319-A/MN316A/MN326A：<varname>&lt;httpid></varname>参数范围0~1。</fn></entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"><varname>&lt;eof></varname>数据输入指示。</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">
+                            <parml id="parml_iwb_mjy_frb">
+                                <plentry>
+                                    <pt>0</pt>
+                                    <pd>header输入结束标记，需请求完成或清空后才可再次输入。</pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>1</pt>
+                                    <pd>后续还有header数据输入。</pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>2</pt>
+                                    <pd>清空已有header内容。</pd>
+                                </plentry>
+                            </parml>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                    ><varname>&lt;length></varname>输入数据长度，0~4096，数据模式下不可设置为0，命令中直接输入数据时，设置为0，不对数据长度进行校验，设置大于0，将对输入数据的长度进行校验（ASCII字符串和带转义的字符串输入模式下：校验实际命令中输入字符串长度是否与指定长度相等；HEX字符串输入模式下：校验实际命令中输入字符串长度是否是指定长度的两倍）。<fn><ph
+                                    product="tbd"
+                                        >MN327：命令直接输入模式下，单条命令最大长度为2048，超过将报错。</ph><div>ML302S/ML307S/ML305M/ML307M/ML307H/ML307N/ML307X/ML307Y/ML307B<ph
+                                        product="tbd"
+                                        ><?oxy_insert_start author="surui" timestamp="20260616T194950+0800"?>/MR380M<?oxy_insert_end?></ph>：数据模式下可设置为0。</div><div>ML302A/ML305A/ML307A/ML307G/ML307R/ML307C/MR380R：命令模式长度范围0~1024；数据模式长度范围0~4096，数据模式下可设置为0。<div>ML305U：数据模式下可设置为0，参数缺省时为0。</div></div></fn></entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                ><varname>&lt;header></varname>特定报头数据，单次请求有效，请求结束后自动清空，如果<cmdname>AT+MHTTPCFG="header"</cmdname>中
+                                设置了同样的字段，模组内部将自动使用当前设置值。<fn>ML302S/ML307S/ML302A/ML305A/ML307A/ML305U/ML305M/ML307R/ML307B/ML307C/ML307G/ML307M/ML307H/ML307N/ML307X/ML307Y：字符串参数内部不能包含引号，如果字符串参数内部一定要包含引号，需使用数据模式进行发送。</fn></entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">示例</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">设置特定报头
+                            <msgblock id="codeblock_kvx_kvj_1rb"><cmdname>AT+MHTTPHEADER=0,0,0,"api-key: FC9B69m4prHH2j7ljBbA=hHlbMI="</cmdname>
+OK</msgblock></entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        <section id="section_rmb_cxt_rrb">
+            <note id="note_jf3_cxt_rrb">
+                <div><ph product="tbd"
+                        >M5310-E/MN327/MN328/</ph>MN318/MN316/MN319/MN319-A/MN326/MN316A/MN326A：不支持<keyword>></keyword>下的数据输入模式，只能在AT命令中直接输入数据，单次输入长度受平台单条命令长度限制，数据过长时建议分多次输入。</div>
+                <div>MN319/MN319-A：AT命令参数的最大长度为1560字节。</div>
+                <div>ML307X/ML307Y：总共可以写入的数据长度不超过8192字节。</div>
+                <div>ML307B：AT命令参数的最大长度为3000字节。</div>
+            </note>
+        </section>
+    </refbody>
+</reference>

@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="reference_if2_kdq_cqb">
+    <title>AT+MHTTPCONTENT Set HTTP Content Data </title>
+        <shortdesc>This command is used to set HTTP content data.  </shortdesc>
+    <refbody>
+        <table id="table_fls_d1c_jqb">
+                        <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="3*" align="left"/>
+                <colspec colname="c2" colnum="2" colwidth="7*" align="left"/>
+                <thead>
+                    <row>
+                        <entry namest="c1" nameend="c2"><cmdname>AT+MHTTPCONTENT</cmdname></entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row outputclass="has_bgc">
+                        <entry>Syntax </entry>
+                        <entry>Response </entry>
+                    </row>
+                    <row>
+                        <entry>Test command <codeblock><cmdname>AT+MHTTPCONTENT=?</cmdname></codeblock></entry>
+                        <entry>If succeed: <msgblock id="msgblock_qxh_fd5_pqb">+MHTTPCONTENT: (list of supported &lt;httpid&gt;s),(list of supported &lt;eof&gt;s),(list of supported &lt;length&gt;s),
+OK</msgblock>
+                            If fail: <msgblock id="msgblock_dyl_fd5_pqb">+CME ERROR: &lt;err&gt;</msgblock></entry>
+                    </row>
+                    <row>
+                        <entry>Set command <codeblock><cmdname>AT+MHTTPCONTENT=&lt;httpid&gt;[,&lt;eof&gt;[,&lt;length&gt;[,&lt;data&gt;]]]</cmdname></codeblock></entry>
+                        <entry>If succeed:  <div><varname>&lt;httpid&gt;</varname> is configured only to query the configured data: </div>
+                                                        <msgblock id="msgblock_v5c_zqv_3sb">[+MHTTPCONTENT: &lt;httpid&gt;,&lt;length&gt;,&lt;data&gt;]
+OK</msgblock><varname>&lt;eof&gt;</varname> is configured while <varname>&lt;length&gt;</varname> and <varname>&lt;data&gt;</varname> are not. Send data by <msgph>CTRL+Z</msgph>, and cancel sending by <keyword>ESC</keyword>: <msgblock id="msgblock_q1q_hd5_pqb">&gt;(input data)
+OK</msgblock>
+                            <varname>&lt;length&gt;</varname> is configured while <varname>&lt;data&gt;</varname> is not. Send data when input data reaches the specified length or timeout is reached: <msgblock id="msgblock_hj5_hd5_pqb">&gt;(input data)
+OK</msgblock> All parameters set: <msgblock id="msgblock_vk1_3d5_pqb">OK</msgblock>
+                            If fail: 
+                            <msgblock id="msgblock_xwf_3d5_pqb">+CME ERROR: &lt;err&gt;</msgblock></entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">Command Description </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                >Valid for a single request and automatically cleared upon request completion.  If the <varname>&lt;data&gt;</varname> parameter is omitted in the configuration command, the module enters data mode, indicated by the <keyword>&gt;</keyword> prompt for data input.  In standard mode, configure the content data before using the <cmdname>AT+MHTTPREQUEST</cmdname> command to send request. In Chunked mode, use the <cmdname>AT+MHTTPREQUEST</cmdname> command to send request before using it to send content.  <fn>In Chunked mode, using the command to send content after sending request and receiving the <cmdname>+MHTTPURC: 
+                                    "ind"</cmdname> reporting.  </fn></entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">Parameter Description </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                    ><varname>&lt;httpid&gt;</varname>Client instance id: 0-3.  <fn>MN319/MN319-A/MN316A/MN326A: <varname>&lt;httpid&gt;</varname> parameter range 0-1.  </fn></entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"><varname>&lt;eof&gt;</varname>Data input indication.  </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">
+                            <parml id="parml_ylv_2jz_frb">
+                                <plentry>
+                                    <pt>0</pt>
+                                    <pd>The content input termination marker. Subsequent input is only permitted after the request completes or is cleared.  </pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>1</pt>
+                                    <pd>Subsequent content data input is pending.  </pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>2</pt>
+                                    <pd>Clear existing content data (only apply for non-Chunked mode).  </pd>
+                                </plentry>
+                            </parml>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"><varname>&lt;length&gt;</varname>Data input length 0-4096. In data mode, setting to 0 is not permitted. When directly inputting data in command mode: If set to 0, no length validation is performed on the input data; If set &gt;0, the system will validate the input data length. (For ASCII and escaped string input modes: The system shall validate whether the actual input string length in the command matches the specified length. For HEX string input mode: The system shall verify the actual input string length equals twice the specified length.)  <fn>
+                                <div><ph product="tbd"
+                                    >MN327: In direct command input mode, the maximum length of a single command is 2048 characters; exceeding this limit will result in an error.
+</ph></div>
+                                <div>ML302S/ML307S/ML302A/ML305A/ML307A/ML307G/ML305M/ML307R/ML307B/ML307C/ML307M/ML307H/ML307N/MR380R<ph
+                                        product="tbd"
+                                        >/MR380M</ph>: In data mode, this can be set to 0. </div>
+                                <div>ML305U: In data mode, setting to 0 is permitted. The parameter defaults to 0 when the parameter is omitted. </div>
+                                <div>ML307G: The supported maximum content length is 3*4096 bytes. </div>
+                                                        </fn></entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"><varname>&lt;data&gt;</varname>Content data. Valid for a single request and automatically cleared upon request completion.  <fn>
+                                <div>The <varname>&lt;input_format&gt;</varname> parameter configured via <cmdname>AT+MHTTPCFG="encoding"</cmdname> shall only apply to direct command input mode (where <varname>&lt;data&gt;</varname> is explicitly included in the AT command), and shall not affect data input mode (which uses raw data). </div>
+                                <div>ML302S/ML307S/ML302A/ML305A/ML307A/ML307G/ML305U/ML305M/ML307R/ML307B/ML307C/ML307M/ML307H/ML307N/ML307X/ML307Y: String parameters must not contain the quotation mark. To include quotation mark within string parameters, data mode transmission shall be used. 
+                                        
+                                        <div product="tbd"
+                                        ><?oxy_insert_start author="surui@cmiot.cmcc" timestamp="20260422T102234+0800"?>MR380M: The CONTENT field does not support consecutive double quotation marks or commas in input.  
+                                    </div></div>
+                                                        </fn></entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">Example </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            >Set content data (data input included in the command) <msgblock id="codeblock_pvx_rvj_1rb"><cmdname>AT+MHTTPCONTENT=0,0,0,"{"id":"speed1"\r,"tags":["mobile"],"unit":"m/s"\r,"unit_symbol":"m/s"}"</cmdname>
+OK</msgblock>
+                            Set content data (data input excluded in the command) <msgblock id="codeblock_gsz_svj_1rb"><cmdname>AT+MHTTPCONTENT=0,0,70</cmdname>
+&gt;{"id":"speed1"\r,"tags":["mobile"],"unit":"m/s"\r,"unit_symbol":"m/s"}
+OK</msgblock></entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        <section id="section_erq_hxt_rrb">
+            <note id="note_q5b_3xt_rrb">
+                <div><ph product="tbd"
+                        >M5310-E/MN327/MN328/</ph>MN318/MN316/MN319/MN319-A/MN326/MN316A/MN326A: The <keyword>&gt;</keyword> data input mode is not supported, data must be input directly in the AT command. Single input length is limited by platform's single command constraints, thus, for larger data, multiple inputs are recommended. </div>
+                <div>MN319/MN319-A: The maximum length of AT command parameter is 1,560 bytes. </div>
+                <div>ML307X/ML307Y: The total writable data length shall not exceed 8,192 bytes. </div>
+                <div>ML307B: The maximum length of AT command parameter is 3,000 bytes. </div>
+            </note>
+        </section>
+    </refbody>
+</reference>

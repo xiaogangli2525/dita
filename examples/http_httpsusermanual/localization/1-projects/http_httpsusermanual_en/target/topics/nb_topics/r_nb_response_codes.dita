@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="reference_rvw_hgm_gqb">
+    <title><?oxy_comment_start author="zhangqin1@cmiot.cmcc" timestamp="20241101T142022+0800" comment="该内容模块为基础版本共用，请勿随意删减。若需添加仅适用于某型号的内容，请添加批注说明"?>Response Code<?oxy_comment_end?></title>
+        <shortdesc>This chapter is about response codes related to HTTP/HTTPS commands.  </shortdesc>
+    <refbody>
+        <table id="table_ttt_zfx_jqb">
+                        <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="3*" align="left"/>
+                <colspec colname="c2" colnum="2" colwidth="7*" align="left"/>
+                <thead>
+                    <row>
+                        <entry>Error Code </entry>
+                        <entry>Description </entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>3</entry>
+                        <entry>Operation forbidden </entry>
+                    </row>
+                    <row>
+                        <entry>23</entry>
+                        <entry>Memory allocation failure </entry>
+                    </row>
+                    <row>
+                        <entry>50</entry>
+                        <entry>Parameter error </entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </refbody>
+</reference>

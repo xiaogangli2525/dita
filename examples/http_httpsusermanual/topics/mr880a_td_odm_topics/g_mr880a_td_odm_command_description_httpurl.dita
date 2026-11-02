@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="ZH-CN_TOPIC_0000002189261756-chtext">
+        <title>命令说明</title>
+        <body>
+          <p>该命令用于设置
+HTTP服务器
+URL。用于访问 HTTP
+服务器。</p>
+          <p>AT^HTTPURL=&lt;URL_length&gt;[,&lt;timeout&gt;]</p>
+          <ul>
+            <li> 若参数格式正确，且不发送 HTTP GET/POST/PUT 请求，上报：CONNECT <p>TA 切换到透传模式（即数据模式），即可输入
+          URL。当输入数据的总大小达到&lt;URL_length&gt;，TA 将切换回命令模式并上报以下结果： </p><p>OK</p></li>
+          </ul>
+
+          <ul>
+            <li>若 输 入 时 间 达 到
+&lt;timeout&gt; ， 但 接 收 的 URL
+长 度 小 于&lt;URL_length&gt;，TA
+将切换回命令模式并上报以下结果：          <p>ERROR</p></li>
+            <li> 若参数格式不正确或发生其他错误： <p>ERROR </p></li>
+            <li>
+最大响应时间取决于&lt;timeout&gt;。</li>
+          </ul>
+        </body>
+      </topic>

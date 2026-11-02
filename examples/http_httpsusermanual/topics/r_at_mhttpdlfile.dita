@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="reference_rgg_sdq_cqb">
+    <title>AT+MHTTPDLFILE HTTP下载文件</title>
+    <shortdesc>该命令用于下载数据到文件系统，无需创建实例。</shortdesc>
+    <refbody>
+        <table id="table_w5t_wsv_jqb">
+            <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="3*" align="left"/>
+                <colspec colname="c2" colnum="2" colwidth="7*" align="left"/>
+                <thead>
+                    <row>
+                        <entry namest="c1" nameend="c2"><cmdname>AT+MHTTPDLFILE</cmdname></entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row outputclass="has_bgc">
+                        <entry>语法</entry>
+                        <entry>响应</entry>
+                    </row>
+                    <row>
+                        <entry>测试命令<codeblock id="codeblock_d4y_tpn_ssb"><cmdname>AT+MHTTPDLFILE=?</cmdname></codeblock></entry>
+                        <entry>成功<msgblock id="msgblock_iph_5f5_pqb">OK</msgblock>
+                            错误<msgblock id="msgblock_kzk_5f5_pqb">+CME ERROR: &lt;err></msgblock></entry>
+                    </row>
+                    <row>
+                        <entry>设置命令<codeblock id="codeblock_jqp_5pn_ssb"><cmdname>AT+MHTTPDLFILE=&lt;url>,&lt;local_path>[,&lt;progind>[,&lt;range>[,&lt;eof>[,&lt;ssl_id>]]]]</cmdname> </codeblock></entry>
+                        <entry>成功<msgblock id="msgblock_ic1_vf5_pqb">OK</msgblock>
+                            错误<msgblock id="msgblock_rtc_vf5_pqb">+CME ERROR: &lt;err></msgblock></entry>
+                    </row>
+                    <row>
+                        <entry>URC</entry>
+                        <entry>
+                            <msgblock id="msgblock_vgf_nvg_xrb">+MHTTPDLFILE: &lt;downloaded>,&lt;content_length>,&lt;percent>[,&lt;entity_length>]</msgblock>
+                        </entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">命令描述</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                >该命令为单步命令，不用先创建实例。该命令为GET请求，报头使用默认报头。请求响应的报头以<cmdname>+MHTTPURC:
+                                "header"</cmdname>形式上报，不存入文件中。下载进度将以URC形式上报。<fn>当服务器以Content-Length模式下发数据，且Content-Length为0时，不上报下载进度。</fn></entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">参数描述</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            ><varname>&lt;url></varname>资源路径，包含host、端口以及path，例如
+                                "http://example.com/abc.txt"或"http://example.com:8080/abc.txt"。<fn>ML307G：如果没有指定https或者http，则默认https。</fn></entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"><varname>&lt;local_path></varname>本地文件路径，长度范围与文件系统相关。<fn>
+                                <div>ML302S/ML307S/ML302A/ML305A/ML307A/ML307G/ML307R/ML307B/ML307C/MR380R<ph
+                                        product="tbd"
+                                        ><?oxy_insert_start author="surui" timestamp="20260616T195222+0800"?>/MR380M<?oxy_insert_end?></ph>：若<varname>&lt;local_path></varname>第一位为正斜杠("/")则将下载文件存储在用户输入的路径下，否则将下载文件存储在<msgph>/etc/http_file/</msgph>路径下。</div>
+                                <div>ML305U/ML305M/ML307X/ML307Y：若<varname>&lt;local_path></varname>仅含有正斜杠("/")则将下载文件存储在用户输入的路径下，若<varname>&lt;local_path></varname>仅含有反斜杠("\")或者不包含斜杠则将下载文件存储在<msgph>/etc/http_file/</msgph>路径下。</div>
+                                <div>ML307Y：目录会占用空间，建议尽量使用单级目录。</div>
+                            </fn></entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            ><varname>&lt;progind></varname>下载进度上报提示长度，下载的数据每达到指定长度时上报一次进度提示URC，默认值0，不上报中间进度，只上报最后结果。</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            ><varname>&lt;range></varname>资源下载范围（需服务器支持），参考RFC2616关于Range字段的说明，字符串格式，如"bytes=500-900"代表传输文件的第500到900，共401字节。</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                    ><varname>&lt;eof></varname>文件写入方式，默认值0。<fn>当<varname>&lt;range></varname>不设置时，<varname>&lt;eof></varname>设置为1时，模组内部将自动实现断点续传，即如下载过程异常中断，下一次请求同一文件时，模组内部将继续下载上次内容之后的数据。如果文件已下载完成，请不要按此方式重复下载，否则可能导致下载异常，可删除文件后或按覆盖方式下载。使用断点续传功能之前，请确保已下载的数据是从第一位开始下载的。当<varname>&lt;eof></varname>设置为0时，系统在打开文件的瞬间即清空原文件内容（即使新下载的文件实际为空）。若后续下载过程中因存储空间不足等原因导致写入失败，原文件内容无法恢复。</fn></entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">
+                            <parml>
+                                <plentry>
+                                    <pt>0</pt>
+                                    <pd>覆盖方式写入（清空当前文件后写入）</pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>1</pt>
+                                    <pd>追加方式写入（在当前文件尾继续写入）</pd>
+                                </plentry>
+                            </parml>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                    ><varname>&lt;ssl_id></varname>SSL上下文索引号，指定当前实例使用的SSL上下文，范围可参见文档《SSL用户手册》，该参数不设置时，不使能SSL，设置时即使能SSL。<fn>ML302A/ML305A/ML307A/ML307G/ML307S/ML305U/ML305M/ML307R/ML307B/ML307C/ML307X/ML307Y：<varname>&lt;ssl_id></varname>参数范围0~5。</fn></entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            ><varname>&lt;downloaded></varname>已下载长度。</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            ><varname>&lt;content_length></varname>本次下载总长度，如果请求响应为Chunked模式，中间结果上报时将显示为0。</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            ><varname>&lt;percent></varname>下载进度百分比，如果请求响应为Chunked模式，中间结果上报时将显示为0，传输完成时提示100。</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                ><varname>&lt;entity_length></varname>下载文件的总长度，当指定<varname>&lt;range></varname>且服务器回复Content-Range字段时有效。</entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">示例</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                >下载到文件<msgblock id="codeblock_rm3_bxj_1rb"><cmdname>AT+MHTTPDLFILE="http://120.27.12.119:10080/get","/test.txt"</cmdname>
+OK
++MHTTPURC: "header",0,200,225,HTTP/1.1 200 OK
+Server: nginx/1.18.0
+Date: Wed, 28 Jul 2021 02:46:45 GMT
+Content-Type: application/json
+Content-Length: 145
+Connection: keep-alive
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Credentials: true
++MHTTPDLFILE: 145,145,100</msgblock>下载文件到用户输入的路径下<msgblock id="msgblock_zbn_tjp_55b"><cmdname>AT+MHTTPDLFILE="http://120.27.12.119:10080/get","/test.txt"</cmdname>
+OK
++MHTTPURC: "header",2,200,225,HTTP/1.1 200 OK
+Server: nginx/1.18.0
+Date: Fri, 09 Sep 2022 09:39:04 GMT
+Content-Type: application/json
+Content-Length: 189
+Connection: keep-alive
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Credentials: true
++MHTTPDLFILE: 189,189,100
+<cmdname>AT+MFLIST="/"</cmdname>
++MFLIST: "/test.txt",189
+OK</msgblock>下载文件到<msgph>/etc/http_file/</msgph>路径下<msgblock id="msgblock_dg2_wjp_55b"><cmdname>AT+MHTTPDLFILE="http://120.27.12.119:10080/get","test.txt"</cmdname>
+OK
++MHTTPURC: "header",2,200,225,HTTP/1.1 200 OK
+Server: nginx/1.18.0
+Date: Fri, 09 Sep 2022 09:40:13 GMT
+Content-Type: application/json
+Content-Length: 189
+Connection: keep-alive
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Credentials: true
++MHTTPDLFILE: 189,189,100
+<cmdname>AT+MFLIST="/etc/http_file/"</cmdname>
++MFLIST: "/etc/http_file/test.txt",189
+OK</msgblock></entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        <section id="section_itc_vyt_rrb">
+            <note id="note_x5j_vyt_rrb"><ph product="tbd"
+                >M5310-E/MN327/MN328/</ph>MN318/MN316/MN319/MN319-A/MN326/MN316A/MN326A/ML307M/ML307H不支持该命令。</note>
+        </section>
+    </refbody>
+</reference>
+<?oxy_options track_changes="on"?>

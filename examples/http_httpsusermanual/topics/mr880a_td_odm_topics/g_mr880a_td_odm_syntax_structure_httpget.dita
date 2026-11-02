@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="ZH-CN_TOPIC_0000002224701809-chtext">
+        <title>语法结构</title>
+        <body>
+          <table colsep="1" frame="all" rowsep="1">
+            <tgroup cols="2">
+              <colspec colname="col1" colnum="1" colwidth="0.9*"/>
+              <colspec colname="col2" colnum="2" colwidth="1.1*"/>
+              <thead>
+                <row>
+                  <entry>命令类型</entry>
+                  <entry>返回值</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry>
+                    <div>若&lt;request_header&gt;为
+0（禁用自定义HTTP请求头信息）</div>
+                    <div>AT^HTTPGET=&lt;rsptime&gt;</div>
+                  </entry>
+                  <entry>
+                    <div>&lt;CR&gt;&lt;LF&gt;OK&lt;CR&gt;&lt;LF&gt;</div>
+                    <div>^HTTPGET:
+&lt;err&gt;[,&lt;httprspcode&gt;[,&lt;content_length&gt;]]&lt;CR&gt;&lt;LF&gt;
+//模块收到来自
+HTTP服务器的响应后，将上报该URC</div>
+                  </entry>
+                </row>
+                <row>
+                  <entry>
+                    <div>若&lt;request_header&gt;为
+1（启用自定义HTTP请求头信息）</div>
+                    <div>
+AT^HTTPGET=&lt;rsptime&gt;,&lt;data_length&gt;[,&lt;input_time&gt;]</div>
+                  </entry>
+                  <entry>
+                    <div>&lt;CR&gt;&lt;LF&gt;CONNECT&lt;CR&gt;&lt;LF&gt;</div>
+                    <div>
+请输入&lt;自定义HTTP请求头信息&gt;章节格式请求头
+(返回CONNECT进入数据模式,
+需要输入HTTP
+GET请求头)</div>
+                    <div>正确情况：</div>
+                    <div>OK&lt;CR&gt;&lt;LF&gt;</div>
+                  </entry>
+                </row>
+                <row>
+                  <entry>AT^HTTPGET=?</entry>
+                  <entry>
+                    <div>&lt;CR&gt;&lt;LF&gt;^HTTPGET:
+(1-65535),(1-2048),(1-65535)&lt;CR&gt;&lt;LF&gt;</div>
+                    <div>&lt;CR&gt;&lt;LF&gt;OK&lt;CR&gt;&lt;LF&gt;</div>
+                  </entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </table>
+        </body>
+      </topic>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="ZH-CN_TOPIC_0000002189261768-chtext">
+        <title>命令说明</title>
+        <body>
+          <p>该命令用于通过
+UART/USB 发送 POST 请求到
+HTTP服务器。根据在
+AT^HTTPCFG="requestheader"[,&lt;request_header&gt;]中配置的&lt;request_header&gt;，AT^HTTPPOST
+设置命令有两种形式。</p>
+          <ul>
+            <li>若&lt;request_header&gt;为
+0，则通过 UART/USB 口输入
+POST 请求体。</li>
+            <li>若&lt;request_header&gt;为
+1，则通过 UART/USB 口输入
+POST 请求头信息和 POST
+请求体。</li>
+          </ul>
+          <p>发送 AT^HTTPPOST 后：</p>
+          <ul>
+            <li>若 125 秒内返回
+CONNECT，则表示
+HTTP服务器连接成功。</li>
+            <li>若 125 秒内未返回
+CONNECT，将输出ERROR。</li>
+          </ul>
+          <p>执行 AT^HTTPPOST 返回 OK
+后，需要等待一段时间（参考网络和&lt;rsptime&gt;）才会输出
+URC。</p>
+          <p>^HTTPPOST:
+&lt;err&gt;[,&lt;httprspcode&gt;[,&lt;content_length&gt;]]</p>
+          <p>
+AT^HTTPPOST=&lt;data_length&gt;[,&lt;input_time&gt;,&lt;rsptime&gt;]</p>
+          <p>若参数格式正确且
+HTTP服务器连接成功：</p>
+          <p>CONNECT</p>
+          <p>TA
+切换到透传模式（即数据模式），即可输入
+HTTP POST 请 求 头 和
+请求体 (若&lt;request_header&gt;为
+0,则只需输入请求体，不需要请求头)。
+当 输 入 的 数 据 长
+度 达 到&lt;data_length&gt;，TA
+将切换回命令模式并上报以下结果：</p>
+          <p>OK</p>
+          <p>模块收到来自
+HTTP服务器响应后，将上报以下
+URC：^HTTPPOST:
+&lt;err&gt;[,&lt;httprspcode&gt;[,&lt;content_length&gt;]]若输入时间达到&lt;input_time&gt;，但收到的数据长度小于&lt;data_length&gt;，TA
+将切换回命令模式并上报以下结果：</p>
+          <p>ERROR</p>
+          <p>
+若参数格式不正确或有其他错误发生：ERROR</p>
+        </body>
+      </topic>

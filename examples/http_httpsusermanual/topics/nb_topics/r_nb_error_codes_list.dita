@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="reference_rvw_hgm_gqb">
+    <title>错误代码</title>
+    <refbody>
+        <table id="table_ttt_zfx_jqb">
+            <title>M5310-E/MN328-B的错误码</title>
+            <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="3*" align="left"/>
+                <colspec colname="c2" colnum="2" colwidth="7*" align="left"/>
+                <thead>
+                    <row>
+                        <entry>状态码</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>-1</entry>
+                        <entry>Memory error</entry>
+                    </row>
+                    <row>
+                        <entry>-2</entry>
+                        <entry>Buffer error</entry>
+                    </row>
+                    <row>
+                        <entry>-3</entry>
+                        <entry>TCP Timeout or Unkown client error</entry>
+                    </row>
+                    <row>
+                        <entry>-4</entry>
+                        <entry>Routing error or HTTP parse error</entry>
+                    </row>
+                    <row>
+                        <entry>-5</entry>
+                        <entry>TCP operation in progress or client DNS error</entry>
+                    </row>
+                    <row>
+                        <entry>-6</entry>
+                        <entry>TCP illegal value or URL parse error</entry>
+                    </row>
+                    <row>
+                        <entry>-7</entry>
+                        <entry>Operation would block</entry>
+                    </row>
+                    <row>
+                        <entry>-8</entry>
+                        <entry>Address in use</entry>
+                    </row>
+                    <row>
+                        <entry>-9</entry>
+                        <entry>Already connecting</entry>
+                    </row>
+                    <row>
+                        <entry>-10</entry>
+                        <entry>Connection already established</entry>
+                    </row>
+                    <row>
+                        <entry>-11</entry>
+                        <entry>No connection</entry>
+                    </row>
+                    <row>
+                        <entry>-12</entry>
+                        <entry>Interface error</entry>
+                    </row>
+                    <row>
+                        <entry>-13</entry>
+                        <entry>Connection aborted</entry>
+                    </row>
+                    <row>
+                        <entry>-14</entry>
+                        <entry>Connection reset</entry>
+                    </row>
+                    <row>
+                        <entry>-15</entry>
+                        <entry>Connection closed</entry>
+                    </row>
+                    <row>
+                        <entry>-16</entry>
+                        <entry>Illegal argument</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        <table id="table_uxn_ql3_ncc">
+            <title>MN316A的错误码</title>
+            <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="3*"/>
+                <colspec colname="c2" colnum="2" colwidth="7*"/>
+                <thead>
+                    <row>
+                        <entry align="left">状态码</entry>
+                        <entry align="left">描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry align="left">9100 </entry>
+                        <entry>无效的HTTP ID</entry>
+                    </row>
+                    <row>
+                        <entry>9101 </entry>
+                        <entry>无效的证书类型</entry>
+                    </row>
+                    <row>
+                        <entry>9102 </entry>
+                        <entry>创建失败</entry>
+                    </row>
+                    <row>
+                        <entry>9103 </entry>
+                        <entry>不支持SSL方式</entry>
+                    </row>
+                    <row>
+                        <entry>9104 </entry>
+                        <entry>正在连接</entry>
+                    </row>
+                    <row>
+                        <entry>9105 </entry>
+                        <entry>发送错误</entry>
+                    </row>
+                    <row>
+                        <entry>9106 </entry>
+                        <entry>关闭错误</entry>
+                    </row>
+                    <row>
+                        <entry>9107 </entry>
+                        <entry>Header设置错误</entry>
+                    </row>
+                    <row>
+                        <entry>9108 </entry>
+                        <entry>Content设置错误</entry>
+                    </row>
+                    <row>
+                        <entry>其他 </entry>
+                        <entry>参考《MN316 AT命令用户手册》</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </refbody>
+</reference>

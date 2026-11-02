@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="Toc2213">
+      <title>创建实例</title>
+      <body>
+        <table colsep="1" frame="all" rowsep="1">
+          <tgroup cols="2">
+            <colspec colname="col1" colnum="1" colwidth="1.2*"/>
+            <colspec colname="col2" colnum="2" colwidth="0.8*"/>
+            <thead>
+              <row>
+                <entry>命令</entry>
+                <entry>响应</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>AT+HTTPCREATE=&lt;url&gt;[,&lt;username&gt;,&lt;
+password&gt;]</entry>
+                <entry>
+                  <div>+HTTPCREATE:&lt;httpclient_id&gt;</div>
+                  <div>OK</div>
+                  <div>或ERROR</div>
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+        <p>命令说明：</p>
+        <p>
+创建HTTP实例，创建成功后，会以“+HTTPCREATE:”主动上报方式返回通信套件实例ID。目前模组只支持创建一个通信套件实例。</p>
+        <p>参数描述：</p>
+        <p>
+&lt;url&gt;：服务器域名或者IP地址</p>
+        <p>
+&lt;username&gt;:授权的用户名</p>
+        <p>&lt;password&gt;:授权的密码</p>
+        <p>&lt;id&gt;:创建的HTTP实例id</p>
+        <p>注：</p>
+        <p>
+1、url必须符合协议格式：http[s]://host[:port][/[path]，且url中的
+path 字段将被忽略。</p>
+        <p>2、user 和 password
+用于需要鉴权的网站，支持基本鉴权。</p>
+        <p>典型示例:</p>
+        <p>AT+HTTPCREATE=http://www.xytest.site:3000</p>
+        <p>+HTTPCREATE:0 //返回的 HTTP 实例
+ID，后续操作以此为参考。</p>
+        <p>OK</p>
+      </body>
+    </topic>

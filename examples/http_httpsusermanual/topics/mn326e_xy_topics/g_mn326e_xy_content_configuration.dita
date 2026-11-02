@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="Toc28050">
+      <title>内容配置</title>
+      <body>
+        <table colsep="1" frame="all" rowsep="1">
+          <tgroup cols="2">
+            <colspec colname="col1" colnum="1" colwidth="1.1*"/>
+            <colspec colname="col2" colnum="2" colwidth="0.9*"/>
+            <thead>
+              <row>
+                <entry>命令</entry>
+                <entry>响应</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+AT+HTTPCONTENT=&lt;id&gt;[,&lt;content&gt;[,&lt;encode_method&gt;]]</entry>
+                <entry>
+                  <div>OK</div>
+                  <div>
+或+HTTPCONTENT:&lt;id&gt;,&lt;length&gt;&lt;CR&gt;&lt;LF&gt;&lt;content&gt;</div>
+                  <div>OK</div>
+                  <div>或ERROR</div>
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+        <p>命令说明：</p>
+        <p>该命令设置并查询
+HTTP 内容信息。</p>
+        <p>参数描述：</p>
+        <p>
+&lt;id&gt;：必配参数，由AT+HTTPCREATE命令创建的客户端实例。</p>
+        <p>
+&lt;content&gt;：选配参数，将要配置的头部信息。</p>
+        <p>
+&lt;encode_method&gt;：选配参数，指明输入参数&lt;content&gt;的格式为转义字符或者十六进制ASCII码。</p>
+        <p>
+0：转义字符串，默认值</p>
+        <p>
+1：十六进制字符串</p>
+        <p>注：</p>
+        <p>当输入的 content
+字段为空时，将清空此前已输入
+content。</p>
+        <p>当输入的 content
+字段不为空时，新输入的content将添加在上次已输入content之后。</p>
+        <p>典型示例</p>
+        <table colsep="1" frame="all" rowsep="1">
+          <tgroup cols="1">
+            <colspec colname="col1" colnum="1" colwidth="1*"/>
+            <tbody>
+              <row>
+                <entry>
+                  <p>
+//例1：向id为0的http实例中添加内容信息，且输入编码为16进制ASCII码</p>
+                  <p>AT+HTTPCONTENT=0,7b2252504d223a32327d0d0a,1</p>
+                  <p>OK</p>
+                  <p>
+//例2：向id为0的http实例中追加内容信息，且输入编码为转义字符</p>
+                  <p>AT+HTTPCONTENT=0,"{\"RPM\":22}\r\n",0</p>
+                  <p>OK</p>
+                  <p>
+//例3：查询已输入的头部信息</p>
+                  <p>AT+HTTPCONTENT=0</p>
+                  <p>+HTTPCONTENT:0,24</p>
+                  <p>{"RPM":22}</p>
+                  <p>{"RPM":22}</p>
+                  <p>OK</p>
+                  <p>
+//例4：删除所有已输入的头部信息（&lt;content&gt;参数为空即为删除之前所输入）</p>
+                  <p>AT+HTTPCONTENT=0,,0</p>
+                  <p>OK</p>
+                </entry>
+              </row>
+            </tbody>
+        
+          </tgroup>
+        </table>
+      </body>
+    </topic>

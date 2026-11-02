@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="reference_j2f_vyg_grb">
+    <title><?oxy_comment_start author="zhangqin1@cmiot.cmcc" timestamp="20241101T141948+0800" comment="该内容模块为基础版本共用，请勿随意删减。若需添加仅适用于某型号的内容，请添加批注说明"?>POST Data<?oxy_comment_end?></title>
+    <refbody>
+        <section id="section_rw1_xyg_grb">
+                        <msgblock id="msgblock_axm_xyg_grb"><cmdname>AT+HTTPCREATE="http://iot.10086.cn/"</cmdname>	/*Create http instance. */
++HTTPCREATE:0    /*The module returns httpclient id:0.  */	
+OK
+<cmdname>AT+HTTPHEADER=0,"Connection: keep-alive\r\nAccept: */*\r\nOrigin: http://iot.10086.cn\r\nX-Requested-With: XMLHttpRequest\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.79 Safari/537.36\r\nContent-Type: application/x-www-form-urlencoded; charset=UTF-8\r\nReferer: http://iot.10086.cn/cooperation/index/cid/174\r\nAccept-Encoding: gzip, deflate\r\nAccept-Language: zh-CN,zh;q=0.9\r\n"</cmdname>    /*Configure HTTP header info. for transmission.  */
+OK
+<cmdname>AT+HTTPCONTENT=0,"num=1&amp;type=1&amp;info=%E5%8F%B3%E4%BE%A7-%E8%81%94%E7%B3%BB%E6%88%91%E4%BB%AC"</cmdname>	
+OK    /*Configure HTTP content info. for transmission.  */
+<cmdname>AT+HTTPSEND=0,1,"/Commom/buried_point"</cmdname> /*Send POST request packet (method parameter is 1) with the absolute path of the URL resource.  */
+OK
++HTTPNMIH:0,0,468    /*Successfully received server response header info.  */
+Server: nginx
+Date: Sun, 10 Jun 2018 04:02:38 GMT
+Content-Type: text/html; charset=UTF-8
+Transfer-Encoding: chunked
+Connection: keep-alive
+Set-Cookie: think_language=zh-CN; expires=Sun, 10-Jun-2018 05:02:38 GMT; Max-Age=3600; path=/
+Set-Cookie: PHPSESSID=l077puu6ri95pnb35n61obk2b0; path=/; HttpOnly
+Expires: Thu, 19 Nov 1981 08:52:00 GMT
+Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0
+Pragma: no-cache
+Content-Encoding: gzip
++HTTPNMIC:0,1,63,63,63   /*Successfully received server response content info. */
+?\0\0\0\0\0\0 ——玍*.I,)-V?訯侍K薟睷?5324?55睱S襋JI,I ——??\0#??\0\0\0    
++HTTPNMIC:0,0,63,63,0	
++HTTPERR:0,-14
++HTTPDISCON:0    /*Server connection lost indication.  */</msgblock>
+        </section>
+    </refbody>
+</reference>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="Toc2213">
+      <title>Create Instance</title>
+      <body>
+        <table colsep="1" frame="all" rowsep="1">
+                    <tgroup cols="2">
+            <colspec colname="col1" colnum="1" colwidth="1.2*"/>
+            <colspec colname="col2" colnum="2" colwidth="0.8*"/>
+            <thead>
+              <row>
+                <entry>Command</entry>
+                <entry>Response</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>AT+HTTPCREATE=&lt;url&gt;[,&lt;username&gt;,&lt;
+password&gt;]</entry>
+                <entry>
+                  <div>+HTTPCREATE:&lt;httpclient_id&gt;</div>
+                  <div>OK</div>
+                  <div>or ERROR</div>
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+        <p>Command Description:</p>
+        <p>
+Create an HTTP instance. Upon successful creation, the communication suite instance ID shall be returned via the unsolicited reporting format "+HTTPCREATE:".  The module currently supports creating only one instance of the communication suite. </p>
+        <p>Parameter Description:</p>
+        <p>
+&lt;url&gt;: Server domain name or IP address</p>
+        <p>
+&lt;username&gt;: Authorized username</p>
+        <p>&lt;password&gt;: Authorized password </p>
+        <p>&lt;id&gt;: Created HTTP instance id</p>
+        <p>Note:</p>
+        <p>
+1. The URL must conform to the protocol format: http[s]://host[:port][/[path]]. The path field in the URL shall be ignored.</p>
+        <p>
+2. user and password
+Used for websites that require authentication. Supports basic authentication. </p>
+        <p>Typical Example:</p>
+        <p>AT+HTTPCREATE=http://www.xytest.site:3000</p>
+        <p>+HTTPCREATE:0 // Returned HTTP instance ID, which shall be used as a reference for subsequent operations. </p>
+        <p>OK</p>
+      </body>
+    </topic>

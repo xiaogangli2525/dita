@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="reference_qq2_dmg_grb">
+    <title>HTTP Examples </title>
+        <shortdesc>This section describes the HTTP-related operational procedures, including instance creation, general parameter configuration, and GET/PUT/POST request handling etc.  </shortdesc>
+    <refbody>
+        <section id="section_u4s_prg_grb">
+            <title>Instance Creation &amp; Parameter Configuration </title>
+                        <msgblock id="msgblock_m1w_qrg_grb"><cmdname>AT+MHTTPCREATE="http://120.27.12.119:10080"</cmdname>   /*Instance creation*/
++MHTTPCREATE: 0
+OK
+<cmdname>AT+MHTTPCFG="header",0,"Connection: close"</cmdname>   /*Header configuration (Configure according to actual requirements)*/
+OK
+<cmdname>AT+MHTTPCFG="header",0</cmdname>
++MHTTPCFG: "header",0,19,Connection: close
+OK
+<cmdname>AT+MHTTPHEADER=0,0,0,"api-key: FC9B69m4prHH2j7ljBbA=hHlbMI="</cmdname>
+OK</msgblock>
+            <note id="note_jfb_1sg_grb" type="important"
+                >Post-initialization and pre-request, parameters are configurable. The example above demonstrates minimal setup. Users may perform additional parameter configuration at this stage according to actual application requirements.  </note>
+        </section>
+        <section id="section_sx4_xvg_grb">
+            <title>GET Request</title>
+                        <msgblock id="msgblock_lck_yvg_grb"><cmdname>AT+MHTTPREQUEST=0,1,0,"/get"</cmdname>   /*GET request*/
+OK
++MHTTPURC: "header",0,200,225,HTTP/1.1 200 OK
+Server: nginx/1.18.0
+Date: Mon, 26 Jul 2021 06:18:46 GMT
+Content-Type: application/json
+Content-Length: 145
+Connection: close
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Credentials: true
++MHTTPURC: "content",0,145,145,145,{"args":{},"headers":{"Connection":"close","Content-Length":"0","Host":"localhost:6000"},"origin":"127.0.0.1","url":"http://localhost:6000/get"}</msgblock>
+        </section>
+        <section id="section_s3l_msg_grb">
+            <title>POST Request</title>
+                        <msgblock id="msgblock_plm_nsg_grb"><cmdname>AT+MHTTPCONTENT=0,0,0,"{"id":"speed1"\r,"tags":["mobile"],"unit":"m/s"\r,"unit_symbol":"m/s"}"</cmdname>    /*content configuration.  ML302S/ML307S/ML302A/ML305A/ML307A/ML307G/ML305U/ML305M/ML307R/ML307B/ML307C/ML307M/ML307H/ML307N/ML307X/ML307Y: String parameters must not contain the quotation mark. To include quotation mark within string parameters, data mode transmission shall be used.  */
+OK
+<cmdname>AT+MHTTPREQUEST=0,2,0,"/post"</cmdname>   /*POST request*/
+OK
++MHTTPURC: "header",0,200,220,HTTP/1.1 200 OK
+Server: nginx/1.18.0
+Date: Mon, 26 Jul 2021 06:25:23 GMT
+Content-Type: application/json
+Content-Length: 278
+Connection: close
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Credentials: true
++MHTTPURC: "content",0,278,278,278,{"args":{},"data":"{\"id\":\"speed1\"\\r,\"tags\":[\"mobile\"],\"unit\":\"m/s\"\\r,\"unit_symbol\":\"m/s\"}","files":{},"form":{},"headers":{"Connection":"close","Content-Length":"70","Host":"localhost:6000"},"json":null,"origin":"127.0.0.1","url":"http://localhost:6000/post"}</msgblock>
+        </section>
+        <section id="section_scg_ssg_grb">
+            <title>PUT request </title>
+                        <msgblock id="msgblock_zzg_tsg_grb"><cmdname>AT+MHTTPCONTENT=0,0,0,"{"id":"speed1"\r,"tags":["mobile"],"unit":"m/s"\r,"unit_symbol":"m/s"}"</cmdname>   /*content configuration.  ML302S/ML307S/ML302A/ML305A/ML307A/ML307G/ML305U/ML305M/ML307R/ML307B/ML307C/ML307M/ML307H/ML307N/ML307X/ML307Y: String parameters must not contain the quotation mark. To include quotation mark within string parameters, data mode transmission shall be used.  */
+OK
+<cmdname>AT+MHTTPREQUEST=0,3,0,"/put"</cmdname>   /*PUT Request */
+OK
++MHTTPURC: "header",0,200,220,HTTP/1.1 200 OK
+Server: nginx/1.18.0
+Date: Mon, 26 Jul 2021 06:26:42 GMT
+Content-Type: application/json
+Content-Length: 277
+Connection: close
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Credentials: true
+
++MHTTPURC: "content",0,277,277,277,{"args":{},"data":"{\"id\":\"speed1\"\\r,\"tags\":[\"mobile\"],\"unit\":\"m/s\"\\r,\"unit_symbol\":\"m/s\"}","files":{},"form":{},"headers":{"Connection":"close","Content-Length":"70","Host":"localhost:6000"},"json":null,"origin":"127.0.0.1","url":"http://localhost:6000/put"}</msgblock>
+        </section>
+        <section id="section_ijh_5sg_grb">
+            <title>POST Request in the Chunked Mode </title>
+                        <msgblock id="msgblock_rhp_vsg_grb"><cmdname>AT+MHTTPCREATE="http://api.heclouds.com/"</cmdname>   /*Instance creation*/
++MHTTPCREATE: 0
+OK
+<cmdname>AT+MHTTPCFG="chunked",0,1</cmdname>   /*Configure to chunked mode*/
+OK
+<cmdname>AT+MHTTPCFG="encoding",0,2</cmdname>   /*Escape character input configuration*/
+OK
+<cmdname>AT+MHTTPCFG="header",0,"api-key: 2ATvkByTxig2uy55rlQPLf3xxVY="</cmdname>   /*Header configuration*/
+OK
+<cmdname>AT+MHTTPREQUEST=0,2,0,"/devices/622957377/datastreams"</cmdname>   /*POST request send*/
+OK
++MHTTPURC: "ind",0   /*URC report, indicating content data can be sent. */
+<cmdname>AT+MHTTPCONTENT=0,0,0,"{"id":"speed1"\r,"tags":["mobile"],"unit":"m/s"\r,"unit_symbol":"m/s"}"</cmdname>/*Data send*/
+OK
++MHTTPURC: "header",0,200,175,HTTP/1.1 200 OK
+Date: Mon, 29 Nov 2021 07:33:31 GMT
+Content-Type: application/json
+Content-Length: 66
+Connection: keep-alive
+Server: Apache-Coyote/1.1
+Pragma: no-cache
+
++MHTTPURC: "content",0,66,66,66,{"errno":11,"error":"datastream already exists: 622957377.speed1"}</msgblock>
+        </section>
+        <section id="section_owv_wsg_grb">
+            <title>Request Termination during Requesting Process </title>
+                        <msgblock id="msgblock_okr_xsg_grb"><cmdname>AT+MHTTPREQUEST=0,1,0,"/get"</cmdname>
+OK
+<cmdname>AT+MHTTPTERM=0</cmdname>
+OK</msgblock>
+        </section>
+        <section id="section_uv4_ysg_grb">
+            <title>Instance Deletion </title>
+                        <msgblock id="msgblock_sm2_zsg_grb"><cmdname>AT+MHTTPDEL=0</cmdname>
+OK</msgblock>
+        </section>
+    </refbody>
+</reference>

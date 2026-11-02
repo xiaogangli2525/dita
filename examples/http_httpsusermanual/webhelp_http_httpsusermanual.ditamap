@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE bookmap PUBLIC "-//OASIS//DTD DITA BookMap//EN" "bookmap.dtd">
+<bookmap>
+    <booktitle>
+        <mainbooktitle>HTTP/HTTPS用户手册</mainbooktitle>
+    </booktitle>
+    <frontmatter>
+        <notices href="topics/g_about_the_document.dita"/>
+    </frontmatter>
+    <chapter href="topics/c_introduction.dita">
+        <topicref href="topics/g_applicable_model.dita" outputclass="topic/apb"/>
+    </chapter>
+    <chapter href="contentmodule/topics/c_at_command_overview_cn.dita">
+        <topicref href="contentmodule/topics/c_at_command_syntax_format_cn.dita"/>
+        <topicref href="contentmodule/topics/c_at_command_response_cn.dita"/>
+    </chapter>
+    <chapter href="topics/g_at_commands_of_http_https_protocol.dita">
+        <topicref href="topics/r_at_mhttpcfg.dita"/>
+        <topicref href="topics/r_at_mhttpcreate.dita"/>
+        <topicref href="topics/r_at_mhttpheader.dita"/>
+        <topicref href="topics/r_at_mhttpcontent.dita"/>
+        <topicref href="topics/r_at_mhttprequest.dita"/>
+        <topicref href="topics/r_at_mhttpread.dita"/>
+        <topicref href="topics/r_at_mhttpdel.dita"/>
+        <topicref href="topics/r_at_mhttpterm.dita"/>
+        <topicref href="topics/r_at_mhttpdlfile.dita"/>
+        <topicref href="topics/r_mhttpurc.dita"/>
+    </chapter>
+    <chapter href="topics/g_examples.dita">
+        <topicref href="topics/r_http_example.dita"/>
+        <topicref href="topics/r_https_example.dita"/>
+        <topicref href="topics/r_cache_mode_example.dita"/>
+        <topicref href="topics/r_download_file_example.dita"/>
+    </chapter>
+    <chapter href="reusable/r_error_codes.dita"/>
+    <backmatter/>
+</bookmap>

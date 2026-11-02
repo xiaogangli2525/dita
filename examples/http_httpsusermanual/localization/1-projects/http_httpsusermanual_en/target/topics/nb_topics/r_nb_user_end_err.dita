@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="reference_rvw_hgm_gqb">
+    <title><?oxy_comment_start author="zhangqin1@cmiot.cmcc" timestamp="20241101T142042+0800" comment="该内容模块为基础版本共用，请勿随意删减。若需添加仅适用于某型号的内容，请添加批注说明"?>Client error <?oxy_comment_end?></title>
+    <refbody>
+        <table id="table_ttt_zfx_jqb">
+                        <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="3*" align="left"/>
+                <colspec colname="c2" colnum="2" colwidth="7*" align="left"/>
+                <thead>
+                    <row>
+                        <entry>Status Code</entry>
+                        <entry>Description </entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>400</entry>
+                        <entry>Bad Request</entry>
+                    </row>
+                    <row>
+                        <entry>401</entry>
+                        <entry>Unauthorized</entry>
+                    </row>
+                    <row>
+                        <entry>402</entry>
+                        <entry>Payment Required</entry>
+                    </row>
+                    <row>
+                        <entry>403</entry>
+                        <entry>Forbidden</entry>
+                    </row>
+                    <row>
+                        <entry>404</entry>
+                        <entry>Not Found</entry>
+                    </row>
+                    <row>
+                        <entry>405</entry>
+                        <entry>Method Not Allowed</entry>
+                    </row>
+                    <row>
+                        <entry>406</entry>
+                        <entry>Not Accepted</entry>
+                    </row>
+                    <row>
+                        <entry>407</entry>
+                        <entry>Proxy Authentication Required</entry>
+                    </row>
+                    <row>
+                        <entry>408</entry>
+                        <entry>Request Timeout</entry>
+                    </row>
+                    <row>
+                        <entry>409</entry>
+                        <entry>Conflict</entry>
+                    </row>
+                    <row>
+                        <entry>410</entry>
+                        <entry>Gone</entry>
+                    </row>
+                    <row>
+                        <entry>411</entry>
+                        <entry>Length Required</entry>
+                    </row>
+                    <row>
+                        <entry>412</entry>
+                        <entry>Precondition Failed</entry>
+                    </row>
+                    <row>
+                        <entry>413</entry>
+                        <entry>Request Entity Too Large</entry>
+                    </row>
+                    <row>
+                        <entry>414</entry>
+                        <entry>Request-URI Too Long</entry>
+                    </row>
+                    <row>
+                        <entry>415</entry>
+                        <entry>Unsupported Media Type</entry>
+                    </row>
+                    <row>
+                        <entry>416</entry>
+                        <entry>Requested Range Not Satisfiable</entry>
+                    </row>
+                    <row>
+                        <entry>417</entry>
+                        <entry>Expectation Failed</entry>
+                    </row>
+                    <row>
+                        <entry>421</entry>
+                        <entry>Too Many Connections</entry>
+                    </row>
+                    <row>
+                        <entry>422</entry>
+                        <entry>Unprocessable Entity</entry>
+                    </row>
+                    <row>
+                        <entry>423</entry>
+                        <entry>Locked</entry>
+                    </row>
+                    <row>
+                        <entry>424</entry>
+                        <entry>Failed Dependency</entry>
+                    </row>
+                    <row>
+                        <entry>449</entry>
+                        <entry>Retry With</entry>
+                    </row>
+                    <row>
+                        <entry>451</entry>
+                        <entry>Unavailable For Legal Reasons</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </refbody>
+</reference>

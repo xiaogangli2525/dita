@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="Toc28050">
+      <title>Content Configuration</title>
+      <body>
+        <table colsep="1" frame="all" rowsep="1">
+                    <tgroup cols="2">
+            <colspec colname="col1" colnum="1" colwidth="1.1*"/>
+            <colspec colname="col2" colnum="2" colwidth="0.9*"/>
+            <thead>
+              <row>
+                <entry>Command</entry>
+                <entry>Response</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+AT+HTTPCONTENT=&lt;id&gt;[,&lt;content&gt;[,&lt;encode_method&gt;]]</entry>
+                <entry>
+                  <div>OK</div>
+                  <div>
+or +HTTPCONTENT:&lt;id&gt;,&lt;length&gt;&lt;CR&gt;&lt;LF&gt;&lt;content&gt;</div>
+                  <div>OK</div>
+                  <div>or ERROR</div>
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+        <p>Command Description:</p>
+        <p>This command sets and queries HTTP content information. </p>
+        <p>Parameter Description:</p>
+        <p>
+&lt;id&gt;: Mandatory parameter. Client instance created by the AT+HTTPCREATE command. </p>
+        <p>
+&lt;content&gt;: Optional parameter. Content information to be configured. </p>
+        <p>
+&lt;encode_method&gt;: Optional parameter. Specifies whether the format of the &lt;content&gt; parameter is escaped characters or hexadecimal ASCII code. </p>
+        <p>
+0: Escaped string, default value.</p>
+        <p>
+1: Hexadecimal string.</p>
+        <p>Note:</p>
+        <p>When the input content field is empty, all previously configured content shall be cleared. </p>
+        <p>When the input content field is not empty, the newly input content shall be appended after the previously configured content. </p>
+        <p>Typical Example</p>
+        <table colsep="1" frame="all" rowsep="1">
+          <tgroup cols="1">
+            <colspec colname="col1" colnum="1" colwidth="1*"/>
+            <tbody>
+              <row>
+                <entry>
+                  <p>
+// Example 1: Add content information to the HTTP instance with ID 0. The input encoding is hexadecimal ASCII</p>
+                  <p>AT+HTTPCONTENT=0,7b2252504d223a32327d0d0a,1</p>
+                  <p>OK</p>
+                  <p>
+// Example 2: Append content information to the HTTP instance with ID 0. The input encoding is escaped characters</p>
+                  <p>AT+HTTPCONTENT=0,"{\"RPM\":22}\r\n",0</p>
+                  <p>OK</p>
+                  <p>
+// Example 3: Query the configured header information</p>
+                  <p>AT+HTTPCONTENT=0</p>
+                  <p>+HTTPCONTENT:0,24</p>
+                  <p>{"RPM":22}</p>
+                  <p>{"RPM":22}</p>
+                  <p>OK</p>
+                  <p>
+// Example 4: Delete all configured header information (an empty &lt;content&gt; parameter clears all previously configured content)</p>
+                  <p>AT+HTTPCONTENT=0,,0</p>
+                  <p>OK</p>
+                </entry>
+              </row>
+            </tbody>
+        
+          </tgroup>
+        </table>
+      </body>
+    </topic>

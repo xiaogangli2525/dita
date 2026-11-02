@@ -1,0 +1,423 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="reference_fvd_fy4_cqb">
+    <title>AT+MHTTPCFG Parameters Setting </title>
+        <shortdesc>This command configures general parameters for the instances.  </shortdesc>
+    <refbody>
+        <table id="table_pvb_kbv_3qb">
+                        <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="3*" align="left"/>
+                <colspec colname="c2" colnum="2" colwidth="7*" align="left"/>
+                <thead>
+                    <row>
+                        <entry namest="c1" nameend="c2"><cmdname>AT+MHTTPCFG</cmdname></entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row outputclass="has_bgc">
+                        <entry>Syntax </entry>
+                        <entry>Response </entry>
+                    </row>
+                    <row>
+                        <entry>Test command<codeblock><cmdname>AT+MHTTPCFG=?</cmdname></codeblock></entry>
+                        <entry>If succeed: <msgblock id="msgblock_xcs_nyt_pqb">+MHTTPCFG: (list of supported &lt;cmd&gt;s),(list of supported &lt;httpid&gt;s),
+OK</msgblock>
+                            If fail: <msgblock id="msgblock_pgq_pyt_pqb">+CME ERROR: &lt;err&gt;</msgblock></entry>
+                    </row>
+                    <row>
+                        <entry>Read command <codeblock><cmdname>AT+MHTTPCFG?</cmdname></codeblock></entry>
+                        <entry>If succeed: <msgblock id="msgblock_ln5_fzt_pqb">[+MHTTPCFG: "header",&lt;httpid&gt;[,&lt;header_len&gt;,&lt;header&gt;]
++MHTTPCFG: "chunked",&lt;httpid&gt;,&lt;chunked_mode&gt;
++MHTTPCFG: "cached",&lt;httpid&gt;,&lt;cached&gt;[,&lt;cache_length&gt;]
++MHTTPCFG: "timeout",&lt;httpid&gt;,&lt;conn_timeout&gt;,&lt;rsp_timeout&gt;,&lt;input_timeout&gt;
++MHTTPCFG: "encoding",&lt;httpid&gt;,&lt;input_format&gt;,&lt;output_format&gt;
++MHTTPCFG: "ssl",&lt;httpid&gt;,&lt;ssl_enable&gt;[,&lt;ssl_id&gt;]
++MHTTPCFG: "cid",&lt;httpid&gt;[,&lt;cid&gt;]
++MHTTPCFG: "fragment",&lt;httpid&gt;,&lt;frag_size&gt;,&lt;interval&gt;
++MHTTPCFG: "urlencode",&lt;httpid&gt;,&lt;urlencode_mode&gt;
+[...]]
+OK</msgblock> If fail: 
+                            <msgblock id="msgblock_v25_hzt_pqb">+CME ERROR: &lt;err&gt;</msgblock>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry>Set command (general header setting) <codeblock><cmdname>AT+MHTTPCFG="header"[,&lt;httpid&gt;[,&lt;header&gt;]]</cmdname></codeblock></entry>
+                        <entry>If succeed: <div>Query the general header that are applied to all instances when <varname>&lt;httpid&gt;</varname> and <varname>&lt;header&gt;</varname> are not configured: </div><msgblock id="msgblock_als_lzt_pqb">[+MHTTPCFG: "header",&lt;httpid&gt;,&lt;header_len&gt;,&lt;header&gt;
+[…]]
+OK</msgblock>
+                            Query the general header that are applied to specific instances when <varname>&lt;httpid&gt;</varname> is configured while <varname>&lt;header&gt;</varname> is not: <msgblock id="msgblock_hl4_vcj_lrb">[+MHTTPCFG: "header",&lt;httpid&gt;,&lt;header_len&gt;,&lt;header&gt;]
+OK</msgblock>Configure all parameter and general header: <msgblock id="msgblock_fqg_zcj_lrb">OK</msgblock>If fail: <msgblock id="msgblock_ogt_mzt_pqb">+CME ERROR: &lt;err&gt;</msgblock></entry>
+                    </row>
+                    <row>
+                        <entry>Set command (transmission mode setting) <codeblock><cmdname>AT+MHTTPCFG="chunked"[,&lt;httpid&gt;[,&lt;chunked_mode&gt;]]</cmdname></codeblock></entry>
+                        <entry>If succeed: <div>Query the transmission mode of all instances when <varname>&lt;httpid&gt;</varname> and <varname>&lt;chunked_mode&gt;</varname> are not configured: </div><msgblock id="msgblock_c5x_115_pqb">[+MHTTPCFG: "chunked",&lt;httpid&gt;,&lt;chunked_mode&gt;
+[…]]
+OK</msgblock>
+                            Query the transmission mode of specific instances when <varname>&lt;httpid&gt;</varname> is configured while <varname>&lt;chunked_mode&gt;</varname> is not: <msgblock id="msgblock_pmg_jgj_lrb">+MHTTPCFG: "chunked",&lt;httpid&gt;,&lt;chunked_mode&gt;
+OK</msgblock>Configure all parameter and the transmission mode: 
+                            <msgblock id="msgblock_qmg_jgj_lrb">OK</msgblock>
+                            If fail: <msgblock id="msgblock_afn_b15_pqb">+CME ERROR: &lt;err&gt;</msgblock></entry>
+                    </row>
+                    <row>
+                        <entry>Set command (cache mode setting) <codeblock><cmdname>AT+MHTTPCFG="cached"[,&lt;httpid&gt;[,&lt;cached&gt;[,&lt;cache_length&gt;]]]</cmdname></codeblock></entry>
+                        <entry>If succeed: <div>Query the cache mode of all instances when <varname>&lt;httpid&gt;</varname>, <varname>&lt;cached&gt;</varname> and <varname>&lt;cache_length&gt;</varname> are not configured: </div><msgblock id="msgblock_qrk_j15_pqb">[+MHTTPCFG: "cached",&lt;httpid&gt;,&lt;cached&gt;[,&lt;cache_length&gt;]
+[…]]
+OK</msgblock>
+                            Query the cache mode of specific instances when <varname>&lt;httpid&gt;</varname> is configured while <varname>&lt;cached&gt;</varname> and <varname>&lt;cache_length&gt;</varname> are not: <msgblock id="msgblock_w3w_5gj_lrb">+MHTTPCFG: "cached",&lt;httpid&gt;,&lt;cached&gt;[,&lt;cache_length&gt;]
+OK</msgblock>Configure <varname>&lt;httpid&gt;</varname>, <varname>&lt;cached&gt;</varname> and the cache mode, but not <varname>&lt;cache_length&gt;</varname> or the cache size: <msgblock id="msgblock_vgf_vgj_lrb">OK</msgblock>Configure all parameter, the cache mode and the cache size: <msgblock id="msgblock_pj4_bhj_lrb">OK</msgblock>If fail: <msgblock id="msgblock_ivr_j15_pqb">+CME ERROR: &lt;err&gt;</msgblock></entry>
+                    </row>
+                    <row>
+                        <entry>Set command (timeout setting) <codeblock><cmdname>AT+MHTTPCFG="timeout"[,&lt;httpid&gt;[,&lt;conn_timeout&gt;[,&lt;rsp_timeout&gt;[,&lt;input_timeout&gt;]]]]</cmdname></codeblock></entry>
+                        <entry>If succeed: <div>Query the timeout of all instances when <varname>&lt;httpid&gt;</varname>, <varname>&lt;conn_timeout&gt;</varname>, <varname>&lt;rsp_timeout&gt;</varname> and <varname>&lt;input_timeout&gt;</varname> are not configured: </div><msgblock id="msgblock_mqd_l15_pqb">[+MHTTPCFG: "timeout",&lt;httpid&gt;,&lt;conn_timeout&gt;,&lt;rsp_timeout&gt;[,&lt;input_timeout&gt;]
+[…]]
+OK</msgblock>
+                            Query the timeout of specific instances when <varname>&lt;httpid&gt;</varname> is configured while <varname>&lt;conn_timeout&gt;</varname>, <varname>&lt;rsp_timeout&gt;</varname> and <varname>&lt;input_timeout&gt;</varname> are not: <msgblock id="msgblock_qj5_khj_lrb">+MHTTPCFG: "timeout",&lt;httpid&gt;,&lt;conn_timeout&gt;,&lt;rsp_timeout&gt;[,&lt;input_timeout&gt;]
+OK</msgblock>Configure the corresponding timeout when <varname>&lt;httpid&gt;</varname> is configured, and <varname>&lt;conn_timeout&gt;</varname>, <varname>&lt;rsp_timeout&gt;</varname> and <varname>&lt;input_timeout&gt;</varname> are partially or all configured: <msgblock id="msgblock_zyn_phj_lrb">OK</msgblock>If fail: <msgblock id="msgblock_gtg_l15_pqb">+CME ERROR: &lt;err&gt;</msgblock></entry>
+                    </row>
+                    <row>
+                        <entry>Set command (input/output encoding mode setting) <codeblock><cmdname>AT+MHTTPCFG="encoding"[,&lt;httpid&gt;[,&lt;input_format&gt;[,&lt;output_format&gt;]]]</cmdname></codeblock></entry>
+                        <entry>If succeed: <div>Query the input/output encoding mode of all instances when <varname>&lt;httpid&gt;</varname>, <varname>&lt;input_format&gt;</varname> and <varname>&lt;output_format&gt;</varname> are not configured: </div><msgblock id="msgblock_jkj_n15_pqb">[+MHTTPCFG: "encoding",&lt;httpid&gt;,&lt;input_format&gt;,&lt;output_format&gt;
+[…]]
+OK</msgblock>
+                            Query the input/output encoding mode of specific instances when <varname>&lt;httpid&gt;</varname> is configured while <varname>&lt;input_format&gt;</varname> and <varname>&lt;output_format&gt;</varname> are not: <msgblock id="msgblock_sq4_jcn_lrb">+MHTTPCFG: "encoding",&lt;httpid&gt;,&lt;input_format&gt;,&lt;output_format&gt;
+OK</msgblock>Configure the corresponding encoding mode when <varname>&lt;httpid&gt;</varname> is configured, and <varname>&lt;input_format&gt;</varname> and <varname>&lt;output_format&gt;</varname> are partially or all configured: <msgblock id="msgblock_agx_lcn_lrb">OK</msgblock>If fail: <msgblock id="msgblock_cmm_n15_pqb">+CME ERROR: &lt;err&gt;</msgblock></entry>
+                    </row>
+                    <row>
+                        <entry>Set command (SSL mode setting) <codeblock><cmdname>AT+MHTTPCFG="ssl"[,&lt;httpid&gt;[,&lt;ssl_enable&gt;[,&lt;ssl_id&gt;]]]</cmdname></codeblock></entry>
+                        <entry>If succeed: <div>Query the SSL mode of all instances when <varname>&lt;httpid&gt;</varname>, <varname>&lt;ssl_enable&gt;</varname> and <varname>&lt;ssl_id&gt;</varname> are not configured: </div><msgblock id="msgblock_lvz_415_pqb">[+MHTTPCFG: "ssl",&lt;httpid&gt;,&lt;ssl_enable&gt;[,&lt;ssl_id&gt;]
+[…]]
+OK</msgblock>
+                            Query the SSL mode of specific instances when <varname>&lt;httpid&gt;</varname> is configured while <varname>&lt;ssl_enable&gt;</varname> and <varname>&lt;ssl_id&gt;</varname> are not: <msgblock id="msgblock_nbz_zcn_lrb">+MHTTPCFG: "ssl",&lt;httpid&gt;,&lt;ssl_enable&gt;[,&lt;ssl_id&gt;]
+OK</msgblock>Configure the SSL mode when <varname>&lt;httpid&gt;</varname> is configured, and <varname>&lt;ssl_enable&gt;</varname> and <varname>&lt;ssl_id&gt;</varname> are partially or all configured: <msgblock id="msgblock_y5f_xcn_lrb">OK</msgblock>If fail: <msgblock id="msgblock_bg2_p15_pqb">+CME ERROR: &lt;err&gt;</msgblock></entry>
+                    </row>
+                    <row>
+                        <entry>Set command (CID setting) <codeblock><cmdname>AT+MHTTPCFG="cid"[,&lt;httpid&gt;[,&lt;cid&gt;]]</cmdname></codeblock></entry>
+                        <entry>If succeed: <div>Query the cid of all instances when <varname>&lt;httpid&gt;</varname> and <varname>&lt;cid&gt;</varname> are not configured: </div><msgblock id="msgblock_dfp_q15_pqb">[+MHTTPCFG: "cid",&lt;httpid&gt;[,&lt;cid&gt;]
+[…]]
+OK</msgblock>
+                            Query the cid of specific instances when <varname>&lt;httpid&gt;</varname> is configured while <varname>&lt;cid&gt;</varname> is not: <msgblock id="msgblock_ydp_jdn_lrb">+MHTTPCFG: "cid",&lt;httpid&gt;[,&lt;cid&gt;]
+OK</msgblock>Configure the cid when <varname>&lt;httpid&gt;</varname> and <varname>&lt;cid&gt;</varname> are configured: <msgblock id="msgblock_rh1_ldn_lrb">OK</msgblock>If fail: <msgblock id="msgblock_xns_q15_pqb">+CME ERROR: &lt;err&gt;</msgblock></entry>
+                    </row>
+                    <row>
+                        <entry>Set command (data output flow control setting) <codeblock><cmdname>AT+MHTTPCFG="fragment"[,&lt;httpid&gt;[,&lt;frag_size&gt;[,&lt;interval&gt;]]]</cmdname></codeblock></entry>
+                        <entry>If succeed: <div>Query the data output flow control mode of all instances when <varname>&lt;httpid&gt;</varname>, <varname>&lt;frag_size&gt;</varname> and <varname>&lt;interval&gt;</varname> are not configured: </div><msgblock id="msgblock_l54_s15_pqb">[+MHTTPCFG: "fragment",&lt;httpid&gt;,&lt;frag_size&gt;,&lt;interval&gt;
+[…]]
+OK</msgblock>
+                            Query the data output flow control mode of specific instances when <varname>&lt;httpid&gt;</varname> is configured while <varname>&lt;frag_size&gt;</varname> and <varname>&lt;interval&gt;</varname> are not: <msgblock id="msgblock_yzs_pdn_lrb">+MHTTPCFG: "fragment",&lt;httpid&gt;,&lt;frag_size&gt;,&lt;interval&gt;
+OK</msgblock>Configure the data output flow control mode when <varname>&lt;httpid&gt;</varname> is configured, and <varname>&lt;frag_size&gt;</varname> and <varname>&lt;interval&gt;</varname> are partially or all configured: <msgblock id="msgblock_wyh_rdn_lrb">OK</msgblock>If fail: <msgblock id="msgblock_e5r_s15_pqb">+CME ERROR: &lt;err&gt;</msgblock></entry>
+                    </row>
+                    <row>
+                        <entry>Set command (URL encoding setting) data output flow control setting <codeblock><cmdname>AT+MHTTPCFG="urlencode"[,&lt;httpid&gt;[,&lt;urlencode_mode&gt;]]</cmdname></codeblock></entry>
+                        <entry>If succeed: <div>Query the URL encoding mode of all instances when <varname>&lt;httpid&gt;</varname> and <varname>&lt;urlencode_mode&gt;</varname> are not configured: </div><msgblock id="msgblock_rzl_bb5_pqb">[+MHTTPCFG: "urlencode",&lt;httpid&gt;,&lt;urlencode_mode&gt;
+[…]]
+OK</msgblock>
+                            Query the URL encoding mode of specific instances when <varname>&lt;httpid&gt;</varname> is configured while <varname>&lt;urlencode_mode&gt;</varname> is not: <msgblock id="msgblock_ulx_5dn_lrb">+MHTTPCFG: "urlencode",&lt;httpid&gt;,&lt;urlencode_mode&gt;
+OK</msgblock>Configure the URL encoding mode when <varname>&lt;httpid&gt;</varname> and <varname>&lt;urlencode_mode&gt;</varname> are configured: <msgblock id="msgblock_szb_ydn_lrb">OK</msgblock>If fail: <msgblock id="msgblock_lt4_bb5_pqb">+CME ERROR: &lt;err&gt;</msgblock></entry>
+                    </row>
+                    <row>
+                        <entry>Set command (WTCP mode settings)<fn>Currently, only the ML307B supports "wtcp mode settings". </fn><codeblock id="codeblock_yqd_mfw_4hc"><cmdname>AT+MHTTPCFG="wtcp"[,&lt;avoid_enable&gt;[,&lt;option_kind&gt;]]</cmdname></codeblock></entry>
+                        <entry>If succeed <div>Query the current wtcp mode and TCP option configuration values when <varname>&lt;avoid_enable&gt;</varname> and <varname>&lt;option_kind&gt;</varname> 
+                                are partially or all configured: </div><div>
+                                                                <codeblock id="codeblock_kgv_lhw_4hc">+MHTTPCFG: "wtcp",&lt;avoid_enable&gt;[,&lt;option_kind&gt;]
+OK</codeblock>
+                            </div><div>Configure wtcp mode and TCP option configuration values when <varname>&lt;avoid_enable&gt;</varname> and <varname>&lt;option_kind&gt;</varname> 
+                                are partially or all configured: </div><div>
+                                                                <codeblock id="codeblock_qmk_23w_4hc">OK</codeblock>
+                            </div><div>If fail: </div><div>
+                                                                <codeblock id="codeblock_spt_g3w_4hc">+CME ERROR: &lt;err&gt;</codeblock>
+                            </div></entry>
+                                        </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">Command Description</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                >The READ command returns all configuration parameters of all created instances; in the SET command, if only <varname>&lt;cmd&gt;</varname> (command identifier) is specified, it returns the current configuration parameters of all created instances. If only <varname>&lt;cmd&gt;</varname> and <varname>&lt;httpid&gt;</varname> (client instance ID) are specified, it returns the current configuration parameters of the specified instance. If other parameters are also specified, the corresponding mode will be configured.  Parameter configuration can only be performed after the instance is created. </entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">Parameter Description </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                        ><varname>&lt;cmd&gt;</varname>Command identifier. <fn><div>MN318<ph
+                                        product="tbd"
+                                    >/MN328</ph>/ML307H-GU: both "ssl" setting and "ssl" encrypted transmission are not supported. </div><div/>MN316/MN326: "cid" setting is not supported.<div/><div><ph
+                                        product="tbd"
+                                    >MN327: "ssl" setting is not supported. </ph></div><div/>MN319/MN319-A/MN316A/MN326A<ph
+                                    product="tbd"
+                                    >/M5310-E</ph>: both "ssl" &amp; "cid" setting, and "ssl" encrypted transmission are not supported. <div>Currently, only the ML307B supports the "wtcp" setting.</div></fn></entry>
+                                        </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">
+                            <parml id="parml_cfz_pgj_1rb">
+                                <plentry>
+                                    <pt>header</pt>
+                                    <pd>General header setting applies throughout the instance life cycle. When configuring, fields must be set in the format <msgph>key: 
+                                        value</msgph>. The module saves all configured fields.  </pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>chunked</pt>
+                                    <pd>Transmission mode setting.  The use flow differs between the standard mode (Content-Length mode) and the chunked mode.  In standard mode, the content data is set first before sending the request. In chunked mode, the request is sent first before setting the content data.  </pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>cached</pt>
+                                    <pd>Cache mode setting. When configured in cache mode, received data will be buffered in the module. A notification is reported upon request completion, and the data must be manually read by the user.  </pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>timeout</pt>
+                                    <pd>Timeout setting. It includes connection timeout, response timeout, and data input timeout.  </pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>encoding</pt>
+                                    <pd>Input/output data encoding setting.  </pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>ssl</pt>
+                                    <pd>SSL enable setting. It is used for HTTPS.  </pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>cid</pt>
+                                    <pd>PDP context cid setting.  </pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>fragment</pt>
+                                    <pd>Data output flow control setting. It is used for controlling packetized output during data printing.  </pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>urlencode</pt>
+                                    <pd>URL encoding setting. When enabled, the module automatically encodes the requested path, excluding alphanumeric characters and the symbols such as : -_.!~*'();/?:@&amp;=+$,#.  </pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>wtcp</pt>
+                                    <pd>Wtcp mode settings, including whether to bypass wtcp and the TCP options configuration values selected when bypassing. </pd>
+                                </plentry>
+                            </parml>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                ><varname>&lt;httpid&gt;</varname>Client Instance id. Returned upon successful <cmdname>AT+MHTTPCREATE</cmdname> with range: 0-3. 
+                                    <fn>MN319/MN319-A/MN316A/MN326A: <varname>&lt;httpid&gt;</varname> parameter range 0-1.  </fn></entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            ><varname>&lt;header_len&gt;</varname>General header length.  </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                ><varname>&lt;header&gt;</varname>General header applies throughout the instance life cycle. It must be configured by fields in the <msgph>key: 
+                                value</msgph> form. The module stores all configured fields.  <fn>ML302A/ML305A/ML307A/ML307G/ML307M/ML307R/ML307B/ML307C/ML307H/ML307N: <varname>&lt;header&gt;</varname> parameter input length range 1-1024.  </fn></entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            ><varname>&lt;chunked_mode&gt;</varname>Transmission mode. Default value: 0.  </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">
+                            <parml id="parml_dj2_f4s_frb">
+                                <plentry>
+                                    <pt>0</pt>
+                                    <pd>content_length mode</pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>1</pt>
+                                    <pd>chunked mode</pd>
+                                </plentry>
+                            </parml>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            ><varname>&lt;cached&gt;</varname>Cache mode. Default value: 0. </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">
+                            <parml id="parml_u4j_m4s_frb">
+                                <plentry>
+                                    <pt>0</pt>
+                                    <pd>Non-cache mode </pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>1</pt>
+                                    <pd>Cache mode </pd>
+                                </plentry>
+                            </parml>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                    ><varname>&lt;cache_length&gt;</varname>Cache size. Default value 4K (4096 bytes), 1-8192 bytes.  <fn>When <varname>&lt;cached&gt;</varname>=0 (non-cache mode), the <varname>&lt;cache_length&gt;</varname> parameter will not be displayed in query result.  MN316A/MN326A supported range: 1-4096 bytes.  </fn></entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            ><varname>&lt;conn_timeout&gt;</varname>Connection timeout 0-180 s. Default value: 60 s.  </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            ><varname>&lt;rsp_timeout&gt;</varname>Service response timeout 0-60 s. Default value: 0 s (no timeout).  </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                ><varname>&lt;input_timeout&gt;</varname>Data input timeout 0-180 s. Default value: 10 s.  (Data input through AT commands by using the <keyword>&gt;</keyword> mode input.)<fn> 
+                                <div><ph product="tbd"
+                                        >M5310-E/MN328/</ph>MN318/MN316/MN319/MN319-A/MN326/MN316A/MN326A: data mode input is not supported; therefore, thus <varname>&lt;input_timeout&gt;</varname> parameter settings are not supported.  </div>
+                                <div>ML302S/ML307S/ML302A/ML305A/ML307A/ML307G/ML305U/ML305M/ML307R/ML307B/ML307C/ML307M/ML307H/ML307X/ML307Y/MR380R<ph
+                                        product="tbd"
+                                        >/MR380M</ph>: supported range 1-120 s. </div>
+                                <div>ML307N: supported range 0-120 s.</div>
+                                                        </fn></entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                    ><varname>&lt;input_format&gt;</varname>Data input encoding mode. Default value: 0.  The module converts input data to raw data according to the configured encoding format.  <fn>This parameter affects data input for the following commands: <cmdname>AT+MHTTPCFG="header"</cmdname>, <cmdname>AT+MHTTPHEADER</cmdname>, <cmdname>AT+MHTTPCONTENT</cmdname> and <cmdname>AT+MHTTPREQUEST</cmdname>.  MR880A does not support 2. </fn></entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">
+                            <parml>
+                                <plentry>
+                                    <pt>0</pt>
+                                    <pd>ASCII string (raw data) </pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>1</pt>
+                                    <pd>HEX string </pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>2</pt>
+                                    <pd>String containing escape sequences </pd>
+                                </plentry>
+                            </parml>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                    ><varname>&lt;output_format&gt;</varname>Data output encoding mode. Default value: 0.  The module converts raw data to specified encoding format according to the configured encoding format.  <fn>This parameter affects data output of URC reporting for the following commands: <cmdname>+MHTTPURC: 
+                                    "header"</cmdname>, <cmdname>+MHTTPURC: 
+                            "content"</cmdname>.  </fn></entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">
+                            <parml>
+                                <plentry>
+                                    <pt>0</pt>
+                                    <pd>ASCII string (raw data) </pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>1</pt>
+                                    <pd>HEX string </pd>
+                                </plentry>
+                            </parml>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            ><varname>&lt;ssl_enable&gt;</varname>SSL enable. Default value: 0.  </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">
+                            <parml id="parml_vrx_krs_frb">
+                                <plentry>
+                                    <pt>0</pt>
+                                    <pd>No use of SSL (general connection, HTTP) </pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>1</pt>
+                                    <pd>Use of SSL (secure connection, HTTPS) </pd>
+                                </plentry>
+                            </parml>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                    ><varname>&lt;ssl_id&gt;</varname>SSL context index specifies the SSL context used by the current instance. Valid range refers to the document "SSL User Manual".  <fn>ML302A/ML305A/ML307A/ML307G/ML307S/ML305U/ML305M/ML307R/ML307B/ML307C/ML307X/ML307Y/ML307M/ML307H-DU/ML307N/ML307H-MU: <varname>&lt;ssl_id&gt;</varname> parameter range 0-5. <div>ML307N: Once <varname>&lt;ssl_id&gt;</varname> is successfully set for the first time, subsequent configurations will default to the current parameter. </div><div>MR380R: <varname>&lt;ssl_id&gt;</varname> cannot be omitted when enabled. </div></fn></entry>
+                                        </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                        ><varname>&lt;cid&gt;</varname>PDP context id specifies the PDP context used by the current instance. Valid range is platform dependent. <fn><div><ph
+                                        product="tbd"
+                                        >M5310-E/</ph>MN316/MN319/MN319-A/MN326/MN316A/MN326A: The <varname>&lt;cid&gt;</varname> parameter setting is not currently supported; the default value is unspecified. </div><div>MN318<ph
+                                        product="tbd"
+                                        >/MN328</ph>: Default unspecified. When it is explicitly specified, ensure the CID is already activated. </div><div>ML302S/ML307S: <varname>&lt;cid&gt;</varname> parameter setting supported. Default value: 1. </div><ph
+                                    product="tbd"
+                                        >MN327: Range 1-7; not specified by default; if specified, ensure that CID support is enabled.</ph><div>ML305U: <varname>&lt;cid&gt;</varname> parameter setting supported with the range 1-7. Default value: 1. </div><div>ML307G/ML302A/ML305A/ML307A/ML305M/ML307R/ML307B/ML307C/ML307H/ML307X/ML307Y/ML307M/ML307N/MR380R: Supports the <varname>&lt;cid&gt;</varname> parameter setting; this is not specified by default. If specified, ensure that the supported CID has been activated. </div><div>MR880A: <varname>&lt;cid&gt;</varname> parameter 7 supported only. </div><?oxy_insert_start author="surui" timestamp="20260618T172903+0800"?><div
+                                    product="tbd"
+                                    >MR380M: Supports the <varname>&lt;cid&gt;</varname> parameter setting; this is not specified by default, with a range of 2-10. If specified, ensure that the supported CID has been activated. </div><?oxy_insert_end?></fn></entry>
+                                        </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                    ><varname>&lt;frag_size&gt;</varname>Maximum packet size for received data reporting with size range: 0-1024 bytes. Default value: 0 (actual received packet size output).  <fn>Packet segmentation performs sub-packeting on received network packets. For example, when receiving a 1400-byte packet with <varname>&lt;frag_size&gt;</varname>=500, the data will be output in 3 segments (500, 500, 400).  </fn></entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            ><varname>&lt;interval&gt;</varname>Time intervals of packet segmentation output for received data with range: 0-2000 ms. Default value: 0 (no interval between packets).  </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            ><varname>&lt;urlencode_mode&gt;</varname>URL encoding enable. Default value: 0.  </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">
+                            <parml id="parml_sml_zrs_frb">
+                                <plentry>
+                                    <pt>0</pt>
+                                    <pd>No encoding </pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>1</pt>
+                                    <pd>Encoding (no encoding for alphanumeric and special characters, such as -_.!~*'();/?:@&amp;=+$,#.) </pd>
+                                </plentry>
+                            </parml>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            ><varname>&lt;avoid_enable&gt;</varname>wtcp mode, default value 1. </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">
+                            <parml>
+                                <plentry>
+                                    <pt>0</pt>
+                                    <pd>Do not bypass wtcp </pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>1</pt>
+                                    <pd>Bypass wtcp </pd>
+                                </plentry>
+                            </parml>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                ><varname>&lt;option_kind&gt;</varname>TCP 
+                            options configuration value, range: 8-254, default value: 208.  </entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">Example </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">Test command 
+                            <msgblock id="codeblock_zlq_d1t_yqb"><cmdname>AT+MHTTPCFG=?</cmdname>
++MHTTPCFG: ("header","chunked","cached","timeout","encoding","ssl","cid","fragment","urlencode"),(0-3),
+OK</msgblock>
+                            Header setting <msgblock id="codeblock_ul5_f1t_yqb"><cmdname>AT+MHTTPCFG="header",0,"Connection: close"</cmdname>
+OK</msgblock>
+                            Header query <msgblock id="codeblock_nbk_g1t_yqb"><cmdname>AT+MHTTPCFG="header",0</cmdname>
++MHTTPCFG: "header",0,19,Connection: close
+OK</msgblock></entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        <section id="section_bch_41t_yqb">
+                        <note id="note_r1y_p1t_yqb">
+                <sl>
+                    <sli>In the module's default header, the standard mode includes the Host and Content-Length fields and the Chunked mode includes the Host and Transfer-Encoding fields.  Header configuration is implemented via two commands: <cmdname>AT+MHTTPCFG="header"</cmdname> command sets the general header that applies throughout the instance life cycle; <cmdname>AT+MHTTPHEADER</cmdname> command sets the specific header that applies only to a single request, primarily used for dynamic fields that vary between requests.  If the same field exists in both general and specific headers, the module automatically replaces it with the configured value of the specific header when sending the request.  </sli>
+                    <sli>The length of a single AT command input is constrained by the platform's limit. For data exceeding this limit, multiple inputs are recommended. </sli>
+                    <sli>ML307B: In the wtcp mode configuration, it is not recommended to modify the TCP options configuration value unless necessary. The default value is 0, which means the base station wtcp is not bypassed.  </sli>
+                </sl>
+            </note>
+        </section>
+    </refbody>
+</reference>
+

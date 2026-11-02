@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="Toc15987">
+      <title>TLS握手过程中出现的常见问题</title>
+      <body>
+        <p>
+1、错误码：-0x7200/-29184/MBEDTLS_ERR_SSL_INVALID_RECORD</p>
+        <p>
+可能的原因和解决建议</p>
+        <p>
+TCP/IP协议栈收到的数据包出错,
+需要排查协议栈方面问题。SSL所运行的线程栈被设置的过小,
+需调整线程栈大小，SSL被配置的最大报文长度太小,
+当网络报文长度超过该数值时，则可能出现0x7200错误，可调整
+MBEDTLS_SSL_IN_CONTENT_LEN 和
+MBEDTLS_SSL_OUT_CONTENT_LEN的值，重新编译再试。</p>
+      </body>
+    </topic>

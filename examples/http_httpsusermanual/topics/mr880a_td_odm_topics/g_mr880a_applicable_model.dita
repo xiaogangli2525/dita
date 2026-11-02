@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="topic_vwm_jtf_brb">
+    <title>适用型号</title>
+    <body>
+        <table id="table_zh1_stf_brb">
+            <title>适用模组</title>
+            <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="3*" align="left"/>
+                <colspec colname="c2" colnum="2" colwidth="7*" align="left"/>
+                <thead>
+                    <row>
+                        <entry>模组系列</entry>
+                        <entry>模组子型号</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>MR880A</entry>
+                        <entry>MR880A/MR880A Mini-PCIe/MR880A M.2</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </body>
+</topic>

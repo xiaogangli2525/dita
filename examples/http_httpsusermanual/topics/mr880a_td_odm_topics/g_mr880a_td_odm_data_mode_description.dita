@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="ZH-CN_TOPIC_0000002219517769-chtext">
+      <title>数据模式说明</title>
+      <body>
+        <p>模块的 COM
+口有两种工作模式：
+AT
+命令模式和数据模式。AT
+命令模式下，通过
+COM
+口输入的数据被认为是
+AT
+命令；数据模式下，则被认为是数据。</p>
+        <ul>
+          <li>进入数据模式</li>
+        </ul>
+        <p>通过执行
+<b>AT^HTTPURL</b>、<b>AT^HTTPPOST</b>可使
+COM
+口进入数据模式。</p>
+        <ul>
+          <li>退出数据模式</li>
+        </ul>
+        <p>
+用户可以通过<b>+++</b>方式使
+COM
+口退出数据模式。为了防止<b>+++</b>被当成数据发送，实际操作时必须遵循以下标准：</p>
+        <ul>
+          <li>
+            <b>+++</b>输入前和输入后
+1
+秒内不能输入其它任何数据。</li>
+          <li>必须在 1
+秒内输入<b>+++</b>，并且不能输入其它任何数据，返回
+OK 后，COM
+口退出数据模式。</li>
+        </ul>
+      </body>
+    </topic>

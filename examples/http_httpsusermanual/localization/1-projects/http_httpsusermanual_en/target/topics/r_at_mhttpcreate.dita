@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="reference_qd5_gdq_cqb">
+    <title>AT+MHTTPCREATE Create HTTP Instances </title>
+        <shortdesc>This command is used to create HTTP instances and initialize related parameters.  </shortdesc>
+    <refbody>
+        <table id="table_btl_krz_3qb">
+                        <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="3*" align="left"/>
+                <colspec colname="c2" colnum="2" colwidth="7*" align="left"/>
+                <thead>
+                    <row>
+                        <entry namest="c1" nameend="c2"><cmdname>AT+MHTTPCREATE</cmdname></entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row outputclass="has_bgc">
+                        <entry>Syntax </entry>
+                        <entry>Response </entry>
+                    </row>
+                    <row>
+                        <entry>Test command <codeblock><cmdname>AT+MHTTPCREATE=?</cmdname></codeblock></entry>
+                        <entry>If succeed: <msgblock id="msgblock_hky_wb5_pqb">OK</msgblock>
+                            If fail: <msgblock id="msgblock_djc_xb5_pqb">+CME ERROR: &lt;err&gt;</msgblock></entry>
+                    </row>
+                    <row>
+                        <entry>Set command <codeblock><cmdname>AT+MHTTPCREATE=&lt;host&gt;</cmdname></codeblock></entry>
+                        <entry>If succeed: <msgblock id="msgblock_xmq_xb5_pqb">+MHTTPCREATE: &lt;httpid&gt;
+OK</msgblock>
+                            If fail: <msgblock id="msgblock_emt_xb5_pqb">+CME ERROR: &lt;err&gt;</msgblock></entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">Command Description </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                >Maximum of 4 concurrent instances can be established. Instances must be created before using other related commands.  <fn>MN319/MN319-A/MN316A/MN326A: Maximum of 2 concurrent instances can be established.  </fn></entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">Parameter Description </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            ><varname>&lt;host&gt;</varname>The format of the server domain or IP address should be either "http://domain.com" or "http://domain.com:80". The ":80" indicates the server port number. When no port is specified, HTTP default to port 80, and HTTPS default to port 443.  </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                    ><varname>&lt;httpid&gt;</varname>Client instance id, 0-3.  <fn>MN319/MN319-A/MN316A/MN326A: <varname>&lt;httpid&gt;</varname>parameter range 0-1.  </fn></entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">Example </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">Create instance 
+                            <msgblock id="codeblock_l2w_nfj_1rb"><cmdname>AT+MHTTPCREATE="http://www.baidu.com:80"</cmdname>
++MHTTPCREATE: 0
+OK</msgblock></entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </refbody>
+</reference>

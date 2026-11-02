@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="Toc28384">
+      <title>提示信息</title>
+      <body>
+        <table colsep="1" frame="all" rowsep="1">
+          <tgroup cols="2">
+            <colspec colname="col1" colnum="1" colwidth="0.6*"/>
+            <colspec colname="col2" colnum="2" colwidth="1.4*"/>
+            <thead>
+              <row>
+                <entry>状态码</entry>
+                <entry>描述</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>100</entry>
+                <entry>Continue</entry>
+              </row>
+              <row>
+                <entry>101</entry>
+                <entry>Switching Protocols</entry>
+              </row>
+              <row>
+                <entry>102</entry>
+                <entry>Processing</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </body>
+    </topic>

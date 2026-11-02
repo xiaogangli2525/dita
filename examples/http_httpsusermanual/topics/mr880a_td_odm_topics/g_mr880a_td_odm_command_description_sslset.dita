@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="ZH-CN_TOPIC_0000002224627409-chtext">
+        <title>命令说明</title>
+        <body>
+          <p>
+可通过该命令配置SSL的认证模式，配置需要用到的证书。</p>
+        </body>
+      </topic>

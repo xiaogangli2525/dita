@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE bookmap PUBLIC "-//OASIS//DTD DITA BookMap//EN" "bookmap.dtd">
+<bookmap>
+    <booktitle>
+        <booklibrary>MN326E</booklibrary> 
+        <mainbooktitle>HTTP(S) Development and Debugging Guide</mainbooktitle>
+    </booktitle>
+    <bookmeta>
+        <author/>
+        <critdates>
+            <created date="2026-04-09"/>
+            <revised modified="2026-04-09"/>
+        </critdates>
+        <bookid>
+            <edition>V1.0.0</edition>
+        </bookid>
+    </bookmeta>
+    <frontmatter>
+        <notices href="contentmodule/topics/reusable_general_en/g_service_and_support_en.dita"/>
+        <notices href="contentmodule/topics/reusable_general_en/g_document_statement_en.dita"/>
+        <notices href="topics/en_topics/g_nb_about_the_document_en.dita"/>
+        <booklists>
+            <toc/>
+        </booklists>
+    </frontmatter>
+    <chapter href="localization/1-projects/http_httpsusermanual_en/target/topics/mn326e_xy_topics/g_mn326e_xy_overview.dita">
+        <topicref href="localization/1-projects/http_httpsusermanual_en/target/topics/mn326e_xy_topics/g_mn326e_xy_applicable_model.dita" outputclass="topic/apb"/>
+    </chapter>
+    <chapter href="localization/1-projects/http_httpsusermanual_en/target/topics/mn326e_xy_topics/g_mn326e_xy_http_s_related_at.dita">
+        <topicref href="localization/1-projects/http_httpsusermanual_en/target/topics/mn326e_xy_topics/g_mn326e_xy_create_instance.dita"/>
+        <topicref href="localization/1-projects/http_httpsusermanual_en/target/topics/mn326e_xy_topics/g_mn326e_xy_instance_configuration.dita"/>
+        <topicref href="localization/1-projects/http_httpsusermanual_en/target/topics/mn326e_xy_topics/g_mn326e_xy_header_configuration.dita"/>
+        <topicref href="localization/1-projects/http_httpsusermanual_en/target/topics/mn326e_xy_topics/g_mn326e_xy_content_configuration.dita"/>
+        <topicref href="localization/1-projects/http_httpsusermanual_en/target/topics/mn326e_xy_topics/g_mn326e_xy_send_request.dita"/>
+        <topicref href="localization/1-projects/http_httpsusermanual_en/target/topics/mn326e_xy_topics/g_mn326e_xy_close_instance.dita"/>
+        <topicref href="localization/1-projects/http_httpsusermanual_en/target/topics/mn326e_xy_topics/g_mn326e_xy_active_report_received_http_header.dita"/>
+        <topicref href="localization/1-projects/http_httpsusermanual_en/target/topics/mn326e_xy_topics/g_mn326e_xy_active_report_received_http_content_data.dita"/>
+        <topicref href="localization/1-projects/http_httpsusermanual_en/target/topics/mn326e_xy_topics/g_mn326e_xy_active_report_http_error_code.dita"/>
+    </chapter>
+    <chapter href="localization/1-projects/http_httpsusermanual_en/target/topics/mn326e_xy_topics/g_mn326e_xy_example.dita">
+        <topicref href="localization/1-projects/http_httpsusermanual_en/target/topics/mn326e_xy_topics/g_mn326e_xy_connect_to_xy_http_server_via_http.dita"/>
+        <topicref href="localization/1-projects/http_httpsusermanual_en/target/topics/mn326e_xy_topics/g_mn326e_xy_connect_to_xy_http_server_via_https_one_way_authentication.dita"/>
+        <topicref href="localization/1-projects/http_httpsusermanual_en/target/topics/mn326e_xy_topics/g_mn326e_xy_connect_to_xy_http_server_via_https_two_way_authentication.dita"/>
+        <topicref href="localization/1-projects/http_httpsusermanual_en/target/topics/mn326e_xy_topics/g_mn326e_xy_connect_to_ctwing_platform_via_http_and_exchange_business_data.dita"/>
+    </chapter>
+    <chapter href="localization/1-projects/http_httpsusermanual_en/target/topics/mn326e_xy_topics/g_mn326e_xy_http_error_code.dita">
+        <topicref href="localization/1-projects/http_httpsusermanual_en/target/topics/mn326e_xy_topics/g_mn326e_xy_error_code.dita"/>
+    </chapter>
+    <chapter href="localization/1-projects/http_httpsusermanual_en/target/topics/mn326e_xy_topics/g_mn326e_xy_http_response_code.dita">
+        <topicref href="localization/1-projects/http_httpsusermanual_en/target/topics/mn326e_xy_topics/g_mn326e_xy_informational.dita"/>
+        <topicref href="localization/1-projects/http_httpsusermanual_en/target/topics/mn326e_xy_topics/g_mn326e_xy_success.dita"/>
+        <topicref href="localization/1-projects/http_httpsusermanual_en/target/topics/mn326e_xy_topics/g_mn326e_xy_redirection.dita"/>
+        <topicref href="localization/1-projects/http_httpsusermanual_en/target/topics/mn326e_xy_topics/g_mn326e_xy_client_error.dita"/>
+        <topicref href="localization/1-projects/http_httpsusermanual_en/target/topics/mn326e_xy_topics/g_mn326e_xy_server_error.dita"/>
+    </chapter>
+    <chapter href="localization/1-projects/http_httpsusermanual_en/target/topics/mn326e_xy_topics/g_mn326e_xy_faq.dita">
+        <topicref href="localization/1-projects/http_httpsusermanual_en/target/topics/mn326e_xy_topics/g_mn326e_xy_common_issues_during_tls_handshake.dita"/>
+    </chapter>
+</bookmap>

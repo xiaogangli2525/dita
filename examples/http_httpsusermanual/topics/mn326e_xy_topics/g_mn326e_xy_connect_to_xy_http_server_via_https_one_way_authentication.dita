@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="Toc23410">
+    <title>通过HTTP(S)连接HTTP服务器（单向认证）</title>
+    <body>
+        <table colsep="1" frame="all" rowsep="1">
+            <tgroup cols="1">
+                <colspec colname="col1" colnum="1" colwidth="1*"/>
+                <tbody>
+                    <row>
+                        <entry>
+                            <p>//创建HTTP实例</p>
+                            <p>AT+HTTPCREATE="https://139.224.131.190:3001"</p>
+                            <p>+HTTPCREATE:0</p>
+                            <p>OK</p>
+                            <p>//HTTPS实例配置</p>
+                            <p>//配置服务器cert证书</p>
+                            <p>AT+HTTPCFG=0,1,"-----BEGIN CERTIFICATE-----</p>
+                            <p>MIIDpTCCAo0CFAa+lYlZUNWy9bHzoHjwfRpUtFuzMA0GCSqGSIb3DQEBCwUAMIGO</p>
+                            <p>MQswCQYDVQQGEwJDTjEQMA4GA1UECAwHSmlhbmdTdTEQMA4GA1UEBwwHTmFuSmlu</p>
+                            <p>ZzELMAkGA1UECgwCWFkxGjAYBgNVBAsMEVNvZnR3YXJlIFBsYXRmb3JtMQ4wDAYD</p>
+                            <p>VQQDDAVIYW5keTEiMCAGCSqGSIb3DQEJARYTd2FuZ2hAeGlueWlzZW1pLmNvbTAe</p>
+                            <p>Fw0yMDEwMjcwNzI3MjFaFw0yMTEwMjcwNzI3MjFaMIGOMQswCQYDVQQGEwJDTjEQ</p>
+                            <p>MA4GA1UECAwHSmlhbmdTdTEQMA4GA1UEBwwHTmFuSmluZzELMAkGA1UECgwCWFkx</p>
+                            <p>GjAYBgNVBAsMEVNvZnR3YXJlIFBsYXRmb3JtMQ4wDAYDVQQDDAVIYW5keTEiMCAG</p>
+                            <p>CSqGSIb3DQEJARYTd2FuZ2hAeGlueWlzZW1pLmNvbTCCASIwDQYJKoZIhvcNAQEB</p>
+                            <p>BQADggEPADCCAQoCggEBANCNl+8LyzRSUGvjtFfOuYqLCcuI9+qDzlRW2IAIBezW</p>
+                            <p>WEqTJeXJyGs7ua/aO/ZoohYD9yaeCD2hVRmx/bs0CgdMgIA1iNcm88ZUCj41JsQb</p>
+                            <p>PNRBAz1jLz7RkdSKRxfk72Q2GLte/seAhNdx1ZbsjKrNHwBd+hgxNQf4UZzbA9Ac</p>
+                            <p>J9zlpmJ8NfPqiEu0ZPsO7cmc4q+p+orSyABPmiu5jmjLNxstu/+bL1uPdabNyn0U</p>
+                            <p>hkqQgzqC4BYS19N9xVyK7C1Gswv8YMr0BE15UOxPQJXTenJoMgKVH6OQDof0uj+y</p>
+                            <p>n/7kMkw2Mk0jDQQc4B09Ztq4W6cEFFctunUV2Y1uSqECAwEAATANBgkqhkiG9w0B</p>
+                            <p>AQsFAAOCAQEAUTf5yri75xWStNi40PgH3ad+INVAHVLIvmfQyHl6vNFRZ/YfoRxb</p>
+                            <p>GbN4TBQFHn7hgLWFqbo2JfbEulBNzKLmZmzfJoDPbLW5sFTZiw8JwXIx74oD6K7N</p>
+                            <p>gw9Lsd/t5gV6aBeVEV8qsZ69dUHRCvgbL9DTobBEJkJQOUPQ34ygW0v3omhEWt0N</p>
+                            <p>2zPu9hZJlPLsBdgzsCC54fPZLWMuL7FRJj0zdEH3IxGbanMUcjEmi3OcW5VilnAc</p>
+                            <p>Xr8zZme6pOPrGBZqMy0cfTeQqga6d9UjanyrLvb/eepGiDF9byqNgTDTQlR9TgXe</p>
+                            <p>3FD8w+TAixDgg9x23yehUnWQwToXYg2ZHQ==</p>
+                            <p>-----END CERTIFICATE-----"</p>
+                            <p>OK</p>
+                            <p>//HTTPS发送请求</p>
+                            <p>AT+HTTPSEND=0,0,"/"</p>
+                            <p>OK</p>
+                            <p>+REQUESTSUCCESS //HTTPS 请求成功</p>
+                            <p>+HTTPNMIH:0,200,187 //网站的回复内容，在串口上的显示截图如下，数据未作处理，客户可以根据实际需要进行处理</p>
+                            <p>X-Powered-By: Express</p>
+                            <p>Content-Type: text/html; charset=utf-8</p>
+                            <p>Content-Length: 164</p>
+                            <p>ETag: W/"a4-OvJrs8UraBmCoiIWp5p41bZoKjI"</p>
+                            <p>Date: Mon, 19 Sep 2022 03:21:29 GMT</p>
+                            <p>Connection: keep-alive</p>
+                            <p>+HTTPNMIC:0,0,164,164</p>
+                            <p>&lt;!DOCTYPE
+                                html&gt;&lt;html&gt;&lt;head&gt;&lt;title&gt;Xinyi&lt;/title&gt;&lt;link
+                                rel="stylesheet"
+                                href="/stylesheets/style.css"&gt;&lt;/head&gt;&lt;body&gt;&lt;h1&gt;Xinyi&lt;/h1&gt;&lt;p&gt;Welcome
+                                to Xinyi&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</p>
+                            <p>+HTTPERR:0,-7 //错误码上报，表示服务器断开 TCP 链接</p>
+                            <p>//HTTPS关闭实例</p>
+                            <p>AT+HTTPCLOSE=0</p>
+                            <p>OK</p>
+                        </entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </body>
+</topic>

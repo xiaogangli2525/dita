@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE bookmap PUBLIC "-//OASIS//DTD DITA BookMap//EN" "bookmap.dtd">
+<bookmap>
+    <booktitle>
+        <mainbooktitle>HTTP/HTTPS用户手册</mainbooktitle>
+    </booktitle>
+    <bookmeta>
+        <author/>
+        <critdates>
+            <created date="2024-07-30"/>
+            <revised modified="2026-03-13"/>
+        </critdates>
+        <bookid>
+            <edition>V1.0.2</edition>
+        </bookid>
+    </bookmeta>
+    <frontmatter>
+        <notices href="contentmodule/topics/reusable_general_cn/g_service_and_support_cn.dita"/>
+        <notices href="contentmodule/topics/reusable_general_cn/g_document_statement_cn.dita"/>
+        <notices href="topics/nb_topics/g_nb_about_the_document.dita"/>
+        <booklists>
+            <toc/>
+            <tablelist/>
+        </booklists>
+    </frontmatter>
+    <chapter href="topics/c_introduction.dita">
+        <topicref href="topics/nb_topics/g_nb_applicable_model.dita" outputclass="topic/apb"/>
+    </chapter>
+    <chapter href="contentmodule/topics/reusable_software/c_at_command_overview_cn.dita">
+        <topicref href="contentmodule/topics/reusable_software/c_at_command_syntax_format_cn.dita"/>
+        <topicref href="contentmodule/topics/reusable_software/c_at_command_response_cn.dita"/>
+    </chapter>
+    <chapter href="topics/g_at_commands_of_http_https_protocol.dita">
+        <topicref href="topics/nb_topics/r_nb_at_httpcreate.dita" outputclass="topic/apb"/>
+        <topicref href="topics/nb_topics/r_nb_at_httpheader.dita"/>
+        <topicref href="topics/nb_topics/r_nb_at_httpcontent.dita"/>
+        <topicref href="topics/nb_topics/r_nb_at_httpsend.dita"/>
+        <topicref href="topics/nb_topics/r_nb_at_httpcfg.dita"/>
+        <topicref href="topics/nb_topics/r_nb_at_httpclose.dita"/>
+        <topicref href="topics/nb_topics/r_nb_httpnmih.dita"/>
+        <topicref href="topics/nb_topics/r_nb_httpnmic.dita"/>
+        <topicref href="topics/nb_topics/r_nb_httpdrop.dita"/>
+        <topicref href="topics/nb_topics/r_nb_httperr.dita"/>
+        <topicref href="topics/nb_topics/r_nb_httpdiscon.dita"/>
+    </chapter>
+    <chapter href="topics/g_examples.dita">
+        <topicref href="topics/nb_topics/r_nb_server_get_data.dita" outputclass="topic/apb"/>
+        <topicref href="topics/nb_topics/r_nb_post_data.dita"/>
+        <topicref href="topics/nb_topics/r_nb_api_app_example.dita">
+            <topicref href="topics/nb_topics/r_nb_lwm2m_create.dita" outputclass="level3_topic/apb"/>
+            <topicref href="topics/nb_topics/r_nb_read_device_resource.dita"/>
+        </topicref>
+    </chapter>
+    <chapter href="topics/nb_topics/r_nb_response_codes.dita">
+        <topicref href="topics/nb_topics/r_nb_remind_info.dita" outputclass="topic/apb"/>
+        <topicref href="topics/nb_topics/r_nb_response_success.dita" outputclass="topic/apb"/>
+        <topicref href="topics/nb_topics/r_nb_redirection.dita"/>
+        <topicref href="topics/nb_topics/r_nb_user_end_err.dita"/>
+        <topicref href="topics/nb_topics/r_nb_server_err.dita"/>
+    </chapter>
+    <chapter href="topics/nb_topics/r_nb_error_codes.dita">
+        <topicref href="topics/nb_topics/r_nb_error_codes_list.dita" outputclass="topic/apb"/>
+    </chapter>
+    <chapter href="topics/nb_topics/r_nb_transferred_meaning_codes.dita">
+        <topicref href="topics/nb_topics/r_nb_server_error_codes_list.dita" outputclass="topic/apb"/>
+    </chapter>
+    <backmatter/>
+</bookmap>

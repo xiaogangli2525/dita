@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="ZH-CN_TOPIC_0000002189261752-chtext">
+        <title>参数说明</title>
+        <body>
+          <table colsep="1" frame="all" rowsep="1">
+            <tgroup cols="2">
+              <colspec colname="col1" colnum="1" colwidth="0.5*"/>
+              <colspec colname="col2" colnum="2" colwidth="1.5*"/>
+              <thead>
+                <row>
+                  <entry>参数名</entry>
+                  <entry>参数解释</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry>&lt;contextID&gt;</entry>
+                  <entry>整型。PDP 上下文
+ID。范围：1~16；默认值：1。备注：当前版本无实际意义。</entry>
+                </row>
+                <row>
+                  <entry>&lt;request_header&gt;</entry>
+                  <entry>
+                    <div>
+整型。禁用或启用自定义
+HTTP请求头信息。</div>
+                    <ul>
+                      <li>0：禁用</li>
+                      <li>1：启用</li>
+                    </ul>
+                  </entry>
+                </row>
+                <row>
+                  <entry>&lt;response_header&gt;</entry>
+                  <entry>
+                    <div>
+整型。禁用或启用输出
+HTTP响应头信息。</div>
+                    <ul>
+                      <li>0：禁用</li>
+                      <li>1：启用</li>
+                    </ul>
+                  </entry>
+                </row>
+                <row>
+                  <entry>&lt;sslctxID&gt;</entry>
+                  <entry>整型。配置用于
+HTTP的 SSL 上下文
+ID，范围0-5。</entry>
+                </row>
+                <row>
+                  <entry>&lt;content_type&gt;</entry>
+                  <entry>
+                    <div>
+整型。HTTP体的数据类型。</div>
+                    <ul>
+                      <li>0：application/x-www-form-urlencoded</li>
+                      <li>1：text/plain</li>
+                      <li>2：application/octet-stream</li>
+                      <li>3：multipart/form-data</li>
+                      <li>4：application/json</li>
+                      <li>5：image/jpeg</li>
+                    </ul>
+                  </entry>
+                </row>
+                <row>
+                  <entry>&lt;auto_outrsp&gt;</entry>
+                  <entry>
+                    <div>
+整型。禁用或启用自动输出
+HTTP响应头信息。若启用自动输出
+HTTP响应头信息，AT^HTTPREAD
+会执行失败。</div>
+                    <ul>
+                      <li>0：禁用</li>
+                      <li>1：启用</li>
+                    </ul>
+                  </entry>
+                </row>
+                <row>
+                  <entry>&lt;recvmode&gt;</entry>
+                  <entry>
+                    <div>
+整型。AT^HTTPREAD获取到的数据是否以16进制字串形式上报</div>
+                    <ul>
+                      <li>0：普通字符串</li>
+                      <li>
+1：十六进制字符串</li>
+                    </ul>
+                    <div>
+备注：假如recvmode配置为0时上报数据是“abc123”，那么recvmode配置为1则上报“616263313233”。</div>
+                  </entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </table>
+        </body>
+      </topic>

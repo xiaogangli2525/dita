@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="ZH-CN_TOPIC_0000002189261812-chtext">
+        <title>示例</title>
+        <body>
+          <table colsep="1" frame="all" rowsep="1">
+            <tgroup cols="3">
+              <colspec colname="col1" colnum="1" colwidth="1*"/>
+              <colspec colname="col2" colnum="2" colwidth="1*"/>
+              <colspec colname="col3" colnum="3" colwidth="1*"/>
+              <thead>
+                <row>
+                  <entry>示例</entry>
+                  <entry>输入</entry>
+                  <entry>输出</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry>设置 HTTP服务器 URL</entry>
+                  <entry>AT^HTTPURL=20,80</entry>
+                  <entry>CONNECT</entry>
+                </row>
+                <row>
+                  <entry>输入 URL</entry>
+                  <entry>http://www.baidu.com</entry>
+                  <entry>OK</entry>
+                </row>
+                <row>
+                  <entry>发送 GET 请求到
+HTTP服务器</entry>
+                  <entry>AT^HTTPGET=80</entry>
+                  <entry>
+                    <div>OK</div>
+                    <div>^HTTPPOST: 0,200,413985</div>
+                  </entry>
+                </row>
+                <row>
+                  <entry>读取
+HTTP服务器响应信息到模组文件系统</entry>
+                  <entry>AT^HTTPREADFILE="baidutest.html",80</entry>
+                  <entry>OK</entry>
+                </row>
+                <row>
+                  <entry>查询</entry>
+                  <entry>AT^FILELIST?</entry>
+                  <entry>
+                    <div>^FILELIST: "baidutest.html",413985</div>
+                    <div>^FILELIST: "TEST4.TXT",10</div>
+                    <div>OK</div>
+                  </entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </table>
+        </body>
+      </topic>

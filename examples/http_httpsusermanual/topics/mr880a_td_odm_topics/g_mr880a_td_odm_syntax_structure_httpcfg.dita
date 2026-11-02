@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="ZH-CN_TOPIC_0000002224701797-chtext">
+        <title>语法结构</title>
+        <body>
+          <table colsep="1" frame="all" rowsep="1">
+            <tgroup cols="2">
+              <colspec colname="col1" colnum="1" colwidth="0.9*"/>
+              <colspec colname="col2" colnum="2" colwidth="1.1*"/>
+              <thead>
+                <row>
+                  <entry>命令类型</entry>
+                  <entry>返回值</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry>AT^HTTPCFG=&lt;contextid&gt;[,&lt;contextID&gt;]</entry>
+                  <entry>&lt;CR&gt;&lt;LF&gt;OK&lt;CR&gt;&lt;LF&gt;</entry>
+                </row>
+                <row>
+                  <entry>AT^HTTPCFG?</entry>
+                  <entry>
+                    <div>&lt;CR&gt;&lt;LF&gt;^HTTPCFG:
+"contextid",&lt;contextID&gt;&lt;CR&gt;&lt;LF&gt;</div>
+                    <div>^HTTPCFG:
+"requestheader",&lt;request_header&gt;&lt;CR&gt;&lt;LF&gt;</div>
+                    <div>^HTTPCFG:
+"responseheader",&lt;response_header&gt;&lt;CR&gt;&lt;LF&gt;</div>
+                    <div>^HTTPCFG: "sslctxid",&lt;sslctxID&gt;&lt;CR&gt;&lt;LF&gt;</div>
+                    <div>^HTTPCFG:
+"contenttype",&lt;content_type&gt;&lt;CR&gt;&lt;LF&gt;</div>
+                    <div>^HTTPCFG:
+"rspout/auto",&lt;auto_outrsp&gt;&lt;CR&gt;&lt;LF&gt;</div>
+                    <div>^HTTPCFG: "recvmode",&lt;recvmode&gt;&lt;CR&gt;&lt;LF&gt;</div>
+                    <div>&lt;CR&gt;&lt;LF&gt;OK&lt;CR&gt;&lt;LF&gt;</div>
+                  </entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </table>
+        </body>
+      </topic>

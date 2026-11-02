@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE bookmap PUBLIC "-//OASIS//DTD DITA BookMap//EN" "bookmap.dtd">
+<bookmap>
+    <booktitle>
+        <booklibrary>MN326E</booklibrary> 
+        <mainbooktitle>HTTP(S)开发调试指导</mainbooktitle>
+    </booktitle>
+    <bookmeta>
+        <author/>
+        <critdates>
+            <created date="2026-04-09"/>
+            <revised modified="2026-04-09"/>
+        </critdates>
+        <bookid>
+            <edition>V1.0.0</edition>
+        </bookid>
+    </bookmeta>
+    <frontmatter>
+        <notices href="contentmodule/topics/reusable_general_cn/g_service_and_support_cn.dita"/>
+        <notices href="contentmodule/topics/reusable_general_cn/g_document_statement_cn.dita"/>
+        <notices href="topics/mn326e_xy_topics/g_mn326e_xy_about_the_document.dita"/>
+        <booklists>
+            <toc/>
+        </booklists>
+    </frontmatter>
+    <chapter href="topics/mn326e_xy_topics/g_mn326e_xy_overview.dita">
+        <topicref href="topics/mn326e_xy_topics/g_mn326e_xy_applicable_model.dita" outputclass="topic/apb"/>
+    </chapter>
+    <chapter href="topics/mn326e_xy_topics/g_mn326e_xy_http_s_related_at.dita">
+        <topicref href="topics/mn326e_xy_topics/g_mn326e_xy_create_instance.dita"/>
+        <topicref href="topics/mn326e_xy_topics/g_mn326e_xy_instance_configuration.dita"/>
+        <topicref href="topics/mn326e_xy_topics/g_mn326e_xy_header_configuration.dita"/>
+        <topicref href="topics/mn326e_xy_topics/g_mn326e_xy_content_configuration.dita"/>
+        <topicref href="topics/mn326e_xy_topics/g_mn326e_xy_send_request.dita"/>
+        <topicref href="topics/mn326e_xy_topics/g_mn326e_xy_close_instance.dita"/>
+        <topicref href="topics/mn326e_xy_topics/g_mn326e_xy_active_report_received_http_header.dita"/>
+        <topicref href="topics/mn326e_xy_topics/g_mn326e_xy_active_report_received_http_content_data.dita"/>
+        <topicref href="topics/mn326e_xy_topics/g_mn326e_xy_active_report_http_error_code.dita"/>
+    </chapter>
+    <chapter href="topics/mn326e_xy_topics/g_mn326e_xy_example.dita">
+        <topicref href="topics/mn326e_xy_topics/g_mn326e_xy_connect_to_xy_http_server_via_http.dita"/>
+        <topicref href="topics/mn326e_xy_topics/g_mn326e_xy_connect_to_xy_http_server_via_https_one_way_authentication.dita"/>
+        <topicref href="topics/mn326e_xy_topics/g_mn326e_xy_connect_to_xy_http_server_via_https_two_way_authentication.dita"/>
+        <topicref href="topics/mn326e_xy_topics/g_mn326e_xy_connect_to_ctwing_platform_via_http_and_exchange_business_data.dita"/>
+    </chapter>
+    <chapter href="topics/mn326e_xy_topics/g_mn326e_xy_http_error_code.dita">
+        <topicref href="topics/mn326e_xy_topics/g_mn326e_xy_error_code.dita"/>
+    </chapter>
+    <chapter href="topics/mn326e_xy_topics/g_mn326e_xy_http_response_code.dita">
+        <topicref href="topics/mn326e_xy_topics/g_mn326e_xy_informational.dita"/>
+        <topicref href="topics/mn326e_xy_topics/g_mn326e_xy_success.dita"/>
+        <topicref href="topics/mn326e_xy_topics/g_mn326e_xy_redirection.dita"/>
+        <topicref href="topics/mn326e_xy_topics/g_mn326e_xy_client_error.dita"/>
+        <topicref href="topics/mn326e_xy_topics/g_mn326e_xy_server_error.dita"/>
+    </chapter>
+    <chapter href="topics/mn326e_xy_topics/g_mn326e_xy_faq.dita">
+        <topicref href="topics/mn326e_xy_topics/g_mn326e_xy_common_issues_during_tls_handshake.dita"/>
+    </chapter>
+</bookmap>

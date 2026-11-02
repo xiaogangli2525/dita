@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="reference_ghr_ndq_cqb">
+    <title>AT+MHTTPREAD Read HTTP Data </title>
+        <shortdesc>This command is used to read HTTP cached data in cache mode.  </shortdesc>
+    <refbody>
+        <table id="table_kxd_xfc_jqb">
+                        <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="3*" align="left"/>
+                <colspec colname="c2" colnum="2" colwidth="7*" align="left"/>
+                <thead>
+                    <row>
+                        <entry namest="c1" nameend="c2"><cmdname>AT+MHTTPREAD</cmdname></entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row outputclass="has_bgc">
+                        <entry>Syntax </entry>
+                        <entry>Response </entry>
+                    </row>
+                    <row>
+                        <entry>Test command <codeblock><cmdname>AT+MHTTPREAD=?</cmdname></codeblock></entry>
+                        <entry>If succeed: <msgblock id="msgblock_fdb_p25_pqb">AT+MHTTPREAD: (list of supported &lt;httpid&gt;s),(list of supported &lt;type&gt;s),(list of supported &lt;read_len&gt;s)
+OK</msgblock>
+                            If fail: <msgblock id="msgblock_t12_p25_pqb">+CME ERROR: &lt;err&gt;</msgblock></entry>
+                    </row>
+                    <row>
+                        <entry>Set command <codeblock><cmdname>AT+MHTTPREAD=&lt;httpid&gt;,&lt;type&gt;[,&lt;read_len&gt;]</cmdname></codeblock></entry>
+                        <entry>If succeed:  <div>Returns the current readable buffer length when <varname>&lt;read_len&gt;</varname> is not configured:  </div><msgblock id="msgblock_vcs_p25_pqb">+MHTTPREAD: &lt;httpid&gt;,&lt;type&gt;,&lt;unread_length&gt;
+OK</msgblock>
+                            Returns data when <varname>&lt;read_len&gt;</varname> is configured: 
+                            <msgblock id="msgblock_hfw_p25_pqb">+MHTTPREAD: &lt;httpid&gt;,&lt;type&gt;,&lt;unread_length&gt;,&lt;data_len&gt;,&lt;data&gt;
+OK</msgblock> If fail: 
+                            <msgblock id="msgblock_qkg_q25_pqb">+CME ERROR: &lt;err&gt;</msgblock></entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">Command Description </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">In cache mode, received data will be buffered in the module. The <cmdname>+MHTTPURC: 
+                                "recv"</cmdname> indication signals request completion, 
+                                at which point this command can be used to read the data. The buffer is automatically cleared after reading. If not read promptly, it will also be automatically cleared during the next request or when deleting the instance.  <fn>ML307G/ML307N: If the detected download content size exceeds the configured cache capacity, the system will report a "cache insufficient" error and refrain from caching any data.  </fn></entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">Parameter Description </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                    ><varname>&lt;httpid&gt;</varname>Client instance id: 0-3.  <fn>MN319/MN319-A/MN316A/MN326A: <varname>&lt;httpid&gt;</varname> parameter range 0-1.  </fn></entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"><varname>&lt;type&gt;</varname>Cached data type.  </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">
+                            <parml id="parml_q4s_htz_frb">
+                                <plentry>
+                                    <pt>0</pt>
+                                    <pd>header data </pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>1</pt>
+                                    <pd>content data </pd>
+                                </plentry>
+                            </parml>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            ><varname>&lt;read_len&gt;</varname>The desired data length to read, ranging from 0 to 65535. A value of 0 indicates reading all cached data.  </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            ><varname>&lt;unread_length&gt;</varname>Remaining unread cache length.  </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            ><varname>&lt;data_len&gt;</varname>Current read data length.  </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"><varname>&lt;data&gt;</varname>The read data.  </entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">Example </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">Read cached data 
+                            <msgblock id="codeblock_lp4_jwj_1rb"><cmdname>AT+MHTTPCREATE="http://120.27.12.119:10080"</cmdname>
++MHTTPCREATE: 0
+OK
+<cmdname>AT+MHTTPCFG="cached",0,1</cmdname>
+OK
+<cmdname>AT+MHTTPREQUEST=0,1,0,"/get"</cmdname>
+OK
++MHTTPURC: "recv",0,200,225,145
+<cmdname>AT+MHTTPREAD=0,0,225</cmdname>
++MHTTPREAD: 0,0,0,225,HTTP/1.1 200 OK
+Server: nginx/1.18.0
+Date: Mon, 26 Jul 2021 01:25:15 GMT
+Content-Type: application/json
+Content-Length: 145
+Connection: keep-alive
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Credentials: true
+OK</msgblock></entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </refbody>
+</reference>

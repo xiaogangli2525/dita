@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="reference_qd5_gdq_cqb">
+    <title><?oxy_comment_start author="zhangqin1@cmiot.cmcc" timestamp="20241101T113235+0800" comment="该内容模块为基础版本共用，请勿随意删减。若需添加仅适用于某型号的内容，请添加批注说明。"?>AT+HTTPCREATE<?oxy_comment_end?></title>
+    <shortdesc>该命令用于创建HTTP实例。</shortdesc>
+    <refbody>
+        <table id="table_btl_krz_3qb">
+            <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="3*" align="left"/>
+                <colspec colname="c2" colnum="2" colwidth="7*" align="left"/>
+                <thead>
+                    <row>
+                        <entry namest="c1" nameend="c2"><cmdname>AT+HTTPCREATE</cmdname></entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row outputclass="has_bgc">
+                        <entry>语法</entry>
+                        <entry>响应</entry>
+                    </row>
+                    <row>
+                        <entry>设置命令<codeblock><cmdname>AT+HTTPCREATE=&lt;URL>[,&lt;user>,&lt;password>]</cmdname></codeblock></entry>
+                        <entry>成功<div>如果输入设置格式正确，并且不超过已创建实例数限制：</div><msgblock id="msgblock_xmq_xb5_pqb">+HTTPCREATE:&lt;id>
+OK</msgblock> 失败<msgblock id="msgblock_emt_xb5_pqb">ERROR</msgblock></entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">命令描述</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">该命令用于创建HTTP实例。</entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">参数描述</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            ><varname>&lt;URL></varname>字符串，服务器域名或者IP地址。</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"><varname>&lt;user></varname>字符串，用户名。</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            ><varname>&lt;password></varname>字符串，密码。</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                ><varname>&lt;id></varname>整型，返回的HTTP实例索引，范围：0~4。<fn>M5310-E/MN328-B范围：0~1。</fn></entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">示例</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">创建实例
+                            <msgblock id="codeblock_l2w_nfj_1rb"><cmdname>AT+HTTPCREATE="http://iot.10086.cn:80/joinus/index/name/joinus.html"</cmdname>    
++HTTPCREATE:0 /*返回的HTTP实例ID，后续操作以此为参考。*/
+OK</msgblock></entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        <section id="section_bcz_1gm_jcc">
+            <note id="note_csg_bgm_jcc">
+                <ul id="ul_jxj_ggm_jcc">
+                    <li>如果不输入URL前缀<msgph>http://</msgph>，默认为HTTP，URL中的path字段将被忽略；</li>
+                    <li>目前仅支持HTTP，user和password用于需要鉴权的网站，仅支持基本鉴权。</li>
+                </ul>
+            </note>
+        </section>
+    </refbody>
+</reference>

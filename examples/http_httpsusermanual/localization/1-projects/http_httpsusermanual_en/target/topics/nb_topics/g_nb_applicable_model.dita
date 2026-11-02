@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="topic_vwm_jtf_brb">
+    <title>Applicable Module</title>
+    <body>
+        <table id="table_zh1_stf_brb">
+            <title>Module Details</title>
+                        <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="3*" align="left"/>
+                <colspec colname="c2" colnum="2" colwidth="5*" align="left"/>
+                <thead>
+                    <row>
+                        <entry>Module Series</entry>
+                        <entry>Sub-module</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>M5310-E</entry>
+                        <entry>M5310-E-B</entry>
+                    </row>
+                    <row>
+                        <entry>MN328-B</entry>
+                        <entry>MN328-B-XH/MN328-B-XL/MN328-B-EMH</entry>
+                    </row>
+                    <row>
+                        <entry>MN316A</entry>
+                        <entry>MN316A-DC-BR/MN316A-DC-LV</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </body>
+</topic>

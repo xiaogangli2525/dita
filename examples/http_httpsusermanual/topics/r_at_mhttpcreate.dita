@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="reference_qd5_gdq_cqb">
+    <title>AT+MHTTPCREATE 创建HTTP实例</title>
+    <shortdesc>该命令用于创建HTTP实例，初始化实例相关内容。</shortdesc>
+    <refbody>
+        <table id="table_btl_krz_3qb">
+            <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="3*" align="left"/>
+                <colspec colname="c2" colnum="2" colwidth="7*" align="left"/>
+                <thead>
+                    <row>
+                        <entry namest="c1" nameend="c2"><cmdname>AT+MHTTPCREATE</cmdname></entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row outputclass="has_bgc">
+                        <entry>语法</entry>
+                        <entry>响应</entry>
+                    </row>
+                    <row>
+                        <entry>测试命令<codeblock><cmdname>AT+MHTTPCREATE=?</cmdname></codeblock></entry>
+                        <entry>成功<msgblock id="msgblock_hky_wb5_pqb">OK</msgblock>
+                            错误<msgblock id="msgblock_djc_xb5_pqb">+CME ERROR: &lt;err></msgblock></entry>
+                    </row>
+                    <row>
+                        <entry>设置命令<codeblock><cmdname>AT+MHTTPCREATE=&lt;host></cmdname></codeblock></entry>
+                        <entry>成功<msgblock id="msgblock_xmq_xb5_pqb">+MHTTPCREATE: &lt;httpid>
+OK</msgblock>
+                            错误<msgblock id="msgblock_emt_xb5_pqb">+CME ERROR: &lt;err></msgblock></entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">命令描述</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                >最多可同时建立4个实例，需先创建实例，才可使用其他相关命令。<fn>MN319/MN319-A/MN316A/MN326A：最多可同时创建2个实例。</fn></entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">参数描述</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            ><varname>&lt;host></varname>服务器域名或者IP地址，格式如"http://domain.com"或"http://domain.com:80"。":80"是指定的服务器端口号，当不指定端口号时，HTTP默认端口80，HTTPS默认端口443。</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                    ><varname>&lt;httpid></varname>客户端实例id，0~3。<fn>MN319/MN319-A/MN316A/MN326A：<varname>&lt;httpid></varname>参数范围0~1。</fn></entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">示例</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">创建实例
+                            <msgblock id="codeblock_l2w_nfj_1rb"><cmdname>AT+MHTTPCREATE="http://www.baidu.com:80"</cmdname>
++MHTTPCREATE: 0
+OK</msgblock></entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </refbody>
+</reference>

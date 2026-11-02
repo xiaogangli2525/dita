@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="reference_rvw_hgm_gqb">
+    <title>错误码</title>
+    <shortdesc>本章为HTTP/HTTPS命令相关的错误码。</shortdesc>
+    <refbody>
+        <table id="table_ttt_zfx_jqb">
+            <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="3*" align="left"/>
+                <colspec colname="c2" colnum="2" colwidth="7*" align="left"/>
+                <thead>
+                    <row>
+                        <entry>错误码</entry>
+                        <entry>说明</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>3</entry>
+                        <entry>操作不被允许</entry>
+                    </row>
+                    <row>
+                        <entry>23</entry>
+                        <entry>内存分配失败</entry>
+                    </row>
+                    <row>
+                        <entry>50</entry>
+                        <entry>参数错误</entry>
+                    </row>
+                    <row>
+                        <entry>650</entry>
+                        <entry>未知错误</entry>
+                    </row>
+                    <row>
+                        <entry>651</entry>
+                        <entry>无空闲客户端</entry>
+                    </row>
+                    <row>
+                        <entry>652</entry>
+                        <entry>客户端未创建</entry>
+                    </row>
+                    <row>
+                        <entry>653</entry>
+                        <entry>客户端忙</entry>
+                    </row>
+                    <row>
+                        <entry>654</entry>
+                        <entry>URL解析失败</entry>
+                    </row>
+                    <row>
+                        <entry>655</entry>
+                        <entry>SSL未使能</entry>
+                    </row>
+                    <row>
+                        <entry>656</entry>
+                        <entry>连接失败</entry>
+                    </row>
+                    <row>
+                        <entry>657</entry>
+                        <entry>数据发送失败</entry>
+                    </row>
+                    <row>
+                        <entry>658</entry>
+                        <entry>打开文件失败</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </refbody>
+</reference>

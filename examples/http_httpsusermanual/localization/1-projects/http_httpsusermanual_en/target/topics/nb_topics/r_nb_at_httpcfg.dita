@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="reference_qd5_gdq_cqb">
+    <title><?oxy_comment_start author="zhangqin1@cmiot.cmcc" timestamp="20241101T141800+0800" comment="该内容模块为基础版本共用，请勿随意删减。若需添加仅适用于某型号的内容，请添加批注说明"?>AT+HTTPCFG<?oxy_comment_end?></title>
+        <shortdesc>This command is used to query or configure client parameters.  </shortdesc>
+    <refbody>
+        <table id="table_btl_krz_3qb">
+                        <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="3*" align="left"/>
+                <colspec colname="c2" colnum="2" colwidth="7*" align="left"/>
+                <thead>
+                    <row>
+                        <entry namest="c1" nameend="c2"><cmdname>AT+HTTPCFG</cmdname></entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row outputclass="has_bgc">
+                        <entry>Syntax </entry>
+                        <entry>Response </entry>
+                    </row>
+                    <row>
+                        <entry>Set Command <codeblock><cmdname>AT+HTTPCFG=&lt;id&gt;,&lt;type&gt;[,&lt;value&gt;]</cmdname></codeblock></entry>
+                        <entry>If succeed <div>If the input format is correct, the following is returned: </div><msgblock id="msgblock_xmq_xb5_pqb">OK</msgblock> If only &lt;id&gt; and &lt;type&gt; are configured, the value query result is returned. <msgblock id="msgblock_dk3_njw_43c">+HTTPCFG:&lt;id&gt;,&lt;type&gt;,&lt;len&gt;,&lt;value&gt;
+OK</msgblock>If fail<msgblock id="msgblock_mfp_dj3_ncc">ERROR</msgblock></entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">Command Description</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">This command is used to query or configure client parameters.  </entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">Parameter Description</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                ><varname>&lt;id&gt;</varname>Integer. The instance index returned by <msgph>+HTTPCREATE</msgph>. Range: 0~4.  <fn>M5310-E/MN328-B range: 0~1.  </fn></entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            ><varname>&lt;type&gt;</varname>Integer. The configured parameter type. </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">
+                            <dl>
+                                <dlentry>
+                                    <dt>6</dt>
+                                    <dd>The packet size for received header and content fields via the serial port (default: 0, indicating no packetization).  Packet fragmentation data length: 10~1460 bytes.</dd>
+                                </dlentry>
+                                <dlentry>
+                                    <dt>7</dt>
+                                    <dd>Packetization delay interval (ms) for received header and content fields via the serial port (default: 0, no delay).   Maximum: 3000 ms.</dd>
+                                </dlentry>
+                                <dlentry>
+                                    <dt>8</dt>
+                                    <dd>whether to convert received header and content fields to hexadecimal format via the serial port (0: no conversion. 1: convert to hex. Default: 0).</dd>
+                                </dlentry>
+                            </dl>
+                                                </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                ><varname>&lt;value&gt;</varname>Integer. Value of <varname>&lt;type&gt;</varname>. </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                ><varname>&lt;len&gt;</varname>Integer. Length of <varname>&lt;value&gt;</varname>. </entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">Example</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">Create instances 
+                            <msgblock id="codeblock_l2w_nfj_1rb"><cmdname>AT+HTTPCFG=0,6,512</cmdname>	/*Configure data output packet size to 512 bytes. */
+OK	
+<cmdname>AT+HTTPCFG=0,6</cmdname>	/*Read data output packet size.  */
++HTTPCFG:0,6,3,512	/*Current value: 512 bytes.  */
+OK</msgblock></entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        <section>
+            <p>
+                                <note id="note_mwd_4wk_jcc">When the controlled output rate is low, HTTP DROP may occur.  Currently, HTTP header data does not support packet fragmentation. </note>
+            </p>
+        </section>
+    </refbody>
+</reference>

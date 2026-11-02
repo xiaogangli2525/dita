@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="Toc22999">
+      <title>发送请求</title>
+      <body>
+        <table colsep="1" frame="all" rowsep="1">
+          <tgroup cols="2">
+            <colspec colname="col1" colnum="1" colwidth="1.1*"/>
+            <colspec colname="col2" colnum="2" colwidth="0.9*"/>
+            <thead>
+              <row>
+                <entry>命令</entry>
+                <entry>响应</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>AT+HTTPSEND=&lt;id&gt;,&lt;method&gt;,&lt;path&gt;</entry>
+                <entry>
+                  <div>OK</div>
+                  <div>或ERROR</div>
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+        <p>命令说明：</p>
+        <p>该命令发送 HTTP
+请求。</p>
+        <p>参数描述:</p>
+        <p>
+&lt;id&gt;：由AT+HTTPCREATE命令创建的客户端实例。</p>
+        <p>&lt;method&gt;: HTTP
+请求类型。</p>
+        <p>0: GET</p>
+        <p>1: POST</p>
+        <p>2: PUT</p>
+        <p>3: DELETE</p>
+        <p>4: HEAD</p>
+        <p>&lt;path&gt;:请求的 URL path
+绝对路径参数。</p>
+        <p>注：</p>
+        <p>
+1.成功发送HTTP请求后，通过AT+HTTPHEADER配置的header字段，以及通过AT+HTTPCONTENT配置的content字段将自动清空以释放空间。</p>
+        <p>2.由于服务器 cert
+证书，客户端 cert
+证书，和客户端 pk
+存在两种存储方式，所以分别对应以下两种情况
+(HARDCODE_USER_CERT_PK 默认为 1
+）。</p>
+        <ul>
+          <li>当HARDCODE_USER_CERT_PK 为 0
+时，成功发送HTTP请求后，通过AT+HTTPCFG配置的服务器
+cert 证书，客户端 cert
+证书，和客户端
+pk将自动清空以释放空间，防止占用大内存，但是在握手的过程种仍然会占用，重新发起
+HTTP
+请求时，需要重新配置。</li>
+          <li>当HARDCODE_USER_CERT_PK 为 1
+时，由于配置的证书是存储在
+flash 上的（占用 fota
+区域最后 3 个4k
+，单个证书最大为4k），解决了在握手过程中占用大内存的问题，但由于是复用了
+fota
+区域，存在被其他业务擦除的可能，所以建议在每次使用之前重新配置。</li>
+        </ul>
+        <p>典型示例</p>
+        <table colsep="1" frame="all" rowsep="1">
+          <tgroup cols="1">
+            <colspec colname="col1" colnum="1" colwidth="1*"/>
+            <tbody>
+              <row>
+                <entry>
+                  <p>AT+HTTPSEND=0,0,"/"</p>
+                  <p>OK</p>
+                  <p>+REQUESTSUCCESS //HTTPS 请求成功</p>
+                  <p>+HTTPNMIH:0,200,187
+//网站的回复内容，在串口上的显示截图如下，数据未作处理，客户可以根据实际需要进行处理</p>
+                  <p>X-Powered-By: Express</p>
+                  <p>Content-Type: text/html; charset=utf-8</p>
+                  <p>Content-Length: 164</p>
+                  <p>ETag: W/"a4-OvJrs8UraBmCoiIWp5p41bZoKjI"</p>
+                  <p>Date: Sat, 17 Sep 2022 08:13:12 GMT</p>
+                  <p>Connection: keep-alive</p>
+                  <p>+HTTPNMIC:0,0,164,164</p>
+                  <p>&lt;!DOCTYPE
+html&gt;&lt;html&gt;&lt;head&gt;&lt;title&gt;Xinyi&lt;/title&gt;&lt;link
+rel="stylesheet"
+href="/stylesheets/style.css"&gt;&lt;/head&gt;&lt;body&gt;&lt;h1&gt;Xinyi&lt;/h1&gt;&lt;p&gt;Welcome
+to Xinyi&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</p>
+                </entry>
+              </row>
+            </tbody>
+            
+          </tgroup>
+        </table>
+      </body>
+    </topic>

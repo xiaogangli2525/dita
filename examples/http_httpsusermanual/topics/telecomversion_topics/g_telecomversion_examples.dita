@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="topic_drx_2gm_gqb">
+    <title>示例</title>
+    <shortdesc>本章主要介绍HTTP<ph product="tbd">/HTTPS</ph>命令在相关业务场景中的使用流程。</shortdesc>
+</topic>
+<?oxy_options track_changes="on"?>

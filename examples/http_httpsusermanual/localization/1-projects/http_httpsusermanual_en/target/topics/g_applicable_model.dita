@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="topic_vwm_jtf_brb">
+    <title>Applicable Module </title>
+    <body>
+        <table id="table_zh1_stf_brb">
+            <title>Module Details </title>
+                        <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="3*" align="left"/>
+                <colspec colname="c2" colnum="2" colwidth="7*" align="left"/>
+                <thead>
+                    <row>
+                        <entry>Module Series </entry>
+                        <entry>Sub-module </entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row product="tbd">
+                        <entry>M5310-E</entry>
+                        <entry>M5310-E-DBRS/M5310-E-XBXS</entry>
+                    </row>
+                    <row>
+                        <entry>MN318</entry>
+                        <entry>MN318-BX/MN318-LC/MN318-LX</entry>
+                    </row>
+                    <row>
+                        <entry>MN316</entry>
+                        <entry>MN316-DBRS/MN316-DLVS</entry>
+                    </row>
+                    <row>
+                        <entry>MN316-S</entry>
+                        <entry>MN316-S-DLVS</entry>
+                    </row>
+                    <row>
+                        <entry>MN316A</entry>
+                        <entry>MN316A-D/MN316A-DC</entry>
+                    </row>
+                    <row>
+                        <entry>MN326A</entry>
+                        <entry>MN326A-EMH</entry>
+                    </row>
+                    <row>
+                        <entry>MN319</entry>
+                        <entry>MN319-DL</entry>
+                    </row>
+                    <row>
+                        <entry>MN319-A</entry>
+                        <entry>MN319-A-DL/MN319-A-XL-EM</entry>
+                    </row>
+                    <row>
+                        <entry>MN326</entry>
+                        <entry>MN326-X</entry>
+                    </row>
+                    <row product="tbd">
+                        <entry>MN327</entry>
+                        <entry>MN327-X</entry>
+                    </row>
+                    <row product="tbd">
+                        <entry>MN328</entry>
+                        <entry>MN328-XC</entry>
+                    </row>
+                    <row>
+                        <entry>ML302A</entry>
+                        <entry>ML302A-DCLM/ML302A-DSLM/ML302A-GCLM/ML302A-GSLM</entry>
+                    </row>
+                    <row>
+                        <entry>ML302S</entry>
+                        <entry>ML302S-DNLM</entry>
+                    </row>
+                    <row>
+                        <entry>ML307A</entry>
+                        <entry>ML307A-DCLN/ML307A-DSLN/ML307A-GCLN/ML307A-GSLN/ML307A-DL</entry>
+                    </row>
+                    <row>
+                        <entry>ML307S</entry>
+                        <entry>ML307S-DNLM</entry>
+                    </row>
+                    <row>
+                        <entry>ML307X</entry>
+                        <entry>ML307X-DB/ML307X-DC</entry>
+                    </row>
+                    <row>
+                        <entry>ML305U</entry>
+                        <entry>ML305U-DBLN</entry>
+                    </row>
+                    <row>
+                        <entry>ML305A</entry>
+                        <entry>ML305A-DC/ML305A-DS/ML305A-DL</entry>
+                    </row>
+                    <row>
+                        <entry>ML305M</entry>
+                        <entry>ML305M-DSLM</entry>
+                    </row>
+                    <row>
+                        <entry>ML307R</entry>
+                        <entry>ML307R-DC/ML307R-DL<ph product="tbd"
+                                >/ML307R-BC</ph>/ML307R-BL/ML307R-ML/ML307R-MC</entry>
+                    </row>
+                    <row>
+                        <entry>ML307G</entry>
+                        <entry>ML307G-DL/ML307G-DC<ph product="tbd">/ML307G-BL</ph></entry>
+                    </row>
+                    <row>
+                        <entry>MR880A</entry>
+                        <entry>MR880A/MR880A Mini-PCIe/MR880A M.2</entry>
+                    </row>
+                    <row>
+                        <entry>ML307M</entry>
+                        <entry>ML307M-DL/ML307M-DA/ML307M-DH</entry>
+                    </row>
+                    <row>
+                        <entry>ML307H</entry>
+                        <entry>ML307H-MU/ML307H-DU/ML307H-GU/ML307H-DU-EM/ML307H-DC-EM</entry>
+                    </row>
+                    <row>
+                        <entry>ML307C</entry>
+                        <entry>ML307C-DC-CN/ML307C-DL-CN/ML307C-GC-CN/ML307C-DC-EM/ML307C-DL-EM</entry>
+                    </row>
+                    <row>
+                        <entry>ML307N</entry>
+                        <entry>ML307N-DC/ML307N-DL/ML307N-GC/ML307N-GL/ML307N-BL/ML307N-ML</entry>
+                    </row>
+                    <row>
+                        <entry>ML307Y</entry>
+                        <entry>ML307Y-DL/ML307Y-DD<ph product="tbd"
+                                >/ML307Y-DU</ph></entry>
+                    </row>
+                    <row>
+                        <entry>ML307B</entry>
+                        <entry>ML307B-DC/ML307B-DL<ph product="tbd"
+                            >/ML307B-AC/ML307B-AL</ph></entry>
+                    </row>
+                    <row>
+                        <entry>MR380R</entry>
+                        <entry>MR380R-RC</entry>
+                    </row>
+                    
+                    <row product="tbd">
+                        <entry>MR380M</entry>
+                        <entry>MR380M-BR</entry>
+                    </row>
+                    
+                </tbody>
+            </tgroup>
+        </table>
+    </body>
+</topic>
+<?oxy_options track_changes="on"?>

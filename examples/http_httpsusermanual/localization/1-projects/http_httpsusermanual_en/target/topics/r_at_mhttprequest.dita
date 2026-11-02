@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="reference_t5f_mdq_cqb">
+    <title>AT+MHTTPREQUEST Send HTTP Request </title>
+        <shortdesc>This command is used to send HTTP request.  </shortdesc>
+    <refbody>
+        <table id="table_jgf_vcc_jqb">
+                        <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="3*" align="left"/>
+                <colspec colname="c2" colnum="2" colwidth="7*" align="left"/>
+                <thead>
+                    <row>
+                        <entry namest="c1" nameend="c2"><cmdname>AT+MHTTPREQUEST</cmdname></entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row outputclass="has_bgc">
+                        <entry>Syntax </entry>
+                        <entry>Response </entry>
+                    </row>
+                    <row>
+                        <entry>Test command <codeblock><cmdname>AT+MHTTPREQUEST=?</cmdname></codeblock></entry>
+                        <entry>If succeed: <msgblock id="msgblock_sd2_125_pqb">+MHTTPREQUEST: (list of supported &lt;httpid&gt;s),(list of supported &lt;method&gt;s),(list of supported &lt;length&gt;s),
+OK</msgblock>
+                            If fail: <msgblock id="msgblock_ekk_125_pqb">+CME ERROR: &lt;err&gt;</msgblock></entry>
+                    </row>
+                    <row>
+                        <entry>Set command <codeblock><cmdname>AT+MHTTPREQUEST=&lt;httpid&gt;,&lt;method&gt;[,&lt;length&gt;[,&lt;path&gt;[,&lt;local_path&gt;]]]</cmdname></codeblock></entry>
+                        <entry>If succeed: <div><varname>&lt;length&gt;</varname> and <varname>&lt;path&gt;</varname> are not configured. Send data by <msgph>CTRL+Z</msgph>, and cancel sending by <keyword>ESC</keyword>: </div><msgblock id="msgblock_n3x_125_pqb">&gt;(input data)
+OK</msgblock>
+                            <varname>&lt;length&gt;</varname> is configured while <varname>&lt;path&gt;</varname> is not. Send data when input data reaches the specified length or timeout is reached: <msgblock id="msgblock_ebd_b25_pqb">&gt;(input data)
+OK</msgblock> All parameters set: <msgblock id="msgblock_hsh_b25_pqb">OK</msgblock>
+                            If fail: <msgblock id="msgblock_qdk_b25_pqb">+CME ERROR: &lt;err&gt;</msgblock></entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">Command Description </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                    >In standard mode, configure content data before sending request. In Chunked mode, send request before configuring content data.  <fn>Use single-threaded downloads when downloading data to file system via <cmdname>AT+MHTTPREQUEST</cmdname> command.  </fn></entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">Parameter Description </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                    ><varname>&lt;httpid&gt;</varname>Client instance id: 0-3.  <fn>MN319/MN319-A/MN316A/MN326A: <varname>&lt;httpid&gt;</varname> parameter range 0-1.  </fn></entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                ><varname>&lt;method&gt;</varname>Request type.  <fn>ML307G: DELETE requested response shall not include configured content data.  </fn></entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">
+                            <parml id="parml_eq3_lpz_frb">
+                                <plentry>
+                                    <pt>1</pt>
+                                    <pd>GET</pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>2</pt>
+                                    <pd>POST</pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>3</pt>
+                                    <pd>PUT</pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>4</pt>
+                                    <pd>DELETE</pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>5</pt>
+                                    <pd>HEAD</pd>
+                                </plentry>
+                            </parml>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                        ><varname>&lt;length&gt;</varname>Data input length 0-4096. In data mode, setting to 0 is not permitted. When directly inputting data in command mode: If set to 0, no length validation is performed on the input data; If set &gt;0, the system will validate the input data length. (For ASCII and escaped string input modes: The system shall validate whether the actual input string length in the command matches the specified length. For HEX string input mode: The system shall verify the actual input string length equals twice the specified length.) <fn><div><ph
+                                        product="tbd"
+                                    >MN327: In direct command input mode, the maximum length of a single command is 2048 characters; exceeding this limit will result in an error.
+</ph></div><div>ML302S/ML307S/ML302A/ML305A/ML307A/ML307G/ML305M/ML307R/ML307B/ML307C/ML307M/ML307H/ML307N/MR380R<ph
+                                        product="tbd"
+                                        >/MR380M</ph>: In data mode, this can be set to 0. </div>ML305U: In data mode, setting to 0 is permitted. The parameter defaults to 0 when the parameter is omitted.  </fn></entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"><varname>&lt;path&gt;</varname>Requested url 
+                                    path.  <fn>The <varname>&lt;input_format&gt;</varname> parameter configured via <cmdname>AT+MHTTPCFG="encoding"</cmdname> shall only apply to direct command input mode (where <varname>&lt;path&gt;</varname> is explicit included in AT commands), and shall not affect data mode input (which uses raw data).  When <cmdname>AT+MHTTPCFG="urlencode"</cmdname> is enabled, the module shall automatically encode the requested <varname>&lt;path&gt;</varname>, excluding alphanumeric characters and the symbols such as : -_.!~*'();/?:@&amp;=+$,#.  </fn></entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                ><varname>&lt;local_path&gt;</varname>The local file path, with its length range dependent on the file system. When saving the downloaded file locally, the file is opened in append mode.  If the file already exists, the downloaded data will be appended to the end of the file without clearing the original content.  To overwrite an existing file, delete the original file using <cmdname>AT+MFDELETE</cmdname> before starting the download.  <fn>
+                                <div>ML302S/ML307S/ML302A/ML305A/ML307A/ML307G/ML307R/ML307B/ML307C/MR380R<ph
+                                        product="tbd"
+                                        >/MR380M</ph>: If the first character of <varname>&lt;local_path&gt;</varname> is a forward slash ("/"), the downloaded file will be stored in the path specified by the user; otherwise, it will be stored in the <msgph>/etc/http_file/</msgph> directory. </div>
+                                <div>ML305U/ML305M/ML307X/ML307Y: If <varname>&lt;local_path&gt;</varname> contains only a forward slash ("/"), the downloaded file will be stored at the user-specified path; If only a backslash ("\") or no slashes at all, the file will be saved under <msgph>/etc/http_file/</msgph>. </div>
+                                <div>ML307M/ML307H/MN319-A: <varname>&lt;local_path&gt;</varname> parameter setting is not supported. </div>
+                                <div>ML307Y: Directories occupy storage space. It is recommended to use single-level directories whenever possible. </div>
+                                                        </fn></entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">Example </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">Send GET request 
+                            <msgblock id="codeblock_qgr_zvj_1rb"><cmdname>AT+MHTTPCREATE="http://120.27.12.119:10080"</cmdname>
++MHTTPCREATE: 0
+OK
+<cmdname>AT+MHTTPREQUEST=0,1,0,"/get"</cmdname>
+OK
++MHTTPURC: "header",0,200,225,HTTP/1.1 200 OK
+Server: nginx/1.18.0
+Date: Fri, 23 Jul 2021 09:59:35 GMT
+Content-Type: application/json
+Content-Length: 145
+Connection: keep-alive
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Credentials: true
++MHTTPURC: "content",0,145,145,145,{"args":{},"headers":{"Connection":"close","Content-Length":"0","Host":"localhost:6000"},"origin":"127.0.0.1","url":"http://localhost:6000/get"}</msgblock></entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        <section id="section_ix4_jxt_rrb">
+                        <note id="note_r35_jxt_rrb">
+                <sl>
+                    <sli><ph product="tbd"
+                            >M5310-E/MN327/MN328/</ph>MN318/MN316/MN319/MN319-A/MN326/MN316A/MN326A: the <keyword>&gt;</keyword> data input mode is not supported; data must be input directly in the AT commands. Single input length is limited by platform’s single command constraints, thus, for larger data, multiple inputs are recommended. MN319/MN319-A: The maximum length of AT command parameters is 1560 bytes.  </sli>
+                    <sli> ML307B: The maximum length of AT command parameter is 3,000 bytes.  </sli>
+                    <sli>When redirection of requested response is encountered, HTTP shall redirects to HTTPS. If SSL is not enabled (<varname>&lt;ssl_enable&gt;</varname> and <varname>&lt;ssl_id&gt;</varname> parameters are omitted), the module shall automatically enable SSL and connect with default configurations.  </sli>
+                    <sli>ML307A/ML307R/ML307C: If the HTTP response header contains <codeph>Connection: 
+                            close</codeph>, execute <codeph>AT+MHTTPDEL=&lt;id&gt;</codeph> to delete the instance after each request completes. Invoke <codeph>AT+MHTTPCREATE</codeph> again to establish a new connection for the next request. Alternatively, add an interval of at least 1 second between two requests to avoid sending consecutive requests within a short period.  </sli>
+                </sl>
+            </note>
+        </section>
+    </refbody>
+</reference>
+

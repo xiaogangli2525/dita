@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE task PUBLIC "-//OASIS//DTD DITA Task//EN" "task.dtd">
+<task id="task_qt5_22q_cqb">
+    <title>HTTP下载文件</title>
+    <shortdesc>该小结介绍下载数据到文件系统的使用步骤。</shortdesc>
+    <taskbody>
+        <context>
+            <p>
+                <codeblock id="codeblock_qyl_dk5_pqb"><keyword>下载到文件：</keyword>
+<keyword>AT+MHTTPDLFILE="http://120.27.12.119:10080/get","/test.txt"</keyword>
+OK
++MHTTPURC: "header",0,200,225,HTTP/1.1 200 OK    //报头直接打印
+Server: nginx/1.18.0
+Date: Wed, 28 Jul 2021 02:46:45 GMT
+Content-Type: application/json
+Content-Length: 145
+Connection: keep-alive
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Credentials: true
++MHTTPDLFILE: 145,145,100    //content数据下载完毕
+
+<keyword>断点续传：</keyword>
+AT+MHTTPDLFILE="http://www.baidu.com:80/","/test.txt",1024,"bytes=0-4095"
+OK
++MHTTPURC: "header",0,206,1012,HTTP/1.1 206 Partial Content
+Cache-Control: no-cache
+Connection: keep-alive
+Content-Length: 4096
+Content-Range: bytes 0-4095/14615
+Content-Type: text/html
+Date: Wed, 28 Jul 2021 03:01:18 GMT
+P3p: CP=" OTI DSP COR IVA OUR IND COM "
+P3p: CP=" OTI DSP COR IVA OUR IND COM "
+Pragma: no-cache
+Server: BWS/1.1
+Set-Cookie: BAIDUID=01739CA7D9A0117007D5A6269982926D:FG=1; expires=Thu, 31-Dec-37 23:55:55 GMT; max-age=2147483647; path=/; domain=.baidu.com
+Set-Cookie: BIDUPSID=01739CA7D9A0117007D5A6269982926D; expires=Thu, 31-Dec-37 23:55:55 GMT; max-age=2147483647; path=/; domain=.baidu.com
+Set-Cookie: PSTM=1627441278; expires=Thu, 31-Dec-37 23:55:55 GMT; max-age=2147483647; path=/; domain=.baidu.com
+Set-Cookie: BAIDUID=01739CA7D9A0117043BF3E8AC090E2D3:FG=1; max-age=31536000; expires=Thu, 28-Jul-22 03:01:18 GMT; domain=.baidu.com; path=/; version=1; comment=bd
+Traceid: 1627441278037869799410632592533791178524
+Vary: Accept-Encoding
+X-Frame-Options: sameorigin
+X-Ua-Compatible: IE=Edge,chrome=1
++MHTTPDLFILE: 1786,4096,43,14615
++MHTTPDLFILE: 3186,4096,77,14615
++MHTTPDLFILE: 4096,4096,100,14615</codeblock>
+            </p>
+        </context>
+    </taskbody>
+</task>

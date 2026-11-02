@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="reference_qd5_gdq_cqb">
+    <title><?oxy_comment_start author="zhangqin1@cmiot.cmcc" timestamp="20241101T141820+0800" comment="该内容模块为基础版本共用，请勿随意删减。若需添加仅适用于某型号的内容，请添加批注说明"?>+HTTPNMIC<?oxy_comment_end?></title>
+    <shortdesc>主动上报接收的HTTP content数据。</shortdesc>
+    <refbody>
+        <table id="table_btl_krz_3qb">
+            <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="3*" align="left"/>
+                <colspec colname="c2" colnum="2" colwidth="7*" align="left"/>
+                <thead>
+                    <row>
+                        <entry namest="c1" nameend="c2"><cmdname>+HTTPNMIC</cmdname></entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row outputclass="has_bgc">
+                        <entry>语法</entry>
+                        <entry>响应</entry>
+                    </row>
+                    <row>
+                        <entry>
+                            <codeblock><cmdname>+HTTPNMIC</cmdname></codeblock>
+                        </entry>
+                        <entry>
+                            <msgblock id="msgblock_emt_xb5_pqb">+HTTPNMIC:&lt;id>,&lt;more>,&lt;total>,&lt;summation>,&lt;cur_len>
+&lt;content></msgblock>
+                        </entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">命令描述</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">主动上报接收的HTTP content数据。</entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">参数描述</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                ><varname>&lt;id></varname>整型，通过<msgph>+HTTPCREATE</msgph>返回的实例索引，范围：0~4。<fn>M5310-E/MN328-B范围：0~1。</fn></entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            ><varname>&lt;more></varname>整型，是否后续还有数据。</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            ><varname>&lt;total></varname>整型，本次输出的Content-lenth总长度或chunked传输分包总长度；如果为chunked模式，total字段会随着解析到的chunked字段不断增加。</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            ><varname>&lt;summation></varname>整型，已接收到的content总长度。</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            ><varname>&lt;cur_len></varname>整型，本包输出长度。</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            ><varname>&lt;content></varname>字符串，http数据内容，目前最大支持1460字节。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        <section id="section_udn_tj1_3cc">
+            <p>
+                <note id="note_wv5_tj1_3cc"
+                    ><varname>&lt;total></varname>参数根据服务器下发策略模组自动识别；当为chunked模式时，必须当more输出0时才能确定最终接收总长度。</note>
+            </p>
+        </section>
+    </refbody>
+</reference>

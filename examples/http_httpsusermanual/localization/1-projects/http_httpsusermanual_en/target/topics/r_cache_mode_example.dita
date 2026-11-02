@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="reference_ud2_wxg_grb">
+    <title>Cache Mode </title>
+        <shortdesc>This section describes the usage procedure and precautions for cache mode.  Due to limited module memory resources, please consider the storage space and the size of the requested content before use. For large data retrieval, the use of cache mode is not recommended.  </shortdesc>
+    <refbody>
+        <section id="section_bsv_xxg_grb">
+            <title>Instance Creation &amp; Parameter Configuration </title>
+                        <msgblock id="msgblock_jvl_yxg_grb"><cmdname>AT+MHTTPCREATE="http://120.27.12.119:10080"</cmdname>
++MHTTPCREATE: 0
+OK
+<cmdname>AT+MHTTPCFG="cached",0,1</cmdname>    /*cache mode configuration */
+OK
+<cmdname>AT+MHTTPCFG="cached",0</cmdname>
++MHTTPCFG: "cached",0,1,4096
+OK</msgblock>
+        </section>
+        <section id="section_a1y_zxg_grb">
+            <title>GET Request</title>
+                        <msgblock id="msgblock_wm4_1yg_grb"><cmdname>AT+MHTTPREQUEST=0,1,0,"/get"</cmdname>
+OK
++MHTTPURC: "recv",0,200,225,145    /*request completion*/</msgblock>
+        </section>
+        <section id="section_b1p_byg_grb">
+            <title>Cached Data Read </title>
+                        <msgblock id="msgblock_rjf_cyg_grb"><cmdname>AT+MHTTPREAD=0,0,225</cmdname>    /*header read*/
++MHTTPREAD: 0,0,0,225,HTTP/1.1 200 OK
+Server: nginx/1.18.0
+Date: Mon, 26 Jul 2021 06:58:31 GMT
+Content-Type: application/json
+Content-Length: 145
+Connection: keep-alive
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Credentials: true
+OK
+<cmdname>AT+MHTTPREAD=0,1,145</cmdname>    /*content read*/
++MHTTPREAD: 0,1,0,145,{"args":{},"headers":{"Connection":"close","Content-Length":"0","Host":"localhost:6000"},"origin":"127.0.0.1","url":"http://localhost:6000/get"}
+OK</msgblock>
+        </section>
+    </refbody>
+</reference>

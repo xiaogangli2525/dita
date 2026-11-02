@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="Toc15492">
+    <title>通过HTTP(S)连接HTTP服务器（双向认证）</title>
+    <body>
+        <table colsep="1" frame="all" rowsep="1">
+            <tgroup cols="1">
+                <colspec colname="col1" colnum="1" colwidth="1*"/>
+                <tbody>
+                    <row>
+                        <entry>
+                            <p>//创建HTTP实例</p>
+                            <p>AT+HTTPCREATE=<xref format="html" href="https://139.224.131.190:3002"
+                                    scope="external">https://139.224.131.190:3002</xref>
+                            </p>
+                            <p>+HTTPCREATE:0</p>
+                            <p>OK</p>
+                            <p>//HTTPS实例配置</p>
+                            <p>//配置服务器cert证书</p>
+                            <p>AT+HTTPCFG=0,1,"-----BEGIN CERTIFICATE-----</p>
+                            <p>MIIDpTCCAo0CFAa+lYlZUNWy9bHzoHjwfRpUtFuzMA0GCSqGSIb3DQEBCwUAMIGO</p>
+                            <p>MQswCQYDVQQGEwJDTjEQMA4GA1UECAwHSmlhbmdTdTEQMA4GA1UEBwwHTmFuSmlu</p>
+                            <p>ZzELMAkGA1UECgwCWFkxGjAYBgNVBAsMEVNvZnR3YXJlIFBsYXRmb3JtMQ4wDAYD</p>
+                            <p>VQQDDAVIYW5keTEiMCAGCSqGSIb3DQEJARYTd2FuZ2hAeGlueWlzZW1pLmNvbTAe</p>
+                            <p>Fw0yMDEwMjcwNzI3MjFaFw0yMTEwMjcwNzI3MjFaMIGOMQswCQYDVQQGEwJDTjEQ</p>
+                            <p>MA4GA1UECAwHSmlhbmdTdTEQMA4GA1UEBwwHTmFuSmluZzELMAkGA1UECgwCWFkx</p>
+                            <p>GjAYBgNVBAsMEVNvZnR3YXJlIFBsYXRmb3JtMQ4wDAYDVQQDDAVIYW5keTEiMCAG</p>
+                            <p>CSqGSIb3DQEJARYTd2FuZ2hAeGlueWlzZW1pLmNvbTCCASIwDQYJKoZIhvcNAQEB</p>
+                            <p>BQADggEPADCCAQoCggEBANCNl+8LyzRSUGvjtFfOuYqLCcuI9+qDzlRW2IAIBezW</p>
+                            <p>WEqTJeXJyGs7ua/aO/ZoohYD9yaeCD2hVRmx/bs0CgdMgIA1iNcm88ZUCj41JsQb</p>
+                            <p>PNRBAz1jLz7RkdSKRxfk72Q2GLte/seAhNdx1ZbsjKrNHwBd+hgxNQf4UZzbA9Ac</p>
+                            <p>J9zlpmJ8NfPqiEu0ZPsO7cmc4q+p+orSyABPmiu5jmjLNxstu/+bL1uPdabNyn0U</p>
+                            <p>hkqQgzqC4BYS19N9xVyK7C1Gswv8YMr0BE15UOxPQJXTenJoMgKVH6OQDof0uj+y</p>
+                            <p>n/7kMkw2Mk0jDQQc4B09Ztq4W6cEFFctunUV2Y1uSqECAwEAATANBgkqhkiG9w0B</p>
+                            <p>AQsFAAOCAQEAUTf5yri75xWStNi40PgH3ad+INVAHVLIvmfQyHl6vNFRZ/YfoRxb</p>
+                            <p>GbN4TBQFHn7hgLWFqbo2JfbEulBNzKLmZmzfJoDPbLW5sFTZiw8JwXIx74oD6K7N</p>
+                            <p>gw9Lsd/t5gV6aBeVEV8qsZ69dUHRCvgbL9DTobBEJkJQOUPQ34ygW0v3omhEWt0N</p>
+                            <p>2zPu9hZJlPLsBdgzsCC54fPZLWMuL7FRJj0zdEH3IxGbanMUcjEmi3OcW5VilnAc</p>
+                            <p>Xr8zZme6pOPrGBZqMy0cfTeQqga6d9UjanyrLvb/eepGiDF9byqNgTDTQlR9TgXe</p>
+                            <p>3FD8w+TAixDgg9x23yehUnWQwToXYg2ZHQ==</p>
+                            <p>-----END CERTIFICATE-----"</p>
+                            <p>OK</p>
+                            <p>//配置客户端cert证书</p>
+                            <p>AT+HTTPCFG=0,2,"-----BEGIN CERTIFICATE-----</p>
+                            <p>MIIDpTCCAo0CFHvaTO/HhPnug4T4tJrbby4pm4s8MA0GCSqGSIb3DQEBCwUAMIGO</p>
+                            <p>MQswCQYDVQQGEwJDTjEQMA4GA1UECAwHSmlhbmdTdTEQMA4GA1UEBwwHTmFuSmlu</p>
+                            <p>ZzELMAkGA1UECgwCWFkxGjAYBgNVBAsMEVNvZnR3YXJlIFBsYXRmb3JtMQ4wDAYD</p>
+                            <p>VQQDDAVIYW5keTEiMCAGCSqGSIb3DQEJARYTd2FuZ2hAeGlueWlzZW1pLmNvbTAe</p>
+                            <p>Fw0yMTEwMzAwMjM1MzBaFw0zMTEwMjgwMjM1MzBaMIGOMQswCQYDVQQGEwJDTjEQ</p>
+                            <p>MA4GA1UECAwHSmlhbmdTdTEQMA4GA1UEBwwHTmFuSmluZzELMAkGA1UECgwCWFkx</p>
+                            <p>GjAYBgNVBAsMEVNvZnR3YXJlIFBsYXRmb3JtMQ4wDAYDVQQDDAVIYW5keTEiMCAG</p>
+                            <p>CSqGSIb3DQEJARYTd2FuZ2hAeGlueWlzZW1pLmNvbTCCASIwDQYJKoZIhvcNAQEB</p>
+                            <p>BQADggEPADCCAQoCggEBANza3BH1LxrjNy5ou6Cdd7hUUp8syNAw2lv04AjqifUQ</p>
+                            <p>4yyry4qgy6Kvzf5dHF7ACV2e9exqlkqfbyynXbkTWGI8PvZJsx19cMlfxBrM9uM7</p>
+                            <p>T/44LmuIHpTqlT1/5ONwgfIYURSQk8V2z/SpqpRuLtJZmsYyEK+SzSdtMXMza/sc</p>
+                            <p>ZOpvu2ckLIl6QlEdsm2vBByA7g3+VCVbgElHBO/+vYNY/+xilZZSY0LTtkKw64uP</p>
+                            <p>Oqt/aLSxXgpoyT+dl2IvnrR6kzs76s0Lr0HxpPY1a2qiOt9Jdf3AsMBThH4vbIpa</p>
+                            <p>gwD06ixSJyOLa2aUobyRVlkrM3Nc/TQ23a9fRn6XPxkCAwEAATANBgkqhkiG9w0B</p>
+                            <p>AQsFAAOCAQEAlc/6O6DS4ulof+fKDCjtN6K18T1k5udYABk6xtgL7kYOR4mkVYiG</p>
+                            <p>eQGcb3+IW3Xoxs5LJvEZjdPpV6wRT/ROtyoyDx/44Ev5dOGNj+0wMcTNOJULebce</p>
+                            <p>62BqAQTpcCCsKxmCgkZC5OOSdsRIsKYTUf1C9Q2z7RoaDpWsW1x7CmejToTXCBcZ</p>
+                            <p>MX3aUZrjPExG1csDV9lcPfqz8VdD4E2ok4TwPQs82I2ohltiLF+ltOW38Qxot0WB</p>
+                            <p>ihLzWlluLGft8vlOEoyynY5E0mOqZR23k9Ynr/GmzdOj6owQF07rfRhcclwF1mxE</p>
+                            <p>GofvkOs/BjyiCCcFehRF5bclbuK95kNRMw==</p>
+                            <p>-----END CERTIFICATE-----"</p>
+                            <p>OK</p>
+                            <p>//配置客户端pk</p>
+                            <p>AT+HTTPCFG=0,3,"-----BEGIN RSA PRIVATE KEY-----</p>
+                            <p>MIIEpQIBAAKCAQEA3NrcEfUvGuM3Lmi7oJ13uFRSnyzI0DDaW/TgCOqJ9RDjLKvL</p>
+                            <p>iqDLoq/N/l0cXsAJXZ717GqWSp9vLKdduRNYYjw+9kmzHX1wyV/EGsz24ztP/jgu</p>
+                            <p>a4gelOqVPX/k43CB8hhRFJCTxXbP9KmqlG4u0lmaxjIQr5LNJ20xczNr+xxk6m+7</p>
+                            <p>ZyQsiXpCUR2yba8EHIDuDf5UJVuASUcE7/69g1j/7GKVllJjQtO2QrDri486q39o</p>
+                            <p>tLFeCmjJP52XYi+etHqTOzvqzQuvQfGk9jVraqI630l1/cCwwFOEfi9silqDAPTq</p>
+                            <p>LFInI4trZpShvJFWWSszc1z9NDbdr19Gfpc/GQIDAQABAoIBAQCeJbZqwYh+l2+/</p>
+                            <p>Ms4QYFIHU5JqWvZdZm4mZP48RD6Plw0lwssYtLW9BGjcmS4khxztxlNRfK2sN+iz</p>
+                            <p>MBHD4p9qkLuBPxscpeOqv4G8s0KjSqioYPCUnb9QYX6GsFtlpf3XLyR4NmMqhj65</p>
+                            <p>cvksGo46oGFdRSJ/pv5zGhTL6mmLQN+kfUp6lWrA2chDD6mfe7SW8zQhQwlBmjtL</p>
+                            <p>NtocHFuXqi0F8c6L0dH2ohv9bn3SCtVch3Y3ei4Qe3pPOjKZGnkLGfIRwMrTGfsO</p>
+                            <p>vbwLwhYEQapenzAkcuVIa54p73/L5vq3u/I6MXQneSN6aXSgofPCveJPP7vzeHjv</p>
+                            <p>nSVLNJT1AoGBAP1m1Jore9UcKilSd421DomsAL/1553sG46n5YnvZSzvePUfD8X/</p>
+                            <p>YBmeLl74borebE5BlOfH381pBI19J89DDmO1kL91SlLdq9BLKM3JIJuZkzKkABto</p>
+                            <p>fFtK3/xDiqQ8O7dOoKayxdU3r/HYVAqG/BaV+xiaVoqM/Pn6Vl0NOTUPAoGBAN8e</p>
+                            <p>mF6m8U5w6m5nwHiiqyMVjL+AWD72PL9uO8MzOyflJrVnEGYA9TZ3V15Z9jUZNVI4</p>
+                            <p>Jox5R0xfjTUbJqVymkLFgo0jLqNG1LY3X5pWtUMqz/fnLtla3W5lxiawlWwoAdCp</p>
+                            <p>iZY+VdaqNayg1+4MOaEe0Xycx4XVAg9vMuZgDFlXAoGBALoD+3t1AkFNnJGa7RJE</p>
+                            <p>X/imICLKNA2UniIZlAGuj9ntrSBbfeu97ODBYo7q1dLxNhY4REPlUJ/sQKBQyKF4</p>
+                            <p>Ox7s0OYLBtVPzmloUvrFcz9l/E1HYKC+EdO+YjA/sI2hfcCxYnMcdudvKqRhRkg4</p>
+                            <p>EOPPk3TbDz5EAwzKPQ2vwFf3AoGAchdLAtuK+Pl0ZxBWs1k6+a3DUwlmFowDdEAB</p>
+                            <p>/0brMPNUX95b3E0RFtDftDd8VpqVUX20+I/rjXou0sEXefKoPwyQPWuIJaXKj4Kx</p>
+                            <p>OFKuTbJOtg1ZP3vfTtxr/sy9G5k5lGGdIV6uth5DZAq7X9aQgXso0/e3bxAFBa9u</p>
+                            <p>766dofECgYEA1QrL4tRQHOCuXYYNV5N9YMV1E1wJf3iDmrQqTi8dJ8g4jbpzuReg</p>
+                            <p>Qk+Vx/timGzk5tMk2pwdJzTOC6yZcrt6OPQGWI8F5hBLycdGRkjBHgurBrAw/qFg</p>
+                            <p>M/XRrUhkBJWwA7WqJCIwxXUgofB51aFmqpOGCXd349Rw1tjWheNOYIg=</p>
+                            <p>-----END RSA PRIVATE KEY-----"</p>
+                            <p>OK</p>
+                            <p>//HTTPS发送请求</p>
+                            <p>AT+HTTPSEND=0,0,"/"</p>
+                            <p>OK</p>
+                            <p>+REQUESTSUCCESS //HTTPS 请求成功</p>
+                            <p>+HTTPNMIH:0,200,187 //网站的回复内容，在串口上的显示截图如下，数据未作处理，客户可以根据实际需要进行处理</p>
+                            <p>X-Powered-By: Express</p>
+                            <p>Content-Type: text/html; charset=utf-8</p>
+                            <p>Content-Length: 164</p>
+                            <p>ETag: W/"a4-OvJrs8UraBmCoiIWp5p41bZoKjI"</p>
+                            <p>Date: Mon, 26 Sep 2022 03:16:52 GMT</p>
+                            <p>Connection: keep-alive</p>
+                            <p>+HTTPNMIC:0,0,164,164</p>
+                            <p>&lt;!DOCTYPE
+                                html&gt;&lt;html&gt;&lt;head&gt;&lt;title&gt;Xinyi&lt;/title&gt;&lt;link
+                                rel="stylesheet"
+                                href="/stylesheets/style.css"&gt;&lt;/head&gt;&lt;body&gt;&lt;h1&gt;Xinyi&lt;/h1&gt;&lt;p&gt;Welcome
+                                to Xinyi&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</p>
+                            <p>+HTTPERR:0,-7 //错误码上报，表示服务器断开 TCP 链接</p>
+                            <p>//HTTPS关闭实例</p>
+                            <p>AT+HTTPCLOSE=0</p>
+                            <p>OK</p>
+                        </entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </body>
+</topic>

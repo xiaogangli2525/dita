@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="reference_efl_5dq_cqb">
+    <title>+MHTTPURC URC Message Report </title>
+        <shortdesc>This command is used as URC reporting indication.  </shortdesc>
+    <refbody>
+        <table id="table_osh_byv_jqb">
+                        <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="3*" align="left"/>
+                <colspec colname="c2" colnum="2" colwidth="7*" align="left"/>
+                <thead>
+                    <row>
+                        <entry namest="c1" nameend="c2"><cmdname>+MHTTPURC</cmdname></entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row outputclass="has_bgc">
+                        <entry>Syntax </entry>
+                        <entry>Response </entry>
+                    </row>
+                    <row>
+                        <entry>Header receive URC </entry>
+                        <entry>
+                            <msgblock id="msgblock_it5_bg5_pqb">+MHTTPURC: "header",&lt;httpid&gt;,&lt;code&gt;,&lt;header_len&gt;,&lt;data&gt;</msgblock>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry>Content receive URC </entry>
+                        <entry>
+                            <msgblock id="msgblock_wf2_cg5_pqb">+MHTTPURC: "content",&lt;httpid&gt;,&lt;content_len&gt;,&lt;sum_len&gt;,&lt;cur_len&gt;,&lt;data&gt;</msgblock>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry>Error URC </entry>
+                        <entry>
+                            <msgblock id="msgblock_ibk_cg5_pqb">+MHTTPURC: "err",&lt;httpid&gt;,&lt;error_code&gt;</msgblock>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry>Cache mode completion request URC </entry>
+                        <entry>
+                            <msgblock id="msgblock_dqp_cg5_pqb">+MHTTPURC: "recv",&lt;httpid&gt;,&lt;code&gt;,&lt;recv_header_len&gt;,&lt;recv_content_len&gt;</msgblock>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry>Chunked mode data transmission indication URC </entry>
+                        <entry>
+                            <msgblock id="msgblock_zch_y31_srb">+MHTTPURC: "ind",&lt;httpid&gt;</msgblock>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry>Downloading into the file system URC </entry>
+                        <entry>
+                            <msgblock id="msgblock_irm_qgy_vyb">+MHTTPURC: "download",&lt;downloaded&gt;,&lt;content_length&gt;[,&lt;entity_length&gt;]</msgblock>
+                        </entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">Command Description </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">This command triggers URC during the request procedure, covering events such as: data reception, request errors, and buffer reception.  </entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">Parameter Description </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">Command identifier.  </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">
+                            <parml id="parml_qyv_vg1_grb">
+                                <plentry>
+                                    <pt>header</pt>
+                                    <pd>Header reception report (cache mode without reporting) </pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>content</pt>
+                                    <pd>Message body reception report (cache mode without reporting) </pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>err</pt>
+                                    <pd>Request error report (reporting shall be followed by the reception of this request) </pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>recv</pt>
+                                    <pd>Cache mode request completion report </pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>ind</pt>
+                                    <pd>Chunked mode data transmission indication </pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>download</pt>
+                                    <pd><cmdname>AT+MHTTPREQUEST</cmdname> command data download into the file system with reception report </pd>
+                                </plentry>
+                            </parml>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                    ><varname>&lt;httpid&gt;</varname>Client instance id: 0-3.  <fn>MN319/MN319-A/MN316A/MN326A: <varname>&lt;httpid&gt;</varname> parameter range 0-1.  </fn></entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            ><varname>&lt;code&gt;</varname>HTTP request result code.  </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            ><varname>&lt;header_len&gt;</varname>Received header length.  </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                ><varname>&lt;data&gt;</varname>Data content. The format is controlled by <varname>&lt;output_format&gt;</varname> of the <cmdname>AT+MHTTPCFG="encoding"</cmdname> command.  </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            ><varname>&lt;content_len&gt;</varname>Content data total length. If the response is in Chunked mode, the parameter shall display 0.  </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                ><varname>&lt;sum_len&gt;</varname>Content downloaded data length. In normal transmission mode, when the current length equals <varname>&lt;content_len&gt;</varname>, it indicates the request completion.  </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            ><varname>&lt;cur_len&gt;</varname>Content current downloaded data length. If the response is in Chunked mode, the parameter shall display 0, indicating the request completion.  </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            ><varname>&lt;error_code&gt;</varname>Error.  </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">
+                            <parml id="parml_usc_z31_grb">
+                                <plentry>
+                                    <pt>1</pt>
+                                    <pd>DNS resolution failure </pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>2</pt>
+                                    <pd>Server connection failure </pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>3</pt>
+                                    <pd>Server connection timeout </pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>4</pt>
+                                    <pd>SSL handshake failure </pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>5</pt>
+                                    <pd>Abnormal connection disconnection </pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>6</pt>
+                                    <pd>Request timeout </pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>7</pt>
+                                    <pd>Data parsing failure </pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>8</pt>
+                                    <pd>Insufficient cache space </pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>9</pt>
+                                    <pd>Packet loss </pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>10</pt>
+                                    <pd>Write file failure </pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>255</pt>
+                                    <pd>Unknown errors </pd>
+                                </plentry>
+                            </parml>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            ><varname>&lt;recv_header_len&gt;</varname>Received header length in buffer.  </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            ><varname>&lt;recv_content_len&gt;</varname>Received content length in buffer.  </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            ><varname>&lt;downloaded&gt;</varname>Downloaded length.  </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            ><varname>&lt;content_length&gt;</varname>The total length of the current download. If the response is in Chunked mode, intermediate reports shall display 0.  </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                ><varname>&lt;entity_length&gt;</varname>The total length of the downloaded file. Valid only when <varname>&lt;range&gt;</varname> is specified and the server responds with a Content-Range field.  </entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">Example </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">Send request in normal mode 
+                            <msgblock id="codeblock_e3j_sxj_1rb"><cmdname>AT+MHTTPCREATE="http://120.27.12.119:10080"</cmdname>
++MHTTPCREATE: 0
+OK
+<cmdname>AT+MHTTPREQUEST=0,1,0,"/get"</cmdname>
+OK
++MHTTPURC: "header",0,200,225,HTTP/1.1 200 OK
+Server: nginx/1.18.0
+Date: Mon, 26 Jul 2021 03:47:04 GMT
+Content-Type: application/json
+Content-Length: 145
+Connection: keep-alive
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Credentials: true
++MHTTPURC: "content",0,145,145,145,{"args":{},"headers":{"Connection":"close","Content-Length":"0","Host":"localhost:6000"},"origin":"127.0.0.1","url":"http://localhost:6000/get"}</msgblock>
+                            Send request in cache mode 
+                            <msgblock id="codeblock_rcw_sxj_1rb"><cmdname>AT+MHTTPCREATE="http://120.27.12.119:10080"</cmdname>
++MHTTPCREATE: 0
+OK
+<cmdname>AT+MHTTPCFG="cached",0,1</cmdname>
+OK
+<cmdname>AT+MHTTPREQUEST=0,1,0,"/get"</cmdname>
+OK
++MHTTPURC: "recv",0,200,225,145</msgblock></entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </refbody>
+</reference>

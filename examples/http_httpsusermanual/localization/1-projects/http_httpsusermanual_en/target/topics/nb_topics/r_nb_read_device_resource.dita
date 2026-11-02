@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="reference_j2f_vyg_grb">
+    <title><?oxy_comment_start author="zhangqin1@cmiot.cmcc" timestamp="20241101T142006+0800" comment="该内容模块为基础版本共用，请勿随意删减。若需添加仅适用于某型号的内容，请添加批注说明"?>API - Device Instant Command - Read Device Resource<?oxy_comment_end?></title>
+    <refbody>
+        <section id="section_rw1_xyg_grb">
+                        <msgblock id="msgblock_axm_xyg_grb"><cmdname>AT+HTTPHEADER=0,"api-key: ChangeForYourOwnKey \r\nConnection: Close\r\n"</cmdname>/*APIKey with the actual value needs to be replaced.*/
+OK
+<cmdname>AT+HTTPSEND=0,0,"/nbiot?imei=865820030265172&amp;obj_id=3200"</cmdname>    /*Control platform issues READ command.*/	
+OK
+CONNECT OK
++MIPLREAD:0,21345,3200,-1,-1    /*Module receives READ indication issued by the platform.*/
+<cmdname>AT+MIPLREADRSP=0,21345,1,3200,0,5500,5,1,"0",2,1</cmdname>    /*Module responds to READ.*/
+OK    
+<cmdname>AT+MIPLREADRSP=0,21345,1,3200,0,5501,3,3,"-12",1,2</cmdname>    /*Module responds to READ.*/
+OK    
+<cmdname>AT+MIPLREADRSP=0,21345,1,3200,0,5750,1,4,"test",0,0</cmdname>    /*Module responds to READ and starts transmitting response data.*/
+OK
++HTTPNMIH:0,0,148	
+Date: Tue, 23 Oct 2018 02:18:11 GMT
+Content-Type: application/json;charset=UTF-8    /*Read Device Resource HTTP API returns HTTP header.*/
+Transfer-Encoding: chunked
+Connection: close
+Pragma: no-cache
++HTTPNMIC:0,1,144,144,144	
+{"errno":0,"error":"succ","data":[{"res":[{"val":false,"res_id":5500},{"val":-12,"res_id":5501},{"val":"test","res_id":5750}],"obj_inst_id":0}]} /*The HTTP content returned by the Read Device Resource HTTP API is the reported value in response to the device's READ reply. */
++HTTPNMIC:0,0,144,144,0
++HTTPDISCON:0	
+<cmdname>AT+MIPLCLOSE=0</cmdname>    /*HTTP connection closed.*/	
+OK
+<cmdname>AT+MIPLDELETE=0</cmdname>    /*Close OneNET connection.*/
+OK    </msgblock>
+        </section>
+        <section id="section_cxq_4sb_3cc">
+            <p>If the IMEI has already been registered, a registration error will be returned. If the device is offline when an instant Read Device Resource command is issued, a device offline error will be returned.  If the device does not communicate with the platform for an extended period, routing information may become stale. Additionally, if the device is in sleep mode, it may be unable to receive data issued by the platform.  If no response is received within a certain period, the API will return a read timeout error: <msgph>unsuccess: 
+                    TIME_OUT</msgph>.  For other considerations, please refer to the OneNET Platform API Manual. </p>
+            <p>The above procedure is for illustrative purposes only to demonstrate HTTP operation examples. In practical applications, the OneNET API should be used on the client server to control the module for corresponding actions.  In creating device HTTP 
+                    API, the JSON string must be entered in the Content field. Since the JSON string contains double quotation marks and commas (",") that may be misinterpreted during AT command parsing, the commas need to be escaped using the method described above. Alternatively, without affecting server-side parsing, a newline character can be inserted before the comma to avoid the issue. Another option is to convert the entire string to hexadecimal format before entering. The <cmdname>+HTTPSEND</cmdname> command does not currently support this operation. It is recommended to upload such data within the content or header fields whenever possible.</p>
+            <p>The example is as follows.</p>
+                        <msgblock id="msgblock_kql_qsb_3cc"><cmdname>AT+HTTPCONTENT=0,"{"title": "865820030265172"\r,"desc": "865820030265172"\r,"protocol": "LWM2M"\r,"auth_info": {"865820030265172": "460043783403288"},}"</cmdname>
+OK
+<cmdname>AT+HTTPCONTENT=0</cmdname>
++HTTPCONTENT:0,130
+{"title": "865820030265172"
+,"desc": "865820030265172"
+,"protocol": "LWM2M"
+,"auth_info": {"865820030265172": "460043783403288"},}
+OK
+<cmdname>AT+HTTPCONTENT=0,""</cmdname>	/*Clear content input.*/
+OK
+<cmdname>AT+HTTPCONTENT=0,7B227469746C65223A2022383635383230303330323635313732222C2264657363223A2022383635383230303330323635313732222C2270726F746F636F6C223A20224C574D324D222C22617574685F696E666F223A207B22383635383230303330323635313732223A2022343630303433373833343033323838227D2C7D,1</cmdname>    /*Enter content in hexadecimal string.*/
+OK
+<cmdname>AT+HTTPCONTENT=0</cmdname>
++HTTPCONTENT:0,127
+{"title":"865820030265172","desc":"865820030265172","protocol":"LWM2M","auth_info":{"865820030265172":"460043783403288"},}    
+OK</msgblock>
+        </section>
+    </refbody>
+</reference>

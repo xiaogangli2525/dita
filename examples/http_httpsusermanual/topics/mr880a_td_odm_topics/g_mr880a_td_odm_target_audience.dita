@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="读者对象">
+      <title>读者对象</title>
+      <body>
+        <p>
+本文档（本指南）主要适用于以下工程师：</p>
+        <ul>
+          <li>技术支持工程师</li>
+          <li>测试工程师</li>
+          <li>软件开发工程师</li>
+        </ul>
+      </body>
+    </topic>

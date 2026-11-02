@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="Toc24123">
+    <title>Connect to an HTTP Server via HTTP</title>
+    <body>
+        <table colsep="1" frame="all" rowsep="1">
+            <tgroup cols="1">
+                <colspec colname="col1" colnum="1" colwidth="1*"/>
+                <tbody>
+                    <row>
+                        <entry>
+                            <p>// Create HTTP instance</p>
+                            <p>AT+HTTPCREATE="http://139.224.131.190:3000"</p>
+                            <p>+HTTPCREATE:0</p>
+                            <p>OK</p>
+                            <p>// HTTP header configuration</p>
+                            <p>// Note: The HTTP protocol requires that header fields be separated by \r\n</p>
+                            <p>AT+HTTPHEADER=0,"Content-Type:application/json\r\n",0</p>
+                            <p>OK</p>
+                            <p>// HTTP content configuration</p>
+                            <p>AT+HTTPCONTENT=0,"{\"RPM\":22}",0</p>
+                            <p>OK</p>
+                            <p>// Send HTTP request</p>
+                            <p>AT+HTTPSEND=0,1,"/users"</p>
+                            <p>OK</p>
+                            <p>+REQUESTSUCCESS // HTTP request successful</p>
+                            <p>+HTTPNMIH:0,200,186 // Website response content. A screenshot of the serial port display is shown below. The data is presented as-is (no processing applied). Customers may process the data according to actual requirements</p>
+                            <p>X-Powered-By: Express</p>
+                            <p>Content-Type: text/html; charset=utf-8</p>
+                            <p>Content-Length: 37</p>
+                            <p>ETag: W/"25-r3VbWdUcPZaHTw8trTg7xdk+YbQ"</p>
+                            <p>Date: Mon, 19 Sep 2022 04:28:59 GMT</p>
+                            <p>Connection: keep-alive</p>
+                            <p>+HTTPNMIC:0,0,37,37</p>
+                            <p>received a POST with body: {"RPM":22}</p>
+                            <p>// Close HTTP instance</p>
+                            <p>AT+HTTPCLOSE=0</p>
+                            <p>OK</p>
+                        </entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </body>
+</topic>

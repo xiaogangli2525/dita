@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="reference_rvw_hgm_gqb">
+    <title><?oxy_comment_start author="zhangqin1@cmiot.cmcc" timestamp="20241101T142101+0800" comment="该内容模块为基础版本共用，请勿随意删减。若需添加仅适用于某型号的内容，请添加批注说明"?>服务器错误类<?oxy_comment_end?></title>
+    <refbody>
+        <table id="table_ttt_zfx_jqb">
+            <tgroup cols="3">
+                <colspec colname="c1" colnum="1" colwidth="1*" align="left"/>
+                <colspec colname="c2" colnum="2" colwidth="3*" align="left"/>
+                <colspec colname="newCol3" colnum="3" colwidth="3*" align="left"/>
+                <thead>
+                    <row>
+                        <entry>转义字符</entry>
+                        <entry>意义</entry>
+                        <entry>ASCII码值(十进制)</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>\a</entry>
+                        <entry>响铃(BEL)</entry>
+                        <entry>7</entry>
+                    </row>
+                    <row>
+                        <entry>\b</entry>
+                        <entry>退格(BS) ，将当前位置移到前一列。</entry>
+                        <entry>8</entry>
+                    </row>
+                    <row>
+                        <entry>\f</entry>
+                        <entry>换页(FF)，将当前位置移到下页开头。</entry>
+                        <entry>12</entry>
+                    </row>
+                    <row>
+                        <entry>\n</entry>
+                        <entry>换行(LF) ，将当前位置移到下一行开头。</entry>
+                        <entry>10</entry>
+                    </row>
+                    <row>
+                        <entry>\r</entry>
+                        <entry>回车(CR) ，将当前位置移到本行开头。</entry>
+                        <entry>13</entry>
+                    </row>
+                    <row>
+                        <entry>\t</entry>
+                        <entry>水平制表(HT) （跳到下一个TAB位置）</entry>
+                        <entry>9</entry>
+                    </row>
+                    <row>
+                        <entry>\v</entry>
+                        <entry>垂直制表(VT)</entry>
+                        <entry>11</entry>
+                    </row>
+                    <row>
+                        <entry>\\</entry>
+                        <entry>代表一个反斜线字符'\'</entry>
+                        <entry>92</entry>
+                    </row>
+                    <row>
+                        <entry>\'</entry>
+                        <entry>代表一个单引号（撇号）字符</entry>
+                        <entry>39</entry>
+                    </row>
+                    <row>
+                        <entry>\"</entry>
+                        <entry>代表一个双引号字符</entry>
+                        <entry>34</entry>
+                    </row>
+                    <row>
+                        <entry>\?</entry>
+                        <entry>代表一个问号</entry>
+                        <entry>63</entry>
+                    </row>
+                    <row>
+                        <entry>\ddd</entry>
+                        <entry>1到3位八进制数所代表的任意字符</entry>
+                        <entry>三位八进制</entry>
+                    </row>
+                    <row>
+                        <entry>\xhh</entry>
+                        <entry>1到2位十六进制所代表的任意字符</entry>
+                        <entry>二位十六进制</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </refbody>
+</reference>

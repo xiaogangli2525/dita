@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="reference_agm_qdq_cqb">
+    <title>AT+MHTTPTERM 终止HTTP传输</title>
+    <shortdesc>该命令用于终止当前HTTP传输。</shortdesc>
+    <refbody>
+        <table id="table_q11_4rv_jqb">
+            <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="3*" align="left"/>
+                <colspec colname="c2" colnum="2" colwidth="7*" align="left"/>
+                <thead>
+                    <row>
+                        <entry namest="c1" nameend="c2"><cmdname>AT+MHTTPTERM</cmdname></entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row outputclass="has_bgc">
+                        <entry>语法</entry>
+                        <entry>响应</entry>
+                    </row>
+                    <row>
+                        <entry>测试命令<codeblock outputclass="language-c"><cmdname>AT+MHTTPTERM=?</cmdname></codeblock></entry>
+                        <entry>
+                            成功<msgblock id="msgblock_fjd_kf5_pqb">+MHTTPTERM: (list of supported&lt;httpid>s)
+OK</msgblock>
+                            错误<msgblock id="msgblock_rmg_kf5_pqb">+CME ERROR: &lt;err></msgblock></entry>
+                    </row>
+                    <row>
+                        <entry>执行命令<codeblock outputclass="language-c"><cmdname>AT+MHTTPTERM</cmdname></codeblock></entry>
+                        <entry> 成功<msgblock id="msgblock_e52_lf5_pqb">OK</msgblock>
+                            错误<msgblock id="msgblock_k2j_lf5_pqb">+CME ERROR: &lt;err></msgblock></entry>
+                    </row>
+                    <row>
+                        <entry>设置命令<codeblock outputclass="language-c"><cmdname>AT+MHTTPTERM=&lt;httpid></cmdname></codeblock></entry>
+                        <entry> 成功<msgblock id="msgblock_q2z_lf5_pqb">OK</msgblock>
+                            错误<msgblock id="msgblock_gyb_mf5_pqb">+CME ERROR: &lt;err></msgblock></entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">命令描述</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            >该命令为中断当前请求，保留实例，执行命令终止所有连接。该命令不主动清空客户端实例中设置的特定报头和content数据（请求成功结束时自动清空），下次请求如需修改特定报头和content数据，请先使用相关命令手动清空。</entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">参数描述</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"><varname>&lt;httpid></varname>
+                            客户端实例id，0~3。</entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">示例</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">终止当前传输
+                            <msgblock id="codeblock_xy3_pwj_1rb"><cmdname>AT+MHTTPTERM=0</cmdname>
+OK</msgblock></entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </refbody>
+</reference>

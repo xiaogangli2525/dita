@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="ZH-CN_TOPIC_0000002189261840-chtext">
+        <title>示例</title>
+        <body>
+          <table colsep="1" frame="all" rowsep="1">
+            <tgroup cols="3">
+              <colspec colname="col1" colnum="1" colwidth="0.6*"/>
+              <colspec colname="col2" colnum="2" colwidth="1.4*"/>
+              <colspec colname="col3" colnum="3" colwidth="1*"/>
+              <thead>
+                <row>
+                  <entry>示例</entry>
+                  <entry>输入</entry>
+                  <entry>输出</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry>下载</entry>
+                  <entry>AT^SSLCERTDOWN=0,0,"clientcert.pem",3498</entry>
+                  <entry>OK</entry>
+                </row>
+                <row>
+                  <entry>查询</entry>
+                  <entry>AT^SSLCERTDOWN?</entry>
+                  <entry>
+                    <div>^SSLCERTDOWN: 0,"11.pem"</div>
+                    <div>^SSLCERTDOWN: 0,"00.pem"</div>
+                    <div>^SSLCERTDOWN: 0,"sslkeypwd.key"</div>
+                    <div>^SSLCERTDOWN: 0,"22.pem"</div>
+                  </entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </table>
+        </body>
+      </topic>

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="Toc3316">
+      <title>实例配置</title>
+      <body>
+        <table colsep="1" frame="all" rowsep="1">
+          <tgroup cols="2">
+            <colspec colname="col1" colnum="1" colwidth="1*"/>
+            <colspec colname="col2" colnum="2" colwidth="1*"/>
+            <thead>
+              <row>
+                <entry>命令</entry>
+                <entry>响应</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+AT+HTTPCFG=&lt;id&gt;,&lt;type&gt;[,&lt;value&gt;[,&lt;encode&gt;]]</entry>
+                <entry>
+                  <div>+HTTPCFG:
+&lt;httpclient_id&gt;,&lt;type&gt;[,&lt;length&gt;]</div>
+                  <div>OK</div>
+                  <div>或ERROR</div>
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+        <p>命令说明：</p>
+        <p>
+用于查询或配置客户端参数。</p>
+        <p>
+HTTPS单向验证：终端验证服务器只需要配置服务器cert证书。</p>
+        <p>
+HTTPS双向验证：需要配置服务器cert证书，以及客户端cert证书和客户端pk(暂不支持)。</p>
+        <p>
+受限于终端侧计算能力和存储空间，双向验证会耗时较长，此处建议只做单向验证即可满足一般需求。</p>
+        <p>参数描述：</p>
+        <p>
+&lt;id&gt;：由AT+HTTPCREATE命令创建的客户端实例。</p>
+        <p>&lt;type&gt;：</p>
+        <p>1：服务器 cert 证书</p>
+        <p>2：客户端 cert 证书</p>
+        <p>3：客户端 pk</p>
+        <p>
+8：配置打印模式：1
+代表用16进制打印收到的字符串，0代表字符串模式(默认为0)</p>
+        <p>
+&lt;value&gt;:根据不同的type设置的数值。</p>
+        <p>
+&lt;encode&gt;：输入证书数据时是否采用
+16
+进制：输入时可以选择将字符以16进制发送，或者直接以字符串发送。建议直接采用默认值为1，表示用16进制数进行串口输入。</p>
+        <p>注</p>
+        <p>1.由于服务器 cert
+证书，客户端 cert
+证书，和客户端 pk
+存在两种存储方式，所以分别对应以下两种情况
+(HARDCODE_USER_CERT_PK 默认为
+1）。</p>
+        <ul>
+          <li>当HARDCODE_USER_CERT_PK 为 0
+时，成功发送HTTP请求后，通过AT+HTTPCFG配置的服务器
+cert 证书，客户端 cert
+证书，和客户端
+pk将自动清空
+以释放空间，防止占用大内存，但是在握手的过程种仍然会占用，重新发起
+HTTP
+请求时，需要重新配置。</li>
+          <li>当HARDCODE_USER_CERT_PK 为 1
+时，由于配置的证书是存储在
+flash 上的（占用 fota
+区域最后 3 个4k
+，单个证书最大为4k），解决了在握手过程中占用大内存的问题，但由于是复用了
+fota
+区域，存在被其他业务擦除的可能，所以建议在每次使用之前重新配置。</li>
+        </ul>
+        <p>
+2.单项验证时只需配置服务器证书。</p>
+        <p>
+3.客户端PK和证书生成可使用如下方法（以openssl举例说明）：</p>
+        <p>openssl genrsa 2048 &gt; ./private.pem
+＃生成私钥key文件</p>
+        <p>openssl req -new -key ./private.pem -out csr.pem
+＃通过私钥文件生成CSR证书签名</p>
+        <p>openssl x509 -req -days 365 -in csr.pem -signkey ./private.pem
+-out ./file.crt
+＃通过私钥文件和CSR证书签名生成证书文件</p>
+        <p>
+4、进行cert证书和pk的配置时，如果采用字符串的形式进行输入时，不要更改证书的格式，否则会导致mbedtls解析证书失败，而由于有些串口工具不支持参数中携带\r\n等特殊字符串，此时建议采用16进制数进行串口输入。</p>
+        <p>典型示例:</p>
+        <p>AT+HTTPCFG=0,1,"-----BEGIN CERTIFICATE-----</p>
+        <p>
+MIIDpTCCAo0CFAa+lYlZUNWy9bHzoHjwfRpUtFuzMA0GCSqGSIb3DQEBCwUAMIGO</p>
+        <p>
+MQswCQYDVQQGEwJDTjEQMA4GA1UECAwHSmlhbmdTdTEQMA4GA1UEBwwHTmFuSmlu</p>
+        <p>
+ZzELMAkGA1UECgwCWFkxGjAYBgNVBAsMEVNvZnR3YXJlIFBsYXRmb3JtMQ4wDAYD</p>
+        <p>
+r8zZme6pOPrGBZqMy0cfTeQqga6d9UjanyrLvb/eepGiDF9byqNgTDTQlR9TgXe</p>
+        <p>......</p>
+        <p>3FD8w+TAixDgg9x23yehUnWQwToXYg2ZHQ==</p>
+        <p>-----END CERTIFICATE-----"</p>
+        <p>OK</p>
+      </body>
+    </topic>

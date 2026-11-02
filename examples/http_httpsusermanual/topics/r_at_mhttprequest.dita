@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="reference_t5f_mdq_cqb">
+    <title>AT+MHTTPREQUEST 发送HTTP请求</title>
+    <shortdesc>该命令用于发送HTTP请求。</shortdesc>
+    <refbody>
+        <table id="table_jgf_vcc_jqb">
+            <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="3*" align="left"/>
+                <colspec colname="c2" colnum="2" colwidth="7*" align="left"/>
+                <thead>
+                    <row>
+                        <entry namest="c1" nameend="c2"><cmdname>AT+MHTTPREQUEST</cmdname></entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row outputclass="has_bgc">
+                        <entry>语法</entry>
+                        <entry>响应</entry>
+                    </row>
+                    <row>
+                        <entry>测试命令<codeblock><cmdname>AT+MHTTPREQUEST=?</cmdname></codeblock></entry>
+                        <entry>成功<msgblock id="msgblock_sd2_125_pqb">+MHTTPREQUEST: (list of supported &lt;httpid>s),(list of supported &lt;method>s),(list of supported &lt;length>s),
+OK</msgblock>
+                            错误<msgblock id="msgblock_ekk_125_pqb">+CME ERROR: &lt;err></msgblock></entry>
+                    </row>
+                    <row>
+                        <entry>设置命令<codeblock><cmdname>AT+MHTTPREQUEST=&lt;httpid>,&lt;method>[,&lt;length>[,&lt;path>[,&lt;local_path>]]]</cmdname></codeblock></entry>
+                        <entry>成功<div><varname>&lt;length></varname>和<varname>&lt;path></varname>不设置，以<msgph>CTRL+Z</msgph>发送数据，以<keyword>ESC</keyword>取消发送：</div><msgblock id="msgblock_n3x_125_pqb">>(输入数据)
+OK</msgblock>
+                            <varname>&lt;length></varname>设置，<varname>&lt;path></varname>不设置，输入数据达到指定长度或达到超时时间时发送数据：<msgblock id="msgblock_ebd_b25_pqb">>(输入数据)
+OK</msgblock> 所有参数均设置：<msgblock id="msgblock_hsh_b25_pqb">OK</msgblock>
+                            错误<msgblock id="msgblock_qdk_b25_pqb">+CME ERROR: &lt;err></msgblock></entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">命令描述</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                    >普通传输模式先设置content数据，后发送请求；Chunked模式先发送请求，后设置content数据。<fn>使用<cmdname>AT+MHTTPREQUEST</cmdname>下载数据到文件系统时，建议一次只使用一路下载。</fn></entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">参数描述</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                    ><varname>&lt;httpid></varname>客户端实例id，0~3。<fn>MN319/MN319-A/MN316A/MN326A：<varname>&lt;httpid></varname>参数范围0~1。</fn></entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                ><varname>&lt;method></varname>请求类型。<fn>ML307G：DELETE请求返回不携带配置的content数据。</fn></entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">
+                            <parml id="parml_eq3_lpz_frb">
+                                <plentry>
+                                    <pt>1</pt>
+                                    <pd>GET</pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>2</pt>
+                                    <pd>POST</pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>3</pt>
+                                    <pd>PUT</pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>4</pt>
+                                    <pd>DELETE</pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>5</pt>
+                                    <pd>HEAD</pd>
+                                </plentry>
+                            </parml>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                        ><varname>&lt;length></varname>输入数据长度，0~4096，数据模式下不可设置为0，命令中直接输入数据时，设置为0，不对数据长度进行校验，设置大于0，将对输入数据的长度进行校验（ASCII字符串和带转义的字符串输入模式下：校验实际命令中输入字符串长度是否与指定长度相等；HEX字符串输入模式下：校验实际命令中输入字符串长度是否是指定长度的两倍）。<fn><div><ph
+                                        product="tbd"
+                                    >MN327：命令直接输入模式下，单条命令最大长度为2048，超过将报错。</ph></div><div>ML302S/ML307S/ML302A/ML305A/ML307A/ML307G/ML305M/ML307R/ML307B/ML307C/ML307M/ML307H/ML307N/MR380R<ph
+                                        product="tbd"
+                                        ><?oxy_insert_start author="surui" timestamp="20260616T195130+0800"?>/MR380M<?oxy_insert_end?></ph>：数据模式下可设置为0。</div>ML305U：数据模式下可设置为0，参数缺省时为0。</fn></entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"><varname>&lt;path></varname>请求的url
+                                    path。<fn><cmdname>AT+MHTTPCFG="encoding"</cmdname>中设置的<varname>&lt;input_format></varname>参数，只对直接命令中带<varname>&lt;path></varname>的输入模式有效，对数据模式输入无效，数据模式直接使用原始数据。<cmdname>AT+MHTTPCFG="urlencode"</cmdname>使能后，模组将自动对请求的<varname>&lt;path></varname>进行编码，不对字母数字以及<msgph>-_.!~*'();/?:@&amp;=+$,#</msgph>进行编码。</fn></entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                ><varname>&lt;local_path></varname>本地文件路径，长度范围与文件系统相关，下载文件保存到本地时，以追加模式打开文件。若文件已存在，下载的数据将追加到文件末尾，不会清空原有内容。如需覆盖旧文件，请先使用<cmdname>AT+MFDELETE</cmdname>删除原文件后再执行下载。<fn>
+                                <div>ML302S/ML307S/ML302A/ML305A/ML307A/ML307G/ML307R/ML307B/ML307C/MR380R<ph
+                                        product="tbd"
+                                        ><?oxy_insert_start author="surui" timestamp="20260616T195141+0800"?>/MR380M<?oxy_insert_end?></ph>：若<varname>&lt;local_path></varname>第一位为正斜杠("/")则将下载文件存储在用户输入的路径下，否则将下载文件存储在<msgph>/etc/http_file/</msgph>路径下。</div>
+                                <div>ML305U/ML305M/ML307X/ML307Y：若<varname>&lt;local_path></varname>仅含有正斜杠("/")则将下载文件存储在用户输入的路径下，若<varname>&lt;local_path></varname>仅含有反斜杠("\")或者不包含斜杠则将下载文件存储在<msgph>/etc/http_file/</msgph>路径下。</div>
+                                <div>ML307M/ML307H/MN319-A：不支持<varname>&lt;local_path></varname>参数设置。</div>
+                                <div>ML307Y：目录会占用空间，建议尽量使用单级目录。</div>
+                            </fn></entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">示例</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">发送GET请求
+                            <msgblock id="codeblock_qgr_zvj_1rb"><cmdname>AT+MHTTPCREATE="http://120.27.12.119:10080"</cmdname>
++MHTTPCREATE: 0
+OK
+<cmdname>AT+MHTTPREQUEST=0,1,0,"/get"</cmdname>
+OK
++MHTTPURC: "header",0,200,225,HTTP/1.1 200 OK
+Server: nginx/1.18.0
+Date: Fri, 23 Jul 2021 09:59:35 GMT
+Content-Type: application/json
+Content-Length: 145
+Connection: keep-alive
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Credentials: true
++MHTTPURC: "content",0,145,145,145,{"args":{},"headers":{"Connection":"close","Content-Length":"0","Host":"localhost:6000"},"origin":"127.0.0.1","url":"http://localhost:6000/get"}</msgblock></entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        <section id="section_ix4_jxt_rrb">
+            <note id="note_r35_jxt_rrb">
+                <sl>
+                    <sli><ph product="tbd"
+                            >M5310-E/MN327/MN328/</ph>MN318/MN316/MN319/MN319-A/MN326/MN316A/MN326A：不支持<keyword>></keyword>下的数据输入模式，只能在AT命令中直接输入数据，单次输入长度受平台单条命令长度限制，数据过长时建议分多次输入；MN319/MN319-A：AT命令参数的最大长度为1560字节。</sli>
+                    <sli>ML307B：AT命令参数的最大长度为3000字节。</sli>
+                    <sli>如果请求响应存在重定向时，HTTP重定向到HTTPS，若未使能SSL（未配置<varname>&lt;ssl_enable></varname>和<varname>&lt;ssl_id></varname>参数），模组将默认使能SSL，并采用默认配置进行连接。</sli>
+                    <sli>ML307A/ML307R/ML307C：当HTTP响应头包含<codeph>Connection:
+                            close</codeph>时，请在每次请求结束后执行<codeph>AT+MHTTPDEL=&lt;id></codeph>删除实例，待下一次请求时重新调用<codeph>AT+MHTTPCREATE</codeph>建立新连接；或者在两次请求之间增加至少1秒的间隔时间，避免短时间内连续发送请求。</sli>
+                </sl>
+            </note>
+        </section>
+    </refbody>
+</reference>
+

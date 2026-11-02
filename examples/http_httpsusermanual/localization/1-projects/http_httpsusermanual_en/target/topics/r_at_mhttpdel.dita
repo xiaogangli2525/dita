@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="reference_tgw_4dq_cqb">
+    <title>AT+MHTTPDEL Delete HTTP Instances </title>
+        <shortdesc>This command is used to delete HTTP instances.  </shortdesc>
+    <refbody>
+        <table id="table_nyc_blv_jqb">
+                        <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="3*" align="left"/>
+                <colspec colname="c2" colnum="2" colwidth="7*" align="left"/>
+                <thead>
+                    <row>
+                        <entry namest="c1" nameend="c2"><cmdname>AT+MHTTPDEL</cmdname></entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row outputclass="has_bgc">
+                        <entry>Syntax </entry>
+                        <entry>Response </entry>
+                    </row>
+                    <row>
+                        <entry>Test command <codeblock><cmdname>AT+MHTTPDEL=?</cmdname></codeblock></entry>
+                        <entry>If succeed: <msgblock id="msgblock_ntf_df5_pqb">+MHTTPDEL: (list of supported &lt;httpid&gt;s)
+OK</msgblock>
+                            If fail: <msgblock id="msgblock_ur3_df5_pqb">+CME ERROR: &lt;err&gt;</msgblock></entry>
+                    </row>
+                    <row>
+                        <entry>Set command <codeblock><cmdname>AT+MHTTPDEL=&lt;httpid&gt;</cmdname></codeblock></entry>
+                        <entry>If succeed: <msgblock id="msgblock_dyz_df5_pqb">OK</msgblock>
+                            If fail: <msgblock id="msgblock_rpd_2f5_pqb">+CME ERROR: &lt;err&gt;</msgblock></entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">Command Description </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">This command is used to delete the created instances and clear all related configurations.  </entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">Parameter Description </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                    ><varname>&lt;httpid&gt;</varname>Client instance id: 0-3.  <fn>MN319/MN319-A/MN316A/MN326A: <varname>&lt;httpid&gt;</varname> parameter range 0-1.  </fn></entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">Example </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">Delete instance 
+                            <msgblock id="codeblock_e15_mwj_1rb"><cmdname>AT+MHTTPDEL=0</cmdname>
+OK</msgblock></entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        <section id="section_itc_vyt_rrb">
+                        <note id="note_x5j_vyt_rrb"
+                >ML307B: Since HTTP data reception and AT command processing are asynchronous, after this command is executed to terminate transmission, the data already received by the module but not yet fully processed will continue to be parsed and reported as URCs (e.g., +MHTTPURC or +MHTTPDLFILE) until all in-flight data is processed and then stops completely.  These URCs do not represent data from new requests and this is normal behavior.  </note>
+        </section>
+    </refbody>
+</reference>

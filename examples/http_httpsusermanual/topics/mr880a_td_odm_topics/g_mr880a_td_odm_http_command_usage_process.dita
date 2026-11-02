@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="ZH-CN_TOPIC_0000002184317248-chtext">
+      <title>HTTP命令使用流程</title>
+      <body>
+        <p>通过拨号相关 AT
+命令，可配置 PDP
+上下文、激活或去激活
+PDP 上下文以及查询 PDP
+上下文状态。</p>
+              <p>通过 HTTP AT 命令，可发送 HTTP GET/POST/PUT 请求到 HTTP服务器，并读取来自 HTTP 服务器的响应结果。大致流程如下：</p>
+              <ol
+                                id="ol_ukk_cgz_2gc">                                                     
+        <li>使用 <b>AT^NDISUP=7,1</b>激活
+PDP
+上下文后，可使用<b>AT+CGPADDR</b>查询已分配的
+IP
+地址(第7路用于传输http)。</li>
+        <li>通过 <b>AT^HTTPURL</b> 设置
+HTTP服务器 URL。</li>
+        <li>发送 HTTP请求。<ul id="ul_dzk_lgz_2gc">
+                <li>
+                        <b>AT^HTTPGET</b> 用于发送
+                        HTTP服务器 GET 请求。</li>
+                <li>
+                        <b>AT^HTTPPOST</b>用于发送
+                        HTTP POST 请求。</li>
+                                </ul></li>
+        <li>通过 <b>AT^HTTPREAD</b>读取
+HTTP响应信息。</li>
+        <li>通过
+<b>AT^HTTPSTOP</b>停止HTTP操作。</li>
+        <li>通过<b>AT^NDISUP=7,0</b>
+去激活 PDP 上下文。</li>
+              </ol>
+      </body>
+    </topic>

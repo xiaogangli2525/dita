@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="ZH-CN_TOPIC_0000002219517773-chtext">
+        <title>自定义
+HTTP请求头信息</title>
+        <body>
+          <p>模块自动填补 HTTP
+请求头信息，用户可通过
+<b>AT^HTTPCFG</b>
+将&lt;request_header&gt;配置为 1
+自定义 HTTP
+请求头信息，但需遵循以下标准：</p>
+          <ul>
+            <li>遵循 HTTP
+头信息语句规范。</li>
+            <li>HTTP请求行中的 URI
+值和
+Host:请求头信息必须与
+<b>AT^HTTPURL</b> 配置的 URL
+一致。</li>
+            <li>
+HTTP请求头信息必须以&lt;CR&gt;&lt;LF&gt;结尾。</li>
+          </ul>
+          <p>以下为有效的 HTTP(S) POST
+请求头信息示例：</p>
+          <table colsep="1" frame="all" rowsep="1">
+            <tgroup cols="1">
+              <colspec colname="col1" colnum="1" colwidth="1*"/>
+              <thead>
+                <row>
+                  <entry>示例</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry>POST /processorder.html HTTP/1.1&lt;CR&gt;&lt;LF&gt;</entry>
+                </row>
+                <row>
+                  <entry>Host: 10.180.***.***:****&lt;CR&gt;&lt;LF&gt;</entry>
+                </row>
+                <row>
+                  <entry>Accept: */*&lt;CR&gt;&lt;LF&gt;</entry>
+                </row>
+                <row>
+                  <entry>User-Agent: QUECTEL_MODULE&lt;CR&gt;&lt;LF&gt;</entry>
+                </row>
+                <row>
+                  <entry>Connection: Keep-Alive&lt;CR&gt;&lt;LF&gt;</entry>
+                </row>
+                <row>
+                  <entry>Content-Type:
+application/x-www-form-urlencoded&lt;CR&gt;&lt;LF&gt;</entry>
+                </row>
+                <row>
+                  <entry>Content-Length: 48&lt;CR&gt;&lt;LF&gt;</entry>
+                </row>
+                <row>
+                  <entry>&lt;CR&gt;&lt;LF&gt;</entry>
+                </row>
+                <row>
+                  <entry>Message=1111&amp;Appleqty=2222&amp;Orangeqty=3333&amp;find=1</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </table>
+        </body>
+      </topic>

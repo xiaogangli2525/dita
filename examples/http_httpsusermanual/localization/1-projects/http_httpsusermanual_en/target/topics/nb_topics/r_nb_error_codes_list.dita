@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="reference_rvw_hgm_gqb">
+    <title>Error Code </title>
+    <refbody>
+        <table id="table_ttt_zfx_jqb">
+            <title>M5310-E/MN328-B Error Code </title>
+                        <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="3*" align="left"/>
+                <colspec colname="c2" colnum="2" colwidth="7*" align="left"/>
+                <thead>
+                    <row>
+                        <entry>Status Code</entry>
+                        <entry>Description </entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>-1</entry>
+                        <entry>Memory error</entry>
+                    </row>
+                    <row>
+                        <entry>-2</entry>
+                        <entry>Buffer error</entry>
+                    </row>
+                    <row>
+                        <entry>-3</entry>
+                        <entry>TCP Timeout or Unknown client error</entry>
+                    </row>
+                    <row>
+                        <entry>-4</entry>
+                        <entry>Routing error or HTTP parse error</entry>
+                    </row>
+                    <row>
+                        <entry>-5</entry>
+                        <entry>TCP operation in progress or client DNS error</entry>
+                    </row>
+                    <row>
+                        <entry>-6</entry>
+                        <entry>TCP illegal value or URL parse error</entry>
+                    </row>
+                    <row>
+                        <entry>-7</entry>
+                        <entry>Operation would block</entry>
+                    </row>
+                    <row>
+                        <entry>-8</entry>
+                        <entry>Address in use</entry>
+                    </row>
+                    <row>
+                        <entry>-9</entry>
+                        <entry>Already connecting</entry>
+                    </row>
+                    <row>
+                        <entry>-10</entry>
+                        <entry>Connection already established</entry>
+                    </row>
+                    <row>
+                        <entry>-11</entry>
+                        <entry>No connection</entry>
+                    </row>
+                    <row>
+                        <entry>-12</entry>
+                        <entry>Interface error</entry>
+                    </row>
+                    <row>
+                        <entry>-13</entry>
+                        <entry>Connection aborted</entry>
+                    </row>
+                    <row>
+                        <entry>-14</entry>
+                        <entry>Connection reset</entry>
+                    </row>
+                    <row>
+                        <entry>-15</entry>
+                        <entry>Connection closed</entry>
+                    </row>
+                    <row>
+                        <entry>-16</entry>
+                        <entry>Illegal argument</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        <table id="table_uxn_ql3_ncc">
+            <title>MN316A Error Code </title>
+                        <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="3*"/>
+                <colspec colname="c2" colnum="2" colwidth="7*"/>
+                <thead>
+                    <row>
+                        <entry align="left">Status Code</entry>
+                        <entry align="left">Description </entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry align="left">9100 </entry>
+                        <entry>Invalid HTTP ID</entry>
+                    </row>
+                    <row>
+                        <entry>9101 </entry>
+                        <entry>Invalid certificate type</entry>
+                    </row>
+                    <row>
+                        <entry>9102 </entry>
+                        <entry>Creation failed</entry>
+                    </row>
+                    <row>
+                        <entry>9103 </entry>
+                        <entry>SSL mode not supported</entry>
+                    </row>
+                    <row>
+                        <entry>9104 </entry>
+                        <entry>Connecting</entry>
+                    </row>
+                    <row>
+                        <entry>9105 </entry>
+                        <entry>Transmission error</entry>
+                    </row>
+                    <row>
+                        <entry>9106 </entry>
+                        <entry>Close error</entry>
+                    </row>
+                    <row>
+                        <entry>9107 </entry>
+                        <entry>Header configuration error</entry>
+                    </row>
+                    <row>
+                        <entry>9108 </entry>
+                        <entry>Content configuration error</entry>
+                    </row>
+                    <row>
+                        <entry>Others </entry>
+                        <entry>Refer to MN316 AT Commands User Manual</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </refbody>
+</reference>

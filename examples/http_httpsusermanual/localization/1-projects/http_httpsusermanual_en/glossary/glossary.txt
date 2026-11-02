@@ -1,0 +1,11 @@
+# Glossary in tab-separated format -*- coding: utf-8 -*-
+设置命令	Set Command
+成功	If succeed
+失败	If fail
+命令描述	Command Description
+该命令用于创建HTTP实例	This command is used to create HTTP instances.
+参数描述	Parameter Description
+字符串，	String.
+整型，	Integer.
+示例	Example
+创建实例	Create instances

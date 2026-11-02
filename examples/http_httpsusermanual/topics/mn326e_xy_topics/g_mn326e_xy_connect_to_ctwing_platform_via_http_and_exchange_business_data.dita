@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="Toc12378">
+      <title>通过HTTP连接CTWING平台，并进行业务数据交互</title>
+      <body>
+        <p>
+CTWING官方帮助文档链接如下：<xref format="html" href="https://www.ctwing.cn/sbjr/62" scope="external">https://www.ctwing.cn/sbjr/62</xref>
+        </p>
+        <table colsep="1" frame="all" rowsep="1">
+          <tgroup cols="1">
+            <colspec colname="col1" colnum="1" colwidth="1*"/>
+            <tbody>
+              <row>
+                <entry>
+                  <p>
+//通过HTTP协议登录CTWING平台</p>
+                  <p>//创建HTTP实例</p>
+                  <p>
+AT+HTTPCREATE=<xref format="html" href="http://http.ctwing.cn:8991" scope="external">http://http.ctwing.cn:8991</xref>
+                  </p>
+                  <p>+HTTPCREATE:0</p>
+                  <p>OK</p>
+                  <p>
+//签名秘钥，设备生成（自定义），携带至平台</p>
+                  <p>AT+HTTPHEADER=0,"signKey: test\r\n",0</p>
+                  <p>OK</p>
+                  <p>
+//时间戳（自己生成）。（20分钟有效，前后时间差不超过10分钟）</p>
+                  <p>AT+HTTPHEADER=0,"timestamp: 1663900280590\r\n",0</p>
+                  <p>OK</p>
+                  <p>
+//MasterKey为平台上创建产品时自动生成，可在产品概况中查询。</p>
+                  <p>AT+HTTPHEADER=0,"signature:
+b821e3990ad0493867e9a2b8447e449847f7be138eb571ada4a5f39e4d755269\r\n",0</p>
+                  <p>OK</p>
+                  <p>AT+HTTPHEADER=0,"Content-Type: application/json\r\n",0</p>
+                  <p>OK</p>
+                  <p>
+//HTTP协议登录鉴权请求参数</p>
+                  <p>
+AT+HTTPCONTENT=0,"{\"productId\":15345508,\"deviceId\":\"15345508232354562315557\",\"password\":\"aDlCUezZ5QnXXaPWttU0gtJaZpflEQvBnFPwGRjq1As\",\"version\":\"1.0\"}",0</p>
+                  <p>OK</p>
+                  <p>AT+HTTPSEND=0,1,"/auth"</p>
+                  <p>OK</p>
+                  <p>+REQUESTSUCCESS //HTTPS 请求成功</p>
+                  <p>+HTTPNMIH:0,200,105
+//HTTP协议登录鉴权响应参数，网站的回复内容，在串口上的显示截图如下，数据未作处理，客户可以根据实际需要进行处理</p>
+                  <p>content-length: 79</p>
+                  <p>content-type: application/json</p>
+                  <p>date: Fri, 23 Sep 2022 02:33:54 GMT</p>
+                  <p>server: Cowboy</p>
+                  <p>+HTTPNMIC:0,0,79,79</p>
+                  <p>
+{"message":"SUCCESSFUL","code":0,"accessToken":"5E98C4D164FFD6C4467190E230000"}
+//随机动态生成</p>
+                  <p>+HTTPERR:0,-7
+//错误码上报，表示服务器断开
+TCP 链接</p>
+                  <p>//HTTPS关闭实例</p>
+                  <p>AT+HTTPCLOSE=0</p>
+                  <p>OK</p>
+                  <p>
+//通过HTTP协议与CTWING平台进行数据交互</p>
+                  <p>//创建HTTP实例</p>
+                  <p>AT+HTTPCREATE=<xref format="html" href="http://http.ctwing.cn:8991" scope="external">http://http.ctwing.cn:8991</xref>
+                  </p>
+                  <p>+HTTPCREATE:0</p>
+                  <p>OK</p>
+                  <p>
+//签名秘钥，设备生成（自定义），携带至平台</p>
+                  <p>AT+HTTPHEADER=0,"signKey: test\r\n",0</p>
+                  <p>OK</p>
+                  <p>
+//时间戳（自己生成）。（20分钟有效，前后时间差不超过10分钟）</p>
+                  <p>AT+HTTPHEADER=0,"timestamp: 1663900280590\r\n",0</p>
+                  <p>OK</p>
+                  <p>
+//MasterKey为平台上创建产品时自动生成，可在产品概况中查询。</p>
+                  <p>AT+HTTPHEADER=0,"signature:
+b821e3990ad0493867e9a2b8447e449847f7be138eb571ada4a5f39e4d755269\r\n",0</p>
+                  <p>OK</p>
+                  <p>AT+HTTPHEADER=0,"Content-Type: application/json\r\n",0</p>
+                  <p>OK</p>
+                  <p>
+//HTTP协议业务数据开发请求参数</p>
+                  <p>
+AT+HTTPCONTENT=0,"{\"productId\":15345508,\"deviceId\":\"15345508232354562315557\",\"accessToken\":\"5E98C4D164FFD6C4467190E230000\",\"topic\":\"data_report\",\"payload\":{\"water_flow\":15.0}}",0</p>
+                  <p>OK</p>
+                  <p>AT+HTTPSEND=0,1,"/topic"</p>
+                  <p>OK</p>
+                  <p>+REQUESTSUCCESS //HTTPS 请求成功</p>
+                  <p>+HTTPNMIH:0,200,105
+//HTTP协议登录鉴权响应参数，网站的回复内容，在串口上的显示截图如下，数据未作处理，客户可以根据实际需要进行处理</p>
+                  <p>content-length: 33</p>
+                  <p>content-type: application/json</p>
+                  <p>date: Mon, 26 Sep 2022 03:42:01 GMT</p>
+                  <p>server: Cowboy</p>
+                  <p>+HTTPNMIC:0,0,33,33</p>
+                  <p>{"message":"SUCCESSFUL","code":0}</p>
+                  <p>+HTTPERR:0,-7
+//错误码上报，表示服务器断开
+TCP 链接</p>
+                  <p>//HTTPS关闭实例</p>
+                  <p>AT+HTTPCLOSE=0</p>
+                  <p>OK</p>
+                </entry>
+              </row>
+            </tbody>
+            
+          </tgroup>
+        </table>
+      </body>
+    </topic>

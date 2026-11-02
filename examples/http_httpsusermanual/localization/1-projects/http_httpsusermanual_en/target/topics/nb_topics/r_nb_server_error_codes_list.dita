@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="reference_rvw_hgm_gqb">
+    <title><?oxy_comment_start author="zhangqin1@cmiot.cmcc" timestamp="20241101T142101+0800" comment="该内容模块为基础版本共用，请勿随意删减。若需添加仅适用于某型号的内容，请添加批注说明"?>Server Error <?oxy_comment_end?></title>
+    <refbody>
+        <table id="table_ttt_zfx_jqb">
+                        <tgroup cols="3">
+                <colspec colname="c1" colnum="1" colwidth="1*" align="left"/>
+                <colspec colname="c2" colnum="2" colwidth="3*" align="left"/>
+                <colspec colname="newCol3" colnum="3" colwidth="3*" align="left"/>
+                <thead>
+                    <row>
+                        <entry>Escape character</entry>
+                        <entry>Description</entry>
+                        <entry>ASCII code value (decimal)</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>\a</entry>
+                        <entry>Bell (BEL)</entry>
+                        <entry>7</entry>
+                    </row>
+                    <row>
+                        <entry>\b</entry>
+                        <entry>Backspace (BS). Move the current position to the previous column. </entry>
+                        <entry>8</entry>
+                    </row>
+                    <row>
+                        <entry>\f</entry>
+                        <entry>Form Feed (FF). Move the current position to the beginning of the next page. </entry>
+                        <entry>12</entry>
+                    </row>
+                    <row>
+                        <entry>\n</entry>
+                        <entry>Line Feed (LF). Move the current position to the beginning of the next line. </entry>
+                        <entry>10</entry>
+                    </row>
+                    <row>
+                        <entry>\r</entry>
+                        <entry>Carriage Return (CR). Move the current position to the beginning of the current line. </entry>
+                        <entry>13</entry>
+                    </row>
+                    <row>
+                        <entry>\t</entry>
+                        <entry>Horizontal Tab (HT). Jump to the next TAB.</entry>
+                        <entry>9</entry>
+                    </row>
+                    <row>
+                        <entry>\v</entry>
+                        <entry>Vertical Tab (VT).</entry>
+                        <entry>11</entry>
+                    </row>
+                    <row>
+                        <entry>\\</entry>
+                        <entry>Represent a backslash character ('\').</entry>
+                        <entry>92</entry>
+                    </row>
+                    <row>
+                        <entry>\'</entry>
+                        <entry>Represent a single quotation mark character (') .</entry>
+                        <entry>39</entry>
+                    </row>
+                    <row>
+                        <entry>\"</entry>
+                        <entry>Represent a double quotation mark character ('').</entry>
+                        <entry>34</entry>
+                    </row>
+                    <row>
+                        <entry>\?</entry>
+                        <entry>Represent a question mark.</entry>
+                        <entry>63</entry>
+                    </row>
+                    <row>
+                        <entry>\ddd</entry>
+                        <entry>Any character represented by one to three octal digits.</entry>
+                        <entry>Three octal digits.</entry>
+                    </row>
+                    <row>
+                        <entry>\xhh</entry>
+                        <entry>Any character represented by one to two hexadecimal digits.</entry>
+                        <entry>Two hexadecimal digits.</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </refbody>
+</reference>

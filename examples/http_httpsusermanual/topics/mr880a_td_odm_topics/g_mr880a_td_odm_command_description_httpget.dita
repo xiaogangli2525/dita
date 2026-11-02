@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="ZH-CN_TOPIC_0000002224627353-chtext">
+        <title>命令说明</title>
+        <body>
+          <p>该命令用于通过
+UART/USB 发送 GET 请求到
+HTTP服务器。根据在
+AT^HTTPCFG="requestheader"[,&lt;request_header&gt;]中配置的&lt;request_header&gt;，AT^HTTPGET
+设置命令有两种形式。</p>
+          <ul>
+            <li>若&lt;request_header&gt;为
+0，禁用自定义 HTTP GET
+请求头信息。</li>
+            <li>若&lt;request_header&gt;为
+1，启用自定义 HTTP GET
+请求头信息。</li>
+          </ul>
+          <p>发送 AT^HTTPGET 后：</p>
+          <ul>
+            <li>若 125
+秒（HTTP）内输出
+CONNECT，则表示
+HTTP(S)服务器连接成功。</li>
+            <li>若 125
+秒（HTTP）内未上报
+CONNECT，将输出ERROR。</li>
+          </ul>
+          <p>执行 AT^HTTPGET 返回 OK
+后，需要等待一段时间（参考网络和&lt;rsptime&gt;）才会输出
+URC: ^HTTPGET:
+&lt;err&gt;[,&lt;httprspcode&gt;[,&lt;content_length&gt;]] 。
+其 中 仅 当 &lt;err&gt; 为 0 时
+， 才 上
+报&lt;httprspcode&gt;。若
+HTTP响应头信息包括
+HTTP响应体长度，将上报&lt;content_length&gt;信息。</p>
+          <ul>
+            <li>若&lt;request_header&gt;为 0（禁用自定义HTTP请求头信息）。 <p>AT^HTTPGET[=&lt;rsptime&gt;] </p><p>
+          若参数格式正确且无其他错误发生： </p><p>OK </p><p>模块收到来自 HTTP服务器的响应后，将上报以下 URC：^HTTPGET:
+          &lt;err&gt;[,&lt;httprspcode&gt;[,&lt;content_length&gt;]] </p><p> 若参数格式不正确或有其他错误发生：ERROR
+        </p></li>
+
+            <li>若&lt;request_header&gt;为 1（启用自定义HTTPGET 请求头信息）。 <p>
+          AT^HTTPGET=&lt;rsptime&gt;,&lt;data_length&gt;[,&lt;input_time&gt;] </p><p>若参数格式正确且
+          HTTP(S)服务器连接成功： </p><p>CONNECT </p><p>TA 切换到透传模式（即数据模式），即可输入 HTTP
+          GET请求头。当输入的数据长度达到&lt;data_length&gt;，TA 将切换回命令模式并上报以下结果： </p><p>OK </p><p>模块收到来自
+          HTTP服务器的响应后，将上报以下 URC：^HTTPGET: &lt;err&gt;[,&lt;httprspcode&gt;[,&lt;content_length&gt;]]
+          </p><p> 若参数格式不正确或有其他错误发生：ERROR</p>
+      </li>
+          </ul>
+
+        </body>
+      </topic>

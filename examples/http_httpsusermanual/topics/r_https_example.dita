@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="reference_c1z_z5g_grb">
+    <title>HTTPS示例</title>
+    <shortdesc>本节以GET请求流程为例，描述HTTPS使用步骤。</shortdesc>
+    <refbody>
+        <section id="section_ydg_jj2_dtb">
+            <note id="note_nns_jj2_dtb" type="important"><ph product="tbd"
+                >M5310-E/MN327/MN328/</ph>MN318/MN319/MN319-A/MN316A/MN326A/ML307H-GU不支持HTTPS。</note>
+        </section>
+        <section id="section_qxh_tfh_grb">
+            <title>SSL证书写入</title>
+            <msgblock id="msgblock_qvw_wfh_grb"><cmdname>AT+MSSLCERTWR="s.ca",0,1310,"-----BEGIN CERTIFICATE-----\r\nMIIDizCCAnOgAwIBAgIJAM1N8muy2ikPMA0GCSqGSIb3DQEBCwUAMFwxCzAJBgNV\r\nBAYTAmNuMQ4wDAYDVQQIDAVodWJlaTEOMAwGA1UEBwwFd3VoYW4xDjAMBgNVBAoM\r\nBWNtaW90MQwwCgYDVQQLDANpb3QxDzANBgNVBAMMBlJvb3RDQTAeFw0yMDA3Mjkw\r\nNjUyMzJaFw0zMDA3MjcwNjUyMzJaMFwxCzAJBgNVBAYTAmNuMQ4wDAYDVQQIDAVo\r\ndWJlaTEOMAwGA1UEBwwFd3VoYW4xDjAMBgNVBAoMBWNtaW90MQwwCgYDVQQLDANp\r\nb3QxDzANBgNVBAMMBlJvb3RDQTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoC\r\nggEBAMUrAyt8WCylcWKuHVoakXNPwH8KlrhatzHmTgFqK4g7harm9wA4ajPfymR6\r\nuNFUj/lUB3VEj/qyKBPXC28AA92YMkbcIJuuvv7T7scziGadx87hjBxoGa/UZELV\r\nCOYpLDz+tcOFUDAPFpEQphAi5lEm84ZhaYcrdDrY/1jIKphwvRZGpQ+jQWdRqMcX\r\n97XzgSDlaxIB8W+LYFeA4GP0B48PEbS5YHVNL7NAHsLjEq/xrzYTicUefAJ89Ivq\r\nAlM8u9nNt6JqTuFP2R7iLjD8e/pUAz5PR5aYjCBCX5fM76b1VkG8CYjIf/UUFLI3\r\nwIjzgUcKInbbj1hPeTG/Aw7V/zECAwEAAaNQME4wHQYDVR0OBBYEFFdklbpXYDuM\r\nY7Ek6NN0wX4RwdXEMB8GA1UdIwQYMBaAFFdklbpXYDuMY7Ek6NN0wX4RwdXEMAwG\r\nA1UdEwQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBABktBZ/Z+upMimODpxkpL0mZ\r\np3BWrqOhFHXMXWVyGpsIcGOhKIieV5StFDWs3aqfI/5LFv4FwfjiIsoCKq53v6KM\r\nOrj5m/vTKPKC1mL0Eu06PGahwcupeZLEiuK4xB6IoP50MS+fjLeqZSbADJTyloM2\r\n9PBog+M4PDIWpODdf1r2pPnbJCdwVBYSmzaIzz7cOvzmGBAAN2AJfxDO2Zs0tQ+0\r\nqGLzukWxtPybgLbfeSvZs0RGakUs1Ir2+Ct+AAXkteFGNKr6Ph020YDWNev7WJJN\r\nrZvOGW3kKMHJSSJ/hB0qPO31liyJ7RWMAX0L0E9PJmazsyeFRNhznd3TM4BBf3s=\r\n-----END CERTIFICATE-----\r\n"</cmdname>  /*命令中直接输入证书（其他输入方式可参考《SSL用户手册》）*/
+OK</msgblock>
+        </section>
+        <section id="section_shj_zfh_grb">
+            <title>SSL证书选择与认证等级设置</title>
+            <msgblock id="msgblock_by4_1gh_grb"><cmdname>AT+MSSLCFG="cert",1,"s.ca"</cmdname>  /*设置SSL 1使用“s.ca”证书*/
+OK
+<cmdname>AT+MSSLCFG="auth",1,1</cmdname>  /*设置SSL 1采用单项认证方式*/
+OK</msgblock>
+            <note id="note_u4x_2gq_qsb"
+                    >客户使用时，请在创建HTTP实例前进行SSL相应参数设置，在请求过程中不要修改SSL参数，如需修改参数，请在使用<cmdname>AT+MHTTPTERM</cmdname>或者<cmdname>AT+MHTTPDEL</cmdname>命令终止请求后修改。</note>
+        </section>
+        <section id="section_ank_rwg_grb">
+            <title>创建实例和参数配置</title>
+            <msgblock id="msgblock_dyb_swg_grb"><cmdname>AT+MHTTPCREATE="https://120.27.12.119:10443"</cmdname>
++MHTTPCREATE: 0
+OK
+<cmdname>AT+MHTTPCFG="ssl",0,1,1</cmdname>   /*HTTPS使能，并指定使用SSL 1。*/
+OK</msgblock>
+        </section>
+        <section id="section_w25_dxg_grb">
+            <title>GET请求</title>
+            <msgblock id="msgblock_izr_2xg_grb"><cmdname>AT+MHTTPREQUEST=0,1,0,"/get"</cmdname>
+OK
++MHTTPURC: "header",0,200,225,HTTP/1.1 200 OK
+Server: nginx/1.18.0
+Date: Mon, 26 Jul 2021 06:52:49 GMT
+Content-Type: application/json
+Content-Length: 145
+Connection: keep-alive
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Credentials: true
++MHTTPURC: "content",0,145,145,145,{"args":{},"headers":{"Connection":"close","Content-Length":"0","Host":"localhost:6000"},"origin":"127.0.0.1","url":"http://localhost:6000/get"}</msgblock>
+        </section>
+    </refbody>
+</reference>

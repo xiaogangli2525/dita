@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="ZH-CN_TOPIC_0000002224627377-chtext">
+        <title>参数说明</title>
+        <body>
+          <table colsep="1" frame="all" rowsep="1">
+            <tgroup cols="2">
+              <colspec colname="col1" colnum="1" colwidth="0.5*"/>
+              <colspec colname="col2" colnum="2" colwidth="1.5*"/>
+              <thead>
+                <row>
+                  <entry>参数名</entry>
+                  <entry>参数解释</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry>&lt;filename&gt;</entry>
+                  <entry>
+字符串类型。需要被存储的文件名称。最大长度为
+256 字节。</entry>
+                </row>
+                <row>
+                  <entry>&lt;wait_time&gt;</entry>
+                  <entry>
+整型。接收两个数据包之间的最大间隔时间。范围：1~65535；默认值：60；单位：秒。</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </table>
+        </body>
+      </topic>

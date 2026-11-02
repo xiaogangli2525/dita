@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="Toc15987">
+      <title>Common Issues During TLS Handshake</title>
+      <body>
+        <p>
+1. Error Code: -0x7200/-29184/MBEDTLS_ERR_SSL_INVALID_RECORD</p>
+        <p>
+Possible Causes and Suggested Solutions</p>
+        <p>
+An error occurred in the data packet received by the TCP/IP protocol stack. Protocol stack issues need to be investigated.  SSL thread stack too small; adjust stack size. SSL max message length too small; if network packet length exceeds it, error 0x7200 may occur. Adjust MBEDTLS_SSL_IN_CONTENT_LEN and MBEDTLS_SSL_OUT_CONTENT_LEN, recompile, and retry. </p>
+      </body>
+    </topic>

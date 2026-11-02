@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="reference_qd5_gdq_cqb">
+    <title><?oxy_comment_start author="zhangqin1@cmiot.cmcc" timestamp="20241101T141744+0800" comment="该内容模块为基础版本共用，请勿随意删减。若需添加仅适用于某型号的内容，请添加批注说明"?>AT+HTTPCONTENT<?oxy_comment_end?></title>
+        <shortdesc>This command is used to set or query HTTP content information.  </shortdesc>
+    <refbody>
+        <table id="table_btl_krz_3qb">
+                        <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="3*" align="left"/>
+                <colspec colname="c2" colnum="2" colwidth="7*" align="left"/>
+                <thead>
+                    <row>
+                        <entry namest="c1" nameend="c2"><cmdname>AT+HTTPCONTENT</cmdname></entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row outputclass="has_bgc">
+                        <entry>Syntax </entry>
+                        <entry>Response </entry>
+                    </row>
+                    <row>
+                        <entry>Set Command <codeblock><cmdname>AT+HTTPCONTENT=&lt;id&gt;[,&lt;content&gt;[,&lt;encode_method&gt;[,&lt;len&gt;]]</cmdname></codeblock></entry>
+                        <entry>If succeed <div>If only the id parameter field is entered and the current content is empty, the following is returned: </div><msgblock id="msgblock_xmq_xb5_pqb">OK</msgblock>Otherwise, the previously entered content information will be returned: <msgblock id="msgblock_lt1_jjw_43c">+HTTPCONTENT:&lt;id&gt;,&lt;length&gt;
+&lt;content&gt;
+OK</msgblock>If the formats of id and content are correct, the information is set successfully and the following is returned: <msgblock id="msgblock_xw1_kjw_43c">OK</msgblock>
+                            If fail<msgblock id="msgblock_emt_xb5_pqb">ERROR</msgblock></entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">Command Description </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">This command is used to set or query HTTP content information.  </entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">Parameter Description</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                ><varname>&lt;id&gt;</varname>Integer. The instance index returned by <msgph>+HTTPCREATE</msgph>. Range: 0~4.  <fn>M5310-E/MN328-B range: 0~1.  </fn></entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                    ><varname>&lt;content&gt;</varname>String. The content information to be configured.  <fn>MN316A value range: 0~2048. Unit: byte.  When <varname>&lt;content&gt;</varname> is empty and <varname>&lt;encode_method&gt;</varname> is 0, the module enters data mode. Data input is terminated when the input length reaches 2048 bytes, or when <msgph>CTRL+Z</msgph> is sent, or when a timeout of 20 seconds occurs.  </fn></entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                ><varname>&lt;encode_method&gt;</varname>Integer. Parsed as string or hexadecimal. When it is string, escape characters are supported.  <fn>In MN316A data mode, only the value 0, which is plain string is supported. </fn></entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">
+                            <dl>
+                                <dlentry>
+                                    <dt>0</dt>
+                                    <dd>Escape string (default). </dd>
+                                </dlentry>
+                                <dlentry>
+                                    <dt>1</dt>
+                                    <dd>HEX string. </dd>
+                                </dlentry>
+                            </dl>
+                                                </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                ><varname>&lt;len&gt;</varname>Integer. Specify the length of input data in data mode. Range: 0~2048. When the length is entered, the module enters data mode.<varname>&lt;header&gt;</varname> 
+                                and <varname>&lt;encode_method&gt;</varname> may be omitted or set to an invalid value. When <varname>&lt;len&gt;</varname> is set to 0, data input is terminated when the input length reaches 2048 bytes, or when <msgph>CTRL+Z</msgph> is sent, or when a timeout of 20 seconds occurs; When <varname>&lt;len&gt;</varname> is set to a value greater than 0, data input is terminated when the specified length is reached or when a timeout of 20 seconds occurs.  <fn>MN316A does not support this parameter.  </fn></entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            ><varname>&lt;length&gt;</varname> Return the length of the entered content. </entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        <section id="section_e5m_bg1_3cc">
+            <p>
+                                <note id="note_ctt_bg1_3cc"
+                        >The usage of <msgph>+HTTPCONTENT</msgph> is similar to that of <msgph>+HTTPHEADER</msgph>, and will not be elaborated. </note>
+            </p>
+        </section>
+    </refbody>
+</reference>
+<?oxy_options track_changes="on"?>

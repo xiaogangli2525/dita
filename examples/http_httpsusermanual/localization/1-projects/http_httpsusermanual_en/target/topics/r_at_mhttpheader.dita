@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="reference_nt4_3dq_cqb">
+    <title>AT+MHTTPHEADER Set HTTP Specific Header </title>
+        <shortdesc>This command is used to set the specific header.  </shortdesc>
+    <refbody>
+        <table id="table_dp5_nkb_jqb">
+                        <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="3*" align="left"/>
+                <colspec colname="c2" colnum="2" colwidth="7*" align="left"/>
+                <thead>
+                    <row>
+                        <entry namest="c1" nameend="c2"><cmdname>AT+MHTTPHEADER</cmdname></entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row outputclass="has_bgc">
+                        <entry>Syntax </entry>
+                        <entry>Response </entry>
+                    </row>
+                    <row>
+                        <entry>Test command <codeblock><cmdname>AT+MHTTPHEADER=?</cmdname></codeblock></entry>
+                        <entry>If succeed: <msgblock id="msgblock_qpq_hc5_pqb">+MHTTPHEADER: (list of supported &lt;httpid&gt;s),(list of supported &lt;eof&gt;s),(list of supported &lt;length&gt;s),
+OK</msgblock>
+                            If fail: <msgblock id="msgblock_og5_gd5_pqb">+CME ERROR: &lt;err&gt;</msgblock></entry>
+                    </row>
+                    <row>
+                        <entry>Set command <codeblock><cmdname>AT+MHTTPHEADER=&lt;httpid&gt;[,&lt;eof&gt;[,&lt;length&gt;[,&lt;header&gt;]]]</cmdname></codeblock></entry>
+                        <entry>If succeed: 
+                                <div><varname>&lt;httpid&gt;</varname> is configured only to query the configured header: </div><msgblock id="msgblock_tsk_kqv_3sb">[+MHTTPHEADER: &lt;httpid&gt;,&lt;length&gt;,&lt;header&gt;]
+OK</msgblock><varname>&lt;eof&gt;</varname> is configured while <varname>&lt;length&gt;</varname> and <varname>&lt;header&gt;</varname> are not. Send data by <keyword>CTRL+Z</keyword>, and cancel sending by <keyword>ESC</keyword>: <msgblock id="msgblock_o4b_3c5_pqb">&gt;(input data)
+OK</msgblock><varname>&lt;length&gt;</varname> is configured while <varname>&lt;header&gt;</varname> is not. Send data when input data reaches the specified length or timeout is reached: <msgblock id="msgblock_vyd_3c5_pqb">&gt;(input data)
+OK</msgblock>All parameters set: <msgblock id="msgblock_x33_jc5_pqb">OK</msgblock>
+                            If fail: <msgblock id="msgblock_f1h_kc5_pqb">+CME ERROR: &lt;err&gt;</msgblock></entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">Command Description </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                >Valid for a single request and automatically cleared upon request completion.  Specific header primarily contains fields that vary across different requests. If the same field exists in the common header, it will be automatically replaced with the value from the specific header when the request is sent.  When the <varname>&lt;header&gt;</varname> parameter is omitted in the set command, the module enters data mode, indicated by the <keyword>&gt;</keyword> prompt for data input.  <fn>The <varname>&lt;input_format&gt;</varname> parameter configured in <cmdname>AT+MHTTPCFG="encoding"</cmdname> only applies to the input mode with <varname>&lt;header&gt;</varname> specified in direct commands, and is ineffective for data mode. In data mode, raw data is used directly.  </fn></entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">Parameter Description </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                    ><varname>&lt;httpid&gt;</varname>Client instance id: 0-3.  <fn>MN319/MN319-A/MN316A/MN326A: <varname>&lt;httpid&gt;</varname> parameter range 0-1.  </fn></entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"><varname>&lt;eof&gt;</varname>Data input indication.  </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">
+                            <parml id="parml_iwb_mjy_frb">
+                                <plentry>
+                                    <pt>0</pt>
+                                    <pd>The header input termination marker. Subsequent input is only permitted after the request completes or is cleared.  </pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>1</pt>
+                                    <pd>Subsequent header data input is pending.  </pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>2</pt>
+                                    <pd>Clear existing header data.  </pd>
+                                </plentry>
+                            </parml>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                    ><varname>&lt;length&gt;</varname>Data input length 0-4096. In data mode, setting to 0 is not permitted. When directly inputting data in command mode: If set to 0, no length validation is performed on the input data; If set &gt;0, the system will validate the input data length. (For ASCII and escaped string input modes: The system shall validate whether the actual input string length in the command matches the specified length. For HEX string input mode: The system shall verify the actual input string length equals twice the specified length.)  <fn><ph
+                                    product="tbd"
+                                        >MN327: In direct command input mode, the maximum length of a single command is 2048 characters; exceeding this limit will result in an error. </ph><div>ML302S/ML307S/ML305M/ML307M/ML307H/ML307N/ML307X/ML307Y/ML307B<ph
+                                        product="tbd"
+                                        >/MR380M</ph>: In data mode, this can be set to 0. </div><div>ML302A/ML305A/ML307A/ML307G/ML307R/ML307C/MR380R: Command mode length range: 0-1024; Data mode length range: 0-4096; in data mode, this can be set to 0. <div>ML305U: In data mode, setting to 0 is permitted. The parameter defaults to 0 when the parameter is omitted. </div></div></fn></entry>
+                                        </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                ><varname>&lt;header&gt;</varname>Specific header data is valid for a single request and automatically cleared upon request completion. If the same field is configured via <cmdname>AT+MHTTPCFG="header"</cmdname>, 
+                                the module will automatically use the currently set value internally.  <fn>ML302S/ML307S/ML302A/ML305A/ML307A/ML305U/ML305M/ML307R/ML307B/ML307C/ML307G/ML307M/ML307H/ML307N/ML307X/ML307Y: String parameters must not contain quotation marks. To include quotation marks within the string parameter, use data mode for transmission.  </fn></entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">Example </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">Set specific header 
+                            <msgblock id="codeblock_kvx_kvj_1rb"><cmdname>AT+MHTTPHEADER=0,0,0,"api-key: FC9B69m4prHH2j7ljBbA=hHlbMI="</cmdname>
+OK</msgblock></entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        <section id="section_rmb_cxt_rrb">
+            <note id="note_jf3_cxt_rrb">
+                <div><ph product="tbd"
+                        >M5310-E/MN327/MN328/</ph>MN318/MN316/MN319/MN319-A/MN326/MN316A/MN326A: The <keyword>&gt;</keyword> data input mode is not supported, data must be input directly in the AT command. Single input length is limited by platform's single command constraints, thus, for larger data, multiple inputs are recommended. </div>
+                <div>MN319/MN319-A: The maximum length of AT command parameter is 1,560 bytes. </div>
+                <div>ML307X/ML307Y: The total writable data length shall not exceed 8,192 bytes. </div>
+                <div>ML307B: The maximum length of AT command parameter is 3,000 bytes. </div>
+            </note>
+        </section>
+    </refbody>
+</reference>

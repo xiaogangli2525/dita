@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="reference_j2f_vyg_grb">
+    <title><?oxy_comment_start author="zhangqin1@cmiot.cmcc" timestamp="20241101T141954+0800" comment="该内容模块为基础版本共用，请勿随意删减。若需添加仅适用于某型号的内容，请添加批注说明"?>OneNET
+        HTTP API 应用举例<?oxy_comment_end?></title>
+    <refbody>
+        <example>
+            <p>API使用说明请参考OneNET文档中心>>资源下载>>1.1说明文档>>NB-IoT协议设备开发文档。<xref
+                    href="https://open.iot.10086.cn/doc/art398.html#97" format="html"
+                    scope="external"/></p>
+            <p>本小节仅举例创建设备与即时读设备资源命令。</p>
+        </example>
+    </refbody>
+</reference>

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="Toc22999">
+      <title>Send Request</title>
+      <body>
+        <table colsep="1" frame="all" rowsep="1">
+                    <tgroup cols="2">
+            <colspec colname="col1" colnum="1" colwidth="1.1*"/>
+            <colspec colname="col2" colnum="2" colwidth="0.9*"/>
+            <thead>
+              <row>
+                <entry>Command</entry>
+                <entry>Response</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>AT+HTTPSEND=&lt;id&gt;,&lt;method&gt;,&lt;path&gt;</entry>
+                <entry>
+                  <div>OK</div>
+                  <div>or ERROR</div>
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+        <p>Command Description:</p>
+        <p>This command sends an HTTP request. </p>
+        <p>Parameter Description: </p>
+        <p>
+&lt;id&gt;: Client instance created by the AT+HTTPCREATE command. </p>
+        <p>&lt;method&gt;: HTTP request type. </p>
+        <p>0: GET</p>
+        <p>1: POST</p>
+        <p>2: PUT</p>
+        <p>3: DELETE</p>
+        <p>4: HEAD</p>
+        <p>&lt;path&gt;: Absolute path parameter of the requested URL path. </p>
+        <p>Note:</p>
+        <p>
+1. After an HTTP request is successfully sent, the header fields configured via AT+HTTPHEADER and the content fields configured via AT+HTTPCONTENT shall be automatically cleared to release memory. </p>
+        <p>2. Since the server certificate, client certificate, and client private key support two storage methods, they correspond to the following two scenarios respectively (HARDCODE_USER_CERT_PK defaults to 1). </p>
+        <ul>
+          <li>When HARDCODE_USER_CERT_PK is set to 0, after an HTTP request is successfully sent, the server certificate, client certificate, and client private key configured via AT+HTTPCFG shall be automatically cleared to release memory, preventing high memory usage. However, they will still be consumed during the handshake process. When reinitiating an HTTP request, they need to be reconfigured. </li>
+          <li>When HARDCODE_USER_CERT_PK = 1, certificates stored in flash (last three 4 KB sectors of FOTA area, max 4 KB each). This avoids high memory usage during handshake. However, FOTA area reuse may cause certificate erasure. Reconfigure before each use is recommended. </li>
+        </ul>
+        <p>Typical Example</p>
+        <table colsep="1" frame="all" rowsep="1">
+          <tgroup cols="1">
+            <colspec colname="col1" colnum="1" colwidth="1*"/>
+            <tbody>
+              <row>
+                <entry>
+                  <p>AT+HTTPSEND=0,0,"/"</p>
+                  <p>OK</p>
+                  <p>+REQUESTSUCCESS // HTTPS request successful</p>
+                  <p>+HTTPNMIH:0,200,187
+// Website response content. A screenshot of the serial port display is shown below. The data is presented as-is (no processing applied). Customers may process the data according to actual requirements</p>
+                  <p>X-Powered-By: Express</p>
+                  <p>Content-Type: text/html; charset=utf-8</p>
+                  <p>Content-Length: 164</p>
+                  <p>ETag: W/"a4-OvJrs8UraBmCoiIWp5p41bZoKjI"</p>
+                  <p>Date: Sat, 17 Sep 2022 08:13:12 GMT</p>
+                  <p>Connection: keep-alive</p>
+                  <p>+HTTPNMIC:0,0,164,164</p>
+                  <p>&lt;!DOCTYPE
+html&gt;&lt;html&gt;&lt;head&gt;&lt;title&gt;Xinyi&lt;/title&gt;&lt;link
+rel="stylesheet"
+href="/stylesheets/style.css"&gt;&lt;/head&gt;&lt;body&gt;&lt;h1&gt;Xinyi&lt;/h1&gt;&lt;p&gt;Welcome
+to Xinyi&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</p>
+                </entry>
+              </row>
+            </tbody>
+            
+          </tgroup>
+        </table>
+      </body>
+    </topic>

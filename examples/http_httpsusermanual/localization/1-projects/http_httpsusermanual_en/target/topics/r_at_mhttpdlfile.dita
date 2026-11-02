@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="reference_rgg_sdq_cqb">
+    <title>AT+MHTTPDLFILE HTTP Download File </title>
+        <shortdesc>This commands is used to download data into the file system without creating instances.  </shortdesc>
+    <refbody>
+        <table id="table_w5t_wsv_jqb">
+                        <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="3*" align="left"/>
+                <colspec colname="c2" colnum="2" colwidth="7*" align="left"/>
+                <thead>
+                    <row>
+                        <entry namest="c1" nameend="c2"><cmdname>AT+MHTTPDLFILE</cmdname></entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row outputclass="has_bgc">
+                        <entry>Syntax </entry>
+                        <entry>Response </entry>
+                    </row>
+                    <row>
+                        <entry>Test command <codeblock id="codeblock_d4y_tpn_ssb"><cmdname>AT+MHTTPDLFILE=?</cmdname></codeblock></entry>
+                        <entry>If succeed: <msgblock id="msgblock_iph_5f5_pqb">OK</msgblock>
+                            If fail: <msgblock id="msgblock_kzk_5f5_pqb">+CME ERROR: &lt;err&gt;</msgblock></entry>
+                    </row>
+                    <row>
+                        <entry>Set command <codeblock id="codeblock_jqp_5pn_ssb"><cmdname>AT+MHTTPDLFILE=&lt;url&gt;,&lt;local_path&gt;[,&lt;progind&gt;[,&lt;range&gt;[,&lt;eof&gt;[,&lt;ssl_id&gt;]]]]</cmdname> </codeblock></entry>
+                        <entry>If succeed: <msgblock id="msgblock_ic1_vf5_pqb">OK</msgblock>
+                            If fail: <msgblock id="msgblock_rtc_vf5_pqb">+CME ERROR: &lt;err&gt;</msgblock></entry>
+                    </row>
+                    <row>
+                        <entry>URC</entry>
+                        <entry>
+                            <msgblock id="msgblock_vgf_nvg_xrb">+MHTTPDLFILE: &lt;downloaded&gt;,&lt;content_length&gt;,&lt;percent&gt;[,&lt;entity_length&gt;]</msgblock>
+                        </entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">Command Description </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                >This command is a single-step operation without creating instances first.  It executes a GET request and uses the default header.  Requested header will be reported via <cmdname>+MHTTPURC: 
+                                "header"</cmdname> without being stored in the file.  Download progress will be reported as the URC form.  <fn>When the server delivers data in Content-Length mode with a value of 0, download progress notifications will not be reported.  </fn></entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">Parameter Description </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            ><varname>&lt;url&gt;</varname>The resource path shall include the URL components, such as host, port and path. For instance, 
+                                "http://example.com/abc.txt" or "http://example.com:8080/abc.txt".  <fn>ML307G: If the http or https is not explicitly specified in the URL, HTTPS will be used as the default protocol.  </fn></entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"><varname>&lt;local_path&gt;</varname>Local file path with its length being file system dependent.  <fn>
+                                <div>ML302S/ML307S/ML302A/ML305A/ML307A/ML307G/ML307R/ML307B/ML307C/MR380R<ph
+                                        product="tbd"
+                                        >/MR380M</ph>: If the first character of <varname>&lt;local_path&gt;</varname> is a forward slash ("/"), the downloaded file will be stored in the path specified by the user; otherwise, it will be stored in the <msgph>/etc/http_file/</msgph> directory. </div>
+                                <div>ML305U/ML305M/ML307X/ML307Y: If <varname>&lt;local_path&gt;</varname> contains only a forward slash ("/"), the downloaded file will be stored at the user-specified path; If only a backslash ("\") or no slashes at all, the file will be saved under <msgph>/etc/http_file/</msgph>. </div>
+                                <div>ML307Y: Directories occupy storage space. It is recommended to use single-level directories whenever possible. </div>
+                                                        </fn></entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            ><varname>&lt;progind&gt;</varname>The module reports download progress via URC when the downloaded data reaches the specified length with default 0. It will only report final download result without the progress.  </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            ><varname>&lt;range&gt;</varname>Resource download range (the server support required) refers to RFC2616 for details on the Range field. The format is a string, e.g., "bytes=500-900", which indicates the transmission of bytes 500 to 900 of the file, totaling 401 bytes.  </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                    ><varname>&lt;eof&gt;</varname>File write Mode, default value: 0.  <fn>When the <varname>&lt;range&gt;</varname> is not configured and <varname>&lt;eof&gt;</varname> is configured to 1, the module will automatically enable breakpoint resume transfer, which means if the download process is abnormally interrupted, the module will continue downloading from the point after the last received data upon the next request for the same file.  If the file has already been fully downloaded, do not initiate another download in this mode, as it may cause download errors. Instead, either delete the existing file or download in overwrite mode.  Before using the breakpoint resume feature, ensure that the previously downloaded data starts from the first byte.  When <varname>&lt;eof&gt;</varname> is configured to 0, the system clears the original file content immediately upon opening the file (even if the newly downloaded file is actually empty).  If a subsequent write failure occurs during the download due to insufficient storage space or other reasons, the original file content cannot be restored.  </fn></entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">
+                            <parml>
+                                <plentry>
+                                    <pt>0</pt>
+                                    <pd>Overwrite mode (Clear all existing content before writing new data) </pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>1</pt>
+                                    <pd>Append mode (Write new data contiguously after existing content) </pd>
+                                </plentry>
+                            </parml>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                    ><varname>&lt;ssl_id&gt;</varname>SSL context index specifies the SSL context used by the current instance. Valid range refers to the document "SSL User Manual". When this parameter is not set, SSL is not enabled. When it is set, SSL is enabled.  <fn>ML302A/ML305A/ML307A/ML307G/ML307S/ML305U/ML305M/ML307R/ML307B/ML307C/ML307X/ML307Y: <varname>&lt;ssl_id&gt;</varname> parameter range 0-5. </fn></entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            ><varname>&lt;downloaded&gt;</varname>The downloaded length.  </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            ><varname>&lt;content_length&gt;</varname>Total download length. If the server response uses Chunked mode, intermediate progress reports will display 0.  </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            ><varname>&lt;percent&gt;</varname>Download progress percentage. If the request response is Chunked mode, intermediate progress reports will display 0. When transmission is completed, it will display 100.  </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                ><varname>&lt;entity_length&gt;</varname>Total length of the downloaded file. Valid when <varname>&lt;range&gt;</varname> is specified and the server responds with the Content-Range field.  </entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">Example </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                >Download into the file. <msgblock id="codeblock_rm3_bxj_1rb"><cmdname>AT+MHTTPDLFILE="http://120.27.12.119:10080/get","/test.txt"</cmdname>
+OK
++MHTTPURC: "header",0,200,225,HTTP/1.1 200 OK
+Server: nginx/1.18.0
+Date: Wed, 28 Jul 2021 02:46:45 GMT
+Content-Type: application/json
+Content-Length: 145
+Connection: keep-alive
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Credentials: true
++MHTTPDLFILE: 145,145,100</msgblock>Download the file to the user-specified local path. <msgblock id="msgblock_zbn_tjp_55b"><cmdname>AT+MHTTPDLFILE="http://120.27.12.119:10080/get","/test.txt"</cmdname>
+OK
++MHTTPURC: "header",2,200,225,HTTP/1.1 200 OK
+Server: nginx/1.18.0
+Date: Fri, 09 Sep 2022 09:39:04 GMT
+Content-Type: application/json
+Content-Length: 189
+Connection: keep-alive
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Credentials: true
++MHTTPDLFILE: 189,189,100
+<cmdname>AT+MFLIST="/"</cmdname>
++MFLIST: "/test.txt",189
+OK</msgblock>Download the file to the <msgph>/etc/http_file/</msgph> path. <msgblock id="msgblock_dg2_wjp_55b"><cmdname>AT+MHTTPDLFILE="http://120.27.12.119:10080/get","test.txt"</cmdname>
+OK
++MHTTPURC: "header",2,200,225,HTTP/1.1 200 OK
+Server: nginx/1.18.0
+Date: Fri, 09 Sep 2022 09:40:13 GMT
+Content-Type: application/json
+Content-Length: 189
+Connection: keep-alive
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Credentials: true
++MHTTPDLFILE: 189,189,100
+<cmdname>AT+MFLIST="/etc/http_file/"</cmdname>
++MFLIST: "/etc/http_file/test.txt",189
+OK</msgblock></entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        <section id="section_itc_vyt_rrb">
+                        <note id="note_x5j_vyt_rrb"><ph product="tbd"
+                >M5310-E/MN327/MN328/</ph>MN318/MN316/MN319/MN319-A/MN326/MN316A/MN326A/ML307M/ML307H: do not support this command.  </note>
+        </section>
+    </refbody>
+</reference>
+<?oxy_options track_changes="on"?>

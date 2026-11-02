@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="ZH-CN_TOPIC_0000002224627365-chtext">
+        <title>命令说明</title>
+        <body>
+          <p>该命令用于发送 HTTP
+GET/POST/PUT 请求后，通过
+UART/USB 在透传模式下从
+HTTP服务器读取HTTP响应信息。必须接收到如下任一
+URC
+的信息后才能执行
+AT^HTTPREAD：</p>
+          <ul>
+            <li>^HTTPGET:
+&lt;err&gt;[,&lt;httprspcode&gt;[,&lt;content_length&gt;]]</li>
+            <li>^HTTPPOST:
+&lt;err&gt;[,&lt;httprspcode&gt;[,&lt;content_length&gt;]]</li>
+            <li>^HTTPPUT:
+&lt;err&gt;[,&lt;httprspcode&gt;[,&lt;content_length&gt;]]
+//暂不支持</li>
+          </ul>
+        </body>
+      </topic>

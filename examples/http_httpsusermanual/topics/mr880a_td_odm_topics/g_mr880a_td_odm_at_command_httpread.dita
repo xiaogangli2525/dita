@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="ZH-CN_TOPIC_0000002189421428-chtext">
+    <title>AT^HTTPREAD-通过 UART/USB 读取 HTTP服务器响应信息</title>
+</topic>

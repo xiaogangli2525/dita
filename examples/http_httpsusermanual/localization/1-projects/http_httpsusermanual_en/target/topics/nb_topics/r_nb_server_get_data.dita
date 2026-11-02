@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="reference_j2f_vyg_grb">
+    <title><?oxy_comment_start author="zhangqin1@cmiot.cmcc" timestamp="20241101T141942+0800" comment="该内容模块为基础版本共用，请勿随意删减。若需添加仅适用于某型号的内容，请添加批注说明"?>HTTP 
+        Server GET data<?oxy_comment_end?></title>
+    <refbody>
+        <section id="section_rw1_xyg_grb">
+                        <msgblock id="msgblock_axm_xyg_grb">/*Create the HTTP instance. The URL can be specified. Apart from the HTTP scheme and domain name, other parts of the URL will be ignored. */
+<cmdname>AT+HTTPCREATE="http://iot.10086.cn/"</cmdname>
++HTTPCREATE:0    /*The module returns httpclient id:0*/
+OK
+
+/*Configure the HTTP header. Note that the HTTP protocol requires each header field to be separated by CRLF. Some HTTP servers require the User-Agent field to be configured; otherwise, they may reject the response.  */
+<cmdname>AT+HTTPHEADER=0,"User-Agent: Unkown\r\nConnection: close\r\n"</cmdname>
+OK
+
+/*Send GET request packet (method parameter: 0). Absolute path of the URL resource: "/page/index/name/culture".  */
+<cmdname>AT+HTTPSEND=0,0,"/page/index/name/culture"</cmdname>    
+OK    /*The module receives the send request.*/
+CONNECT OK    /*Successfully connected to the server.*/
++HTTPNMIH:0,0,313    /*Server response header information.*/
+Server: nginx
+Date: Sun, 10 Jun 2018 02:54:38 GMT
+Content-Type: text/html; charset=utf-8
+Transfer-Encoding: chunked/*This transmission is chunked mode. The server will send data in packet fragments, and no Content-Length is specified.  */
+
+Connection: close
+Set-Cookie: PHPSESSID=7it2op5gurarvshrvf3j29kpr1; path=/; HttpOnly
+Expires: Thu, 19 Nov 1981 08:52:00 GMT
+Pragma: no-cache
+Cache-control: private
+X-Powered-By: ThinkPHP
++HTTPNMIC:0,1,7960,1122,1122	/*Server response content field - first packet of data.  */
+&lt;!DOCTYPE html&gt;    
+&lt;html lang="en"&gt;
+&lt;head&gt;
+&lt;meta charset="UTF-8"&gt;
+  &lt;link href="/Public/Img/favicon.ico" rel="shortcut icon" type="image/vnd.microsoft.icon"&gt; &lt;meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"&gt;
+    &lt;meta name="apple-mobile-web-app-capable" content="yes"&gt;
+    &lt;meta name="apple-mobile-web-app-status-bar-style" content="black"&gt;
+    &lt;meta name="format-detection" content="telephone=no"&gt;
+  &lt;meta name="robots" content="all" /&gt;
+……
++HTTPNMIC:0,1,7960,2582,1460	/*Server response second packet of data.*/
+&lt;meta name="keywords" content="
+……
++HTTPNMIC:0,1,7960,4042,1460    /*Next packet of data.*/
+ass="navbar-header"&gt;
+      &lt;button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#b-menu-1"&gt;
+        &lt;span class="sr-only"&gt;Toggle navigation&lt;/span&gt;
+        &lt;span class="icon-bar"&gt;&lt;/sp
++HTTPNMIC:0,1,7960,4042,1460    /*Next packet of data.*/
+&lt;div class="navbar-header"&gt;
+      &lt;button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#b-menu-1"&gt;
+        &lt;span class="sr-only"&gt;Togg
+……
+……
++HTTPNMIC:0,1,36632,36632,502    /*Another packet of data.*/
+&lt;script type="text/javascript"&gt;
+    document.onkeydown=function(event){
+        var e = event || window.event || arguments.callee.caller.arguments[0];
+        
+         if(e &amp;&amp; e.keyCode==13 &amp;&amp;$("#fb_pass").focus()){ 
+             go_group();
+        }
+};
+……
+    $(".btn-close").click(function(){
+
+        window.history.back(-1);
+        $(".fill").hide();
+    });
+&lt;/script&gt;
++HTTPNMIC:0,0,37539,37539,0    /*Final data chunk received. Chunked transfer terminated.  */
+
+<cmdname>AT+HTTPHEADER=0,"User-Agent: Unkown\r\nConnection: close\r\n"</cmdname>
+OK
+<cmdname>AT+HTTPSEND=0,0,"/Public/Home/assets/image/chiMod_icon1.png"</cmdname>    /*Access another resource.*/
+OK
++HTTPNMIH:0,0,209
+Server: nginx
+Date: Sun, 10 Jun 2018 03:16:55 GMT
+Content-Type: image/png
+Content-Length: 7862    /*Non-chunked mode for this transfer. Content length: 7862 bytes.  */
+
+Last-Modified: Thu, 29 Mar 2018 06:27:39 GMT
+Connection: close
+ETag: "5abc875b-1eb6"
+Accept-Ranges: bytes
++HTTPNMIC:0,1,7862,1460,1460    /*First packet data.*/
+……
+HTTPNMIC:0,0,7862,7862,562    /*Last packet data.*/
+……    
+<cmdname>AT+HTTPSEND=0,0,"/Public/Home/assets/image/chiMod_icon11.png"</cmdname>    /*Access to a non-existent resource.*/
+OK    
++HTTPERR:0,404    /*+HTTPERR indication: 404 Not Found.  */
+404 Not Found
++HTTPNMIH:0,0,139    
+Server: nginx    /*Server header info.*/
+Date: Sun, 10 Jun 2018 03:36:54 GMT
+Content-Type: text/html; charset=UTF-8
+Transfer-Encoding: chunked
+Server: nginx
+Date: Sun, 10 Jun 2018 03:36:54 GMT
+Content-Type: text/html; charset=UTF-8
+Transfer-Encoding: chunked
+Connection: close
++HTTPNMIC:0,0,0,0,0
+<cmdname>AT+HTTPCLOSE=0</cmdname>    /*Close the HTTP instance upon completion, and release associated resources.  */	
+OK</msgblock>
+        </section>
+        <section id="section_dmj_dpb_3cc">
+            <p>
+                                <note id="note_i1s_dpb_3cc"
+                    >If the module reports <msgph>+HTTPDROP:0,1460</msgph> during data reception, it indicates that the receive buffer is full, resulting in data drop. Data loss will subsequently lead to parsing errors in the following reception process. Check whether the current baud rate is too low and affecting data interaction. If applicable, increase the baud rate to 115200 
+                    bps or 230400 bps (baud rate higher than 9600 bps automatically disables the module from entering PSM). After the HTTP function is completed, switch back to a lower baud rate to restore the PSM-enabled state. </note>
+            </p>
+        </section>
+    </refbody>
+</reference>

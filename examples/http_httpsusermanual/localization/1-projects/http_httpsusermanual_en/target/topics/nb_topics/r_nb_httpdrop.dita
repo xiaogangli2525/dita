@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="reference_qd5_gdq_cqb">
+    <title><?oxy_comment_start author="zhangqin1@cmiot.cmcc" timestamp="20241101T141828+0800" comment="该内容模块为基础版本共用，请勿随意删减。若需添加仅适用于某型号的内容，请添加批注说明"?>+HTTPDROP<?oxy_comment_end?></title>
+        <shortdesc>Report that the underlying TCP data buffer is full, resulting in data loss. </shortdesc>
+    <refbody>
+        <table id="table_btl_krz_3qb">
+                        <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="3*" align="left"/>
+                <colspec colname="c2" colnum="2" colwidth="7*" align="left"/>
+                <thead>
+                    <row>
+                        <entry namest="c1" nameend="c2"><cmdname>+HTTPDROP</cmdname></entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row outputclass="has_bgc">
+                        <entry>Syntax </entry>
+                        <entry>Response </entry>
+                    </row>
+                    <row>
+                        <entry>
+                            <codeblock><cmdname>+HTTPDROP</cmdname></codeblock>
+                        </entry>
+                        <entry>
+                            <msgblock id="msgblock_emt_xb5_pqb">+HTTPDROP:&lt;id&gt;,&lt;length&gt;</msgblock>
+                        </entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">Command Description</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">Report that the underlying TCP data buffer is full, resulting in data loss. </entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">Parameter Description</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                                ><varname>&lt;id&gt;</varname>Integer. Instance index returned by <msgph>+HTTPCREATE</msgph>. Range: 0~4.  <fn>M5310-E/MN328-B range: 0~1.  </fn></entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"
+                            ><varname>&lt;length&gt;</varname>Integer. Dropped data length. If data loss occurs, subsequent data parsing will be abnormal. It is recommended to increase the module baud rate, discard the received data and resend the HTTP request. </entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </refbody>
+</reference>

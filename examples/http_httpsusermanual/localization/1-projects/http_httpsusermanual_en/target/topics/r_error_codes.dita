@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="reference_rvw_hgm_gqb">
+    <title>Error Codes </title>
+        <shortdesc>This section lists the HTTP/HTTPS-related error code.  </shortdesc>
+    <refbody>
+        <table id="table_ttt_zfx_jqb">
+                        <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="3*" align="left"/>
+                <colspec colname="c2" colnum="2" colwidth="7*" align="left"/>
+                <thead>
+                    <row>
+                        <entry>Error Code </entry>
+                        <entry>Description </entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>3</entry>
+                        <entry>Operation forbidden </entry>
+                    </row>
+                    <row>
+                        <entry>23</entry>
+                        <entry>Memory allocation failure </entry>
+                    </row>
+                    <row>
+                        <entry>50</entry>
+                        <entry>Parameter error </entry>
+                    </row>
+                    <row>
+                        <entry>650</entry>
+                        <entry>Unknown error </entry>
+                    </row>
+                    <row>
+                        <entry>651</entry>
+                        <entry>No available clients </entry>
+                    </row>
+                    <row>
+                        <entry>652</entry>
+                        <entry>Client not created </entry>
+                    </row>
+                    <row>
+                        <entry>653</entry>
+                        <entry>Client busy </entry>
+                    </row>
+                    <row>
+                        <entry>654</entry>
+                        <entry>URL parsing failure </entry>
+                    </row>
+                    <row>
+                        <entry>655</entry>
+                        <entry>SSL not enabled </entry>
+                    </row>
+                    <row>
+                        <entry>656</entry>
+                        <entry>Connection failure </entry>
+                    </row>
+                    <row>
+                        <entry>657</entry>
+                        <entry>Data transmission failure </entry>
+                    </row>
+                    <row>
+                        <entry>658</entry>
+                        <entry>File open failure </entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </refbody>
+</reference>

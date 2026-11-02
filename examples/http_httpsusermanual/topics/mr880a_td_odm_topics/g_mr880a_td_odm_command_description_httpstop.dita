@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="ZH-CN_TOPIC_0000002224701849-chtext">
+        <title>命令说明</title>
+        <body>
+          <p>可通过该命令取消
+HTTP GET/POST 请求，断开与
+HTTP(S)的会话连接。</p>
+        </body>
+      </topic>

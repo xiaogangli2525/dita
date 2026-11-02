@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="reference_efl_5dq_cqb">
+    <title>+MHTTPURC URC信息上报</title>
+    <shortdesc>该命令为URC上报提示。</shortdesc>
+    <refbody>
+        <table id="table_osh_byv_jqb">
+            <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="3*" align="left"/>
+                <colspec colname="c2" colnum="2" colwidth="7*" align="left"/>
+                <thead>
+                    <row>
+                        <entry namest="c1" nameend="c2"><cmdname>+MHTTPURC</cmdname></entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row outputclass="has_bgc">
+                        <entry>语法</entry>
+                        <entry>响应</entry>
+                    </row>
+                    <row>
+                        <entry>报头接收URC</entry>
+                        <entry>
+                            <msgblock id="msgblock_it5_bg5_pqb">+MHTTPURC: "header",&lt;httpid>,&lt;code>,&lt;header_len>,&lt;data></msgblock>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry>content接收URC</entry>
+                        <entry>
+                            <msgblock id="msgblock_wf2_cg5_pqb">+MHTTPURC: "content",&lt;httpid>,&lt;content_len>,&lt;sum_len>,&lt;cur_len>,&lt;data></msgblock>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry>错误事件URC</entry>
+                        <entry>
+                            <msgblock id="msgblock_ibk_cg5_pqb">+MHTTPURC: "err",&lt;httpid>,&lt;error_code></msgblock>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry>缓存模式请求完成URC</entry>
+                        <entry>
+                            <msgblock id="msgblock_dqp_cg5_pqb">+MHTTPURC: "recv",&lt;httpid>,&lt;code>,&lt;recv_header_len>,&lt;recv_content_len></msgblock>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry>Chunked模式下可发送数据指示URC</entry>
+                        <entry>
+                            <msgblock id="msgblock_zch_y31_srb">+MHTTPURC: "ind",&lt;httpid></msgblock>
+                        </entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">命令描述</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">该命令为请求过程中的URC，包含数据接收、请求错误、缓存接收相关事件。</entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">参数描述</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">命令标识符</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">
+                            <parml id="parml_qyv_vg1_grb">
+                                <plentry>
+                                    <pt>header</pt>
+                                    <pd>报头接收上报（缓存模式无上报）</pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>content</pt>
+                                    <pd>消息体接收上报（缓存模式无上报）</pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>err</pt>
+                                    <pd>请求错误上报，上报后将接收本次请求。</pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>recv</pt>
+                                    <pd>缓存模式请求完成上报</pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>ind</pt>
+                                    <pd>Chunked模式下可发送数据指示</pd>
+                                </plentry>
+                            </parml>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"><varname>&lt;httpid></varname>
+                            客户端实例id，0~3。</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"><varname>&lt;code></varname>
+                            HTTP请求结果码。</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"><varname>&lt;header_len></varname>
+                            接收的报头长度。</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"><varname>&lt;data></varname>
+                                数据内容，格式受<cmdname>AT+MHTTPCFG="encoding"</cmdname>中<varname>&lt;output_format></varname>控制。</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"><varname>&lt;content_len></varname>
+                            content数据总长度，如果响应为Chunked模式，该参数显示为0。</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"><varname>&lt;sum_len></varname>
+                                已下载content数据长度，普通传输模式时，当前长度与<varname>&lt;content_len></varname>相等时，表示请求完成。</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"><varname>&lt;cur_len></varname>
+                            当前下载的content数据长度，如果响应为chunked模式，该参数显示为0时，表示请求完成。</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"><varname>&lt;error_code></varname>
+                            错误事件</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">
+                            <parml id="parml_usc_z31_grb">
+                                <plentry>
+                                    <pt>1</pt>
+                                    <pd>域名解析失败</pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>2</pt>
+                                    <pd>连接服务器失败</pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>3</pt>
+                                    <pd>连接服务器超时</pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>4</pt>
+                                    <pd>SSL握手失败</pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>5</pt>
+                                    <pd>连接异常断开</pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>6</pt>
+                                    <pd>请求响应超时</pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>7</pt>
+                                    <pd>接收数据解析失败</pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>8</pt>
+                                    <pd>缓存空间不足</pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>9</pt>
+                                    <pd>数据丢包</pd>
+                                </plentry>
+                                <plentry>
+                                    <pt>255</pt>
+                                    <pd>未知错误</pd>
+                                </plentry>
+                            </parml>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"><varname>&lt;recv_header_len></varname>
+                            缓存中接收的报头长度。</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2"><varname>&lt;recv_content_len></varname>
+                            缓存中接收的content长度。</entry>
+                    </row>
+                    <row outputclass="has_bgc">
+                        <entry namest="c1" nameend="c2">示例</entry>
+                    </row>
+                    <row>
+                        <entry namest="c1" nameend="c2">普通模式发送请求
+                            <msgblock id="codeblock_e3j_sxj_1rb"><cmdname>AT+MHTTPCREATE="http://120.27.12.119:10080"</cmdname>
++MHTTPCREATE: 0
+OK
+<cmdname>AT+MHTTPREQUEST=0,1,0,"/get"</cmdname>
+OK
++MHTTPURC: "header",0,200,225,HTTP/1.1 200 OK
+Server: nginx/1.18.0
+Date: Mon, 26 Jul 2021 03:47:04 GMT
+Content-Type: application/json
+Content-Length: 145
+Connection: keep-alive
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Credentials: true
++MHTTPURC: "content",0,145,145,145,{"args":{},"headers":{"Connection":"close","Content-Length":"0","Host":"localhost:6000"},"origin":"127.0.0.1","url":"http://localhost:6000/get"}</msgblock>
+                            缓存模式发送请求
+                            <msgblock id="codeblock_rcw_sxj_1rb"><cmdname>AT+MHTTPCREATE="http://120.27.12.119:10080"</cmdname>
++MHTTPCREATE: 0
+OK
+<cmdname>AT+MHTTPCFG="cached",0,1</cmdname>
+OK
+<cmdname>AT+MHTTPREQUEST=0,1,0,"/get"</cmdname>
+OK
++MHTTPURC: "recv",0,200,225,145</msgblock></entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </refbody>
+</reference>

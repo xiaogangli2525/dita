@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE bookmap PUBLIC "-//OASIS//DTD DITA BookMap//EN" "bookmap.dtd">
+<bookmap>
+    <booktitle>
+      <booklibrary>MR880A</booklibrary>
+      <mainbooktitle>HTTP使用指南</mainbooktitle>
+    </booktitle>
+    <bookmeta>
+        <author/>
+        <critdates>
+            <created date="2025-08-04"/>
+            <revised modified="2025-08-04"/>
+        </critdates>
+        <bookid>
+            <edition>V1.0.0</edition>
+        </bookid>
+    </bookmeta>
+    <frontmatter>
+        <notices href="contentmodule/topics/reusable_general_cn/g_service_and_support_cn.dita"/>
+        <notices href="contentmodule/topics/reusable_general_cn/g_document_statement_cn.dita"/>
+        <notices href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_modification_record.dita"/>
+        <booklists>
+            <toc/>
+        </booklists>
+    </frontmatter>
+    <chapter href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_foreword.dita">
+        <topicref href="topics/mr880a_td_odm_topics/g_mr880a_applicable_model.dita"
+            outputclass="topic/apb"/>
+        <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_overview.dita" outputclass="topic/apb"/>
+        <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_target_audience.dita"/>
+    </chapter>
+    <chapter href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_http_introduction.dita">
+        <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_http_command_usage_process.dita" outputclass="topic/apb"/>
+        <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_http_header_information_description.dita">
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_custom_http_request_header_information.dita"
+                outputclass="level3_topic/apb"/>
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_output_http_response_header_information.dita"
+                outputclass="level3_topic/apb"/>
+        </topicref>
+        <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_data_mode_description.dita"/>
+        <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_https_access_process_example.dita"/>
+    </chapter>
+    <chapter href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_http_at_command_detailed_explanation.dita">
+        <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_at_command_httpcfg.dita" outputclass="topic/apb">
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_command_description_httpcfg.dita" outputclass="level3_topic/apb"/>
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_syntax_structure_httpcfg.dita"/>
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_parameter_description_httpcfg.dita"/>
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_attribute_description_httpcfg.dita"/>
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_example_httpcfg.dita" outputclass="level3_topic/apb"/>
+        </topicref>
+        <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_at_command_httpurl.dita">
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_command_description_httpurl.dita" outputclass="level3_topic/apb"/>
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_syntax_structure_httpurl.dita" outputclass="level3_topic/apb"/>
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_parameter_description_httpurl.dita"/>
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_attribute_description_httpurl.dita" outputclass="level3_topic/apb"/>
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_example_httpurl.dita" outputclass="level3_topic/apb"/>
+        </topicref>
+        <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_at_command_httpget.dita">
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_command_description_httpget.dita" outputclass="level3_topic/apb"/>
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_syntax_structure_httpget.dita"/>
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_parameter_description_httpget.dita"/>
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_attribute_description_httpget.dita"/>
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_example_httpget.dita" outputclass="level3_topic/apb"/>
+        </topicref>
+        <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_at_command_httppost.dita">
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_command_description_httppost.dita" outputclass="level3_topic/apb"/>
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_syntax_structure_httppost.dita"/>
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_parameter_description_httppost.dita" outputclass="level3_topic/apb"/>
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_attribute_description_httppost.dita"/>
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_example_httppost.dita" outputclass="level3_topic/apb"/>
+        </topicref>
+        <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_at_command_httpread.dita">
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_command_description_httpread.dita" outputclass="level3_topic/apb"/>
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_syntax_structure_httpread.dita" outputclass="level3_topic/apb"/>
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_parameter_description_httpread.dita" outputclass="level3_topic/apb"/>
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_attribute_description_httpread.dita" outputclass="level3_topic/apb"/>
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_example_httpread.dita"/>
+        </topicref>
+        <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_at_command_httpreadfile.dita">
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_command_description_httpreadfile.dita" outputclass="level3_topic/apb"/>
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_syntax_structure_httpreadfile.dita" outputclass="level3_topic/apb"/>
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_parameter_description_httpreadfile.dita" outputclass="level3_topic/apb"/>
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_attribute_description_httpreadfile.dita"/>
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_example_httpreadfile.dita" outputclass="level3_topic/apb"/>
+        </topicref>
+        <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_at_command_httpstop.dita">
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_command_description_httpstop.dita" outputclass="level3_topic/apb"/>
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_syntax_structure_httpstop.dita" outputclass="level3_topic/apb"/>
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_parameter_description_httpstop.dita" outputclass="level3_topic/apb"/>
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_attribute_description_httpstop.dita" outputclass="level3_topic/apb"/>
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_example_httpstop.dita" outputclass="level3_topic/apb"/>
+        </topicref>
+        <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_at_command_sslset.dita">
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_command_description_sslset.dita" outputclass="level3_topic/apb"/>
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_syntax_structure_sslset.dita" outputclass="level3_topic/apb"/>
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_parameter_description_sslset.dita"/>
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_attribute_description_sslset.dita"/>
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_example_sslset.dita" outputclass="level3_topic/apb"/>
+        </topicref>
+        <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_at_command_sslcertdown.dita">
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_command_description_sslcertdown.dita" outputclass="level3_topic/apb"/>
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_syntax_structure_sslcertdown.dita" outputclass="level3_topic/apb"/>
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_parameter_description_sslcertdown.dita"/>
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_attribute_description_sslcertdown.dita" outputclass="level3_topic/apb"/>
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_example_sslcertdown.dita" outputclass="level3_topic/apb"/>
+        </topicref>
+        <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_at_command_sslcertdel.dita">
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_command_description_sslcertdel.dita" outputclass="level3_topic/apb"/>
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_syntax_structure_sslcertdel.dita" outputclass="level3_topic/apb"/>
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_parameter_description_sslcertdel.dita" outputclass="level3_topic/apb"/>
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_attribute_description_sslcertdel.dita" outputclass="level3_topic/apb"/>
+            <topicref href="topics/mr880a_td_odm_topics/g_mr880a_td_odm_example_sslcertdel.dita" outputclass="level3_topic/apb"/>
+        </topicref>
+    </chapter>
+</bookmap>

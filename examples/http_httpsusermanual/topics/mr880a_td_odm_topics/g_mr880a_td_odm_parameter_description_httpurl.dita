@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="ZH-CN_TOPIC_0000002224627349-chtext">
+        <title>参数说明</title>
+        <body>
+          <table colsep="1" frame="all" rowsep="1">
+            <tgroup cols="2">
+              <colspec colname="col1" colnum="1" colwidth="0.5*"/>
+              <colspec colname="col2" colnum="2" colwidth="1.5*"/>
+              <thead>
+                <row>
+                  <entry>参数名</entry>
+                  <entry>参数解释</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry>&lt;URL_length&gt;</entry>
+                  <entry>整型。URL
+长度。范围：1~2048；单位：字节。</entry>
+                </row>
+                <row>
+                  <entry>&lt;timeout&gt;</entry>
+                  <entry>整型。URL
+的最大输入时间。范围：1~65535；默认值：60；单位：秒。</entry>
+                </row>
+                <row>
+                  <entry>&lt;URL&gt;</entry>
+                  <entry>
+字符串类型。HTTP服务器
+URL。</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </table>
+        </body>
+      </topic>

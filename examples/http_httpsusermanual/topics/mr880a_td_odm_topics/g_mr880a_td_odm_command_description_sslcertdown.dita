@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="ZH-CN_TOPIC_0000002189261836-chtext">
+        <title>命令说明</title>
+        <body>
+          <p>
+可通过该命令传输PEM证书内容到模组，并存储在模组文件系统内。</p>
+          <p>
+执行完该命令后，会进入透传模式，需要在透传模式下把证书内容通过USB或者UART发送到模组内部。</p>
+          <p>
+证书格式只支持PEM格式。</p>
+          <p>
+证书内容需要包含以下完整内容：</p>
+          <p>-----BEGIN CERTIFICATE-----</p>
+          <p>...</p>
+          <p>-----END CERTIFICATE-----</p>
+        </body>
+      </topic>

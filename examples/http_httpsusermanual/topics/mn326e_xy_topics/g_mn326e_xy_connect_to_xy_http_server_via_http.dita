@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="Toc24123">
+    <title>通过HTTP连接HTTP服务器</title>
+    <body>
+        <table colsep="1" frame="all" rowsep="1">
+            <tgroup cols="1">
+                <colspec colname="col1" colnum="1" colwidth="1*"/>
+                <tbody>
+                    <row>
+                        <entry>
+                            <p>//创建HTTP实例</p>
+                            <p>AT+HTTPCREATE="http://139.224.131.190:3000"</p>
+                            <p>+HTTPCREATE:0</p>
+                            <p>OK</p>
+                            <p>//HTTP头部配置</p>
+                            <p>//注意：HTTP协议要求header字段之间以 \r\n 分隔</p>
+                            <p>AT+HTTPHEADER=0,"Content-Type:application/json\r\n",0</p>
+                            <p>OK</p>
+                            <p>//HTTP内容配置</p>
+                            <p>AT+HTTPCONTENT=0,"{\"RPM\":22}",0</p>
+                            <p>OK</p>
+                            <p>//HTTP发送请求</p>
+                            <p>AT+HTTPSEND=0,1,"/users"</p>
+                            <p>OK</p>
+                            <p>+REQUESTSUCCESS //HTTP 请求成功</p>
+                            <p>+HTTPNMIH:0,200,186 //网站的回复内容，在串口上的显示截图如下，数据未作处理，客户可以根据实际需要进行处理</p>
+                            <p>X-Powered-By: Express</p>
+                            <p>Content-Type: text/html; charset=utf-8</p>
+                            <p>Content-Length: 37</p>
+                            <p>ETag: W/"25-r3VbWdUcPZaHTw8trTg7xdk+YbQ"</p>
+                            <p>Date: Mon, 19 Sep 2022 04:28:59 GMT</p>
+                            <p>Connection: keep-alive</p>
+                            <p>+HTTPNMIC:0,0,37,37</p>
+                            <p>received a POST with body: {"RPM":22}</p>
+                            <p>//HTTP关闭实例</p>
+                            <p>AT+HTTPCLOSE=0</p>
+                            <p>OK</p>
+                        </entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </body>
+</topic>

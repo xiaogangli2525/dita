@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="topic_vwm_jtf_brb">
+    <title>Applicable Module</title>
+    <body>
+        <table id="table_zh1_stf_brb">
+            <title>Module Details</title>
+                        <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="3*" align="left"/>
+                <colspec colname="c2" colnum="2" colwidth="7*" align="left"/>
+                <thead>
+                    <row>
+                        <entry>Module Series</entry>
+                        <entry>Sub-module</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>MN326E</entry>
+                        <entry>MN326E-EMH</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </body>
+</topic>
+<?oxy_options track_changes="on"?>

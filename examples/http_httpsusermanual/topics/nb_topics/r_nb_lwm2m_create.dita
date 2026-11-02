@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="reference_j2f_vyg_grb">
+    <title><?oxy_comment_start author="zhangqin1@cmiot.cmcc" timestamp="20241101T141959+0800" comment="该内容模块为基础版本共用，请勿随意删减。若需添加仅适用于某型号的内容，请添加批注说明"?>API-创建LWM2M设备<?oxy_comment_end?></title>
+    <refbody>
+        <section id="section_rw1_xyg_grb">
+            <msgblock id="msgblock_axm_xyg_grb"><cmdname>AT+HTTPCREATE="http://api.heclouds.com/"</cmdname>
++HTTPCREATE:0
+OK
+<cmdname>AT+HTTPHEADER=0,"api-key:ChangeForYourOwnKey\r\nContent-Type:application/json\r\nConnection: Close\r\n"</cmdname>    /*APIKey需替换为实际值。*/
+OK
+
+/*为AT参数分隔符，需要转义处理，不然命令解析会出现异常，使用当前设备IMEI/IMSI注册。*/
+<cmdname>AT+HTTPCONTENT=0,"{"title": "865820030265172"\x2C"desc": "865820030265172"\x2C"protocol": "LWM2M"\x2C"auth_info": {"865820030265172": "460043783403288"}}"</cmdname>    
+OK
+<cmdname>AT+HTTPSEND=0,1,"/devices"</cmdname>    /*发送post请求，创建设备。*/
+OK
+CONNECT OK
++HTTPNMIH:0,0,158
+Date: Mon, 22 Oct 2018 09:17:06 GMT
+Content-Type: application/json
+Content-Length: 59
+Connection: keep-alive
+Server: Apache-Coyote/1.1
+Pragma: no-cache
++HTTPNMIC:0,0,59,59,59    
+{"errno":0,"data":{"device_id":"500500178"},"error":"succ"}/*设备创建成功，返回设备Id为500500178。*/
++HTTPDISCON:0
+<cmdname>AT+MIPLCREATEEX="nbiotbt.heclouds.com:5683",1,""</cmdname>    /*创建成功后登录*/
++MIPLCREATEEX:0    
+OK
+<cmdname>AT+MIPLADDOBJ=0,3200,1,"1",0,1</cmdname>    /*添加object*/
+OK
+<cmdname>AT+MIPLOPEN=0,3000,30</cmdname>    /*登录OneNET*/
+OK
++MIPLEVENT:0,2    /*登录成功*/
++MIPLEVENT:0,6
++MIPLOBSERVE:0,21341,1,3200,0,-1
++MIPLDISCOVER:0,21342,3200</msgblock>
+        </section>
+    </refbody>
+</reference>

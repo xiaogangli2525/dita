@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="ZH-CN_TOPIC_0000002224627357-chtext">
+    <title>示例</title>
+    <body>
+        <table colsep="1" frame="all" rowsep="1">
+            <tgroup cols="3">
+                <colspec colname="col1" colnum="1" colwidth="1*"/>
+                <colspec colname="col2" colnum="2" colwidth="1*"/>
+                <colspec colname="col3" colnum="3" colwidth="1*"/>
+                <thead>
+                    <row>
+                        <entry>示例</entry>
+                        <entry>输入</entry>
+                        <entry>输出</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>设置 HTTP服务器 URL</entry>
+                        <entry>AT^HTTPURL=20,80</entry>
+                        <entry>CONNECT</entry>
+                    </row>
+                    <row>
+                        <entry>输入 URL</entry>
+                        <entry>http://www.baidu.com</entry>
+                        <entry>OK</entry>
+                    </row>
+                    <row>
+                        <entry>发送 GET 请求到 HTTP服务器</entry>
+                        <entry>AT^HTTPGET=80</entry>
+                        <entry>^HTTPGET: 0,200,19825</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </body>
+</topic>
