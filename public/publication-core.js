@@ -11,7 +11,7 @@
     if (!/^[^/]+\/[^/]+$/.test(target.fragment)) throw new Error('注脚引用须使用 #TopicID/注脚ID：' + href);
     return target.path + '#' + target.fragment;
   }
-  function preparePublication({ map, files, model = '', profile }, collectPaths) {
+  function preparePublication({ map, files, model = '', profile, ruleConfirmed, ruleExclusions }, collectPaths) {
     resolver.validateMap(map.source, model);
     const resolved = resolver.resolveConrefsDetailed(files, profile), expanded = resolved.files;
     const published = new Set(collectPaths(map.children || []).filter(entry => !profile || !expanded.has(entry.path) || profile.keep(xml.inspectSource(expanded.get(entry.path).current))).map(entry => entry.path));
@@ -40,9 +40,11 @@
             const conditions = manual.conditions(node, ancestors);
             if (manual.common(node.attrs) && conditions.length) throw new Error('通用注脚与型号条件冲突，请检查注脚或祖先条件');
             if (profileAllowed && model && conditions.some(value => /[()]/.test(value))) throw new Error('型号导出暂不支持分组 product 条件，请使用空格分隔的型号');
+            const origin = resolved.origins.get(path)[notes.length];
+            const confirmedByRule = ruleConfirmed?.get(origin.path)?.has(origin.start), excludedByRule = ruleExclusions?.get(origin.path)?.has(origin.start);
             const note = { node, path, key: node.attrs.id ? path + '#' + decode(topic?.attrs.id) + '/' + decode(node.attrs.id) : '',
-              conditions, common: manual.common(node.attrs), origin: resolved.origins.get(path)[notes.length],
-              allowed: profileAllowed && manual.matches(conditions, model), unmarked: !conditions.length && !manual.common(node.attrs) };
+              conditions, common: manual.common(node.attrs), origin,
+              allowed: !excludedByRule && profileAllowed && manual.matches(conditions, model), unmarked: !confirmedByRule && !conditions.length && !manual.common(node.attrs) };
             notes.push(note);
             sequence.push({ note, site: resolved.sites.get(path)[sequence.length], definition: Boolean(note.key) });
             if (note.key) { if (definitions.has(note.key)) throw new Error('重复的注脚 ID：' + note.key); definitions.set(note.key, note); }

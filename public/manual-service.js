@@ -8,6 +8,7 @@
   const store = typeof module !== 'undefined' ? require('./document-store') : root.DitaDocumentStore;
   const profiling = typeof module !== 'undefined' ? require('./profiling-core') : root.DitaProfiling;
   const discovery = typeof module !== 'undefined' ? require('./model-discovery') : root.DitaModelDiscovery;
+  const rulesCore = typeof module !== 'undefined' ? require('./note-rules-core') : root.DitaNoteRulesCore;
   /** @param {import('./contracts').ManualPorts} A */
   function createManualService(A) {
     async function capture(path = A.state.activePath, { resources = false, filterPath = '' } = {}) {
@@ -44,11 +45,13 @@
         await include(map.children || []);
       }
       const loaded = await resolver.loadDependencies(files, read, profile);
-      const snapshot = { capturedAt: new Date().toISOString(), path, content, map, files: loaded, filter, workspace, buffers, project: A.project?.value || { schema: 1, models: [] }, projectError: A.project?.error, projectContent: A.project?.expectedContent, root: A.state.root, branch: A.state.currentBranch };
+      const noteRules = A.noteRuleStore ? await A.noteRuleStore.read() : null;
+      const snapshot = { noteRules, capturedAt: new Date().toISOString(), path, content, map, files: loaded, filter, workspace, buffers, project: A.project?.value || { schema: 1, models: [] }, projectError: A.project?.error, projectContent: A.project?.expectedContent, root: A.state.root, branch: A.state.currentBranch };
       if (!current(snapshot)) throw new Error('内容已变化，请重新打开以更新快照');
       return snapshot;
     }
     function current(snapshot) {
+      if (A.noteRuleStore && !A.noteRuleStore.current(snapshot?.noteRules)) return false;
       if (!snapshot || snapshot.workspace !== A.api.token || snapshot.root !== A.state.root || snapshot.branch !== A.state.currentBranch || snapshot.projectContent !== A.project?.expectedContent) return false;
       const entries = [[snapshot.path, snapshot.content], ...Array.from(snapshot.files, ([path, file]) => [path, file.current])];
       if (snapshot.filter) entries.push([snapshot.filter.path, snapshot.filter.current]);
@@ -57,8 +60,9 @@
         return file ? file.current === content && (!snapshot.buffers.has(path) || file.disk === snapshot.buffers.get(path).disk) : !snapshot.buffers.has(path);
       });
     }
-    function prepare(snapshot, model = '', validateProject = true) {
+    function prepare(snapshot, model = '', validateProject = true, {useRules=true} = {}) {
       const errors = [];
+      if (validateProject && snapshot.noteRules?.error) errors.push({path:'.dita-note-rules.json',message:snapshot.noteRules.error});
       const profile = snapshot.filter ? profiling.compile(snapshot.filter.current) : null;
       if (snapshot.projectError) errors.push({ path: '.dita-project.json', message: snapshot.projectError });
       if (model && snapshot.project.models.length && !snapshot.project.models.includes(model)) errors.push({ path: snapshot.path, message: '型号不在项目清单中：' + model });
@@ -74,10 +78,13 @@
         } catch (error) { errors.push({ path, message: error.message }); }
       }
       if (validateProject && errors.length) throw Object.assign(new Error(errors.map(item => item.path + '：' + item.message).join('\n')), { issues: errors });
-      return publication.preparePublication({ map: snapshot.map, files: snapshot.files, model, profile }, A.ditaCore.collectPreviewPaths);
+      const projection = useRules ? rulesCore.project(snapshot.files, snapshot.noteRules?.config, model) : {files:snapshot.files};
+      if (projection.issues?.length) throw Object.assign(new Error('注脚规则已过期，请重新核对后导出'), {issues:projection.issues});
+      const result = publication.preparePublication({ map:snapshot.map, files:projection.files, model, profile, ruleConfirmed:projection.confirmed, ruleExclusions:projection.excluded }, A.ditaCore.collectPreviewPaths);
+      result.report.ruleApplied=projection.applied||0; result.report.ruleFilteredParts=projection.filteredParts||0; return result;
     }
     function listNotes(snapshot, model = '') {
-      const data = prepare(snapshot, model, false), originals = new Map();
+      const data = prepare(snapshot, model, false, {useRules:false}), originals = new Map();
       const notes = data.notes.map((published, index) => {
         const origin = published.origin;
         if (!originals.has(origin.path)) originals.set(origin.path, notesCore.listFootnotes(snapshot.files.get(origin.path).current, origin.path));
@@ -125,7 +132,7 @@
       const profile = snapshot.filter ? profiling.compile(snapshot.filter.current) : null;
       return discovery.discover(resolver.resolveConrefsDetailed(snapshot.files, profile).files, profile);
     }
-    return { capture, current, prepare, listNotes, saveCandidates, listFilters, discoverModels, listModels: snapshot => discoverModels(snapshot).models,
+    return { capture, current, prepare, verifyRules: snapshot => A.noteRuleStore?.verify(snapshot.noteRules), listNotes, saveCandidates, listFilters, discoverModels, listModels: snapshot => [...new Set([...discoverModels(snapshot).models, ...(snapshot.noteRules?.config.rules || []).filter(rule => snapshot.files.has(rule.path)).flatMap(rule => rule.decisions.flatMap(part => part.models))])].sort(),
       scopePath: () => /\.ditamap$/i.test(A.state.activePath) ? A.state.activePath : A.state.selectedMap || A.state.activePath };
   }
   const api = { createManualService };

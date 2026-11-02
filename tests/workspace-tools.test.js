@@ -38,6 +38,29 @@ test('workspace foundation routes preserve boundaries and optimistic writes', as
     const broken = await (await request('/api/project')).json(); assert.match(broken.error, /配置无效/); assert.equal(broken.expectedContent, '{broken');
     assert.equal((await request('/api/project', 'PUT', { expectedContent: broken.expectedContent, config: { schema: 1, models: ['M100'] } })).status, 200);
   });
+  await t.test('external footnote rules preserve originals and reject conflicts and invalid sources', async () => {
+    const before = await fs.readFile(path.join(repo, 'a.dita'));
+    const source = '<topic><body><p>Value<fn>Independent rule</fn></p></body></topic>';
+    await fs.writeFile(path.join(repo, 'rule-source.dita'), source);
+    const core = require('../public/note-rules-core');
+    const note = require('../public/footnotes-core').listFootnotes(source, 'rule-source.dita')[0];
+    const rule = { path: note.path, xmlPath: note.xmlPath, expectedNote: note.before, expectedContext: note.context, expectedConditions: note.conditions, confirmed: true, decisions: core.partition(note).parts.map(() => ({ scope: 'common', models: [] })) };
+    const initial = await (await request('/api/note-rules')).json(); assert.equal(initial.expectedContent, null);
+    const saved = await request('/api/note-rules', 'PUT', { expectedContent: null, config: { schema: 1, rules: [rule] } }); assert.equal(saved.status, 200);
+    const result = await saved.json();
+    assert.deepEqual(await fs.readFile(path.join(repo, 'a.dita')), before);
+    assert.equal(await fs.readFile(path.join(repo, 'rule-source.dita'), 'utf8'), source);
+    assert.equal((await request('/api/note-rules', 'PUT', { expectedContent: null, config: { schema: 1, rules: [rule] } })).status, 409);
+    assert.equal((await request('/api/note-rules', 'PUT', { expectedContent: result.expectedContent, config: { schema: 1, rules: [{ ...rule, path: '../outside.dita' }] } })).status, 400);
+    const concurrent = await Promise.all([['M100'], ['M200']].map(models => request('/api/note-rules', 'PUT', {
+      expectedContent: result.expectedContent,
+      config: { schema: 1, rules: [{ ...rule, decisions: [{ scope: 'models', models }] }] }
+    })));
+    assert.deepEqual(concurrent.map(response => response.status).sort(), [200, 409]);
+    await fs.writeFile(path.join(repo, '.dita-note-rules.json'), '{broken');
+    const broken = await (await request('/api/note-rules')).json(); assert.match(broken.error, /规则配置无效/);
+    assert.equal(await fs.readFile(path.join(repo, '.dita-note-rules.json'), 'utf8'), '{broken');
+  });
   await t.test('GBK full text and inline/entity matches have exact source ranges and bounded scope', async () => {
     const result = await (await request('/api/search', 'POST', { query: 'TCP connection' })).json(); assert.equal(result.matches.length, 1);
     assert.equal(source.slice(result.matches[0].start, result.matches[0].end), 'TCP <b>connection');

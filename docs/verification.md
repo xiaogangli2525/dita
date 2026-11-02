@@ -195,3 +195,12 @@ Full regression: 167 unit/HTTP checks and 146 Chromium checks passed. An additio
 `document-rendering.test.js` covers five preformatted block types, nested command/variable markup, CRLF and exact XML roundtrips, all 13 standard note types, custom labels, CALS 3:7 column proportions and HTML/Markdown response formatting. The profiling browser regression switches every note type through the inspector, edits a custom title, undoes to the exact original XML and checks readable selected-code contrast. Office delivery regressions exercise real PDF and DOCX bytes.
 
 Visual acceptance uses the Chinese HTTP manual in an isolated local preview: command/response tables, summaries and multiline responses. Reference screenshots inform the independently implemented styles; vendor bundles are not shipped.
+
+
+## Independent model-specific footnote rules
+
+- Full regression: **200 unit/HTTP checks** and **166 Chromium checks** pass, with no skipped cases. Existing HTML/Markdown/PDF/DOCX delivery, source encoding, editing, drafts, remote workspaces and recovery remain covered.
+- Six new domain cases verify balanced rich-fragment projection, common content, unchanged GBK declaration/CRLF source buffers, repeated references/renumbering, public conref origins, stale note/context/product conditions, source isolation and exact model-token suggestions. All **37 notes in the uploaded HTTP corpus** retain their text/markup when all fragments are kept. This does not automatically confirm their applicability.
+- HTTP coverage exercises independent config writes, unchanged original document bytes, optimistic conflicts, simultaneous same-base saves, invalid paths and malformed-config preservation.
+- Actual-browser coverage requires review before save, checks per-model HTML/Markdown downloads and rule hashes, keeps unresolved notes, rejects external rule changes before download/save, preserves choices after conflicts, requires fresh confirmation for another manual and blocks rules after unsaved source changes. Follow-up checks verify 390px containment and reachable save controls; wide/compact screenshots were visually inspected.
+- Fragment classification is explicit human review. Inline markup and revision spans are atomic; no prose rewriting or automatic removal of shared model labels is claimed. Rules remain a sidecar and original DITA is unchanged.

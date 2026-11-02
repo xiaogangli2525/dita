@@ -186,7 +186,7 @@
         <button id="footnotesTab" type="button" role="tab" aria-selected="false">型号注脚</button>
       </div>
       <section id="footnotesPanel" class="footnotes-panel" hidden aria-label="型号注脚管理">
-        <div class="footnote-panel-intro"><div class="footnote-panel-title"><h2>当前手册</h2><button id="panelNewFootnoteButton" class="note-create-action" type="button" title="先在正文放置光标，再新增注脚">＋ 新增</button></div><p id="footnoteScope">当前功能文档</p></div>
+        <div class="footnote-panel-intro"><div class="footnote-panel-title"><h2>当前手册</h2><button id="panelNewFootnoteButton" class="note-create-action" type="button" title="先在正文放置光标，再新增注脚">＋ 新增</button></div><button id="noteRulesButton" type="button" class="note-rules-open">导出型号规则（不改原文）</button><p id="footnoteScope">当前功能文档</p></div>
         <div class="footnote-stats"><div><strong id="footnoteCount">0</strong><span>条注脚</span></div><div><strong id="footnoteUnassigned">0</strong><span>条待确认</span></div></div>
         <div class="footnote-filters"><label>适用型号<select id="footnoteModel"><option value="">全部型号</option></select></label><input id="footnoteSearch" type="search" placeholder="查找命令、参数或注脚内容" aria-label="查找注脚"/></div>
         <label class="note-pending-filter"><input id="footnoteUnassignedOnly" type="checkbox"/>仅看待确认适用范围</label>
@@ -336,6 +336,23 @@
       <div class="footnote-dialog-actions"><button id="newFootnoteCancel" type="button">取消</button><button type="submit" class="primary-action">插入注脚</button></div>
     </form>
   </dialog>
+  <dialog id="noteRulesDialog" class="workspace-dialog note-rules-dialog" aria-labelledby="noteRulesHeading">
+    <h2 id="noteRulesHeading">注脚的型号导出规则</h2>
+    <p>只处理导出副本。规则保存在独立配置中，原始 DITA 保持不变。</p>
+    <p id="noteRulesCount" class="muted"></p>
+    <div class="note-rules-layout">
+      <nav id="noteRuleList" aria-label="选择注脚规则"></nav>
+      <section>
+        <p id="noteRuleSource" class="muted"></p><p id="noteRuleStatus" role="status"></p>
+        <details><summary>查看完整原注脚</summary><p id="noteRuleOriginal" class="note-rule-text"></p></details>
+        <div class="note-rule-tools"><button id="noteRuleSuggestions" type="button">填入型号建议（需核对）</button><button id="noteRuleCommon" type="button">确认整条通用</button></div>
+        <div id="noteRuleParts"></div><datalist id="noteRuleModels"></datalist>
+        <label>筛选预览<select id="noteRulePreviewModel"></select></label><p id="noteRulePreview" class="note-rule-preview"></p>
+      </section>
+    </div>
+    <p id="noteRulesError" class="form-error" role="alert"></p>
+    <div class="dialog-actions"><button id="noteRuleDelete" type="button">移除这条规则</button><button id="noteRulesClose" type="button">关闭</button><button id="noteRuleSave" type="button">确认并保存规则</button></div>
+  </dialog>
   <datalist id="projectModelOptions"></datalist>
   <dialog id="saveScopeDialog" class="workspace-dialog" aria-labelledby="saveScopeTitle"><form id="saveScopeForm">
     <h2 id="saveScopeTitle">保存功能手册及依赖</h2><p>只保存勾选的文件；其他修改继续保留在编辑区。</p>
@@ -423,6 +440,9 @@
   <script src="/delivery-core.js"></script>
   <script src="/diff-core.js"></script>
   <script src="/app-core.js"></script>
+  <script src="/note-rules-core.js"></script>
+  <script src="/note-rule-store.js"></script>
+  <script src="/note-rules.js"></script>
   <script src="/manual-service.js"></script>
   <script src="/browser-files.js"></script>
   <script src="/draft-store.js"></script>

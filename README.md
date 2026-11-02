@@ -156,7 +156,19 @@ In **编写** mode, place the caret in a paragraph, list or table, then choose *
 
 Click **型号注脚** while a Topic or function Map is open. The panel indexes actual `fn` elements, shows their surrounding command/context and supports model/keyword filtering, source navigation and editing. A Map scope stays selected while navigating to its individual Topics.
 
-Explicit model associations are stored in each footnote's standard `product` attribute (space-separated model names). Existing prose is never used to infer support. Unlabelled footnotes remain visible under every panel filter. Publication also evaluates product conditions on Topic ancestors. The panel and delivery use the same applicability and dependency rules. Use **交付…** to select the publication model and format.
+The ordinary footnote editor stores explicit model associations in each footnote's standard `product` attribute (space-separated model names). Existing prose is never used to infer support. Unlabelled footnotes remain visible under every panel filter. Publication also evaluates product conditions on Topic ancestors. Use **交付…** to select the publication model and format. To filter existing prose without editing DITA, use the independent rules below.
+
+### 不修改原始 DITA 的注脚交付规则
+
+打开功能 Map，在 **注脚 → 导出型号规则（不改原文）** 中核对当前手册的来源注脚。也可以从单条注脚的 **导出型号规则** 按钮进入。系统按句子和完整 XML 结构展示片段；为每段选择 **所有型号通用** 或 **指定适用型号**，再预览目标型号并点击 **确认并保存规则**。型号可手动输入，多个型号用空格分隔。“填入型号建议”只识别已知型号的明确提及，仍需人工核对支持、不支持等语义；没有型号提及的片段不会自动确认为通用。
+
+规则单独保存在文档库根目录的 `.dita-note-rules.json`，可以与文档一起通过 Git 管理。保存规则立即写入该配置，不修改 `.dita`、不改变当前编写内容，也不加入正文撤销历史。每个功能手册仍独立导出。规则按来源路径、节点位置、原注脚、周围正文及原有型号条件绑定；公共 `conref` 内容和重复注脚引用使用同一来源规则。换到其他来源的手册需要重新核对，其型号名称不受 HTTP 示例限制。
+
+指定型号交付时，共用片段与该型号片段进入导出副本；整条注脚没有保留内容时，调用标记一并移除并连续重排编号。HTML、Markdown、PDF 和 Word 共用这一准备过程。**全部型号** 保留原始注脚；未配置规则的注脚沿用已有适用条件，未标注内容保留并提示待确认。规则只进一步筛选，不能覆盖 DITA 原有 `product` 或所选 DITAVAL 的排除条件。
+
+原注脚、位置、周围正文或型号条件变化后，旧规则会标为过期，指定型号交付会要求重新核对。规则文件被外部修改时，保存会拒绝覆盖；已检查的导出也会要求重新打开交付设置。无效配置保留原文件并显示错误。可用 **移除这条规则** 恢复该注脚的原有交付行为。
+
+片段筛选保留加粗、斜体、链接、列表等原始 XML，不自动改写句子或共享型号标签。混在同一不可拆分行内元素或修订标记中的差异需要整段核对；保留片段中的其他型号名称不会自动删除。现有手册不会被批量自动确认。
 
 Plain notes use a text editor with safe XML escaping; notes with inline markup use an XML-preserving editor. Updates retain identifiers, links, encoding declarations and surrounding source, use the shared undo history and require explicit Save. Outdated edits are refused. Reused footnotes offer **编辑引用源** and keep their including conditions visible. HTML exports include a linked footnote list with return links; Markdown includes complete numbered footnote definitions.
 

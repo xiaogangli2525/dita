@@ -39,11 +39,13 @@
  * @property {{path:string,current:string}|null} filter Captured DITAVAL, independently versioned from topic dependencies.
  * @property {ProjectConfig} project
  * @property {string|null} projectContent Exact model-config comparison base.
+ * @property {{config:Object,expectedContent:string|null,supported:boolean,error?:string}|null} noteRules Captured external export rules; never embedded in authoring XML.
  *
  * @typedef {Object} ManualService
  * @property {(path?:string,options?:{resources?:boolean,filterPath?:string})=>Promise<ManualSnapshot>} capture
  * @property {()=>Promise<{files:string[],truncated?:boolean}>} listFilters
  * @property {(snapshot:ManualSnapshot)=>boolean} current
+ * @property {(snapshot:ManualSnapshot)=>Promise<void>} verifyRules Re-read external rules before delivering output.
  * @property {(snapshot:ManualSnapshot, model?:string)=>Object} prepare
  * @property {(snapshot:ManualSnapshot, model?:string)=>{notes:Object[],calls:Object[],models:string[],report:Object}} listNotes First-use labels, source-scoped occurrences and deduplicated per-source usages with inherited conditions.
  * @property {(snapshot:ManualSnapshot)=>DocumentSnapshot[]} saveCandidates
@@ -72,6 +74,7 @@
  * @property {WorkspaceApi} api
  * @property {Object} ditaCore
  * @property {ProjectService} project Resolved lazily after application composition.
+ * @property {Object} noteRuleStore Resolved lazily; handles rule persistence and workspace identity.
  *
  * @typedef {Object} SavePorts
  * @property {WorkspaceState} state

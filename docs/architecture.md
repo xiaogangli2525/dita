@@ -1,5 +1,15 @@
 # Workspace architecture
 
+## Independent footnote delivery rules
+
+`note-rules-core.js` is a pure shared module: it validates the versioned sidecar, partitions balanced XML fragments, proposes exact known-model mentions and projects confirmed rules into a new source Map. Source buffers are never edited. Rules bind to source path/XML position plus the original note, surrounding text and inherited product conditions. Changes invalidate the binding rather than triggering a fuzzy match. Inline markup stays atomic; block containers are reconstructed only when retained children remain. Revision PI boundaries stay together.
+
+`note-rule-store.js` owns workspace-aware reads, optimistic saves and export-time revalidation of `.dita-note-rules.json`. `/api/note-rules` uses existing workspace/origin/real-path guards and atomic writes; same-path writes are serialized so overlapping saves cannot both accept the same base. Malformed sidecars return an explicit error and retain their bytes. The store refuses responses from replaced workspaces and prevents older reads from replacing newer save state.
+
+`note-rules.js` owns only the review dialog. It obtains unmodified source notes through `manual-service`, deduplicates public origins, requires an explicit decision for every fragment and saves the independent config. Pending suggestions are never export rules. The original authoring/panel view bypasses projection. `manual-service` captures config in the delivery snapshot, applies rules before conref expansion and passes confirmed/excluded origins to `publication-core`; existing product/DITAVAL constraints still apply. Empty definitions remain through resolution so the publication pass can remove their calls and renumber all remaining notes correctly. Every output format consumes that same publication data.
+
+Export re-reads rules before and after conversion, including cached checked output. Delivery records contain both normalized rule-config SHA-256 and the exact sidecar input hash. Rules for other source paths do not affect a captured manual. The implementation performs explicit fragment filtering, not natural-language rewriting; shared labels and inseparable inline/revision fragments are preserved for human review.
+
 ## DITAVAL and real-library compatibility
 
 `profiling-core.js` is a pure, shared conditional-processing module. `manual-service` reads an explicitly selected workspace DITAVAL into its own snapshot field, filters Map references before resolution and skips excluded dependency branches. `publication-core` applies the same profile to expanded Topics, preserves original note origins and merges overlapping removal ranges. Whole excluded Topics are omitted from delivery entries; their source buffers remain intact. No DITAVAL is inferred from filenames or imported from an Oxygen project. Branch `ditavalref`, custom profiling specializations and flagging are explicit unsupported boundaries.

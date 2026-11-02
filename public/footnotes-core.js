@@ -87,6 +87,6 @@
     xml.validateXml(content);
     return { content, note: listFootnotes(content).find(item => item.start === note.start) };
   }
-  const api = { listFootnotes, updateFootnote, filterNotes, completeInsertion };
+  const api = { textOf, listFootnotes, updateFootnote, filterNotes, completeInsertion };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaFootnotesCore = api;
 })(typeof window === 'undefined' ? globalThis : window);

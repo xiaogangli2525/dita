@@ -270,3 +270,19 @@
 
 .workspace-dialog button.primary-action { background:var(--accent); border-color:var(--accent); color:#fff; }
 .workspace-dialog button.primary-action:hover:not(:disabled) { background:#106150; }
+
+.note-rules-open { margin-bottom:10px; padding:8px; border:1px solid #c8ded4; border-radius:6px; background:#f1f8f4; color:#176553; cursor:pointer; }
+.note-rules-dialog { width:min(1050px,calc(100vw - 32px)); }
+.note-rules-dialog[open] { display:flex; flex-direction:column; overflow:hidden; }
+.note-rules-dialog > :not(.note-rules-layout) { flex:none; }
+.note-rules-layout { display:grid; grid-template-columns:minmax(160px,230px) minmax(0,1fr); gap:20px; align-items:start; min-height:0; overflow:auto; }
+.note-rules-layout > section { min-width:0; }
+#noteRuleList { display:grid; gap:6px; max-height:55vh; overflow:auto; }
+#noteRuleList button { text-align:left; overflow-wrap:anywhere; font-size:12px; }
+#noteRuleList button[aria-current=true] { border-color:#268575; background:#eaf5f0; color:#175c4d; }
+.note-rule-part { padding:14px; margin:12px 0; border:1px solid #dae5df; border-radius:7px; }
+.note-rule-part p,.note-rule-text,.note-rule-preview { white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.8; }
+.note-rule-part small { color:#617268; }
+.note-rule-tools { display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; }
+.note-rule-preview { padding:14px; background:#f2f7f5; border-radius:7px; }
+@media(max-width:700px) { .note-rules-layout { display:block; } #noteRuleList { max-height:150px; margin-bottom:20px; } }
