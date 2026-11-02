@@ -11,7 +11,7 @@ test('workspace shell preserves editing state across panels and delivery steps',
     const socket = net.createServer();
     socket.listen(0, '127.0.0.1', () => { const value = socket.address().port; socket.close(() => resolve(value)); });
   });
-  const server = spawn(process.execPath, ['scripts/dev-server.js', '--port', String(port)], {
+  const server = spawn(process.execPath, ['scripts/dev-server.js', '--docs', 'tests/fixtures/writing-demo', '--port', String(port)], {
     cwd: path.join(__dirname, '..'), env: process.env, stdio: ['ignore', 'pipe', 'pipe']
   });
   let browser;
