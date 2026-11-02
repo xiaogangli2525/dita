@@ -270,3 +270,8 @@
 
 .workspace-dialog button.primary-action { background:var(--accent); border-color:var(--accent); color:#fff; }
 .workspace-dialog button.primary-action:hover:not(:disabled) { background:#106150; }
+
+/* A sidebar can narrow the writing column even on a wide display. */
+@container document (max-width:850px) {
+  #authoringHint { display:none; }
+}
