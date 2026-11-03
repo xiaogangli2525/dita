@@ -1,0 +1,51 @@
+/* The writing assistant uses the same semantic palette as the editor skins. */
+.ai-dialog { width:min(760px,calc(100vw - 32px)); max-height:calc(100dvh - 32px); padding:26px; color:var(--text); }
+.ai-heading { display:flex; align-items:center; justify-content:space-between; gap:20px; position:sticky; top:-26px; z-index:2; background:var(--panel); margin:-26px -26px 0; padding:24px 26px 12px; }
+.ai-heading h2 { margin:6px 0 0; font-size:22px; letter-spacing:-.4px; }
+.ai-eyebrow { color:var(--accent); font-size:11px; letter-spacing:2px; }
+.ai-muted { color:var(--muted); font-size:12px; line-height:1.7; }
+.ai-inputs { border:0; margin:20px 0 0; padding:0; min-width:0; }
+.ai-dialog .ai-inputs label { display:flex; flex-direction:column; gap:7px; font-size:12px; font-weight:600; margin:0 0 8px; min-width:0; }
+.ai-inputs textarea, .ai-inputs input, .ai-inputs select { width:100%; box-sizing:border-box; border:1px solid var(--border); border-radius:7px; padding:10px 12px; background:var(--panel); color:var(--text); font:inherit; }
+.ai-inputs textarea { resize:vertical; min-height:92px; line-height:1.8; }
+.ai-inputs :is(textarea,input,select):focus-visible { outline:2px solid var(--focus-ring); outline-offset:1px; }
+.ai-fields { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:14px; }
+.ai-search-row { display:flex; align-items:flex-end; gap:10px; margin-top:6px; }
+.ai-search-row label { flex:1; margin:0; }
+.ai-search-row button { min-height:38px; flex-shrink:0; }
+.ai-candidates { display:grid; gap:7px; max-height:230px; overflow:auto; margin-top:12px; scrollbar-width:thin; scrollbar-color:var(--scrollbar-thumb) transparent; }
+.ai-candidate { display:flex; flex-direction:column; gap:5px; text-align:left; padding:10px 12px; white-space:normal; height:auto; }
+.ai-candidate strong { font-size:11px; overflow-wrap:anywhere; }
+.ai-candidate span { font-size:12px; line-height:1.7; color:var(--muted); overflow-wrap:anywhere; }
+.ai-candidate[aria-pressed="true"] { border-color:var(--accent); background:var(--accent-soft); }
+.ai-source { background:var(--surface); border:1px solid var(--border); border-radius:9px; padding:14px 16px; margin-top:16px; }
+.ai-location { margin:0 0 10px; color:var(--accent); font-size:11px; overflow-wrap:anywhere; }
+.ai-dialog pre { margin:0; font:13px/1.85 var(--font-sans, sans-serif); white-space:pre-wrap; overflow-wrap:anywhere; }
+.ai-source > .ai-muted { margin-bottom:0; }
+.ai-provider { color:var(--muted); font-size:11px; line-height:1.7; overflow-wrap:anywhere; }
+.ai-connection { margin:10px 0 16px; border:1px solid var(--border); border-radius:8px; padding:10px 12px; }
+.ai-connection summary { color:var(--muted); font-size:12px; cursor:pointer; }
+.ai-connection .ai-inputs { margin-top:12px; }
+.ai-generate-actions, .ai-review-actions { display:flex; gap:9px; align-items:center; }
+.ai-status { color:var(--accent); font-size:12px; line-height:1.8; min-height:22px; }
+.ai-status.is-error { color:var(--danger); }
+.ai-review { border-top:1px solid var(--border); padding-top:16px; margin-top:18px; }
+.ai-review h3 { margin:0; font-size:16px; }
+.ai-review > p, .ai-review ul { font-size:13px; line-height:1.8; }
+.ai-review ul:empty { display:none; }
+.ai-change { display:grid; grid-template-columns:1fr 1fr; border:1px solid var(--border); border-radius:8px; overflow:hidden; margin:12px 0; }
+.ai-change > div { padding:12px 14px; min-width:0; }
+.ai-change strong { display:block; font-size:11px; margin-bottom:8px; }
+.ai-before { background:var(--surface); }
+.ai-after { background:var(--success-soft); border-left:1px solid var(--border); }
+.ai-after strong { color:var(--success); }
+.ai-dialog .ai-confirm { display:flex; flex-direction:row; align-items:flex-start; gap:8px; margin:18px 0 14px; font-size:12px; line-height:1.7; }
+.ai-confirm input { margin-top:4px; width:auto; flex-shrink:0; }
+.ai-review-actions { justify-content:flex-end; }
+@media(max-width:600px) {
+  .ai-dialog { padding:20px 16px; }
+  .ai-heading h2 { font-size:18px; }
+  .ai-heading { top:-20px; margin:-20px -16px 0; padding:20px 16px 12px; }
+  .ai-fields, .ai-change { grid-template-columns:1fr; }
+  .ai-after { border-left:0; border-top:1px solid var(--border); }
+}

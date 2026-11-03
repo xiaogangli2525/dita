@@ -43,9 +43,9 @@
       if (document.activeElement?.matches('#editor,[contenteditable="true"],[contenteditable="plaintext-only"]')) event.preventDefault();
     });
     button.addEventListener('click', show);
-    document.getElementById('appearanceClose').addEventListener('click', () => dialog.close());
-    dialog.addEventListener('close', () => {
-      if (opener?.isConnected) opener.focus({ preventScroll: true });
+    function restoreWriting() {
+      const previous = opener; opener = null;
+      if (previous?.isConnected) previous.focus({ preventScroll: true });
       const input = source; source = null;
       if (input?.element.isConnected && !input.element.disabled && input.element.value === input.value) {
         input.element.setSelectionRange(input.start, input.end, input.direction);
@@ -53,7 +53,13 @@
       }
       const target = writing; writing = null;
       if (A.authorSelection.connected(target) && target.current === target.file.current && target.surface.ditaSourceContent === target.current) A.authorSelection.restoreTarget(target);
-    });
+    }
+    function close() { dialog.close(); restoreWriting(); }
+    document.getElementById('appearanceClose').addEventListener('click', close);
+    dialog.addEventListener('cancel', event => { event.preventDefault(); close(); });
+    // Native close events are queued: an older event must not consume a newly
+    // opened dialog's writing bookmark or focus target.
+    dialog.addEventListener('close', () => { if (!dialog.open) restoreWriting(); });
     return { show };
   }
   root.DitaAppearance = { createController };

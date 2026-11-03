@@ -7,6 +7,8 @@ A lightweight local web client for reading, editing, reviewing, and exporting DI
 - [功能与操作说明](docs/authoring-guide.md)：从加载文档库、编写和注脚到保存、审阅、按型号交付；包含快捷键、失败处理和当前限制。
 - [AI / 自动化操作约定](docs/assistant-playbook.md)：skill 风格的任务范围、操作选择、修改提案与复核约定，供后续 AI 接入复用。
 - [功能走查记录](docs/functional-audit.md)：本轮核对范围、发现与修复、验证证据及待补能力。
+- [AI 辅助写作](docs/ai-editing.md)：模型配置、粘贴问题定位、选区修订、审核与撤销。
+- [随 SDK 交付知识库计划](docs/knowledge-base-plan.md)：已记录的后续方向，暂缓实施。
 
 ## Writing workflow
 
@@ -154,7 +156,7 @@ The HTTP API validates Host before returning a workspace token, including GET re
 
 Author rendering keeps source event handlers, CSS and editor-reserved attributes as inert metadata; they are preserved in XML without becoming active HTML. Executable link schemes are disabled in Author and Markdown HTML rendering. Markdown URLs and code language names use attribute escaping, and generated HTML is not parsed again as Markdown.
 
-See [architecture and extension boundaries](docs/architecture.md), [verification](docs/verification.md) and the [AI authoring integration plan](docs/ai-editing.md). AI proposal primitives are implemented; no AI provider or generation UI is connected yet.
+See [architecture and extension boundaries](docs/architecture.md), [verification](docs/verification.md) and [AI authoring setup](docs/ai-editing.md). AI writing supports scoped text proposals through a server-configured compatible model endpoint, explicit review and shared undo. No provider/model is chosen by default; demo mode never connects to a model.
 
 ## Writing in Author mode
 

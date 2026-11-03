@@ -11,5 +11,5 @@
     "types": ["node"],
     "skipLibCheck": false
   },
-  "files": ["types/browser.d.ts", "types/boundaries.test.ts", "public/document-store.js", "public/save.js", "public/snapshot-data.js", "public/manual-service.js", "public/delivery-data.js"]
+  "files": ["types/browser.d.ts", "types/boundaries.test.ts", "types/ai-boundaries.test.ts", "lib/ai-provider.js", "public/document-store.js", "public/save.js", "public/snapshot-data.js", "public/manual-service.js", "public/delivery-data.js"]
 }

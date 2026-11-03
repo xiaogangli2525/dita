@@ -54,3 +54,6 @@ require('./workspace-controller.test');
 require('./state-contracts.test');
 
 require('./theme-preference.test');
+require('./ai-edit.test');
+require('./ai-provider.test');
+require('./ai-routes.test');

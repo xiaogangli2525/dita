@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="/panels.css" />
   <link rel="stylesheet" href="/document.css" />
   <link rel="stylesheet" href="/appearance.css" />
+  <link rel="stylesheet" href="/ai-authoring.css" />
 </head>
 <body>
   <header class="app-header">
@@ -215,6 +216,7 @@
       </div>
     </aside>
     <nav class="panel-rail" aria-label="辅助工具">
+      <button id="aiButton" type="button" aria-haspopup="dialog" aria-controls="aiDialog" title="AI 辅助写作"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5ZM20 2v4m-2-2h4"/></svg><span>AI 写作</span></button>
       <button id="inspectorToggleButton" type="button" data-panel="properties" aria-controls="inspector" aria-expanded="false" title="内容设置"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h5m4 0h7M4 12h9m4 0h3M4 18h2m4 0h10"/><circle cx="11" cy="6" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="8" cy="18" r="2"/></svg><span>设置</span></button>
       <button id="footnotesButton" type="button" data-panel="notes" aria-controls="inspector" aria-expanded="false" title="型号注脚"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v12H9l-5 4zM8 8h8M8 12h5"/></svg><span>注脚</span></button>
       <button type="button" data-panel="review" aria-controls="inspector" aria-expanded="false" title="审阅变更"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>审阅</span></button>
@@ -226,6 +228,30 @@
     <span id="status" class="status">就绪</span>
     <span class="statusbar-hint">Ctrl/Cmd+S 保存 · Ctrl/Cmd+F 查找</span>
   </footer>
+
+  <dialog id="aiDialog" class="workspace-dialog ai-dialog" aria-labelledby="aiHeading" aria-describedby="aiIntro">
+    <header class="ai-heading"><div><span class="ai-eyebrow">写作助手</span><h2 id="aiHeading">把问题变成可审核的修改</h2></div><button id="aiClose" type="button" aria-label="关闭 AI 辅助写作">关闭</button></header>
+    <p id="aiIntro" class="ai-muted">定位原文，审核建议，再应用到文档。保留原有结构，修改支持撤销。</p>
+    <fieldset id="aiInputs" class="ai-inputs"><legend class="visually-hidden">修改需求与原文定位</legend>
+      <label for="aiInstruction">问题或修改要求</label><textarea id="aiInstruction" rows="4" maxlength="6000" placeholder="粘贴测试反馈，或说明希望怎样改写。涉及参数时，请提供已经核实的正确值。"></textarea>
+      <div class="ai-fields"><label>定位范围<select id="aiScope"><option value="selection">打开时选中的文字</option><option value="topic">当前章节</option><option value="manual">当前功能手册</option></select></label><label>涉及型号（可选）<input id="aiModel" maxlength="100" placeholder="例如 ML307R"/></label></div>
+      <div class="ai-search-row"><label>定位关键词（可选）<input id="aiSearch" type="search" maxlength="200" placeholder="命令、参数或原文词句"/></label><button id="aiLocate" type="button">定位原文</button></div>
+      <div id="aiCandidates" class="ai-candidates" aria-label="原文候选"></div>
+    </fieldset>
+    <section id="aiSource" class="ai-source" hidden aria-label="本次修改范围"><p id="aiLocation" class="ai-location"></p><pre id="aiOriginal"></pre><p id="aiConditions" class="ai-muted"></p></section>
+    <p id="aiProvider" class="ai-provider"></p>
+    <details id="aiConnection" class="ai-connection"><summary>模型连接设置</summary><fieldset id="aiConnectionFields" class="ai-inputs"><legend class="visually-hidden">模型接口</legend>
+      <label>API 基础地址<input id="aiBaseUrl" type="url" maxlength="2000" placeholder="https://your-endpoint.example/v1" autocomplete="off"/></label>
+      <div class="ai-fields"><label>模型名称<input id="aiConnectionModel" maxlength="150" placeholder="接口提供的准确模型名" autocomplete="off"/></label><label>API Key<input id="aiKey" type="password" maxlength="8192" autocomplete="new-password"/></label></div>
+      <label class="checkbox-row"><input id="aiAllowHttp" type="checkbox"/>允许公司内网 HTTP 接口</label><label class="checkbox-row"><input id="aiNoAuth" type="checkbox"/>此接口不需要 Key</label>
+      <button id="aiConnectionSave" type="button">使用此连接</button><p id="aiConnectionHint" class="ai-muted" role="status"></p>
+    </fieldset></details>
+    <div class="ai-generate-actions"><button id="aiGenerate" type="button" class="primary-action" disabled>生成修改建议</button><button id="aiCancel" type="button" hidden>取消生成</button></div>
+    <p id="aiStatus" class="ai-status" role="status" aria-live="polite"></p>
+    <section id="aiReview" class="ai-review" hidden aria-labelledby="aiReviewTitle"><h3 id="aiReviewTitle">审核修改建议</h3><p id="aiSummary"></p><ul id="aiQuestions"></ul><div id="aiChanges"></div>
+      <div id="aiAcceptArea"><label class="ai-confirm checkbox-row"><input id="aiConfirm" type="checkbox"/>已核对技术事实、型号范围及共享内容影响</label><div class="ai-review-actions"><button id="aiReject" type="button">放弃建议</button><button id="aiApply" type="button" class="primary-action" disabled>应用到编辑区</button></div><p class="ai-muted">应用后仍需正常保存，不会自动写入文件或提交 Git。</p></div>
+    </section>
+  </dialog>
 
   <dialog id="appearanceDialog" class="workspace-dialog appearance-dialog" aria-labelledby="appearanceHeading" aria-describedby="appearanceIntro">
     <div class="appearance-heading"><div><p class="appearance-kicker">你的写作空间</p><div class="appearance-title-row"><h2 id="appearanceHeading">界面外观</h2><span id="appearanceCurrent" class="appearance-current" role="status"></span></div></div><button id="appearanceClose" type="button" aria-label="关闭外观设置">完成</button></div>
@@ -478,6 +504,10 @@
   <script src="/project.js"></script>
   <script src="/save.js"></script>
   <script src="/search-core.js"></script>
+  <script src="/ai-edit-core.js"></script>
+  <script src="/ai-context.js"></script>
+  <script src="/ai-connection.js"></script>
+  <script src="/ai-authoring.js"></script>
   <script src="/search.js"></script>
   <script src="/resources.js"></script>
   <script src="/release-store.js"></script>

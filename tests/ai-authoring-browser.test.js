@@ -1,0 +1,119 @@
+'use strict';
+const test = require('node:test'), assert = require('node:assert/strict');
+const fs = require('node:fs/promises'), path = require('node:path'), os = require('node:os'), http = require('node:http'), net = require('node:net');
+const { spawn } = require('node:child_process'), { chromium } = require('playwright-core');
+
+test('AI authoring runs through the local provider, review and shared document history', async t => {
+  const temporary = await fs.mkdtemp(path.join(os.tmpdir(), 'dita-ai-ui-'));
+  const original = '<?xml version="1.0"?><topic id="http"><title>HTTP 请求</title><body><p id="request">发送请求，然后检查返回值。</p><p>ML307R: 支持范围 1~120 秒。</p><p>MN318: 保持其他型号说明。</p></body></topic>';
+  const second = '<topic id="b"><title>SSL 配置</title><body><p>配置证书后发送请求。</p></body></topic>';
+  await fs.writeFile(path.join(temporary, 'a.dita'), original); await fs.writeFile(path.join(temporary, 'b.dita'), second);
+  await fs.writeFile(path.join(temporary, 'main.ditamap'), '<map><title>HTTP 手册</title><topicref href="a.dita"/><topicref href="b.dita"/></map>');
+  const received = [], timers = new Set();
+  const provider = http.createServer(async (req, res) => {
+    const chunks = []; for await (const chunk of req) chunks.push(chunk);
+    const body = JSON.parse(Buffer.concat(chunks)), input = JSON.parse(body.messages[1].content); received.push(input);
+    const first = input.document.parts[0];
+    const result = input.instruction.includes('待确认') ? { summary: '缺少正确参数', questions: ['请提供已经核实的值。'], edits: [] } :
+      { summary: input.instruction.includes('恶意') ? '<img src=x onerror=alert(1)>' : '使描述更清晰', questions: [], edits: [{ id: input.instruction.includes('非法') ? 'outside' : first.id, before: first.text, after: first.text.replace('发送', '发起') }] };
+    const send = () => { res.setHeader('content-type', 'application/json'); res.end(JSON.stringify({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(result) } }] })); };
+    if (input.instruction.includes('慢速')) { const timer = setTimeout(() => { timers.delete(timer); send(); }, 1200); timers.add(timer); } else send();
+  });
+  await new Promise(resolve => provider.listen(0, '127.0.0.1', resolve));
+  const port = await new Promise(resolve => { const s = net.createServer(); s.listen(0, '127.0.0.1', () => { const p = s.address().port; s.close(() => resolve(p)); }); });
+  const server = spawn(process.execPath, ['server.js'], { cwd: path.join(__dirname, '..'), env: { ...process.env, PORT: String(port), DOCS_ROOT: temporary, REPOSITORIES_ROOT: temporary, DITA_DEMO_MODE: '0', DITA_AI_BASE_URL: 'http://127.0.0.1:' + provider.address().port + '/v1', DITA_AI_MODEL: 'test-model', DITA_AI_API_KEY: 'browser-test-secret' }, stdio: ['ignore', 'pipe', 'pipe'] });
+  let browser;
+  t.after(async () => { for (const timer of timers) clearTimeout(timer); await browser?.close(); if (server.exitCode == null) { server.kill(); await new Promise(resolve => server.once('exit', resolve)); } provider.closeAllConnections(); await new Promise(resolve => provider.close(resolve)); await fs.rm(temporary, { recursive: true, force: true }); });
+  await new Promise((resolve, reject) => { const timer = setTimeout(() => reject(Error('server timeout')), 10000); server.stdout.once('data', () => { clearTimeout(timer); resolve(); }); server.once('error', reject); });
+  browser = await chromium.launch({ headless: true, ...(process.env.DITA_CHROMIUM_EXECUTABLE ? { executablePath: process.env.DITA_CHROMIUM_EXECUTABLE } : {}) });
+  const errors = [], base = 'http://127.0.0.1:' + port;
+  async function fresh(st) {
+    const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } }); st.after(() => page.close()); page.setDefaultTimeout(8000);
+    page.on('pageerror', error => errors.push(error.message)); await page.goto(base); await page.waitForFunction(() => window.DitaApp?.state.root);
+    await page.evaluate(() => window.DitaApp.openFile('a.dita')); return page;
+  }
+  async function select(page, text = '发送请求') {
+    await page.evaluate(() => window.DitaApp.setMode('editor'));
+    await page.locator('#editor').evaluate((node, text) => { node.focus(); const i = node.value.indexOf(text); node.setSelectionRange(i, i + text.length); }, text);
+    await page.click('#aiButton'); await page.waitForFunction(() => document.getElementById('aiProvider').textContent.includes('test-model'));
+    assert.equal(await page.locator('#aiScope').inputValue(), 'selection');
+  }
+  await t.test('selection proposal preserves XML, applies without saving, and uses undo/redo', async st => {
+    const page = await fresh(st); await select(page); await page.fill('#aiInstruction', '润色'); await page.click('#aiGenerate');
+    await page.waitForSelector('.ai-change'); assert.equal(await page.locator('.ai-after pre').textContent(), '发起请求');
+    assert.equal(await page.locator('#aiApply').isDisabled(), true);
+    assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.get('a.dita').current), original);
+    await page.check('#aiConfirm'); await page.click('#aiApply'); await page.waitForFunction(() => document.getElementById('aiStatus').textContent.includes('已应用'));
+    assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.get('a.dita').current), original.replace('发送请求', '发起请求'));
+    assert.equal(await fs.readFile(path.join(temporary, 'a.dita'), 'utf8'), original);
+    await page.click('#aiClose'); await page.locator('#editor').focus(); await page.keyboard.press('Control+z'); assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.get('a.dita').current), original);
+    await page.keyboard.press('Control+y'); assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.get('a.dita').current), original.replace('发送请求', '发起请求'));
+    assert.equal(received.at(-1).document.parts[0].text, '发送请求'); assert.doesNotMatch(JSON.stringify(received.at(-1)), /MN318/);
+  });
+  await t.test('visual selection maps exactly to source and preserves the rest of its paragraph', async st => {
+    const page = await fresh(st);
+    await page.locator('#visualEditor p').first().evaluate(node => { const text = node.firstChild, range = document.createRange(); range.setStart(text, 0); range.setEnd(text, 4); node.closest('[contenteditable]').focus(); const selection = window.getSelection(); selection.removeAllRanges(); selection.addRange(range); });
+    await page.click('#aiButton'); assert.equal(await page.locator('#aiScope').inputValue(), 'selection'); assert.equal(await page.locator('#aiOriginal').textContent(), '发送请求');
+  });
+  await t.test('manual search requires an explicit candidate and applies to the selected topic', async st => {
+    const page = await fresh(st); await page.click('#aiButton'); await page.fill('#aiInstruction', '润色发送请求的描述'); await page.selectOption('#aiScope', 'manual'); await page.fill('#aiSearch', '发送请求'); await page.click('#aiLocate');
+    await page.waitForSelector('.ai-candidate'); assert.equal(await page.locator('.ai-candidate').filter({ hasText: '发送请求' }).count(), 2); assert.equal(await page.locator('#aiGenerate').isDisabled(), true);
+    await page.locator('.ai-candidate').filter({ hasText: 'b.dita' }).click(); await page.click('#aiGenerate'); await page.waitForSelector('.ai-change'); await page.check('#aiConfirm'); await page.click('#aiApply');
+    await page.waitForFunction(() => document.getElementById('aiStatus').textContent.includes('已应用'));
+    assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.get('b.dita').current), second.replace('发送', '发起'));
+    assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.get('a.dita').current), original);
+  });
+  await t.test('missing technical facts produce questions without an applicable proposal', async st => {
+    const page = await fresh(st); await select(page); await page.fill('#aiInstruction', '参数值待确认'); await page.click('#aiGenerate'); await page.waitForSelector('#aiQuestions li');
+    assert.equal(await page.locator('#aiApply').isVisible(), false); assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.get('a.dita').dirty), false);
+  });
+  await t.test('malformed model edits are rejected and error text remains actionable', async st => {
+    const page = await fresh(st); await select(page); await page.fill('#aiInstruction', '非法输出'); await page.click('#aiGenerate'); await page.waitForSelector('#aiStatus.is-error');
+    assert.match(await page.locator('#aiStatus').textContent(), /越界/); assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.get('a.dita').dirty), false);
+  });
+  await t.test('cancellation discards delayed responses and keeps the user instruction', async st => {
+    const page = await fresh(st); await select(page); await page.fill('#aiInstruction', '慢速润色'); await page.click('#aiGenerate'); await page.click('#aiCancel');
+    assert.match(await page.locator('#aiStatus').textContent(), /已取消/); await page.waitForTimeout(1400);
+    assert.equal(await page.locator('#aiReview').isVisible(), false); assert.equal(await page.locator('#aiInstruction').inputValue(), '慢速润色');
+  });
+  await t.test('new working edits invalidate a pending model response', async st => {
+    const page = await fresh(st); await select(page); await page.fill('#aiInstruction', '慢速润色'); await page.click('#aiGenerate');
+    await page.evaluate(() => { const A = window.DitaApp, file = A.state.filesMap.get('a.dita'); A.setFileContent(file, file.current.replace('检查', '人工核对')); });
+    await page.waitForTimeout(1400); assert.equal(await page.locator('#aiReview').isVisible(), false); assert.match(await page.locator('#aiStatus').textContent(), /变化/);
+    assert.match(await page.evaluate(() => window.DitaApp.state.filesMap.get('a.dita').current), /人工核对/);
+  });
+  await t.test('review treats model text as text and remains usable across skins and narrow screens', async st => {
+    const page = await fresh(st); await select(page); await page.fill('#aiInstruction', '恶意摘要润色'); await page.click('#aiGenerate'); await page.waitForSelector('.ai-change');
+    assert.equal(await page.locator('#aiSummary img').count(), 0); assert.match(await page.locator('#aiSummary').textContent(), /<img/);
+    for (const theme of ['forest', 'blue', 'paper', 'dark']) {
+      await page.evaluate(theme => window.DitaTheme.set(theme), theme);
+      await page.setViewportSize({ width: 390, height: 844 });
+      const size = await page.locator('#aiDialog').evaluate(node => ({ width: node.getBoundingClientRect().width, scroll: node.scrollWidth, client: node.clientWidth }));
+      assert.ok(size.width <= 390); assert.ok(size.scroll <= size.client + 1);
+    }
+    await page.screenshot({ path: '/tmp/dita-ai-mobile.png' });
+    await page.setViewportSize({ width: 1440, height: 1000 }); await page.evaluate(() => window.DitaTheme.set('forest')); await page.screenshot({ path: '/tmp/dita-ai-review.png' });
+  });
+  await t.test('AI routes enforce workspace/origin guards and do not block saving during generation', async () => {
+    const workspace = await (await fetch(base + '/api/workspace')).json(), token = workspace.workspaceToken;
+    const request = (route, body, headers = {}) => fetch(base + route, { method: body ? 'POST' : 'GET', headers: { 'content-type': 'application/json', 'x-workspace-token': token, ...headers }, ...(body ? { body: JSON.stringify(body) } : {}) });
+    assert.equal((await request('/api/ai/config', null, { 'x-workspace-token': 'stale' })).status, 409);
+    assert.equal((await request('/api/ai/config', null, { origin: 'https://evil.test' })).status, 403);
+    assert.doesNotMatch(await (await request('/api/ai/config')).text(), /browser-test-secret/);
+    const pending = request('/api/ai/propose', { source: original, start: original.indexOf('发送'), end: original.indexOf('发送') + 4, instruction: '慢速润色' });
+    let resolved = false; pending.then(() => { resolved = true; });
+    const saved = await fetch(base + '/api/file', { method: 'PUT', headers: { 'content-type': 'application/json', 'x-workspace-token': token }, body: JSON.stringify({ path: 'a.dita', content: original, expectedContent: original }) });
+    assert.equal(saved.status, 200); assert.equal(resolved, false); assert.equal((await pending).status, 200);
+  });
+  await t.test('connection UI updates server settings without returning or storing a secret', async st => {
+    const page = await fresh(st); await select(page); await page.locator('#aiConnection summary').click();
+    await page.fill('#aiKey', 'replaced-test-key'); await page.click('#aiConnectionSave');
+    await page.waitForFunction(() => document.getElementById('aiConnectionHint').textContent.includes('已更新'));
+    assert.equal(await page.locator('#aiKey').inputValue(), '');
+    assert.match(await page.locator('#aiKey').getAttribute('placeholder'), /已配置/);
+    assert.doesNotMatch(await page.locator('#aiDialog').textContent(), /replaced-test-key/);
+    assert.equal(await page.evaluate(() => JSON.stringify(localStorage).includes('replaced-test-key')), false);
+    await page.fill('#aiInstruction', '润色'); await page.click('#aiGenerate'); await page.waitForSelector('.ai-change');
+  });
+  assert.deepEqual(errors, []);
+});

@@ -131,7 +131,7 @@
     reviewAll: editor.reviewAll,
     save: A.save, documents: A.documents, maps: A.maps, workspace,
     editorTools: A.editorTools, project: A.project, drafts: A.drafts,
-    appearance: A.appearance, shell: A.shell, inspector: A.inspector, footnotes: A.footnotes,
+    appearance: A.appearance, aiAuthoring: A.aiAuthoring, shell: A.shell, inspector: A.inspector, footnotes: A.footnotes,
     previewMapHtml: A.previewMapHtml,
     exportMapToHtmlFile: A.exportMapToHtmlFile,
     previewMapMd: A.previewMapMd,

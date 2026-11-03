@@ -21,7 +21,7 @@
 
     const menuDefinitions = {
       file: [['恢复草稿', () => A.drafts.show()], ['交付记录', () => document.getElementById('releasesButton').click()], ['新建文档', () => createNewDocument()], ['保存', () => saveFile(), 'Ctrl+S'], ['另存为', () => saveAsFile()], ['下载', () => downloadFile()]],
-      edit: [['撤销', () => undoFile(), 'Ctrl+Z'], ['重做', () => redoFile(), 'Ctrl+Y'], ['查找和替换', () => openFindReplace(), 'Ctrl+F'], ['格式化 XML', () => dom.formatButton?.click()]],
+      edit: [['撤销', () => undoFile(), 'Ctrl+Z'], ['重做', () => redoFile(), 'Ctrl+Y'], ['查找和替换', () => openFindReplace(), 'Ctrl+F'], ['AI 辅助写作', () => A.aiAuthoring.show()], ['格式化 XML', () => dom.formatButton?.click()]],
       view: [['源码编辑', () => setMode('editor')], ['编写', () => setMode('visual')], ['阅读（只读）', () => setMode('preview')], ['文档导航', () => setActiveView('map')], ['文档大纲', () => setActiveView('outline')], ['界面外观', () => A.appearance.show()]],
       dita: [['项目型号清单', () => A.project.show()], ['插入元素', () => dom.insertElementButton?.click()], ['XML 语法校验', () => dom.validateButton?.click()], ['审阅变更', () => setMode('review')]],
       help: [['快捷键', () => A.shell.showShortcuts()]]
