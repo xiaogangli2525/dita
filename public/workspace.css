@@ -40,6 +40,7 @@ body { display:flex; flex-direction:column; height:100dvh; overflow:hidden; back
 .map-open-author { padding:3px 0; color:var(--accent); font-size:12px; }
 .sidebar-search { display:flex; flex:none; align-items:center; gap:8px; border:1px solid var(--border); border-radius:var(--radius); background:var(--panel); padding:9px 10px; margin:0 18px 8px; color:var(--muted); }
 .sidebar-search input { width:100%; min-width:0; border:0; outline:none; padding:0; background:transparent; font-size:13px; }
+.sidebar-search:hover:not(:focus-within) { border-color:var(--border-hover); }
 .sidebar-search:focus-within { outline:2px solid var(--focus-ring); outline-offset:1px; }
 .map-structure-tools { flex:none; }
 .sidebar .map-structure-tools summary { padding:8px 18px; }

@@ -65,4 +65,5 @@
 .dita-preview [data-dita-source="cite"] { font-style:italic; }
 .dita-preview [data-dita-source="tt"] { font-family:Consolas,monospace; }
 
-.dita-preview a { color:var(--info); }
+.dita-preview a { color:var(--info); text-underline-offset:3px; text-decoration-thickness:1px; text-decoration-color:color-mix(in srgb,currentColor 55%,transparent); }
+.dita-preview a:hover { text-decoration-color:currentColor; }

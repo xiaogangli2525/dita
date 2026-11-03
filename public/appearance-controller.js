@@ -21,7 +21,9 @@
     function sync() {
       for (const radio of choices.querySelectorAll('input')) radio.checked = radio.value === theme.value;
       const selected = theme.themes.find(preset => preset.id === theme.value);
-      button.title = '界面外观 · ' + selected.label;
+      const resolved = theme.themes.find(preset => preset.id === theme.resolved);
+      button.title = '界面外观 · ' + selected.label + (theme.value === 'system' ? '（当前：' + resolved.label + '）' : '');
+      document.getElementById('appearanceCurrent').textContent = theme.value === 'system' ? '系统 · ' + resolved.label : '当前 · ' + resolved.label;
       hint.textContent = theme.stored ? '选择立即生效，自动记住此浏览器的偏好。' : '选择已生效；此浏览器未允许保存设置，仅本次打开有效。';
     }
     theme.subscribe(sync); sync();
