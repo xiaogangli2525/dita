@@ -3,6 +3,7 @@ const test = require('node:test'), assert = require('node:assert/strict');
 const { createAiProvider } = require('../lib/ai-provider');
 const core = require('../public/ai-edit-core');
 const { createAiSettings } = require('../lib/ai-settings');
+const writingPolicy = require('../lib/ai-writing-policy');
 const xml = '<topic id="a"><title>HTTP</title><body><p>发送请求</p><p>不应发送的其他段落</p></body></topic>';
 const block = core.inspect(xml).find(n => n.kind === 'p'), scope = core.target(xml, block.start, block.end);
 const result = { summary: '更明确', questions: [], edits: [{ id: 't0', before: '发送请求', after: '发起请求' }] };
@@ -16,6 +17,7 @@ test('provider sends only explicit text scope and accepts validated JSON; config
   assert.equal(sent.url, env.DITA_AI_BASE_URL + '/chat/completions'); assert.equal(sent.redirect, 'error');
   assert.equal(sent.headers.authorization, 'Bearer test-secret'); assert.doesNotMatch(sent.body, /不应发送的其他段落/);
   const body = JSON.parse(sent.body); assert.equal(body.messages.length, 2); assert.equal(JSON.parse(body.messages[1].content).targetModel, 'ML307R');
+  assert.ok(body.messages[0].content.includes(writingPolicy.text)); assert.deepEqual(JSON.parse(body.messages[1].content).conversation.instructions, []);
 });
 test('provider disables unconfigured/demo modes and rejects unsafe configuration without leaking secrets', () => {
   for (const settings of [{}, { ...env, DITA_AI_BASE_URL: 'http://model.example.test/v1' }, { ...env, DITA_AI_BASE_URL: 'https://user:secret@example.test/v1' }, { ...env, DITA_AI_BASE_URL: 'not a url secret' }, { ...env, DITA_AI_TOKEN_PARAMETER: 'wrong' }]) {
@@ -40,7 +42,7 @@ test('provider bounds concurrency, aborts requests and releases slots after canc
   const aborted = new AbortController(); aborted.abort(); await assert.rejects(provider.generate({ instruction: '润色', scope }, aborted.signal), /取消/);
 });
 test('connection settings keep secrets server-side and never carry a key to a different endpoint', () => {
-  const settings = createAiSettings({ env });
+  const store = { load: () => null, save() {} }, settings = createAiSettings({ env, store });
   const input = { baseUrl: env.DITA_AI_BASE_URL, model: env.DITA_AI_MODEL, key: '', allowHttp: false, noAuth: false };
   assert.equal(settings.update(input).keyConfigured, true);
   assert.doesNotMatch(JSON.stringify(settings.configuration()), /test-secret/);
@@ -48,5 +50,14 @@ test('connection settings keep secrets server-side and never carry a key to a di
   assert.equal(settings.configuration().baseUrl, env.DITA_AI_BASE_URL);
   assert.equal(settings.update({ ...input, baseUrl: 'https://another.example.test/v1', key: 'new-secret' }).keyConfigured, true);
   assert.equal(settings.update({ ...input, noAuth: true }).keyConfigured, false);
-  assert.throws(() => createAiSettings({ env, demoMode: true }).update(input), /演示/);
+  assert.throws(() => createAiSettings({ env, demoMode: true, store }).update(input), /演示/);
+});
+test('followup requests include previous user requirements and the cumulative draft', async () => {
+  let sent;
+  const provider = createAiProvider({ env, fetchImpl: async (_url, options) => { sent = JSON.parse(options.body); return response(result); } });
+  const previous = { summary: '缺少参数', questions: ['正确值是多少？'], edits: [] };
+  await provider.generate({ scope, instruction: '已核实，改为 60 秒', conversation: { instructions: ['润色并修正超时值'], previousResult: previous } });
+  const input = JSON.parse(sent.messages[1].content);
+  assert.deepEqual(input.conversation.instructions, ['润色并修正超时值']); assert.deepEqual(input.conversation.previousResult.questions, previous.questions);
+  assert.equal(input.instruction, '已核实，改为 60 秒');
 });

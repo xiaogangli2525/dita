@@ -16,12 +16,15 @@ export interface AiTarget {
   readonly parts: readonly AiTextPart[];
 }
 export interface AiEdit { id: string; before: string; after: string }
-export interface AiResult { summary: string; questions: string[]; edits: AiEdit[] }
-export interface AiRequest { source: string; start: number; end: number; instruction: string; targetModel?: string }
-export interface AiConfiguration { available: boolean; model: string; destination: string; message: string; baseUrl: string; keyConfigured: boolean }
+export interface AiResult { readonly summary: string; readonly questions: readonly string[]; readonly edits: readonly AiEdit[]; readonly blockedReason?: string }
+export interface AiConversation { readonly instructions: readonly string[]; readonly previousResult?: AiResult }
+export interface AiTurn { readonly instruction: string; readonly result: AiResult }
+export interface AiRequest { source: string; start: number; end: number; instruction: string; targetModel?: string; conversation?: AiConversation }
+export interface AiConfiguration { available: boolean; model: string; destination: string; message: string; baseUrl: string; keyConfigured: boolean; rulesVersion: string }
 export interface AiAppliedResult {
   content: string;
   summary: string;
   questions: string[];
+  blockedReason: string;
   changes: (AiTextPart & { after: string })[];
 }

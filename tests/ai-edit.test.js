@@ -17,10 +17,12 @@ test('AI subrange edits retain surrounding text and escape markup as literal tex
   assert.equal(result.content, source.replace('检查', '&lt;核对&gt;&amp;'));
   assert.throws(() => core.target(source, source.indexOf('&amp;') + 1, source.indexOf('&amp;') + 3), /实体/);
 });
-test('AI refuses stale, repeated, malformed and mixed pending edits; questions cannot write', () => {
+test('AI refuses stale, repeated and malformed edits; valid partial work can accompany questions', () => {
   const scope = scopeOf(), edit = { id: 't0', before: scope.parts[0].text, after: '发起 ' };
-  for (const result of [null, { summary: '', questions: [], edits: [{ ...edit, id: 't99' }] }, { summary: '', questions: [], edits: [edit, edit] }, { summary: '', questions: [], edits: [{ ...edit, before: '过期' }] }, { summary: '', questions: ['确认值'], edits: [edit] }, { summary: '', questions: [1], edits: [] }]) assert.throws(() => core.applyResult(scope, result));
+  for (const result of [null, { summary: '', questions: [], edits: [{ ...edit, id: 't99' }] }, { summary: '', questions: [], edits: [edit, edit] }, { summary: '', questions: [], edits: [{ ...edit, before: '过期' }] }, { summary: '', questions: [1], edits: [] }]) assert.throws(() => core.applyResult(scope, result));
   assert.equal(core.applyResult(scope, { summary: '缺少正确值', questions: ['正确值是多少？'], edits: [] }).content, source);
+  const partial = core.applyResult(scope, { summary: '先润色', questions: ['正确值是多少？'], edits: [edit] });
+  assert.equal(partial.content, source.replace('发送 ', '发起 ')); assert.equal(partial.questions.length, 1);
 });
 test('AI refuses maps, reused content, revisions, oversized input and invalid XML output', () => {
   for (const xml of ['<map><title>x</title></map>', '<topic><title>x</title><body><p conref="a.dita#t/p">x</p></body></topic>', '<topic><title>x</title><body><p><?oxy_insert_start?>x<?oxy_insert_end?></p></body></topic>']) {

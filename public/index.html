@@ -230,27 +230,35 @@
   </footer>
 
   <dialog id="aiDialog" class="workspace-dialog ai-dialog" aria-labelledby="aiHeading" aria-describedby="aiIntro">
-    <header class="ai-heading"><div><span class="ai-eyebrow">写作助手</span><h2 id="aiHeading">把问题变成可审核的修改</h2></div><button id="aiClose" type="button" aria-label="关闭 AI 辅助写作">关闭</button></header>
-    <p id="aiIntro" class="ai-muted">定位原文，审核建议，再应用到文档。保留原有结构，修改支持撤销。</p>
+    <header class="ai-heading"><div><span class="ai-eyebrow">写作助手</span><h2 id="aiHeading">一起把这段文档改好</h2></div><div class="ai-heading-actions"><button id="aiSettingsButton" type="button" aria-haspopup="dialog" aria-controls="aiConnectionDialog" title="模型连接设置">模型设置</button><button id="aiClose" type="button" aria-label="关闭 AI 辅助写作">关闭</button></div></header>
+    <p id="aiIntro" class="ai-muted">说明修改要求，继续对话调整，满意后应用。修改支持撤销。</p>
+    <details id="aiTask" class="ai-task" open><summary>修改要求与原文位置</summary>
     <fieldset id="aiInputs" class="ai-inputs"><legend class="visually-hidden">修改需求与原文定位</legend>
       <label for="aiInstruction">问题或修改要求</label><textarea id="aiInstruction" rows="4" maxlength="6000" placeholder="粘贴测试反馈，或说明希望怎样改写。涉及参数时，请提供已经核实的正确值。"></textarea>
       <div class="ai-fields"><label>定位范围<select id="aiScope"><option value="selection">打开时选中的文字</option><option value="topic">当前章节</option><option value="manual">当前功能手册</option></select></label><label>涉及型号（可选）<input id="aiModel" maxlength="100" placeholder="例如 ML307R"/></label></div>
       <div class="ai-search-row"><label>定位关键词（可选）<input id="aiSearch" type="search" maxlength="200" placeholder="命令、参数或原文词句"/></label><button id="aiLocate" type="button">定位原文</button></div>
       <div id="aiCandidates" class="ai-candidates" aria-label="原文候选"></div>
     </fieldset>
-    <section id="aiSource" class="ai-source" hidden aria-label="本次修改范围"><p id="aiLocation" class="ai-location"></p><pre id="aiOriginal"></pre><p id="aiConditions" class="ai-muted"></p></section>
+    </details>
+    <details id="aiSource" class="ai-source" hidden open><summary id="aiLocation" class="ai-location"></summary><pre id="aiOriginal"></pre><p id="aiConditions" class="ai-muted"></p></details>
     <p id="aiProvider" class="ai-provider"></p>
-    <details id="aiConnection" class="ai-connection"><summary>模型连接设置</summary><fieldset id="aiConnectionFields" class="ai-inputs"><legend class="visually-hidden">模型接口</legend>
+    <div class="ai-generate-actions"><button id="aiGenerate" type="button" class="primary-action" disabled>按要求修改</button><button id="aiNewTask" type="button" hidden>新任务</button><button id="aiCancel" type="button" hidden>取消生成</button></div>
+    <p id="aiStatus" class="ai-status" role="status" aria-live="polite"></p>
+    <section id="aiConversation" class="ai-conversation" aria-label="本次修改对话" hidden></section>
+    <section id="aiReview" class="ai-review" hidden aria-labelledby="aiReviewTitle"><h3 id="aiReviewTitle">审核修改建议</h3><p id="aiSummary"></p><div id="aiChanges"></div>
+      <p id="aiBlocked" class="ai-muted" hidden></p><div id="aiAcceptArea"><div class="ai-review-actions"><button id="aiReject" type="button">放弃提案</button><button id="aiApply" type="button" class="primary-action" disabled>应用修改</button></div><p class="ai-muted">请核对技术事实与型号范围。应用后可撤销，正常保存才写入文件。</p></div>
+    </section>
+    <div id="aiComposer" class="ai-composer" hidden><p id="aiReplyStatus" class="ai-status" role="status" aria-live="polite"></p><label for="aiReply">继续修改</label><textarea id="aiReply" rows="2" maxlength="6000" placeholder="继续提出要求，或输入“应用这版”直接应用当前提案……"></textarea><div class="ai-compose-actions"><span>Ctrl / ⌘ + Enter 发送</span><button id="aiSend" class="primary-action" type="button" disabled>发送</button></div></div>
+  </dialog>
+
+  <dialog id="aiConnectionDialog" class="workspace-dialog ai-settings-dialog" aria-labelledby="aiConnectionHeading">
+    <div class="ai-heading"><div><span class="ai-eyebrow">配置一次，持续使用</span><h2 id="aiConnectionHeading">模型连接</h2></div><button id="aiConnectionClose" type="button">完成</button></div>
+    <fieldset id="aiConnectionFields" class="ai-inputs"><legend class="visually-hidden">模型接口</legend>
       <label>API 基础地址<input id="aiBaseUrl" type="url" maxlength="2000" placeholder="https://your-endpoint.example/v1" autocomplete="off"/></label>
       <div class="ai-fields"><label>模型名称<input id="aiConnectionModel" maxlength="150" placeholder="接口提供的准确模型名" autocomplete="off"/></label><label>API Key<input id="aiKey" type="password" maxlength="8192" autocomplete="new-password"/></label></div>
-      <label class="checkbox-row"><input id="aiAllowHttp" type="checkbox"/>允许公司内网 HTTP 接口</label><label class="checkbox-row"><input id="aiNoAuth" type="checkbox"/>此接口不需要 Key</label>
-      <button id="aiConnectionSave" type="button">使用此连接</button><p id="aiConnectionHint" class="ai-muted" role="status"></p>
-    </fieldset></details>
-    <div class="ai-generate-actions"><button id="aiGenerate" type="button" class="primary-action" disabled>生成修改建议</button><button id="aiCancel" type="button" hidden>取消生成</button></div>
-    <p id="aiStatus" class="ai-status" role="status" aria-live="polite"></p>
-    <section id="aiReview" class="ai-review" hidden aria-labelledby="aiReviewTitle"><h3 id="aiReviewTitle">审核修改建议</h3><p id="aiSummary"></p><ul id="aiQuestions"></ul><div id="aiChanges"></div>
-      <div id="aiAcceptArea"><label class="ai-confirm checkbox-row"><input id="aiConfirm" type="checkbox"/>已核对技术事实、型号范围及共享内容影响</label><div class="ai-review-actions"><button id="aiReject" type="button">放弃建议</button><button id="aiApply" type="button" class="primary-action" disabled>应用到编辑区</button></div><p class="ai-muted">应用后仍需正常保存，不会自动写入文件或提交 Git。</p></div>
-    </section>
+      <details class="ai-advanced"><summary>内网接口选项</summary><label class="checkbox-row"><input id="aiAllowHttp" type="checkbox"/>允许公司内网 HTTP 接口</label><label class="checkbox-row"><input id="aiNoAuth" type="checkbox"/>此接口不需要 Key</label></details>
+      <button id="aiConnectionSave" type="button" class="primary-action">保存连接</button>
+    </fieldset><p id="aiConnectionHint" class="ai-muted" role="status"></p>
   </dialog>
 
   <dialog id="appearanceDialog" class="workspace-dialog appearance-dialog" aria-labelledby="appearanceHeading" aria-describedby="appearanceIntro">
@@ -505,6 +513,7 @@
   <script src="/save.js"></script>
   <script src="/search-core.js"></script>
   <script src="/ai-edit-core.js"></script>
+  <script src="/ai-conversation.js"></script>
   <script src="/ai-context.js"></script>
   <script src="/ai-connection.js"></script>
   <script src="/ai-authoring.js"></script>

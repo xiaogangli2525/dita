@@ -72,7 +72,7 @@
   }
   function applyResult(scope, result) {
     if (!result || typeof result !== 'object' || Array.isArray(result) || typeof result.summary !== 'string' || result.summary.length > 4000 || !Array.isArray(result.questions) || result.questions.length > 12 || result.questions.some(q => typeof q !== 'string' || q.length > 1500) || !Array.isArray(result.edits) || result.edits.length > LIMITS.edits) fail('模型返回格式不符合修订约定，请重试');
-    if (result.questions.length && result.edits.length) fail('模型同时返回待确认问题和修改，请先澄清问题后重新生成');
+    if (result.blockedReason !== undefined && (typeof result.blockedReason !== 'string' || result.blockedReason.length > 2000)) fail('模型返回的范围说明无效，请重试');
     const seen = new Set(), changes = [];
     for (const edit of result.edits) {
       const part = scope.parts.find(item => item.id === edit?.id);
@@ -87,7 +87,7 @@
     }
     if (content.length > LIMITS.source) fail('模型修改超出文档大小限制');
     xml.validateXml(content);
-    return { content, summary: result.summary, questions: [...result.questions], changes };
+    return { content, summary: result.summary, questions: [...result.questions], blockedReason: result.blockedReason || '', changes };
   }
   const api = { LIMITS, inspect, target, candidates, applyResult };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaAiEditCore = api;

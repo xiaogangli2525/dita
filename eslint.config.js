@@ -8,6 +8,7 @@ const importsOnly = names => 'CallExpression[callee.name="require"]' + names
   .map(name => ':not([arguments.0.value=' + JSON.stringify(name) + '])').join('');
 const domainRequire = importsOnly([...documentRules, 'vendor/sax']);
 const renderingBoundaries = [
+  { names: ['ai-conversation'], imports: ['ai-edit-core'] },
   { names: ['xml-dom'], imports: ['xml-source'] },
   { names: ['oxygen-core', 'delivery-document'], imports: [] },
   { names: ['author-renderer'], imports: ['xml-dom', 'asset-core', 'document-presentation', 'oxygen-core'] },
