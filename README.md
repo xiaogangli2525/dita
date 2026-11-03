@@ -30,6 +30,10 @@ npm run dev        # disposable sample workspace for trying the UI
 
 Requires **Node.js 20+** and **Git**. `npm start` edits the repository configured by `DOCS_ROOT`; `npm run dev` uses temporary sample documents and deletes them when the demo stops.
 
+## 界面外观
+
+右侧工具栏 **外观**，或 **查看 → 界面外观**，可即时切换青绿、经典蓝、暖纸、深色，并支持跟随系统。偏好由当前浏览器保存；切换保持编写位置、未保存内容与撤销历史。HTML/PDF/Word 等客户文件保留固定交付版式，不随工作台皮肤变化。
+
 ## Development checks
 
 Use Node **20.19+ / 22.13+ / 24+** for the pinned ESLint development tools. The application runtime remains Node 20+. Install the locked dependencies with `npm ci --ignore-scripts`, then run:

@@ -55,6 +55,7 @@
       feature('remoteLibraries', 'DitaRemoteLibraries', 'createController', 'state api events setStatus', [], { views: views.remoteLibraries }),
       feature('drafts', 'DitaDrafts', 'createDraftController', 'state api events openFile setFileContent setStatus toast downloadXML'),
       feature('authorSelection', 'DitaAuthorSelection', 'createController', 'state dom api events ditaCore applyAuthorEdit validateXml'),
+      feature('appearance', 'DitaAppearance', 'createController', 'theme authorSelection', ['authorSelection']),
       feature('bodyNavigation', 'DitaBodyNavigation', 'createController', 'state dom api events authorSelection openFile setMode setStatus', ['authorSelection']),
       feature('search', 'DitaSearch', 'createSearchController', 'state api events manual bodyNavigation navigateToSource', ['manual', 'bodyNavigation']),
       feature('authorCommands', 'DitaAuthorCommands', 'createController', 'state dom ditaCore authorSelection applyAuthorEdit validateXml', ['authorSelection'], {

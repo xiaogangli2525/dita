@@ -58,6 +58,7 @@
   // Preserve feature/proposal interfaces while keeping construction here.
   Object.assign(A, {
     state, session, dom, ditaCore, events, setStatus, toast, validateXml, openFile,
+    theme: window.DitaTheme,
     api: workspaceClient, saving: false,
     downloadText: window.DitaBrowserFiles.downloadText,
     downloadXML: window.DitaBrowserFiles.downloadXML,
@@ -130,7 +131,7 @@
     reviewAll: editor.reviewAll,
     save: A.save, documents: A.documents, maps: A.maps, workspace,
     editorTools: A.editorTools, project: A.project, drafts: A.drafts,
-    shell: A.shell, inspector: A.inspector, footnotes: A.footnotes,
+    appearance: A.appearance, shell: A.shell, inspector: A.inspector, footnotes: A.footnotes,
     previewMapHtml: A.previewMapHtml,
     exportMapToHtmlFile: A.exportMapToHtmlFile,
     previewMapMd: A.previewMapMd,
