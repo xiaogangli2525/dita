@@ -28,13 +28,60 @@ test('workspace appearance switches without editing or changing customer deliver
         const style = getComputedStyle(document.documentElement);
         const rgb = token => { const probe = document.createElement('span'); probe.style.color = 'var(' + token + ')'; document.body.append(probe); const color = getComputedStyle(probe).color; probe.remove(); return color.match(/[\d.]+/g).slice(0, 3).map(Number); };
         const light = color => color.map(value => value / 255).map(value => value <= .04045 ? value / 12.92 : ((value + .055) / 1.055) ** 2.4).reduce((sum, value, i) => sum + value * [.2126, .7152, .0722][i], 0);
-        const pairs = [['--text', '--panel'], ['--muted', '--panel'], ['--accent', '--accent-soft'], ['--on-accent', '--accent'], ['--paper-ink', '--paper'], ['--paper-muted', '--paper'], ['--code-ink', '--code-bg'], ['--warning', '--warning-soft'], ['--danger', '--danger-soft'], ['--success', '--success-soft']];
+        const pairs = [['--text', '--panel'], ['--muted', '--panel'], ['--accent', '--accent-soft'], ['--on-accent', '--accent'], ['--paper-ink', '--paper'], ['--paper-muted', '--paper'], ['--code-ink', '--code-bg'], ['--warning', '--warning-soft'], ['--danger', '--danger-soft'], ['--success', '--success-soft'], ['--muted', '--surface'], ['--muted', '--accent-soft'], ['--paper-muted', '--code-bg'], ['--on-accent', '--accent-hover'], ['--info', '--info-soft'], ['--search-ink', '--search-bg'], ['--search-ink', '--search-current']];
         return { scheme: style.colorScheme, colors: pairs.map(([ink, background]) => { const a = light(rgb(ink)), b = light(rgb(background)); return { ink, ratio: (Math.max(a, b) + .05) / (Math.min(a, b) + .05) }; }) };
       });
       assert.equal(checks.scheme, value === 'dark' ? 'dark' : 'light');
       for (const check of checks.colors) assert.ok(check.ratio >= 4.5, value + ' ' + JSON.stringify(check));
     }
     await page.click('#appearanceClose'); assert.equal(await page.locator('#appearanceButton').evaluate(node => node === document.activeElement), true);
+  });
+
+  await t.test('actual muted labels and placeholders remain readable on tinted surfaces', async st => {
+    const page = await fresh(st); await ready(page); await page.click('.map-open-author'); await page.waitForSelector('.map-topic-surface');
+    for (const value of ['forest', 'blue', 'paper', 'dark']) {
+      await page.evaluate(value => window.DitaTheme.set(value), value);
+      const results = await page.evaluate(() => {
+        const rgba = value => { const parts = value.match(/[\d.]+/g); return [Number(parts[0]), Number(parts[1]), Number(parts[2]), parts.length > 3 ? Number(parts[3]) : 1]; };
+        const over = (front, back) => { const alpha = front[3] + back[3] * (1 - front[3]); return front.slice(0, 3).map((v, i) => alpha ? (v * front[3] + back[i] * back[3] * (1 - front[3])) / alpha : 0).concat(alpha); };
+        const luminance = color => color.slice(0, 3).map(value => value / 255).map(value => value <= .04045 ? value / 12.92 : ((value + .055) / 1.055) ** 2.4).reduce((sum, value, i) => sum + value * [.2126, .7152, .0722][i], 0);
+        return ['#previewButton', '#rootPath', '.map-topic-header strong', '.map-topic-header small', '.map-topic-surface > [data-dita-source="shortdesc"]', '#search'].map(selector => {
+          const node = document.querySelector(selector), style = getComputedStyle(node, selector === '#search' ? '::placeholder' : null);
+          let background = [0, 0, 0, 0];
+          for (let parent = node; parent; parent = parent.parentElement) { const color = rgba(getComputedStyle(parent).backgroundColor); background = over(background, color); if (background[3] === 1) break; }
+          const a = luminance(over(rgba(style.color), background)), b = luminance(background);
+          return { selector, ratio: (Math.max(a, b) + .05) / (Math.min(a, b) + .05) };
+        });
+      });
+      for (const result of results) assert.ok(result.ratio >= 4.5, value + ' ' + JSON.stringify(result));
+    }
+  });
+
+  await t.test('hover, disabled buttons and property focus use the active skin consistently', async st => {
+    const page = await fresh(st); await ready(page);
+    const paint = locator => locator.evaluate(node => { const style = getComputedStyle(node); return { background: style.backgroundColor, border: style.borderColor }; });
+    await page.locator('#exportMenuButton').evaluate(node => { node.disabled = true; });
+    for (const value of ['forest', 'blue', 'paper', 'dark']) {
+      await page.evaluate(value => window.DitaTheme.set(value), value); await page.mouse.move(0, 0);
+      const before = await paint(page.locator('#exportMenuButton')); await page.hover('#exportMenuButton'); assert.deepEqual(await paint(page.locator('#exportMenuButton')), before);
+    }
+    await page.locator('#exportMenuButton').evaluate(node => { node.disabled = false; });
+    await page.click('.map-open-author'); await page.waitForSelector('.map-topic-surface');
+    await page.locator('#visualEditor [data-dita-source="p"]').first().click(); await page.click('#inspectorToggleButton'); await page.locator('#advancedAttributes > summary').click();
+    for (const value of ['forest', 'blue', 'paper', 'dark']) {
+      await page.evaluate(value => window.DitaTheme.set(value), value);
+      const expected = await page.evaluate(() => {
+        const probe = document.createElement('span'); document.body.append(probe);
+        const result = {}; for (const [name, token] of Object.entries({ accent: '--accent', soft: '--accent-soft', focus: '--focus-ring', hoverBorder: '--border-hover', surface: '--surface' })) { probe.style.color = 'var(' + token + ')'; result[name] = getComputedStyle(probe).color; } probe.remove(); return result;
+      });
+      await page.hover('#reviewButton'); assert.deepEqual(await paint(page.locator('#reviewButton')), { background: expected.surface, border: expected.hoverBorder });
+      await page.getByRole('textbox', { name: '新属性名', exact: true }).focus();
+      const focus = await page.getByRole('textbox', { name: '新属性名', exact: true }).evaluate(node => { const s = getComputedStyle(node); return { color: s.outlineColor, width: s.outlineWidth, border: s.borderColor }; });
+      assert.deepEqual(focus, { color: expected.focus, width: '2px', border: expected.focus });
+      await page.click('[data-menu=view]'); const item = page.getByRole('menuitem', { name: '文档大纲', exact: true }); await item.hover();
+      assert.deepEqual(await item.evaluate(node => ({ color: getComputedStyle(node).color, background: getComputedStyle(node).backgroundColor })), { color: expected.accent, background: expected.soft });
+      await page.keyboard.press('Escape');
+    }
   });
 
   await t.test('changing appearance preserves unsaved XML, undo, source selection and scroll', async st => {
@@ -49,14 +96,14 @@ test('workspace appearance switches without editing or changing customer deliver
     await page.evaluate(() => window.DitaApp.setMode('visual'));
     const paragraph = page.locator('#visualEditor [data-dita-source="p"]').first(); await paragraph.click(); await page.keyboard.press('End');
     const selection = () => page.evaluate(() => { const s = getSelection(); return { text: s.anchorNode?.textContent, offset: s.anchorOffset }; });
-    const original = await selection(); await page.click('#appearanceButton'); await choose(page, 'blue'); await page.keyboard.press('Escape'); await page.waitForFunction(() => document.activeElement.id === 'visualEditor'); assert.deepEqual(await selection(), original);
+    const original = await selection(); await page.click('#appearanceButton'); await choose(page, 'blue'); await page.keyboard.press('Escape'); await page.waitForFunction(saved => document.activeElement.id === 'visualEditor' && getSelection().anchorOffset === saved.offset && getSelection().anchorNode?.textContent === saved.text, original); assert.deepEqual(await selection(), original);
   });
 
   await t.test('saved choice restores on reload and system changes only affect automatic mode', async st => {
     const page = await fresh(st); await ready(page); await page.click('#appearanceButton'); await choose(page, 'dark'); await page.click('#appearanceClose');
     await page.reload(); await page.waitForFunction(() => window.DitaApp?.state.root); assert.equal(await theme(page), 'dark');
     await page.emulateMedia({ colorScheme: 'light' }); await page.click('#appearanceButton'); await choose(page, 'system'); assert.equal(await theme(page), 'forest');
-    await page.emulateMedia({ colorScheme: 'dark' }); await page.waitForFunction(() => document.documentElement.dataset.theme === 'dark'); assert.equal(await theme(page), 'dark'); assert.equal(await page.locator('[value=system]').isChecked(), true);
+    await page.emulateMedia({ colorScheme: 'dark' }); await page.waitForFunction(() => document.documentElement.dataset.theme === 'dark'); assert.equal(await theme(page), 'dark'); assert.equal(await page.locator('[value=system]').isChecked(), true); assert.equal(await page.locator('#appearanceCurrent').innerText(), '系统 · 深色'); assert.match(await page.locator('#appearanceButton').getAttribute('title'), /当前：深色/);
     await choose(page, 'paper'); await page.emulateMedia({ colorScheme: 'light' }); assert.equal(await theme(page), 'paper');
   });
 
