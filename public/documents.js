@@ -105,12 +105,19 @@ async function saveAsFile() {
 }
 
 const get = id => document.getElementById(id), templates = root.DitaDocumentTemplates;
-let creating = false, creationWorkspace = '';
+let creating = false, creationWorkspace = '', creationGeneration = 0;
+function lockCreation(locked) {
+  for (const field of get('newDocumentForm').querySelectorAll('input,select,button')) field.disabled = locked;
+}
+A.events.on('workspace:willChange', () => {
+  creationGeneration++; creating = false; creationWorkspace = '';
+  lockCreation(false); get('newDocumentDialog').close();
+});
 for (const [kind, [label]] of Object.entries(templates.definitions)) get('newDocumentTemplate').add(new Option(label, kind));
 function suggestion() { return 'new-' + get('newDocumentTemplate').value + (get('newDocumentTemplate').value === 'ditamap' ? '.ditamap' : '.dita'); }
 function createNewDocument() {
   if (creating) return;
-  creationWorkspace = A.api.token; get('newDocumentForm').reset(); get('newDocumentPath').value = suggestion(); get('newDocumentError').textContent = '';
+  creationGeneration++; creationWorkspace = A.api.token; get('newDocumentForm').reset(); get('newDocumentPath').value = suggestion(); get('newDocumentError').textContent = '';
   get('newDocumentDialog').showModal(); get('newDocumentTitle').focus();
 }
 get('newDocumentTemplate').addEventListener('change', () => {
@@ -120,6 +127,8 @@ get('newDocumentCancel').addEventListener('click', () => { if (!creating) get('n
 get('newDocumentDialog').addEventListener('cancel', event => { if (creating) event.preventDefault(); });
 get('newDocumentForm').addEventListener('submit', async event => {
   event.preventDefault(); if (creating) return;
+  const generation = creationGeneration, workspace = creationWorkspace;
+  const current = () => generation === creationGeneration && workspace === A.api.token;
   const kind = get('newDocumentTemplate').value, map = kind === 'ditamap';
   let target = get('newDocumentPath').value.trim().replace(/\\/g, '/');
   try {
@@ -129,17 +138,20 @@ get('newDocumentForm').addEventListener('submit', async event => {
     if (map !== /\.ditamap$/i.test(target)) throw new Error(map ? '目录文件须使用 .ditamap 扩展名' : '正文文件请使用 .dita 或 .xml 扩展名');
     if (state.filesMap.get(target)?.dirty) throw new Error('目标文件有未保存修改，请先保存或下载');
     const content = templates.create(kind, get('newDocumentTitle').value.trim() || '新建文档', target);
-    A.validateXml(content); creating = true; get('newDocumentSubmit').disabled = true;
+    A.validateXml(content); creating = true; lockCreation(true);
     // New templates create files only. Existing documents stay intact.
     const response = await fetch('/api/file', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ path: target, content, overwrite: false }) });
+    if (!current()) return;
     if (response.status === 409) throw new Error('文件已存在，请换一个文件名');
     if (!response.ok) throw new Error(await responseError(response));
-    const result = await response.json(); await refreshWorkspaceTree();
+    const result = await response.json(); if (!current()) return;
+    await refreshWorkspaceTree(); if (!current()) return;
     const savedPath = result.path || target, file = root.DitaDocumentStore.createDocument({ path: savedPath, content: result.content, gitStatus: 'untracked' });
     if (!state.filesMap.has(savedPath)) state.filesMap.set(savedPath, file);
-    await A.openFile(savedPath); setMode('visual'); get('newDocumentDialog').close(); setStatus('已创建：' + savedPath);
-  } catch (error) { get('newDocumentError').textContent = error.message; }
-  finally { creating = false; get('newDocumentSubmit').disabled = false; }
+    await A.openFile(savedPath); if (!current()) return;
+    setMode('visual'); get('newDocumentDialog').close(); setStatus('已创建：' + savedPath);
+  } catch (error) { if (current()) get('newDocumentError').textContent = error.message; }
+  finally { if (current()) { creating = false; lockCreation(false); } }
 });
 
     return { downloadFile, saveAsFile, createNewDocument };

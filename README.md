@@ -2,6 +2,12 @@
 
 A lightweight local web client for reading, editing, reviewing, and exporting DITA documents.
 
+## 中文操作入口
+
+- [功能与操作说明](docs/authoring-guide.md)：从加载文档库、编写和注脚到保存、审阅、按型号交付；包含快捷键、失败处理和当前限制。
+- [AI / 自动化操作约定](docs/assistant-playbook.md)：skill 风格的任务范围、操作选择、修改提案与复核约定，供后续 AI 接入复用。
+- [功能走查记录](docs/functional-audit.md)：本轮核对范围、发现与修复、验证证据及待补能力。
+
 ## Writing workflow
 
 - The compact top bar provides **编写 / 阅读 / 源码** modes and delivery. Repository/branch switches, model settings, drafts and delivery history live in the left navigation. XML-only tools remain beside the document's Save button.
@@ -61,7 +67,7 @@ The browser and server share a vendored copy of **sax 1.6.1** for XML validation
 
 - Author mode: visual editing with Oxygen tracked-change support, caret-based footnote creation and in-place note editing
 - Reading mode: read-only Topic and Map surfaces sharing the Author renderer
-- Review mode: side-by-side diff with accept/reject per change block
+- Review mode: Author content with a right-hand change dock and accept/reject per change block
 - Map view: edit entire ditamap with all referenced topics
 - HTML export: single-file HTML with embedded images, TOC, notes
 - Markdown export: DITA to Markdown with syntax-highlighted preview

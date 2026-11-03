@@ -1,0 +1,58 @@
+# 功能说明与流程走查记录
+
+本轮以 `master@12d6c9f` 为功能基线，结合当前界面、实现和自动回归核对。用途是把可用能力和操作边界整理清楚，为后续 AI 接入提供可执行约定；不是全 DITA 支持或所有运行环境的认证。
+
+文档入口：[功能与操作说明](authoring-guide.md)、[AI / 自动化操作约定](assistant-playbook.md)。源手册采用仓库内用户提供的真实 HTTP/HTTPS 库，测试操作在临时副本中进行。
+
+## 发现及处理
+
+| 项目 | 核对结果 | 处理 |
+| --- | --- | --- |
+| 操作说明分散 | README 和历史验证记录偏开发视角，缺少当前中文任务流程 | 新增按场景编排的操作说明和 AI 操作约定，README 提供入口 |
+| 保存/提交/导出概念 | 保存到磁盘、提交 Git、导出未保存缓冲区容易混淆 | 说明分别写清落点、范围和完成检查；明确应用无 Git 提交/推送 UI |
+| 型号识别/适用范围 | 型号清单只是候选；DITAVAL、文本前缀和独立规则解决不同问题 | 分别说明操作和检查方法，不把系列名、tbd 或文字提及当成自动确认 |
+| 新建提交期间表单可变 | 延迟请求时，模板、标题、路径和取消按钮仍可操作；浏览器回归在模板禁用断言上复现失败 | 提交期间锁定整份表单、阻止重复提交/取消；失败保留内容并允许重试 |
+| 新建请求跨工作区 | 新建控制器缺少表单会话代次；旧错误可能写到重新打开的表单 | 工作区变更时关闭并重置新建会话；异步阶段检查身份，忽略过期成功/失败及清理动作 |
+| README 审阅描述 | 仍称并排 diff，与正文居中、右侧变更面板的当前界面不符 | 修正文案，操作说明补充 Git/Oxygen 批量范围与保存语义 |
+
+## 流程与验证入口
+
+下表描述本轮运行的自动化流程及源码核对范围，不代表每个边界都经过人工技术内容验收。
+
+| 流程 | 主要验证入口 | 本轮关注点 |
+| --- | --- | --- |
+| 初始化、选择手册与切换工作区 | `workspace-controller.test.js`、`workspace-ui-browser.test.js` | 身份与状态隔离、未保存保护、菜单/窄屏行为 |
+| 远程克隆、检查和快进更新 | `remote-repositories.test.js`、`remote-api.test.js`、`remote-browser.test.js` | 输入验证、脏文件保护、检查失效、能力禁用 |
+| Map 全文与标题 | `map-source.test.js`、`map-author-controller.test.js`、`map-author-browser.test.js` | Bookmap 标题、光标/撤销、过期加载、真实 HTTP 25 个 Topic |
+| 新建、另存为和目录引用 | `document-transitions-browser.test.js`、`writing-reliability-browser.test.js` | 重复提交、失败重试、过期会话、路径和引用、既有文件保护 |
+| 正文、剪贴板、列表、表格和资源 | `basic-editing-browser.test.js`、`editor-tools-browser.test.js`、`writing-reliability-browser.test.js` | 同一历史、选区/条件保留、复杂结构拒绝、资源目标 |
+| 注脚新增、编辑、复用和编号 | `author-notes-browser.test.js`、`writing-context-browser.test.js`、`footnote-numbering-browser.test.js` | 来源身份、继承条件、公共定义、首次使用编号 |
+| 型号清单、独立规则和正文条件 | `workspace-ui-browser.test.js`、`note-rules-browser.test.js`、`profiling-browser.test.js` | 建议不自动确认、草稿选择保留、规则冲突、DITAVAL 选择 |
+| 保存、恢复、审阅与编码 | `foundation-browser.test.js`、`browser.test.js`、`atomic-write.test.js` | 保存范围、磁盘冲突、Git/Oxygen 语义、GBK 与源码保留 |
+| 按型号交付及四种格式 | `model-export-browser.test.js`、`office-browser.test.js` | 实际 HTTP 三个型号、注脚范围、HTML/MD/PDF/DOCX 字节、来源记录 |
+| 导入内容和输出安全 | `content-safety.test.js`、`content-safety-browser.test.js` | 原 XML 元数据保持惰性，输出链接/属性转义 |
+
+## 本轮结果
+
+2026-11-03 本地结果：
+
+- `npm run lint`：零警告。
+- `npm test`：226 项单元/HTTP 检查全部通过，无失败/跳过。
+- `npm run test:browser`：201 项 Chromium 检查全部通过，无失败/跳过；本地通过 `DITA_CHROMIUM_EXECUTABLE` 指定 Chromium 153.0.8010.0，安装覆盖实际汉字的本机字体后运行。
+- 新建相关定向运行：`document-transitions-browser.test.js` 共 15 项通过，覆盖请求期间字段锁定、重复提交/取消拒绝、失败重试，以及替换工作区后旧失败不能改动新表单。
+- 真实 HTTP 全文验证 25 个 Topic；`model-export-browser.test.js` 验证 ML307G、ML307N、MN319-A 的实际 HTML，且共用策略覆盖四种格式。相关测试在临时副本操作，并检查原输入字节保持不变。
+- 三份新增 Markdown 说明的相对链接已核对。操作说明依据界面入口与实现核对；不宣称已经验证全部私有库认证、Windows 文件锁或每个物理输入法。
+
+## 仍需按使用计划补齐
+
+| 能力/边界 | 当前状态 | 后续建议 |
+| --- | --- | --- |
+| AI 编写/修改 | 仅有快照绑定、提案校验和应用原语，无模型调用与审核 UI | 依照操作约定接入服务端适配器和可接受/拒绝的修改差异 |
+| Excel 测试问题 | 无导入、问题定位和逐行处理面板 | 保留行号/原问题，先定位与人工确认，再生成有限修改提案 |
+| DITA 兼容性 | 常用子集；不处理所有专业化、keyref、复杂复用与外部 DTD | 新手册先做引用/表格/条件的导入和交付验收 |
+| Word/PDF 版式 | 常用内容可交付；Letter，暂无企业模板和自选纸张 | 收集实际交付模板后再扩展；最终 Word 分页在 Word 中核对 |
+| 多浏览器、实体输入法及 Windows 文件权限 | 当前自动化主要覆盖 Linux Chromium；组合输入部分为模拟事件 | 在实际研发 Windows 环境、常用输入法和客户阅读环境进行现场验收 |
+| 多型号技术正确性 | 测试检查过滤机制；不会证明每个技术参数的适用型号正确 | 测试与研发核实技术语义，保留待确认项和修改证据 |
+| 大型正文性能 | 仍包含整 Topic 转换；合成性能数据是诊断样本 | 根据真实长手册编辑反馈选择优化点 |
+
+“回归通过”表示上述流程在给定测试环境通过，不能解读为零缺陷或所有手册都已验收。新增入口、保存范围或过滤策略时，应同步修改说明和对应场景的回归证据。
