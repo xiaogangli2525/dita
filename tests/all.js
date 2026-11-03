@@ -52,3 +52,5 @@ require('./model-note-text.test');
 require('./workspace-controller.test');
 
 require('./state-contracts.test');
+
+require('./theme-preference.test');
