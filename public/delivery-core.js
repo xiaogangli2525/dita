@@ -3,21 +3,9 @@
   const publication = typeof module !== 'undefined' ? require('./publication-core') : root.DitaPublication;
   const assets = typeof module !== 'undefined' ? require('./asset-core') : root.DitaAssetCore;
   const presentation = typeof module !== 'undefined' ? require('./document-presentation') : root.DitaDocumentPresentation;
+  const { collectPreviewPaths } = typeof module !== 'undefined' ? require('./manual-core') : root.DitaManualCore;
   function createDeliveryCore({ parseXml, normalizeOxyPIs, resolveAssetPath }) {
     const createContext = () => ({ topicPath: '', imageDataCache: new Map(), fnCounter: 0, mdFnCounter: 0, mdFootnotes: [] });
-const PREVIEW_TOPIC_EXTENSIONS = /\.(dita|xml)$/i;
-
-function collectPreviewPaths(nodes, paths = [], seen = new Set()) {
-  for (const node of nodes || []) {
-    if (node.type === 'file' && node.processingRole !== 'resource-only' && PREVIEW_TOPIC_EXTENSIONS.test(node.path) && !seen.has(node.path)) {
-      seen.add(node.path);
-      paths.push({ path: node.path, title: node.title || node.path });
-    }
-    if (node.children) collectPreviewPaths(node.children, paths, seen);
-  }
-  return paths;
-}
-
 function escapeHtmlAttr(text) {
   return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }

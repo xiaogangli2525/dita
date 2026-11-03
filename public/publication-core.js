@@ -11,7 +11,7 @@
     if (!/^[^/]+\/[^/]+$/.test(target.fragment)) throw new Error('注脚引用须使用 #TopicID/注脚ID：' + href);
     return target.path + '#' + target.fragment;
   }
-  function preparePublication({ map, files, model = '', profile, ruleConfirmed, ruleExclusions }, collectPaths) {
+  function preparePublication({ map, files, model = '', profile, ruleConfirmed, ruleExclusions }, collectPaths = manual.collectPreviewPaths) {
     resolver.validateMap(map.source, model);
     const resolved = resolver.resolveConrefsDetailed(files, profile), expanded = resolved.files;
     const published = new Set(collectPaths(map.children || []).filter(entry => !profile || !expanded.has(entry.path) || profile.keep(xml.inspectSource(expanded.get(entry.path).current))).map(entry => entry.path));

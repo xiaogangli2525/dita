@@ -34,14 +34,16 @@
  * @property {string} path
  * @property {string} content
  * @property {Object} map
- * @property {Map<string,{path:string,current:string}>} files Resolved dependency scope.
- * @property {Map<string,DocumentSnapshot>} buffers Captured opened-file values, never live history.
+ * @property {ReadonlyMap<string,Readonly<{path:string,current:string}>>} files Resolved dependencies; records are copied/frozen. Collections remain Maps and must be treated as read-only.
+ * @property {ReadonlyMap<string,DocumentSnapshot>} buffers Captured opened-file values, never live history.
  * @property {{path:string,current:string}|null} filter Captured DITAVAL, independently versioned from topic dependencies.
- * @property {ProjectConfig} project
+ * @property {Readonly<ProjectConfig>} project Detached/frozen model config captured before document IO; its models array is frozen too.
  * @property {string|null} projectContent Exact model-config comparison base.
  * @property {{config:Object,expectedContent:string|null,supported:boolean,error?:string}|null} noteRules Captured external export rules; never embedded in authoring XML.
  *
  * @typedef {Object} ManualService
+ * Pure prepare/list/discovery/save-selection methods are supplied by manual-domain.
+ * Capture/current/listFilters/verifyRules/scopePath own workspace IO and freshness.
  * @property {(path?:string,options?:{resources?:boolean,filterPath?:string})=>Promise<ManualSnapshot>} capture
  * @property {()=>Promise<{files:string[],truncated?:boolean}>} listFilters
  * @property {(snapshot:ManualSnapshot)=>boolean} current
@@ -85,7 +87,6 @@
  * @typedef {Object} ManualPorts
  * @property {WorkspaceState} state
  * @property {WorkspaceApi} api
- * @property {Object} ditaCore
  * @property {ProjectService} project Resolved lazily after application composition.
  * @property {Object} noteRuleStore Resolved lazily; handles rule persistence and workspace identity.
  *

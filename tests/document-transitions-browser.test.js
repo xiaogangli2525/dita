@@ -115,5 +115,43 @@ test('document loading, Save As and Map paths preserve current user intent and w
     const { page } = await fresh(st); await open(page, 'a.dita'); await edit(page, '#ap', ' RESCUED'); const source = (await current(page, 'a.dita')).current; await fs.unlink(path.join(repo, 'a.dita'));
     answer(page, 'recovered.dita'); await saveAs(page); await page.waitForFunction(() => window.DitaApp.state.activePath === 'recovered.dita'); assert.equal(await fs.readFile(path.join(repo, 'recovered.dita'), 'utf8'), source); assert.equal((await current(page, 'a.dita')).current, source);
   });
+  await t.test('new-document writes lock their fields, reject duplicate submissions and retain the form after failure', async st => {
+    const { page, gate } = await fresh(st), held = deferred(), release = gate(); let writes = 0;
+    await require('./browser-ui').newDocument(page);
+    await page.fill('#newDocumentTitle', 'HTTP 新章节'); await page.fill('#newDocumentPath', 'create-retry.dita');
+    await page.route('**/api/file', async route => {
+      if (route.request().method() !== 'POST') return route.continue();
+      writes++; if (writes > 1) return route.continue();
+      held.resolve(); await release.promise; await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Temporary create failure' }) });
+    });
+    await page.click('#newDocumentSubmit'); await held.promise;
+    for (const id of ['newDocumentTemplate', 'newDocumentTitle', 'newDocumentPath', 'newDocumentCancel', 'newDocumentSubmit']) assert.equal(await page.locator('#' + id).isDisabled(), true, id);
+    await page.evaluate(() => document.getElementById('newDocumentForm').requestSubmit()); assert.equal(writes, 1);
+    await page.keyboard.press('Escape'); assert.equal(await page.locator('#newDocumentDialog').isVisible(), true);
+    release.resolve(); await page.waitForFunction(() => document.getElementById('newDocumentError').textContent.includes('Temporary create failure'));
+    assert.equal(await page.inputValue('#newDocumentTitle'), 'HTTP 新章节'); assert.equal(await page.inputValue('#newDocumentPath'), 'create-retry.dita');
+    assert.equal(await page.locator('#newDocumentSubmit').isDisabled(), false);
+    await page.click('#newDocumentSubmit'); await page.waitForFunction(() => window.DitaApp.state.activePath === 'create-retry.dita');
+    assert.equal(writes, 2); assert.match(await fs.readFile(path.join(repo, 'create-retry.dita'), 'utf8'), /HTTP 新章节/);
+  });
+  await t.test('workspace replacement closes a pending creation and its late failure cannot alter a new form', async st => {
+    const { page, gate } = await fresh(st), held = deferred(), release = gate(), finished = deferred();
+    await require('./browser-ui').newDocument(page);
+    await page.fill('#newDocumentTitle', '旧请求'); await page.fill('#newDocumentPath', 'old-create.dita');
+    await page.route('**/api/file', async route => {
+      if (route.request().method() !== 'POST') return route.continue();
+      held.resolve(); await release.promise;
+      await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Old create failure' }) }); finished.resolve();
+    });
+    await page.click('#newDocumentSubmit'); await held.promise;
+    await page.evaluate(async () => { const A = window.DitaApp, response = await A.api.request('/api/workspace'); await A.workspace.reloadWorkspace(await response.json()); });
+    assert.equal(await page.locator('#newDocumentDialog').isVisible(), false);
+    await require('./browser-ui').newDocument(page); await page.fill('#newDocumentTitle', '新操作'); await page.fill('#newDocumentPath', 'next-create.dita');
+    release.resolve(); await finished.promise; await page.waitForLoadState('networkidle');
+    assert.equal(await page.locator('#newDocumentDialog').isVisible(), true);
+    assert.equal(await page.inputValue('#newDocumentTitle'), '新操作'); assert.equal(await page.locator('#newDocumentError').textContent(), '');
+    assert.equal(await page.locator('#newDocumentSubmit').isDisabled(), false);
+    assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.has('old-create.dita')), false);
+  });
   assert.deepEqual(errors, []);
 });

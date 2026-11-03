@@ -250,3 +250,12 @@ Full local regression: **216 unit/HTTP checks** and **194 Chromium checks**, zer
 Three additional browser scenarios verify cancellable project-setting reads with no late dialog reopen; locked fields/close and deduplicated submits during a delayed write, with form retention after failure; and an actual branch switch followed by a configuration-read failure, which must clear the previous model list/comparison base, disable saving and recover on reopening after the API succeeds. These checks exercise the visible controls and actual temporary Git repository.
 
 Cleanup removes an obsolete source-find closer, unused bindings/ports and redundant default assignments, reuses the existing XML parse during Author refresh, and retains original error causes when adding publication source paths. Intentional path-control filters remain unchanged in behavior and have local lint explanations. `.editorconfig` sets basic code conventions without changing manual encoding; original DITA and vendor source are unchanged. Architecture/compatibility descriptions now distinguish current HTTP acceptance from historical MQTT fixture milestones. No new AI service or broader DITA capability is implied.
+
+
+## Manual domain boundary and stable capture context
+
+Full local regression: **231 unit/HTTP checks** and **201 Chromium checks**, zero failures/skips. Lint passes with zero warnings. The actual HTTP manual, three model deliveries and HTML/Markdown/PDF/DOCX workflows remain covered. The first local browser run stopped PDF output because this resumed environment lacked CJK fonts; after restoring actual Han-character coverage, the full browser suite passed.
+
+`manual-domain.js` runs in a clean Node process without editor/rendering/workspace modules. New cases exercise the shared chapter traversal, resource-only exclusion and duplicate suppression, source-linked notes, real HTTP data-only snapshots for three models, and unchanged inputs. Existing service consumers retain their interfaces while the composition manifest removes the renderer dependency.
+
+Capture regressions change project content/values/errors, repository and branch during an outstanding Map read; every result is rejected. A baseline/current probe confirms that the previous service accepted the new model config into the old capture, while the new service rejects it. Captured model values and file records are copied/frozen; collection compatibility remains explicit. Boundary lint probes reject six ambient/adapter dependencies and allow a shared-domain import.

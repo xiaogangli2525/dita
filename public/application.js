@@ -41,7 +41,7 @@
       ...extra
     });
     return compose(host, [
-      feature('manual', 'DitaManualService', 'createManualService', 'state api ditaCore project noteRuleStore'),
+      feature('manual', 'DitaManualService', 'createManualService', 'state api project noteRuleStore'),
       feature('noteRuleStore', 'DitaNoteRuleStore', 'createController', 'state api events'),
       feature('noteRules', 'DitaNoteRules', 'createController', 'state api events manual noteRuleStore setStatus', ['manual', 'noteRuleStore']),
       feature('project', 'DitaProject', 'createProjectController', 'state api events manual setStatus', ['manual']),
