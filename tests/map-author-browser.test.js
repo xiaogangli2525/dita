@@ -95,5 +95,42 @@ test('Map title writing preserves real HTTP sources, chapter surfaces and shared
     await page.locator('[data-map-title]').press('End'); await page.keyboard.insertText(' 新版');
     assert.equal(await current('legacy.ditamap'), legacy.replace('Legacy &amp; HTTP', 'Legacy &amp; HTTP 新版'));
   });
+  await t.test('direct Author modules round-trip all real HTTP Topics and patch only their title text', async () => {
+    const names = [...corpus.keys()].filter(name => /\.(dita|xml)$/i.test(name));
+    const result = await page.evaluate(names => {
+      const failures = [];
+      for (const name of names) {
+        const file = window.DitaApp.state.filesMap.get(name), input = file.current;
+        const parsed = window.DitaXmlDom.parseSource(input);
+        const surface = window.DitaAuthorRenderer.createAuthorTopic(input, document, false, name, parsed.document);
+        if (window.DitaAuthorSource.updateSource(input, surface) !== input) failures.push(name + ': round-trip');
+        const title = parsed.tree.children.find(node => node.name === 'title');
+        if (title?.close) {
+          const heading = surface.querySelector('h2'); heading.append(document.createTextNode(' CHECK'));
+          const once = window.DitaAuthorSource.updateSource(input, surface);
+          heading.append(document.createTextNode(' AGAIN'));
+          const twice = window.DitaAuthorSource.updateSource(once, surface);
+          if (twice !== input.slice(0, title.close.start) + ' CHECK AGAIN' + input.slice(title.close.start)) failures.push(name + ': patch');
+        }
+        if (file.current !== input) failures.push(name + ': live buffer changed');
+      }
+      return { count: names.length, failures };
+    }, names);
+    assert.equal(result.count, 25); assert.deepEqual(result.failures, []);
+  });
+  await t.test('canonical ranges preserve CRLF, CDATA, PI, entities and quoted angle brackets during Author edits', async () => {
+    const result = await page.evaluate(async () => {
+      const input = '<?xml version="1.0" encoding="GBK"?>\r\n<!DOCTYPE topic [<!ELEMENT topic ANY>]>\r\n<!--keep--><topic id="t"><title>🔧 &amp; HTTP</title><body><p a="a > b"><![CDATA[A < B]]></p><?revision keep?></body></topic>\r\n<?tail keep?>';
+      const surface = window.DitaAuthorRenderer.createAuthorTopic(input, document);
+      const before = window.DitaAuthorSource.updateSource(input, surface);
+      surface.querySelector('h2').append(document.createTextNode(' 更新'));
+      const after = window.DitaAuthorSource.updateSource(input, surface);
+      const args = { map: { title: 'CDATA', children: [{ type: 'file', path: 'cdata.dita' }] }, files: new Map([['cdata.dita', { current: input }]]) };
+      const html = await window.DitaVisualCore.exportMapToHtml(args), md = await window.DitaVisualCore.exportMapToMarkdown(args);
+      return { unchanged: before === input, exact: after === input.replace('🔧 &amp; HTTP</title>', '🔧 &amp; HTTP 更新</title>'),
+        visible: surface.textContent.includes('A < B'), html: html.includes('A &lt; B'), md: md.includes('A < B') };
+    });
+    assert.deepEqual(result, { unchanged: true, exact: true, visible: true, html: true, md: true });
+  });
   assert.deepEqual(errors, []);
 });

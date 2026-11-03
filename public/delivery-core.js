@@ -3,6 +3,8 @@
   const publication = typeof module !== 'undefined' ? require('./publication-core') : root.DitaPublication;
   const assets = typeof module !== 'undefined' ? require('./asset-core') : root.DitaAssetCore;
   const presentation = typeof module !== 'undefined' ? require('./document-presentation') : root.DitaDocumentPresentation;
+  const { renderHtmlDocument } = typeof module !== 'undefined' ? require('./delivery-document') : root.DitaDeliveryDocument;
+  const { highlightMarkdown, renderMarkdownToHtml } = typeof module !== 'undefined' ? require('./markdown-preview') : root.DitaMarkdownPreview;
   const { collectPreviewPaths } = typeof module !== 'undefined' ? require('./manual-core') : root.DitaManualCore;
   function createDeliveryCore({ parseXml, normalizeOxyPIs, resolveAssetPath }) {
     const createContext = () => ({ topicPath: '', imageDataCache: new Map(), fnCounter: 0, mdFnCounter: 0, mdFootnotes: [] });
@@ -106,7 +108,7 @@ function footnoteReference(node, ctx) {
 }
 
 function ditaToHtml(node, ctx) {
-  if (node.nodeType === 3) return node.data.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  if (node.nodeType === 3 || node.nodeType === 4) return node.data.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   if (node.nodeType === 7) return '';
   if (node.nodeType === 8) return '<!--' + node.data + '-->';
   if (node.nodeType !== 1) return '';
@@ -253,72 +255,7 @@ async function exportMapToHtml({ map, files, title, loadImageBytes, model = '', 
       throw new Error(entry.path + '：' + error.message, { cause: error });
     }
   }
-  const css = [
-    'body { font-family: Segoe UI, Microsoft YaHei, sans-serif; max-width: 860px; margin: 40px auto; padding: 0 20px; color: #202124; line-height: 1.7; }',
-    'h1 { font-size: 28px; border-bottom: 2px solid #1a73e8; padding-bottom: 8px; }',
-    'h2 { font-size: 22px; color: #1a73e8; margin-top: 32px; border-bottom: 1px solid #e4e7ea; padding-bottom: 6px; }',
-    'h3 { font-size: 18px; color: #385667; margin-top: 24px; }',
-    'hr { border: none; border-top: 1px solid #e4e7ea; margin: 32px 0; }',
-    'pre { background: #f5f7f9; color: #263b48; border: 1px solid #e4e9ed; padding: 12px 14px; border-radius: 4px; font: 13px/1.7 Consolas, "Noto Sans Mono CJK SC", monospace; white-space: pre-wrap; overflow-wrap: anywhere; tab-size: 4; }',
-    'code { font-family: Consolas, Courier New, monospace; font-size: 0.9em; }',
-    'code.filepath { color: #c5221f; background: #f1f3f4; padding: 1px 4px; border-radius: 3px; }',
-    'sup.fn-ref { font-size: 0.8em; color: #1a73e8; cursor: pointer; }',
-    'ins.oxy-insert { background: #e6f4ea; border-bottom: 2px solid #34a853; text-decoration: none; }',
-    'del.oxy-delete { background: #fce8e6; text-decoration: line-through; color: #d93025; }',
-    'span.oxy-comment { border-bottom: 2px dotted #4285f4; cursor: help; background: rgba(66,133,244,0.08); }',
-    'table { border-collapse: collapse; table-layout: fixed; width: 100%; margin: 14px 0; font-size: 14px; }',
-    'th, td { border: 1px solid #cbd5dd; padding: 7px 9px; vertical-align: top; }',
-    'th, thead td { background: #f0f6f9; font-weight: 600; } td, th { overflow-wrap: anywhere; } tr[data-dita-outputclass~="has_bgc"] > td { background: #f5f8fa; font-weight: 600; }',
-    'dl { margin: 10px 0; padding-left: 16px; }',
-    'dt { font-weight: 600; color: #385667; }',
-    'dd { margin: 2px 0 6px 16px; }',
-    '.toc { background: #f8f9fa; padding: 16px 20px; border-radius: 8px; margin-bottom: 28px; }',
-    '.toc h2 { font-size: 18px; margin-top: 0; border: none; }',
-    '.toc ol { padding-left: 20px; margin: 8px 0; }',
-    '.toc a { color: #1a73e8; text-decoration: none; }',
-    '.toc a:hover { text-decoration: underline; }',
-    '.error { color: #d93025; font-size: 13px; }',
-    '.dita-note { display: block; padding: 12px 16px; margin: 18px 0; border-radius: 0 5px 5px 0; border-left: 3px solid #4d7b97; background: #f2f7fa; } .note-label { display: block; margin-bottom: 4px; }',
-    '.dita-note > .note-body > :first-child { margin-top:0; } .dita-note > .note-body > :last-child { margin-bottom:0; }',
-    '.dita-note .note-body ul, .dita-note .note-body ol { margin: 4px 0; padding-left: 20px; }',
-    '.dita-note.dita-note-tip { border-color: #34a853; background: #e6f4ea; }',
-    '.dita-note.dita-note-caution, .dita-note.dita-note-warning { border-color: #d93025; background: #fce8e6; }',
-    '.dita-note.dita-note-important { border-color: #f9ab00; background: #fef7e0; }',
-    '.code-block { background: #f5f7f9; color: #263b48; padding: 12px 14px; border-radius: 4px; overflow-wrap: anywhere; font-family: Consolas, "Noto Sans Mono CJK SC", monospace; font-size: 13px; line-height: 1.7; tab-size: 4; }',
-    '.code-block code { color: inherit; font-size: inherit; background: none; padding: 0; }',
-    '.dita-note .code-block { background: #f5f7f9; margin: 8px 0; } .dita-note[data-note-tone="tip"] { border-color:#308477;background:#f1f8f5; } .dita-note[data-note-tone="attention"] { border-color:#a47a26;background:#fcf8ee; } .dita-note[data-note-tone="danger"] { border-color:#af4d53;background:#fcf3f3; }',
-    'figure { margin: 16px 0; text-align: center; }',
-    'figure figcaption, .figtitle { font-size: 13px; color: #5f6368; margin-top: 8px; font-style: italic; }',
-    'section { margin: 20px 0; }',
-    '.export-footnotes { margin-top:40px; padding-top:12px; border-top:1px solid #dce5eb; font-size:14px; }',
-    '.export-footnotes > ol { margin:16px 0; padding-left:30px; } .export-footnotes > ol > li { padding:12px 14px; margin:0 0 12px; border:1px solid #e2e9ee; border-radius:6px; background:#fafcfd; overflow-wrap:anywhere; line-height:1.8; }',
-    '.export-footnotes li::marker { color:#597080; font-weight:600; } .footnote-content > :first-child { margin-top:0; } .footnote-content > :last-child { margin-bottom:0; } .footnote-content p, .footnote-content div { margin:4px 0; }',
-    'a.footnote-backlink { display:inline-block; margin-top:8px; font-size:12px; color:#426b80; text-decoration:none; } a.footnote-backlink:hover { text-decoration:underline; }',
-    '@media print { .export-footnotes > ol > li { background:none; border:0; border-bottom:1px solid #ddd; border-radius:0; } a.footnote-backlink { display:none; } }'
-
-  ].join('\n');
-  let toc = '<nav class="toc"><h2>\u76ee\u5f55</h2><ol>';
-  sections.forEach((sec, i) => { toc += '<li><a href="#sec-' + i + '">' + escapeHtmlAttr(sec.title) + '</a></li>'; });
-  toc += '</ol></nav>';
-  let body = '';
-  sections.forEach((sec, i) => {
-    body += '<h2 id="sec-' + i + '" style="scroll-margin-top: 20px;">' + escapeHtmlAttr(sec.title) + '</h2>\n' + sec.body + '\n';
-    if (i < sections.length - 1) body += '<hr>\n';
-  });
-  if (ctx.htmlFootnotes?.length) body += '<section class="export-footnotes"><h2>注脚</h2><ol>' + ctx.htmlFootnotes.map((text, i) => '<li id="fn-' + (i + 1) + '"><div class="footnote-content">' + text + '</div><a class="footnote-backlink" href="#fnref-' + (i + 1) + '-1" aria-label="返回正文">↩ 返回正文</a></li>').join('') + '</ol></section>';
-  const html = [
-    '<!DOCTYPE html>',
-    '<html lang="zh-CN"><head><meta charset="utf-8"/>',
-    '<meta name="viewport" content="width=device-width,initial-scale=1"/>',
-    '<title>' + escapeHtmlAttr(title || map.title || map.path) + '</title>',
-    '<style>' + css + '</style></head><body>',
-    '<h1>' + escapeHtmlAttr(title || map.title || map.path) + '</h1>',
-    model ? '<p class="publication-scope">适用型号：' + escapeHtmlAttr(model) + '。</p>' : '',
-    version ? '<p>文档版本：' + escapeHtmlAttr(version) + '</p>' : '',
-    toc,
-    body,
-    '</body></html>'
-  ].join('\n');
+  const html = renderHtmlDocument({ title: title || map.title || map.path, model, version, sections, footnotes: ctx.htmlFootnotes });
   validatePublicationLinks(html, ctx);
   return html;
 }
@@ -348,7 +285,7 @@ function mdInline(node, ctx) {
   return (anchor ? '<a id="' + escapeHtmlAttr(anchor) + '"></a>' : '') + renderMdInline(node, ctx);
 }
 function renderMdInline(node, ctx) {
-  if (node.nodeType === 3) return node.data;
+  if (node.nodeType === 3 || node.nodeType === 4) return node.data;
   if (node.nodeType !== 1) return '';
   const tag = node.localName;
   const inner = () => Array.from(node.childNodes).map(function(n) { return mdInline(n, ctx); }).join('');
@@ -376,7 +313,7 @@ function ditaToMarkdown(node, ctx = createContext()) {
   return (anchor ? '<a id="' + escapeHtmlAttr(anchor) + '"></a>\n' : '') + renderDitaMarkdown(node, ctx);
 }
 function renderDitaMarkdown(node, ctx) {
-  if (node.nodeType === 3) { const t = node.data.replace(/\s+/g, ' '); return t; }
+  if (node.nodeType === 3 || node.nodeType === 4) { const t = node.data.replace(/\s+/g, ' '); return t; }
   if (node.nodeType === 7 || node.nodeType === 8) return '';
   if (node.nodeType !== 1) return '';
   const tag = node.localName;
@@ -536,139 +473,6 @@ async function exportMapToMarkdown({ map, files, title, loadImageBytes, model = 
   validatePublicationLinks(md, ctx);
   return md;
 }
-function highlightMarkdown(md) {
-  function esc(t) { return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-  const lines = esc(md).split(/\n/);
-  let out = [];
-  let inCode = false;
-  for (let i = 0; i < lines.length; i++) {
-    let line = lines[i];
-    if (line.match(/^```/)) {
-      inCode = !inCode;
-      out.push('<span class="md-code-fence">' + line + '</span>');
-      continue;
-    }
-    if (inCode) { out.push('<span class="md-code-line">' + line + '</span>'); continue; }
-    let h = line;
-    h = h.replace(/^(#{1,3})\s/, '<span class="md-heading">$1 </span>');
-    h = h.replace(/^(&gt;\s?)/, '<span class="md-quote">$1</span>');
-    h = h.replace(/^([-*]\s)/, '<span class="md-list">$1</span>');
-    h = h.replace(/^(\d+\.\s)/, '<span class="md-list">$1</span>');
-    h = h.replace(/^(---\s*)$/, '<span class="md-hr">$1</span>');
-    h = h.replace(/^(\|)/, '<span class="md-table">$1</span>');
-    h = h.replace(/(`[^`]+`)/g, '<span class="md-inline-code">$1</span>');
-    h = h.replace(/(\*\*[^*]+\*\*)/g, '<span class="md-bold">$1</span>');
-    h = h.replace(/(~~[^~]+~~)/g, '<span class="md-strike">$1</span>');
-    h = h.replace(/(!\[[^\]]*\]\([^)]+\))/g, '<span class="md-image">$1</span>');
-    h = h.replace(/(\[[^\]]*\]\([^)]+\))/g, '<span class="md-link">$1</span>');
-    h = h.replace(/(\[\^\d+\])/g, '<span class="md-fn">$1</span>');
-    out.push(h);
-  }
-  return out.join('\n');
-}
-function renderMarkdownToHtml(md) {
-  const esc = value => escapeHtmlAttr(String(value));
-  function imgSrc(src) {
-    if (/^data:image\/(?:png|jpe?g|gif|bmp|webp|svg\+xml);base64,[a-z\d+/=]+$/i.test(src)) return src;
-    if (!assets.safeLinkHref(src) || /^[a-z][a-z\d+.-]*:/i.test(src) && !/^https?:/i.test(src)) return '';
-    if (/^https?:/i.test(src) || src.startsWith('/')) return src;
-    return '/api/asset?path=' + encodeURIComponent(src);
-  }
-  function textStyle(text) {
-    return esc(text).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-      .replace(/~~([^~]+)~~/g, '<del>$1</del>').replace(/\*([^*]+)\*/g, '<em>$1</em>')
-      .replace(/\[\^(\d+)\]/g, '<sup class="fn-ref">[$1]</sup>');
-  }
-  function inline(text) {
-    // Parse source tokens once. Formatting must never run over generated tags
-    // or their attribute values, which could turn nested Markdown into HTML.
-    const pattern = /`([^`]+)`|(!?)\[([^\]]*)\]\(([^)]+)\)/g;
-    let result = '', cursor = 0, match;
-    while ((match = pattern.exec(text))) {
-      result += textStyle(text.slice(cursor, match.index));
-      if (match[1] !== undefined) result += '<code>' + esc(match[1]) + '</code>';
-      else {
-        const target = match[2] ? imgSrc(match[4].trim()) : assets.safeLinkHref(match[4].trim());
-        result += !target ? esc(match[3]) : match[2]
-          ? '<img src="' + esc(target) + '" alt="' + esc(match[3]) + '"/>'
-          : '<a href="' + esc(target) + '">' + esc(match[3]) + '</a>';
-      }
-      cursor = pattern.lastIndex;
-    }
-    return result + textStyle(text.slice(cursor));
-  }
-  const lines = md.split(/\n/);
-  let html = '';
-  let i = 0;
-  while (i < lines.length) {
-    let line = lines[i];
-    if (/^```/.test(line)) {
-      const lang = line.replace(/^```/, '').trim();
-      let code = '';
-      i++;
-      while (i < lines.length && !/^```/.test(lines[i])) { code += lines[i] + '\n'; i++; }
-      i++;
-      html += '<pre><code' + (lang ? ' class="language-' + esc(lang) + '"' : '') + '>' + esc(code.replace(/\n$/,'')) + '</code></pre>\n';
-      continue;
-    }
-    if (/^(#{1,3})\s+/.test(line)) {
-      const m = line.match(/^(#{1,3})\s+(.*)/);
-      const level = m[1].length;
-      html += '<h' + level + '>' + inline(m[2]) + '</h' + level + '>\n';
-      i++; continue;
-    }
-    if (/^---\s*$/.test(line)) { html += '<hr/>\n'; i++; continue; }
-    if (/^>\s?/.test(line)) {
-      let bq = '';
-      while (i < lines.length && /^>\s?/.test(lines[i])) { bq += lines[i].replace(/^>\s?/, '') + '\n'; i++; }
-      html += '<blockquote>' + inline(bq.trim()) + '</blockquote>\n';
-      continue;
-    }
-    if (/^\|/.test(line)) {
-      let tableLines = [];
-      while (i < lines.length && /^\|/.test(lines[i])) { tableLines.push(lines[i]); i++; }
-      if (tableLines.length >= 2) {
-        const header = tableLines[0].split('|').filter(c => c.trim() !== '').map(c => c.trim());
-        html += '<table><thead><tr>';
-        header.forEach(h => html += '<th>' + inline(h) + '</th>');
-        html += '</tr></thead><tbody>';
-        for (let r = 2; r < tableLines.length; r++) {
-          const cells = tableLines[r].split('|').filter(c => c.trim() !== '').map(c => c.trim());
-          html += '<tr>';
-          cells.forEach(c => html += '<td>' + inline(c) + '</td>');
-          html += '</tr>';
-        }
-        html += '</tbody></table>\n';
-      }
-      continue;
-    }
-    if (/^[-*]\s+/.test(line)) {
-      let items = [];
-      while (i < lines.length && /^[-*]\s+/.test(lines[i])) { items.push(lines[i].replace(/^[-*]\s+/, '')); i++; }
-      html += '<ul>';
-      items.forEach(it => html += '<li>' + inline(it) + '</li>');
-      html += '</ul>\n';
-      continue;
-    }
-    if (/^\d+\.\s+/.test(line)) {
-      let items = [];
-      while (i < lines.length && /^\d+\.\s+/.test(lines[i])) { items.push(lines[i].replace(/^\d+\.\s+/, '')); i++; }
-      html += '<ol>';
-      items.forEach(it => html += '<li>' + inline(it) + '</li>');
-      html += '</ol>\n';
-      continue;
-    }
-    if (line.trim() === '') { i++; continue; }
-    let para = line;
-    i++;
-    while (i < lines.length && lines[i].trim() !== '' && !/^(#{1,3}\s|```|>|\||[-*]\s|\d+\.\s|---)/.test(lines[i])) {
-      para += ' ' + lines[i]; i++;
-    }
-    html += '<p>' + inline(para) + '</p>\n';
-  }
-  return html;
-}
-
     return { collectPreviewPaths, exportMapToHtml, exportMapToMarkdown, ditaToMarkdown, renderMarkdownToHtml, highlightMarkdown };
   }
   const api = { createDeliveryCore };
