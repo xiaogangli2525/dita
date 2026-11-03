@@ -32,12 +32,13 @@
     const block = blocks.filter(item => item.start <= start && item.end >= end).sort((a, b) => a.end - a.start - (b.end - b.start))[0];
     if (!block) fail('此选区不支持 AI 修订，请选择同一段落、注脚或表格单元格');
     const parts = [];
-    function visit(node) {
+    function visit(node, conditions = block.conditions) {
       if (node.start >= end || endOf(node) <= start) return;
       if (node.kind === 'pi' && /<\?oxy_/.test(source.slice(node.start, node.end))) fail('选区含未处理的 Oxygen 修订，请先审核后再使用 AI');
       if (node.kind === 'element') {
         if (node.attrs.conref || node.attrs.conkeyref || node.attrs.keyref || ['foreign', 'unknown'].includes(node.name)) fail('选区含复用引用或扩展内容，请先定位到定义来源');
-        node.children.forEach(visit);
+        conditions = [...new Set([...conditions, ...['product', 'platform', 'audience', 'otherprops'].filter(key => node.attrs[key]).map(key => key + '=' + decode(node.attrs[key]))])];
+        node.children.forEach(child => visit(child, conditions));
       } else if (node.kind === 'text' || node.kind === 'cdata') {
         const begin = node.start + (node.kind === 'cdata' ? 9 : 0), finish = node.end - (node.kind === 'cdata' ? 3 : 0);
         const a = Math.max(begin, start), b = Math.min(finish, end);
@@ -49,7 +50,7 @@
           }
         }
         const text = node.kind === 'cdata' ? source.slice(a, b) : decode(source.slice(a, b));
-        if (text.trim()) parts.push(Object.freeze({ id: 't' + parts.length, start: a, end: b, text, kind: node.kind }));
+        if (text.trim()) parts.push(Object.freeze({ id: 't' + parts.length, start: a, end: b, text, kind: node.kind, conditions: Object.freeze([...conditions]) }));
       }
     }
     visit(block.node);
@@ -70,6 +71,33 @@
     }
     return result.sort((a, b) => b.score - a.score || a.start - b.start);
   }
+  function documentTarget(source, query = '') {
+    const blocks = inspect(source), scopes = [], seen = new Set();
+    for (const block of blocks) {
+      try { scopes.push(target(source, block.start, block.end, blocks)); }
+      catch { /* Referenced/revised blocks are kept out of editable context. */ }
+    }
+    const all = new Map();
+    for (const scope of scopes) for (const part of scope.parts) all.set(part.start, { ...part, conditions: part.conditions || scope.conditions, blockKind: scope.kind });
+    const total = [...all.values()].reduce((sum, part) => sum + part.text.length, 0);
+    let selected = [...all.values()], truncated = scopes.length < blocks.length;
+    if (total > LIMITS.text || selected.length > LIMITS.edits) {
+      truncated = true; selected = []; let length = 0;
+      const ranked = candidates(source, String(query).slice(0, 200));
+      const order = [...ranked.map(hit => scopes.find(scope => scope.start === hit.start)), ...scopes];
+      for (const scope of order) {
+        if (!scope) continue;
+        for (const part of scope.parts) {
+          if (seen.has(part.start) || selected.length >= LIMITS.edits || length + part.text.length > LIMITS.text) continue;
+          seen.add(part.start); selected.push(all.get(part.start)); length += part.text.length;
+        }
+      }
+    }
+    selected.sort((a, b) => a.start - b.start);
+    const parts = Object.freeze(selected.map((part, i) => Object.freeze({ ...part, id: 't' + i })));
+    if (!parts.length) fail('此章节没有可编辑的正文，请打开具体 Topic 或选择其他章节');
+    return Object.freeze({ source, start: 0, end: source.length, xmlPath: '', kind: 'document', conditions: Object.freeze([]), text: parts.map(part => part.text).join('\n'), parts, query: String(query).slice(0, 200), truncated });
+  }
   function applyResult(scope, result) {
     if (!result || typeof result !== 'object' || Array.isArray(result) || typeof result.summary !== 'string' || result.summary.length > 4000 || !Array.isArray(result.questions) || result.questions.length > 12 || result.questions.some(q => typeof q !== 'string' || q.length > 1500) || !Array.isArray(result.edits) || result.edits.length > LIMITS.edits) fail('模型返回格式不符合修订约定，请重试');
     if (result.blockedReason !== undefined && (typeof result.blockedReason !== 'string' || result.blockedReason.length > 2000)) fail('模型返回的范围说明无效，请重试');
@@ -79,7 +107,13 @@
       if (!part || seen.has(edit.id) || edit.before !== part.text || typeof edit.after !== 'string' || edit.after.length > LIMITS.text) fail('模型返回了越界、重复或原文不匹配的修改，已拒绝');
       seen.add(edit.id);
       if (part.kind === 'cdata' && edit.after.includes(']]>')) fail('模型修改包含非法 CDATA 结束标记');
-      if (edit.after !== edit.before) changes.push({ ...part, after: edit.after });
+      if (edit.after !== edit.before) {
+        const reviewFlags = [];
+        for (const [label, pattern] of [['AT 命令变化', /\bAT\+[A-Za-z0-9_]+/g], ['型号名称变化', /\b(?:ML|MN|MR)\d{2,5}[A-Za-z0-9-]*/g], ['数值或范围变化', /[-+]?\d+(?:\.\d+)?/g], ['单位变化', /毫秒|微秒|纳秒|秒|分钟|小时|字节|比特|\b(?:ms|us|ns|s|KB|MB|GB|bytes?|bits?|kHz|MHz|GHz)\b/g], ['能力或约束措辞变化', /不支持|支持|不允许|允许|禁止|必须|默认|最大|最小|仅/g]]) {
+          if (JSON.stringify(edit.before.match(pattern) || []) !== JSON.stringify(edit.after.match(pattern) || [])) reviewFlags.push(label);
+        }
+        changes.push({ ...part, conditions: part.conditions || scope.conditions, after: edit.after, reviewFlags });
+      }
     }
     let content = scope.source;
     for (const change of [...changes].sort((a, b) => b.start - a.start)) {
@@ -89,6 +123,6 @@
     xml.validateXml(content);
     return { content, summary: result.summary, questions: [...result.questions], blockedReason: result.blockedReason || '', changes };
   }
-  const api = { LIMITS, inspect, target, candidates, applyResult };
+  const api = { LIMITS, inspect, target, documentTarget, candidates, applyResult };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaAiEditCore = api;
 })(typeof window === 'undefined' ? globalThis : window);

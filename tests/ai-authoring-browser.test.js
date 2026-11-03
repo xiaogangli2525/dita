@@ -13,9 +13,9 @@ test('AI authoring runs through the local provider, review and shared document h
   const provider = http.createServer(async (req, res) => {
     const chunks = []; for await (const chunk of req) chunks.push(chunk);
     const body = JSON.parse(Buffer.concat(chunks)), input = JSON.parse(body.messages[1].content); received.push(input);
-    const first = input.document.parts[0];
+    const first = input.document.parts.find(part => part.text.includes('发送')) || input.document.parts[0];
     const previous = input.conversation?.previousResult?.edits?.[0]?.after || first.text;
-    const result = input.instruction.includes('待确认') ? { summary: '缺少正确参数', questions: ['请提供已经核实的值。'], edits: [] } :
+    const result = input.instruction.includes('方案') ? {summary:'方案：保留技术含义，将发送请求改为发起请求，其他内容不变。',questions:[],edits:[]} : input.instruction.includes('待确认') ? { summary: '缺少正确参数', questions: ['请提供已经核实的值。'], edits: [] } :
       input.instruction.includes('60 秒') ? { summary: '已根据补充信息修改', questions: [], edits: [{ id: first.id, before: first.text, after: '发起请求（超时 60 秒）' }] } :
       input.instruction.includes('简短') ? { summary: '继续精简，保留先前润色', questions: [], edits: [{ id: first.id, before: first.text, after: previous.replace('然后', '') }] } :
       input.instruction.includes('先润色') ? { summary: '已润色可确定的部分', questions: ['尚未提供超时值。'], edits: [{ id: first.id, before: first.text, after: first.text.replace('发送', '发起') }] } :
@@ -43,8 +43,8 @@ test('AI authoring runs through the local provider, review and shared document h
     assert.equal(await page.locator('#aiScope').inputValue(), 'selection');
   }
   await t.test('selection proposal preserves XML, applies without saving, and uses undo/redo', async st => {
-    const page = await fresh(st); await select(page); await page.fill('#aiInstruction', '润色'); await page.click('#aiGenerate');
-    await page.waitForSelector('.ai-change'); assert.equal(await page.locator('.ai-after pre').textContent(), '发起请求');
+    const page = await fresh(st); await select(page); await page.fill('#aiReply', '润色'); await page.click('#aiSend');
+    await page.waitForSelector('.ai-change', {state:'attached'}); assert.equal(await page.locator('.ai-after pre').textContent(), '发起请求');
     assert.equal(await page.locator('#aiApply').isDisabled(), false);
     assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.get('a.dita').current), original);
     await page.click('#aiApply'); await page.waitForFunction(() => document.getElementById('aiReplyStatus').textContent.includes('已应用'));
@@ -60,35 +60,35 @@ test('AI authoring runs through the local provider, review and shared document h
     await page.click('#aiButton'); assert.equal(await page.locator('#aiScope').inputValue(), 'selection'); assert.equal(await page.locator('#aiOriginal').textContent(), '发送请求');
   });
   await t.test('manual search requires an explicit candidate and applies to the selected topic', async st => {
-    const page = await fresh(st); await page.click('#aiButton'); await page.fill('#aiInstruction', '润色发送请求的描述'); await page.selectOption('#aiScope', 'manual'); await page.fill('#aiSearch', '发送请求'); await page.click('#aiLocate');
-    await page.waitForSelector('.ai-candidate'); assert.equal(await page.locator('.ai-candidate').filter({ hasText: '发送请求' }).count(), 2); assert.equal(await page.locator('#aiGenerate').isDisabled(), true);
-    await page.locator('.ai-candidate').filter({ hasText: 'b.dita' }).click(); await page.click('#aiGenerate'); await page.waitForSelector('.ai-change'); await page.click('#aiApply');
+    const page = await fresh(st); await page.click('#aiButton'); await page.fill('#aiReply', '润色发送请求的描述'); await page.locator('#aiTask > summary').click(); await page.selectOption('#aiScope', 'manual'); await page.fill('#aiSearch', '发送请求'); await page.click('#aiLocate');
+    await page.waitForSelector('.ai-candidate'); assert.equal(await page.locator('.ai-candidate').filter({ hasText: '发送请求' }).count(), 2); assert.equal(await page.locator('#aiSend').isEnabled(), true);
+    await page.locator('.ai-candidate').filter({ hasText: 'b.dita' }).click(); await page.waitForSelector('.ai-change', {state:'attached'}); await page.click('#aiApply');
     await page.waitForFunction(() => document.getElementById('aiStatus').textContent.includes('已应用'));
     assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.get('b.dita').current), second.replace('发送', '发起'));
     assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.get('a.dita').current), original);
   });
   await t.test('missing technical facts produce questions without an applicable proposal', async st => {
-    const page = await fresh(st); await select(page); await page.fill('#aiInstruction', '参数值待确认'); await page.click('#aiGenerate'); await page.waitForSelector('#aiQuestions li');
+    const page = await fresh(st); await select(page); await page.fill('#aiReply', '参数值待确认'); await page.click('#aiSend'); await page.waitForSelector('#aiQuestions li');
     assert.equal(await page.locator('#aiApply').isVisible(), false); assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.get('a.dita').dirty), false);
   });
   await t.test('malformed model edits are rejected and error text remains actionable', async st => {
-    const page = await fresh(st); await select(page); await page.fill('#aiInstruction', '非法输出'); await page.click('#aiGenerate'); await page.waitForSelector('#aiStatus.is-error');
+    const page = await fresh(st); await select(page); await page.fill('#aiReply', '非法输出'); await page.click('#aiSend'); await page.waitForSelector('#aiReplyStatus.is-error');
     assert.match(await page.locator('#aiStatus').textContent(), /越界/); assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.get('a.dita').dirty), false);
   });
   await t.test('cancellation discards delayed responses and keeps the user instruction', async st => {
-    const page = await fresh(st); await select(page); await page.fill('#aiInstruction', '慢速润色'); await page.click('#aiGenerate'); await page.click('#aiCancel');
+    const page = await fresh(st); await select(page); await page.fill('#aiReply', '慢速润色'); await page.click('#aiSend'); await page.click('#aiCancel');
     assert.match(await page.locator('#aiStatus').textContent(), /已取消/); await page.waitForTimeout(1400);
-    assert.equal(await page.locator('#aiReview').isVisible(), false); assert.equal(await page.locator('#aiInstruction').inputValue(), '慢速润色');
+    assert.equal(await page.locator('#aiReview').isVisible(), false); assert.equal(await page.locator('#aiReply').inputValue(), '慢速润色');
   });
   await t.test('new working edits invalidate a pending model response', async st => {
-    const page = await fresh(st); await select(page); await page.fill('#aiInstruction', '慢速润色'); await page.click('#aiGenerate');
+    const page = await fresh(st); await select(page); await page.fill('#aiReply', '慢速润色'); await page.click('#aiSend');
     await page.evaluate(() => { const A = window.DitaApp, file = A.state.filesMap.get('a.dita'); A.setFileContent(file, file.current.replace('检查', '人工核对')); });
     await page.waitForTimeout(1400); assert.equal(await page.locator('#aiReview').isVisible(), false); assert.match(await page.locator('#aiStatus').textContent(), /变化/);
     assert.match(await page.evaluate(() => window.DitaApp.state.filesMap.get('a.dita').current), /人工核对/);
   });
   await t.test('review treats model text as text and remains usable across skins and narrow screens', async st => {
-    const page = await fresh(st); await select(page); await page.fill('#aiInstruction', '恶意摘要润色'); await page.click('#aiGenerate'); await page.waitForSelector('.ai-change');
-    assert.equal(await page.locator('#aiSummary img').count(), 0); assert.match(await page.locator('#aiSummary').textContent(), /<img/);
+    const page = await fresh(st); await select(page); await page.fill('#aiReply', '恶意摘要润色'); await page.click('#aiSend'); await page.waitForSelector('.ai-change', {state:'attached'});
+    assert.equal(await page.locator('.ai-turn-assistant img').count(), 0); assert.match(await page.locator('.ai-turn-assistant p').last().textContent(), /<img/);
     for (const theme of ['forest', 'blue', 'paper', 'dark']) {
       await page.evaluate(theme => window.DitaTheme.set(theme), theme);
       await page.setViewportSize({ width: 390, height: 844 });
@@ -117,10 +117,10 @@ test('AI authoring runs through the local provider, review and shared document h
     assert.match(await page.locator('#aiKey').getAttribute('placeholder'), /已配置/);
     assert.doesNotMatch(await page.locator('#aiDialog').textContent(), /replaced-test-key/);
     assert.equal(await page.evaluate(() => JSON.stringify(localStorage).includes('replaced-test-key')), false);
-    await page.click('#aiConnectionClose'); await page.fill('#aiInstruction', '润色'); await page.click('#aiGenerate'); await page.waitForSelector('.ai-change');
+    await page.click('#aiConnectionClose'); await page.fill('#aiReply', '润色'); await page.click('#aiSend'); await page.waitForSelector('.ai-change', {state:'attached'});
   });
   await t.test('answering a question continues the same task and produces an applicable modification', async st => {
-    const page = await fresh(st); await select(page); await page.fill('#aiInstruction', '参数值待确认'); await page.click('#aiGenerate'); await page.waitForSelector('#aiQuestions li');
+    const page = await fresh(st); await select(page); await page.fill('#aiReply', '参数值待确认'); await page.click('#aiSend'); await page.waitForSelector('#aiQuestions li');
     await page.fill('#aiReply', '已核实，60 秒'); await page.click('#aiSend');
     await page.waitForFunction(() => document.querySelector('.ai-after pre')?.textContent.includes('60 秒'));
     assert.equal(await page.locator('.ai-turn-user').count(), 2); assert.equal(await page.locator('#aiReply').inputValue(), '');
@@ -130,7 +130,7 @@ test('AI authoring runs through the local provider, review and shared document h
     assert.equal(await fs.readFile(path.join(temporary, 'a.dita'), 'utf8'), original);
   });
   await t.test('continuous revision keeps previous changes and applies one cumulative proposal', async st => {
-    const page = await fresh(st); await select(page, '发送请求，然后检查返回值。'); await page.fill('#aiInstruction', '润色并保留技术术语'); await page.click('#aiGenerate'); await page.waitForSelector('.ai-change');
+    const page = await fresh(st); await select(page, '发送请求，然后检查返回值。'); await page.fill('#aiReply', '润色并保留技术术语'); await page.click('#aiSend'); await page.waitForSelector('.ai-change', {state:'attached'});
     await page.fill('#aiReply', '再简短些'); await page.locator('#aiReply').press('Control+Enter');
     await page.waitForFunction(() => document.querySelector('.ai-after pre')?.textContent === '发起请求，检查返回值。');
     assert.deepEqual(received.at(-1).conversation.instructions, ['润色并保留技术术语']);
@@ -141,56 +141,78 @@ test('AI authoring runs through the local provider, review and shared document h
     assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.get('a.dita').current), original);
   });
   await t.test('partial known work is applicable while missing facts remain available for followup', async st => {
-    const page = await fresh(st); await select(page); await page.fill('#aiInstruction', '先润色并确认参数'); await page.click('#aiGenerate'); await page.waitForSelector('#aiQuestions li');
+    const page = await fresh(st); await select(page); await page.fill('#aiReply', '先润色并确认参数'); await page.click('#aiSend'); await page.waitForSelector('#aiQuestions li');
     assert.equal(await page.locator('#aiApply').isEnabled(), true); assert.equal(await page.locator('.ai-after pre').textContent(), '发起请求');
     await page.click('#aiApply'); await page.waitForFunction(() => document.getElementById('aiReplyStatus').textContent.includes('已应用'));
-    await page.fill('#aiReply', '已核实，60 秒'); await page.click('#aiSend'); await page.waitForSelector('.ai-change');
+    await page.fill('#aiReply', '已核实，60 秒'); await page.click('#aiSend'); await page.waitForSelector('.ai-change', {state:'attached'});
     assert.equal(received.at(-1).document.parts[0].text, '发起请求'); assert.deepEqual(received.at(-1).conversation.previousResult.edits, []);
     assert.deepEqual(received.at(-1).conversation.previousResult.questions, ['尚未提供超时值。']);
   });
   await t.test('closing and reopening preserves the same conversation and an unsent reply', async st => {
-    const page = await fresh(st); await select(page); await page.fill('#aiInstruction', '润色'); await page.click('#aiGenerate'); await page.waitForSelector('.ai-change');
+    const page = await fresh(st); await select(page); await page.fill('#aiReply', '润色'); await page.click('#aiSend'); await page.waitForSelector('.ai-change', {state:'attached'});
     await page.fill('#aiReply', '还需要补充的要求'); await page.click('#aiClose'); await page.click('#aiButton');
     assert.equal(await page.locator('.ai-turn-user').count(), 1); assert.equal(await page.locator('#aiReply').inputValue(), '还需要补充的要求');
     assert.equal(await page.locator('#aiApply').isEnabled(), true);
   });
   await t.test('a cancelled followup preserves the last proposal, prior turns and reply for retry', async st => {
-    const page = await fresh(st); await select(page); await page.fill('#aiInstruction', '润色'); await page.click('#aiGenerate'); await page.waitForSelector('.ai-change');
+    const page = await fresh(st); await select(page); await page.fill('#aiReply', '润色'); await page.click('#aiSend'); await page.waitForSelector('.ai-change', {state:'attached'});
     await page.fill('#aiReply', '慢速修改'); await page.click('#aiSend'); await page.click('#aiCancel'); await page.waitForTimeout(1400);
     assert.equal(await page.locator('.ai-after pre').textContent(), '发起请求'); assert.equal(await page.locator('.ai-turn-user').count(), 1);
     assert.equal(await page.locator('#aiReply').inputValue(), '慢速修改'); assert.equal(await page.locator('#aiApply').isEnabled(), true);
   });
   await t.test('a user can draft the next message during generation without having it cleared by the response', async st => {
-    const page = await fresh(st); await select(page); await page.fill('#aiInstruction', '润色'); await page.click('#aiGenerate'); await page.waitForSelector('.ai-change');
+    const page = await fresh(st); await select(page); await page.fill('#aiReply', '润色'); await page.click('#aiSend'); await page.waitForSelector('.ai-change', {state:'attached'});
     await page.fill('#aiReply', '慢速修改'); await page.click('#aiSend'); await page.fill('#aiReply', '下一条补充，先不要发送');
     await page.waitForFunction(() => document.querySelectorAll('.ai-turn-user').length === 2);
     assert.equal(await page.locator('#aiReply').inputValue(), '下一条补充，先不要发送');
     assert.equal(received.at(-1).instruction, '慢速修改');
   });
   await t.test('changing document starts a fresh task and model settings are outside the conversation', async st => {
-    const page = await fresh(st); await select(page); await page.fill('#aiInstruction', '润色'); await page.click('#aiGenerate'); await page.waitForSelector('.ai-change');
+    const page = await fresh(st); await select(page); await page.fill('#aiReply', '润色'); await page.click('#aiSend'); await page.waitForSelector('.ai-change', {state:'attached'});
     assert.equal(await page.locator('#aiDialog #aiKey').count(), 0);
     await page.click('#aiClose'); await page.evaluate(() => window.DitaApp.openFile('b.dita')); await page.click('#aiButton');
-    assert.equal(await page.locator('.ai-turn').count(), 0); assert.equal(await page.locator('#aiInstruction').inputValue(), '');
+    assert.equal(await page.locator('.ai-turn').count(), 0); assert.equal(await page.locator('#aiReply').inputValue(), '');
   });
   await t.test('an explicit conversational apply command applies the displayed proposal without asking the model again', async st => {
-    const page = await fresh(st); await select(page); await page.fill('#aiInstruction', '润色'); await page.click('#aiGenerate'); await page.waitForSelector('.ai-change');
+    const page = await fresh(st); await select(page); await page.fill('#aiReply', '润色'); await page.click('#aiSend'); await page.waitForSelector('.ai-change', {state:'attached'});
     const requests = received.length; await page.fill('#aiReply', '按这个改'); await page.click('#aiSend');
     await page.waitForFunction(() => window.DitaApp.state.filesMap.get('a.dita').current.includes('发起请求'));
     assert.equal(received.length, requests); assert.equal(await page.locator('#aiReply').inputValue(), '');
     assert.equal(await fs.readFile(path.join(temporary, 'a.dita'), 'utf8'), original);
   });
   await t.test('an apply command without a proposal explains the missing work without repeating model calls', async st => {
-    const page = await fresh(st); await select(page); await page.fill('#aiInstruction', '参数值待确认'); await page.click('#aiGenerate'); await page.waitForSelector('#aiQuestions li');
+    const page = await fresh(st); await select(page); await page.fill('#aiReply', '参数值待确认'); await page.click('#aiSend'); await page.waitForSelector('#aiQuestions li');
     const requests = received.length; await page.fill('#aiReply', '应用这版'); await page.click('#aiSend');
     assert.match(await page.locator('#aiReplyStatus').textContent(), /没有可应用/); assert.equal(received.length, requests);
     assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.get('a.dita').current), original);
   });
   await t.test('a negated apply phrase stays a revision request and does not modify the document', async st => {
-    const page = await fresh(st); await select(page); await page.fill('#aiInstruction', '润色'); await page.click('#aiGenerate'); await page.waitForSelector('.ai-change');
+    const page = await fresh(st); await select(page); await page.fill('#aiReply', '润色'); await page.click('#aiSend'); await page.waitForSelector('.ai-change', {state:'attached'});
     await page.fill('#aiReply', '不要按这个改'); await page.click('#aiSend'); await page.waitForFunction(() => document.querySelectorAll('.ai-turn-user').length === 2);
     assert.equal(received.at(-1).instruction, '不要按这个改');
     assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.get('a.dita').current), original);
+  });
+  await t.test('opening AI starts with a focused chat composer and automatically uses the current document', async st => {
+    const page = await fresh(st); await page.evaluate(()=>{window.DitaApp.setMode('editor');const e=document.getElementById('editor');e.focus();e.setSelectionRange(0,0);});
+    await page.click('#aiButton'); await page.waitForFunction(()=>document.getElementById('aiProvider').textContent.includes('test-model'));
+    assert.equal(await page.locator('#aiTask').evaluate(n=>n.open),false); assert.equal(await page.locator('#aiReply').evaluate(n=>n===document.activeElement),true);
+    await page.fill('#aiReply','先给我修改方案');await page.click('#aiSend');await page.waitForFunction(()=>document.querySelectorAll('.ai-turn-assistant').length===1);
+    assert.equal(await page.locator('#aiReview').isVisible(),false);assert.equal(await page.evaluate(()=>window.DitaApp.state.filesMap.get('a.dita').current),original);
+    assert.ok(received.at(-1).document.parts.length>1);assert.deepEqual(received.at(-1).conversation.instructions,[]);
+    await page.fill('#aiReply','按这个改');await page.click('#aiSend');await page.waitForFunction(()=>window.DitaApp.state.filesMap.get('a.dita').current.includes('发起请求'));
+    assert.deepEqual(received.at(-1).conversation.instructions,['先给我修改方案']);
+  });
+  await t.test('numeric changes are highlighted with exact source locations for review', async st => {
+    const page = await fresh(st);await select(page);await page.fill('#aiReply','已核实，60 秒');await page.click('#aiSend');await page.waitForSelector('#aiTechnicalReview');
+    assert.match(await page.locator('#aiTechnicalReview').textContent(),/数值或范围变化/);await page.locator('#aiDiff > summary').click();
+    assert.match(await page.locator('.ai-change-location').first().textContent(),/第 \d+ 行/);assert.equal(await page.evaluate(()=>window.DitaApp.state.filesMap.get('a.dita').current),original);
+  });
+  await t.test('optional manual scope is honored when sending chat directly without pressing Locate', async st => {
+    const page=await fresh(st);await page.click('#aiButton');await page.waitForFunction(()=>document.getElementById('aiProvider').textContent.includes('test-model'));
+    await page.locator('#aiTask > summary').click();await page.selectOption('#aiScope','manual');await page.fill('#aiReply','润色配置证书后的操作说明');await page.click('#aiSend');
+    await page.waitForFunction(()=>document.getElementById('aiContextLabel').textContent.includes('b.dita'));await page.waitForSelector('.ai-change',{state:'attached'});
+    assert.equal(await page.evaluate(()=>window.DitaApp.state.filesMap.get('a.dita').current),original);
+    assert.ok(received.at(-1).document.parts.some(part=>part.text==='配置证书后发送请求。'));
   });
   assert.deepEqual(errors, []);
 });

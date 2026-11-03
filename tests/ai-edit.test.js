@@ -47,3 +47,27 @@ test('AI proposal uses captured working buffer, supports undo and refuses newer 
   store.applyProposal(proposal, { file, workspaceToken: 'old' }, () => {}, store.editDocument); assert.equal(file.disk, source);
   store.travelHistory(file, 'undo'); assert.equal(file.current, source);
 });
+test('chat-first document scope can revise multiple paragraphs while keeping per-fragment conditions and source bytes', () => {
+  const scope = core.documentTarget(source, '发送请求');
+  const selected = scope.parts.find(p => p.text === '发送 '), other = scope.parts.find(p => p.text === '其他型号原文');
+  assert.deepEqual(selected.conditions, ['product=ML307R']);
+  const updated = core.applyResult(scope, { summary: '', questions: [], edits: [{ id: selected.id, before: selected.text, after: '发起 ' }, { id: other.id, before: other.text, after: '其他型号说明' }] });
+  assert.equal(updated.content, source.replace('发送 ', '发起 ').replace('其他型号原文','其他型号说明'));
+});
+test('document context is bounded, marks partial content and does not expose reused fragments as editable', () => {
+  const xml = '<topic><title>T</title><body><p conref="other.dita#t/p">不可修改</p>' + '<p>普通说明</p>'.repeat(100) + '</body></topic>';
+  const scope = core.documentTarget(xml, '普通说明'); assert.ok(scope.truncated); assert.ok(scope.parts.length <= core.LIMITS.edits);
+  assert.ok(scope.text.length <= core.LIMITS.text); assert.doesNotMatch(scope.text, /不可修改/);
+});
+test('review highlights technical value, unit, model and command changes without treating them as verified facts', () => {
+  const xml = '<topic><title>T</title><body><p>ML307R 支持 AT+HTTP，默认30秒。</p></body></topic>', scope = core.documentTarget(xml);
+  const part = scope.parts.find(p=>p.text.includes('ML307R'));
+  const result = core.applyResult(scope, { summary: '', questions: [], edits: [{id:part.id,before:part.text,after:'MN318 不支持 AT+HTTPS，默认60毫秒。'}] });
+  assert.deepEqual(result.changes[0].reviewFlags, ['AT 命令变化','型号名称变化','数值或范围变化','单位变化','能力或约束措辞变化']);
+});
+test('document and selection context retain inline model conditions rather than flattening them to their paragraph', () => {
+  const xml = '<topic><title>T</title><body><p>通用：<ph product="ML307R"><b audience="developer">30秒</b></ph></p></body></topic>';
+  const part = core.documentTarget(xml).parts.find(p=>p.text==='30秒');
+  assert.deepEqual(part.conditions,['product=ML307R','audience=developer']);
+  const selected = core.target(xml,part.start,part.end);assert.deepEqual(selected.parts[0].conditions,part.conditions);
+});

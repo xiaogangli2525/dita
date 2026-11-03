@@ -374,3 +374,10 @@ The feature is opt-in through a separate settings dialog or startup environment 
 The UI separates a conversation composer, cumulative review and a single explicit apply action. Clearly supported edits can accompany pending questions. Unsupported structural operations have a direct limitation field instead of an endless clarification loop. `ai-writing-policy` reads the repository-owned rules at service startup, independent of the JSON protocol and the workspace operation playbook.
 
 `ai-config-store` persists only the connection fields in the OS user's configuration directory, using a same-directory temporary file, sync and rename with restricted POSIX permissions. Saved settings override environment defaults; demo mode does not read credentials. Configuration responses omit secrets. A failed save retains the previous runtime connection. The configuration adapter is separate from document/workspace IO and can be injected in tests.
+
+
+### Chat-first document context
+
+Opening the assistant exposes one composer and the current context. A selected range is reused; otherwise `documentTarget` gathers bounded editable text from the current Topic with per-fragment inherited conditions. Large Topics rank relevant blocks and explicitly mark partial context. Ambiguous Map matches require one inline chapter choice, rather than an upfront scope form. The server rebuilds the same scope, so fragment IDs and source guards remain deterministic across turns.
+
+Plans and cumulative edits share the conversation. Explicit execution of a plan can generate/apply guarded text edits; newly generated technical-value/command/model/unit/constraint changes instead show concrete differences for review. Technical change flags and exact source lines aid review; they are not domain-fact or full cross-reference consistency validation.

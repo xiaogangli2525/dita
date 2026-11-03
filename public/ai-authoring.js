@@ -15,20 +15,19 @@
     }
     function controls() {
       const locked = busy || connection.saving, continued = Boolean(get('aiConversation').children.length);
-      get('aiGenerate').disabled = locked || !configuration?.available || !selected || !get('aiInstruction').value.trim();
-      get('aiGenerate').hidden = continued; get('aiNewTask').hidden = !continued; get('aiNewTask').disabled = locked;
+      get('aiNewTask').hidden = !continued; get('aiNewTask').disabled = locked;
       get('aiLocate').disabled = locked; get('aiCancel').hidden = !busy;
       get('aiApply').disabled = locked || !proposal; get('aiInputs').disabled = locked; get('aiSettingsButton').disabled = locked;
-      get('aiComposer').hidden = !continued; get('aiReply').disabled = connection.saving || !selected;
-      get('aiStatus').hidden = continued;
-      get('aiSend').disabled = locked || !configuration?.available || !selected || !get('aiReply').value.trim();
+      get('aiComposer').hidden = false; get('aiReply').disabled = connection.saving;
+      get('aiStatus').hidden = true; get('aiWelcome').hidden = continued || busy;
+      get('aiSend').disabled = locked || !configuration?.available || !filePath || !get('aiReply').value.trim();
       dialog.setAttribute('aria-busy', String(busy));
     }
     function clearResult() { proposal = null; get('aiReview').hidden = true; get('aiChanges').replaceChildren(); controls(); }
     function resetThread() {
       thread = selected ? conversationCore.create(selected) : null;
-      get('aiConversation').replaceChildren(); get('aiConversation').hidden = true; get('aiReply').value = '';
-      get('aiTask').open = true; clearResult();
+      get('aiConversation').replaceChildren(); get('aiConversation').hidden = true;
+      get('aiTask').open = false; clearResult();
     }
     function stop() { generation++; controller?.abort(); controller = null; busy = false; controls(); }
     function fresh() {
@@ -38,16 +37,48 @@
       if (file && file.current !== selected.source) throw Error('原文已变化，请重新选择并生成修改');
     }
     function drawSource() {
+      get('aiContextLabel').textContent = selected ? (selected.kind === 'document' ? '当前章节 · ' : '当前选区 · ') + selected.path + (selected.truncated ? ' · 本轮聚焦相关片段' : '') : '当前文档 · ' + (filePath || '请先打开文档');
       get('aiSource').hidden = !selected;
       if (!selected) return;
       get('aiOriginal').textContent = selected.text;
       get('aiLocation').textContent = selected.path + ' · 第 ' + selected.source.slice(0, selected.start).split('\n').length + ' 行';
-      get('aiConditions').textContent = selected.conditions.length ? '原文条件：' + selected.conditions.join('；') : '共享原文：修改时保留文字中的型号差异。';
+      const conditions = [...new Set(selected.parts.flatMap(part => part.conditions || selected.conditions))];
+      get('aiConditions').textContent = selected.kind === 'document' ? '保留各片段原有适用条件，具体变化见修改对照。' : conditions.length ? '选区包含适用条件：' + conditions.join('；') + '（按片段保留）' : '共享原文：修改时保留文字中的型号差异。';
     }
     function choose(hit) {
       selected = { path: hit.path, ...core.target(hit.source, hit.start, hit.end) };
       resetThread(); drawSource(); say('已选定原文。说明要求后即可修改，后续可以直接接着对话。'); controls();
-      get('aiSource').open = true;
+      get('aiSource').open = false;
+    }
+    function chooseDocument(file, query) {
+      selected = { path: file.path, ...core.documentTarget(file.source ?? file.current, query) };
+      resetThread(); drawSource(); get('aiSource').open = false; get('aiCandidates').replaceChildren();
+    }
+    async function automaticTarget(instruction, id) {
+      if (get('aiScope').value === 'selection') {
+        if (!selection) throw Error('没有可用选区，请选择当前章节，或重新选择文字后打开 AI');
+        choose(selection); return true;
+      }
+      const file = A.state.filesMap.get(filePath);
+      if (file && !/\.ditamap$/i.test(filePath) && get('aiScope').value !== 'manual') { chooseDocument(file, instruction); return true; }
+      const result = await context.locate('manual', instruction, filePath);
+      if (id !== generation || token !== A.api.token) return false;
+      manual = result.snapshot || null;
+      const files = new Map();
+      for (const hit of result.hits) if (!files.has(hit.path)) files.set(hit.path, hit);
+      if (!files.size && manual) for (const file of manual.files.values()) {
+        try { core.inspect(file.current); files.set(file.path, { path: file.path, source: file.current, score: 0, text: file.path }); } catch { /* Non-topic dependencies are not edit targets. */ }
+      }
+      const hits = [...files.values()].sort((a, b) => b.score - a.score);
+      if (hits.length === 1 || hits.length > 1 && hits[0].score > hits[1].score * 1.3 + 2) { chooseDocument(hits[0], instruction); return true; }
+      get('aiCandidates').replaceChildren();
+      for (const hit of hits.slice(0, 8)) {
+        const button = document.createElement('button'); button.type = 'button'; button.className = 'ai-candidate'; button.textContent = hit.path + ' · ' + hit.text.slice(0, 100);
+        button.addEventListener('click', () => { try { chooseDocument(hit, instruction); fresh(); generate(true); } catch (error) { say(error.message, true); } });
+        get('aiCandidates').append(button);
+      }
+      say(hits.length ? '当前打开的是整份手册，有多个相关章节。先选一个章节，我会接着这条要求给出方案。' : '没有找到可编辑章节，请打开具体 Topic 后直接聊天。');
+      return false;
     }
     async function locate() {
       stop(); selected = null; manual = null; resetThread(); drawSource();
@@ -57,7 +88,7 @@
           if (!selection) throw Error('没有可用选区，请关闭后选择文字，或切换到章节/手册搜索');
           choose(selection); fresh(); return;
         }
-        const query = get('aiSearch').value.trim() || get('aiInstruction').value.trim();
+        const query = get('aiSearch').value.trim() || get('aiReply').value.trim();
         if (!query) throw Error('请输入问题描述，或填写命令、参数等定位关键词');
         const result = await context.locate(get('aiScope').value, query, filePath);
         if (id !== generation || token !== A.api.token) return;
@@ -66,7 +97,7 @@
           const button = document.createElement('button'); button.type = 'button'; button.className = 'ai-candidate';
           const title = document.createElement('strong'), excerpt = document.createElement('span');
           title.textContent = hit.path + ' · ' + hit.kind; excerpt.textContent = hit.text.slice(0, 240); button.append(title, excerpt);
-          button.addEventListener('click', () => { try { choose(hit); fresh(); get('aiCandidates').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b === button))); } catch (error) { selected = null; controls(); say(error.message, true); } });
+          button.addEventListener('click', () => { try { choose(hit); fresh(); if (get('aiReply').value.trim()) generate(true); } catch (error) { selected = null; controls(); say(error.message, true); } });
           button.setAttribute('aria-pressed', 'false'); get('aiCandidates').append(button);
         }
         say((result.hits.length ? '找到 ' + result.hits.length + ' 处候选，请选择需要修改的原文。' : '未找到匹配原文，请改用命令、参数或原文关键词。') + (result.truncated ? ' 已显示前 30 处，请缩小关键词范围。' : '') + (result.warnings.length ? ' ' + result.warnings.join('；') : ''));
@@ -90,11 +121,13 @@
       }
     }
     function renderResult(result) {
-      get('aiReview').hidden = !result.changes.length; get('aiSummary').textContent = result.summary;
-      get('aiReviewTitle').textContent = result.questions.length ? '已完成可确定的修改' : '本次修改提案';
-      get('aiBlocked').hidden = !result.blockedReason; get('aiBlocked').textContent = result.blockedReason;
+      get('aiReview').hidden = !result.changes.length;
+      get('aiReviewTitle').textContent = '修改提案 · ' + result.changes.length + ' 处';
+      const flags = [...new Set(result.changes.flatMap(change => change.reviewFlags))];
+      get('aiTechnicalReview').hidden = !flags.length; get('aiTechnicalReview').textContent = '请核对技术信息：' + flags.join('、') + '。这些提示不代表技术事实已经验证。';
       for (const change of result.changes) {
         const row = document.createElement('div'); row.className = 'ai-change';
+        const location = document.createElement('p'); location.className = 'ai-change-location'; location.textContent = '第 ' + selected.source.slice(0, change.start).split('\n').length + ' 行' + (change.conditions?.length ? ' · ' + change.conditions.join('；') : ''); row.append(location);
         for (const [label, value, name] of [['原文', change.text, 'before'], ['修改后', change.after, 'after']]) {
           const cell = document.createElement('div'), heading = document.createElement('strong'), text = document.createElement('pre');
           cell.className = 'ai-' + name; heading.textContent = label; text.textContent = value || '（删除文字）'; cell.append(heading, text); row.append(cell);
@@ -103,17 +136,20 @@
       }
       get('aiAcceptArea').hidden = !result.changes.length;
     }
-    async function generate(followup = false) {
+    async function generate(followup = true, applyCommand = '') {
       if (busy || connection.saving) return;
-      const input = get(followup ? 'aiReply' : 'aiInstruction'), instruction = input.value.trim();
+      const input = get('aiReply'), instruction = input.value.trim();
       const id = ++generation, targetModel = get('aiModel').value.trim();
       try {
-        fresh(); if (!selected || !thread) throw Error('请先选择要修改的原文');
+        fresh(); busy = true; controls(); say('正在结合当前内容处理这条要求…');
+        if (!selected && !await automaticTarget(instruction, id)) return;
+        if (id !== generation) return;
+        fresh(); if (!selected || !thread) throw Error('请先打开要修改的章节');
         const captured = selected, workspaceToken = token, conversation = thread.context(instruction);
         const fileSnapshot = store.createDocument({ path: captured.path, content: captured.source });
         controller = new AbortController(); busy = true; controls(); say('正在按要求修改…可以先填写下一条要求。');
         const response = await A.api.request('/api/ai/propose', { method: 'POST', headers: { 'content-type': 'application/json' }, signal: controller.signal,
-          body: JSON.stringify({ source: captured.source, start: captured.start, end: captured.end, instruction, targetModel, conversation }) });
+          body: JSON.stringify({ source: captured.source, start: captured.start, end: captured.end, instruction, targetModel, conversation, targetKind: captured.kind === 'document' ? 'document' : 'range', ...(captured.query !== undefined ? { query: captured.query } : {}) }) });
         if (!response.ok) throw Error(await A.api.error(response));
         const raw = await response.json(), result = core.applyResult(captured, raw);
         if (id !== generation) return;
@@ -122,7 +158,9 @@
         thread.record(instruction, raw); clearResult(); proposal = next;
         appendTurn(instruction, raw); renderResult(result); get('aiTask').open = false; get('aiSource').open = false;
         if (followup && input.value.trim() === instruction) input.value = '';
-        say(result.changes.length ? '修改已生成，可直接应用；也可以在下方继续调整。' : result.questions.length ? '在下方回复缺少的信息，会接着这次要求继续修改。' : result.blockedReason ? '当前范围的限制已说明，可在下方调整要求。' : '本轮未产生文字变化，可在下方说明具体要怎样修改。');
+        say(result.changes.length ? '方案和修改提案已生成。可继续纠正，确认后应用。' : result.questions.length ? '直接补充这些信息，我会接着处理。' : result.blockedReason ? '当前范围的限制已说明，可继续调整要求。' : '可以继续纠正方案，或说“按这个改”执行方案。');
+        if (applyCommand && proposal && !result.changes.some(change => change.reviewFlags.length)) { controller = null; busy = false; controls(); await apply(applyCommand); }
+        else if (applyCommand && proposal) { get('aiDiff').open = true; say('方案已生成具体修改，涉及技术信息变化，请先核对对照，再应用。'); }
       } catch (error) { if (id === generation) say(error.name === 'AbortError' ? '已取消本轮，保留已有对话和提案。' : error.message, error.name !== 'AbortError'); }
       finally {
         if (id === generation) { controller = null; busy = false; controls(); if (get('aiConversation').children.length) { get('aiReply').focus({ preventScroll: true }); dialog.scrollTop = dialog.scrollHeight; } }
@@ -141,7 +179,7 @@
         finally { applying = false; }
         clearResult(); manual = null;
         try {
-          selected = { path: pending.path, ...core.target(pending.after, captured.start, captured.end + pending.after.length - pending.before.length) };
+          selected = { path: pending.path, ...(captured.kind === 'document' ? core.documentTarget(pending.after, captured.query) : core.target(pending.after, captured.start, captured.end + pending.after.length - pending.before.length)) };
           thread = conversationCore.create(selected, { instructions: history.instructions, previousResult: { ...history.previousResult, edits: [] } });
         } catch { selected = null; thread = null; /* A deliberately emptied range has no editable text left. */ }
         drawSource();
@@ -154,19 +192,19 @@
     }
     async function show() {
       if (document.querySelector('dialog[open]')) return;
-      let capturedSelection = null, warning = ''; const nextPath = context.currentPath();
+      let capturedSelection = null, warning = ''; const nextPath = context.currentPath() || A.state.selectedMap || '';
       try { capturedSelection = context.captureSelection(); } catch (error) { warning = error.message; }
       let resume = Boolean(selected && token === A.api.token && (filePath === nextPath || selected.path === nextPath));
       if (resume && capturedSelection && (selected.path !== capturedSelection.path || selected.start !== capturedSelection.start || selected.end !== capturedSelection.end)) resume = false;
       if (resume) try { fresh(); } catch { resume = false; }
       stop(); opener = document.activeElement;
       if (!resume) {
-        if (token && (token !== A.api.token || filePath !== nextPath)) get('aiInstruction').value = '';
+        if (token && (token !== A.api.token || filePath !== nextPath)) get('aiReply').value = '';
         selected = null; manual = null; token = A.api.token; filePath = nextPath; selection = capturedSelection; resetThread();
         get('aiCandidates').replaceChildren(); get('aiScope').value = selection ? 'selection' : /\.ditamap$/i.test(filePath) ? 'manual' : 'topic';
-        if (selection) choose(selection); else { drawSource(); say(warning || '粘贴问题或说明修改要求，再定位原文。', Boolean(warning)); }
+        if (selection) choose(selection); else { drawSource(); say(warning || '', Boolean(warning)); }
       }
-      dialog.showModal(); (get('aiConversation').children.length ? get('aiReply') : get('aiInstruction')).focus();
+      drawSource(); dialog.showModal(); get('aiReply').focus();
       const id = ++opening;
       try {
         const response = await A.api.request('/api/ai/config'); if (!response.ok) throw Error(await A.api.error(response));
@@ -187,6 +225,7 @@
       // model text for this command, or infer consent from an ambiguous "好".
       if (/^(?:应用这版|应用修改|按这个改|就按这个改)[。！!]?$/u.test(instruction)) {
         if (proposal) return apply(instruction);
+        if (thread?.context().previousResult && !thread.context().previousResult.questions.length) return generate(true, instruction);
         say('当前没有可应用的修改，请先补充缺少的信息或说明具体修改要求。', true); return;
       }
       return generate(true);
@@ -194,21 +233,22 @@
     get('aiButton').addEventListener('mousedown', event => event.preventDefault());
     get('aiButton').addEventListener('click', show); get('aiClose').addEventListener('click', close);
     get('aiSettingsButton').addEventListener('click', () => connection.open());
-    get('aiLocate').addEventListener('click', locate); get('aiGenerate').addEventListener('click', () => generate());
+    get('aiLocate').addEventListener('click', locate);
     get('aiSend').addEventListener('click', send); get('aiApply').addEventListener('click', () => apply());
     get('aiCancel').addEventListener('click', () => { stop(); say('已取消本轮，保留已有对话和提案。'); });
     get('aiReject').addEventListener('click', () => {
       if (selected && thread) thread = conversationCore.create(selected, { instructions: thread.context().instructions, previousResult: { summary: '用户已放弃上一版提案，请根据接下来的要求重新修改。', questions: [], edits: [] } });
       clearResult(); say('已放弃当前提案，保留对话；可在下方继续说明。');
     });
-    get('aiNewTask').addEventListener('click', () => { resetThread(); get('aiInstruction').value = ''; controls(); get('aiInstruction').focus(); say('新任务仍使用此处原文；需要其他位置时重新定位。'); });
+    get('aiNewTask').addEventListener('click', () => { if (selected?.kind === 'document') { filePath = selected.path; selected = null; manual = null; } resetThread(); get('aiReply').value = ''; drawSource(); controls(); get('aiReply').focus(); say('可以直接输入新的修改要求。'); });
     get('aiReply').addEventListener('input', controls);
     get('aiReply').addEventListener('keydown', event => { if (event.key === 'Enter' && (event.ctrlKey || event.metaKey) && !event.isComposing && !get('aiSend').disabled) { event.preventDefault(); send(); } });
-    for (const id of ['aiInstruction', 'aiModel']) get(id).addEventListener('input', () => { if (get('aiConversation').children.length) resetThread(); controls(); });
-    get('aiScope').addEventListener('change', () => { selected = null; manual = null; resetThread(); drawSource(); get('aiCandidates').replaceChildren(); });
+    get('aiModel').addEventListener('input', () => { if (get('aiConversation').children.length) resetThread(); controls(); });
+    document.querySelectorAll('[data-ai-start]').forEach(button => button.addEventListener('click', () => { get('aiReply').value = button.dataset.aiStart; controls(); send(); }));
+    get('aiScope').addEventListener('change', () => { const expanded = get('aiTask').open; selected = null; manual = null; resetThread(); get('aiTask').open = expanded; drawSource(); get('aiCandidates').replaceChildren(); });
     dialog.addEventListener('cancel', event => { event.preventDefault(); close(); });
     dialog.addEventListener('close', () => { if (!dialog.open && opener) close(); });
-    A.events.on('workspace:willChange', () => { stop(); selected = selection = manual = null; resetThread(); get('aiInstruction').value = ''; get('aiModel').value = ''; close(); });
+    A.events.on('workspace:willChange', () => { stop(); selected = selection = manual = null; resetThread(); get('aiReply').value = ''; get('aiModel').value = ''; close(); });
     A.events.on('document:changed', () => {
       if (!dialog.open || !selected || applying) return;
       try { fresh(); } catch (error) { stop(); selected = null; resetThread(); controls(); say(error.message, true); }
