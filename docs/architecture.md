@@ -18,6 +18,16 @@ Workspace switching prevents overlapping requests, rejects switching during an a
 UI follow-up includes source-identity outline targets (metadata titles cannot shift headings), keyboard document/navigation tabs, panel-safe menu Escape, outside-click capture, no-file action availability and handled failed opens. Rule review retains partial choices per source during the open session, confirms discarding them on close, freezes editing/selection during writes and allows cancelling slow reads. Delivery content scrolls independently from always-reachable actions; step changes reset content scroll.
 
 
+## Shared-state mutation ownership
+
+`workspace-session.createSession(state)` installs getter-only views for workspace identity, directory/Map metadata, opened-document membership, active document, editor mode, undo target and Map Author membership. Arrays and nested descriptors are copied/frozen. Live Map/Set views support reads/iteration but expose no mutators or private collections through `forEach`.
+
+Workspace, navigation, loader, Map, editor and creation/Save As controllers receive the session capability explicitly. They call `replaceWorkspace`, `refreshDirectory`, `registerDocument`, `closeDocument`, `activateDocument`, `upsertMap`, selection/mode/history operations instead of writing those state fields. Existing-buffer registration never replaces document identity or undo history. Closing an undo target falls back to the active document. Directory refresh preserves dirty Maps' last valid projections until their guarded source resolver publishes another projection. Invalid workspace payloads are rejected before lifecycle notification and token adoption.
+
+Document content, disk acknowledgement and dirty/Git status mutations belong to `document-store`; `acknowledgeSave` is shared by ordinary saving and Save As. Save requests are copied/frozen before asynchronous sending, and mismatched path/content acknowledgements fail before advancing disk. Newer working edits and the Git comparison base remain independent.
+
+ESLint rejects direct controller assignments to protected state and document fields, and direct mutation of the opened-document collection. The editor still owns transient review decisions, visual-input suppression and selected DOM elements; these UI-only fields are not promoted into the workspace session. Live document handles remain compatible with history operations; their content writes are constrained by the store interface and lint rather than new Proxy objects.
+
 ## Explicit prose-model export policy
 
 `model-note-text.js` is an opt-in, source-format projection for footnote text. It recognizes complete model-label lists and limited explicit only/unsupported clauses, carries textual scope through continuation sentences and nested containers, and compacts retained labels through XML text spans. Balanced Oxygen insertion spans remain paired; deletion revisions and ambiguous known-model comparisons require review. It does not change the stored fragment-rule schema or source buffers.
@@ -83,13 +93,13 @@ The application remains a local Node server and buildless browser client. This c
 
 | Layer | Modules | Responsibility |
 | --- | --- | --- |
-| Composition and contracts | `app.js`, `application.js`, `contracts.js` | Validate factory/dependency declarations, provide narrow feature contexts, expose compatibility APIs, document shared data contracts |
-| XML and document state | `xml-source.js`, `document-store.js`, `lib/document-files.js` | Source ranges/validation, undo and acknowledgements, encoding, real-path containment and atomic writes |
+| Composition and contracts | `app.js`, `application.js`, `contracts.js`, `data-contracts.d.ts` | Validate factory/dependency declarations, provide narrow feature contexts, expose compatibility APIs, document shared data contracts |
+| XML and document state | `xml-source.js`, `document-store.js`, `workspace-session.js`, `snapshot-data.js`, `lib/document-files.js` | Source ranges/validation, undo and acknowledgements, encoding, real-path containment and atomic writes |
 | Shared domain | `manual-core.js`, `manual-domain.js`, `footnotes-core.js`, `publication-core.js`, `publication-resolver.js` | Versioned model configuration, applicability, publication membership, source edits, reuse resolution, publication preparation and note/model/save-selection projections |
 | Manual service | `manual-service.js` | Capture workspace/model identities before IO, read a Map or Topic and its dependencies, verify freshness and expose domain operations through the existing service contract |
 | Rendering compatibility | `app-core.js` | Explicit compatibility exports and state/DOM binding; assembles Author, source, Oxygen, diff and delivery modules |
 | XML/Author adapters | `xml-dom.js`, `author-renderer.js`, `author-source.js`, `oxygen-core.js` | XML validation/DOM/ranges, explicit-document projection, source writes and document-local Oxygen processing |
-| Delivery rendering | `delivery-core.js`, `delivery-document.js`, `markdown-preview.js` | DITA-to-output conversion, data-only HTML layout and standalone Markdown preview/highlighting |
+| Delivery rendering | `delivery-core.js`, `delivery-document.js`, `markdown-preview.js`, `delivery-data.js` | DITA-to-output conversion, data-only HTML layout and standalone Markdown preview/highlighting |
 | Diff algorithms | `diff-core.js` | Pure comparison/grouping and review application algorithms |
 | Editor coordination | `editor-controller.js` | One document history across Source, Topic/Map Author and review; explicit service ports and surface/mode updates |
 | Map authoring | `map-author-controller.js`, `map-source.js` | Instance-local asynchronous Map rendering/refresh jobs; source-range edits for Map/Bookmap titles |
@@ -127,7 +137,7 @@ Rendering/source modules do not apply edits, own a workspace or record history. 
 
 `manual-service.js` owns workspace reads, Map resolution, dependency capture, filter listing and freshness checks. The existing service methods delegate to the domain functions, so save, note, search and delivery controllers retain their interfaces. The composition manifest no longer grants the service `ditaCore`. Model config is copied and frozen after project readiness but before document IO; workspace, repository, branch, model-config content/error and actual model values must still match during capture and before use. Edits or configuration replacement during IO stop capture instead of mixing generations.
 
-Captured file records and model settings are detached/frozen; Map collections and rule-review metadata retain their existing compatible shapes. Consumers must treat snapshot collections as read-only and create derived copies. This is not a new fully immutable collection implementation. Rule review can still replace its captured rule metadata after an acknowledged save through the existing store.
+Captured source records, model settings, Map metadata and external rule metadata are detached/frozen by `snapshot-data.createSnapshot`. Captured Maps expose read-only iterable views over private collections; `Object.freeze(new Map())` is not used as an immutability guarantee. Consumers create derived copies. Rule review replaces its local snapshot through `createSnapshot` after an acknowledged rule save, preserving the original capture.
 
 `manual-core.collectPreviewPaths` is the single shared membership traversal. `publication-core.preparePublication` uses it by default; delivery retains a compatibility alias. Headless callers no longer need to construct an Author/delivery renderer just to enumerate chapters. Existing first-use order, duplicate suppression and resource-only handling are preserved.
 
@@ -165,7 +175,7 @@ Immediate dependencies must be ready before construction. Some relationships are
 
 `export.js` now registers `createExportController` and performs no DOM/event/application access at script load. Explicit construction owns its preview URL, configuration, cancellation, last delivery record and check result. The manual service and image-loading adapter are injected; export cannot silently construct another manual service. Compatibility methods and result getters are forwarded by the composition root. The unused parallel Topic loader/cache and obsolete dropdown-menu state have been removed: all publication reads use the shared manual snapshot service.
 
-`contracts.js` describes document values, workspace IO, manual snapshots and important save/export/manual ports using JSDoc. It is not loaded in the browser and introduces no runtime store. These definitions help editor navigation and review; this project does not yet perform whole-project static type checking. Runtime factory checks and regression tests enforce the current boundaries.
+`data-contracts.d.ts` is the checked source for document snapshots/history, pending/applied proposals, save request/acknowledgement/results, manual captures and delivery request/compiled-output/record data. `contracts.js` aliases these types and documents remaining UI ports. `npm run typecheck` uses pinned TypeScript with strict checks and no emit; `@ts-check` covers the actual `document-store`, `save`, `snapshot-data`, `manual-service` and `delivery-data` implementations. Compile-time negative fixtures verify rejected fields, mutable snapshots and unsupported output formats. CI runs this check on Node 20 and 22. This is incremental boundary checking, not a claim that the entire JavaScript project is statically checked.
 
 `document-store.createDocument()` is the single production constructor for opened Topics, Map children, new documents and Save As results. It establishes separate current/disk/Git-baseline values. `snapshotDocument()` returns a frozen, history-free value copy and derives dirty state from current versus disk. Manual capture and scoped saves consume these copies; snapshots cannot retain live undo arrays or change when later input/undo occurs.
 

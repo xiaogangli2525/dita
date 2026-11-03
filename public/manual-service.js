@@ -1,5 +1,7 @@
+// @ts-check
 'use strict';
 (function (root) {
+  const snapshots = typeof module !== 'undefined' ? require('./snapshot-data') : root.DitaSnapshotData;
   const resolver = typeof module !== 'undefined' ? require('./publication-resolver') : root.DitaPublicationResolver;
   const domain = typeof module !== 'undefined' ? require('./manual-domain') : root.DitaManualDomain;
   const { collectPreviewPaths } = typeof module !== 'undefined' ? require('./manual-core') : root.DitaManualCore;
@@ -7,10 +9,12 @@
   const profiling = typeof module !== 'undefined' ? require('./profiling-core') : root.DitaProfiling;
 
   /** Workspace IO and snapshot freshness only; document rules live in manual-domain.
-   * @param {import('./contracts').ManualPorts} A */
+   * @param {import('./data-contracts').CapturePorts} A */
   function createManualService(A) {
+    /** @returns {import('./data-contracts').ProjectConfig} */
     const projectValue = () => A.project?.value || { schema: 1, models: [] };
 
+    /** @param {import('./data-contracts').CaptureContext} snapshot */
     function sameContext(snapshot) {
       if (!snapshot || snapshot.workspace !== A.api.token || snapshot.root !== A.state.root ||
           snapshot.branch !== A.state.currentBranch || snapshot.projectContent !== A.project?.expectedContent ||
@@ -20,9 +24,11 @@
         snapshot.project.models.every((model, index) => model === project.models[index]);
     }
 
+    /** @param {import('./data-contracts').ManualSnapshot} snapshot */
     function current(snapshot) {
       if (!sameContext(snapshot) || A.noteRuleStore && !A.noteRuleStore.current(snapshot.noteRules)) return false;
-      const entries = [[snapshot.path, snapshot.content], ...Array.from(snapshot.files, ([path, file]) => [path, file.current])];
+      /** @type {[string,string][]} */
+      const entries = [[snapshot.path, snapshot.content], ...Array.from(snapshot.files, /** @returns {[string,string]} */ ([path, file]) => [path, file.current])];
       if (snapshot.filter) entries.push([snapshot.filter.path, snapshot.filter.current]);
       return entries.every(([path, content]) => {
         const file = A.state.filesMap.get(path), captured = snapshot.buffers.get(path);
@@ -30,6 +36,9 @@
       });
     }
 
+    /** @param {string} [path]
+     * @param {{resources?:boolean,filterPath?:string}} [options]
+     * @returns {Promise<import('./data-contracts').ManualSnapshot>} */
     async function capture(path = A.state.activePath, { resources = false, filterPath = '' } = {}) {
       if (!path) throw new Error('请先打开文档或功能手册');
       const workspace = A.api.token;
@@ -38,6 +47,7 @@
       // Pin model settings before the first document read. Taking them after
       // asynchronous IO could silently combine old documents with new settings.
       const project = projectValue();
+      /** @type {import('./data-contracts').CaptureContext} */
       const context = {
         workspace, root: A.state.root, branch: A.state.currentBranch,
         project: Object.freeze({ ...project, models: Object.freeze([...project.models]) }),
@@ -47,9 +57,10 @@
       function assertContext() {
         if (!sameContext(context)) throw new Error('工作区或型号设置已变化，请重新打开以更新快照');
       }
+      /** @param {string} filePath */
       async function read(filePath) {
         assertContext();
-        if (context.buffers.has(filePath)) return context.buffers.get(filePath).current;
+        const buffered = context.buffers.get(filePath); if (buffered) return buffered.current;
         const response = await A.api.request('/api/file?path=' + encodeURIComponent(filePath));
         if (!response.ok) throw new Error(filePath + '：' + await A.api.error(response));
         const content = await response.text();
@@ -62,7 +73,7 @@
       const filter = filterPath ? Object.freeze({ path: filterPath, current: await read(filterPath) }) : null;
       let profile;
       try { profile = filter && profiling.compile(filter.current); }
-      catch (error) { throw new Error(filterPath + '：' + error.message, { cause: error }); }
+      catch (error) { throw new Error(filterPath + '：' + (error instanceof Error ? error.message : String(error)), { cause: error }); }
       let map;
       if (/\.ditamap$/i.test(path)) {
         const mapSource = profile ? profile.filterSource(content) : content;
@@ -71,13 +82,14 @@
           method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ path, content: mapSource })
         });
         if (!response.ok) throw new Error(await A.api.error(response));
-        map = { ...await response.json(), source: mapSource };
+        map = { ...await response.json(), path, source: mapSource };
         assertContext();
       } else map = { title: path.split('/').pop(), path, children: [{ type: 'file', path }] };
 
       const files = new Map();
       for (const entry of collectPreviewPaths(map.children || [])) files.set(entry.path, { path: entry.path, current: await read(entry.path) });
       if (resources) {
+        /** @param {readonly import('./data-contracts').MapEntry[]} nodes */
         async function include(nodes) {
           for (const node of nodes) {
             if (node.type === 'file' && /\.(dita|xml)$/i.test(node.path) && !files.has(node.path)) {
@@ -90,10 +102,10 @@
       }
       const loaded = await resolver.loadDependencies(files, read, profile);
       const noteRules = A.noteRuleStore ? await A.noteRuleStore.read() : null;
-      const snapshot = {
+      const snapshot = snapshots.createSnapshot({
         ...context, noteRules, capturedAt: new Date().toISOString(), path, content, map, filter,
-        files: new Map(Array.from(loaded, ([path, file]) => [path, Object.freeze({ ...file })]))
-      };
+        files: loaded
+      });
       if (!current(snapshot)) throw new Error('内容已变化，请重新打开以更新快照');
       return snapshot;
     }
@@ -107,6 +119,7 @@
 
     return Object.freeze({
       ...domain, capture, current, listFilters,
+      /** @param {import('./data-contracts').ManualSnapshot} snapshot */
       verifyRules: snapshot => A.noteRuleStore?.verify(snapshot.noteRules),
       scopePath: () => /\.ditamap$/i.test(A.state.activePath) ? A.state.activePath : A.state.selectedMap || A.state.activePath
     });

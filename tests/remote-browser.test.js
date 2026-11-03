@@ -39,9 +39,9 @@ test('remote library browser workflow from an empty workspace', async t => {
     await page.evaluate(() => { const a = window.DitaApp, file = a.state.filesMap.get('a.dita'); a.setFileContent(file, file.current + '<!--draft-->'); });
     await page.click('#remoteImportButton'); await page.fill('#remoteUrl', url); await page.fill('#remoteName', 'should-not-clone'); await page.click('#remoteImportForm button[type=submit]');
     assert.match(await page.locator('#remoteImportError').innerText(), /未保存/); assert.equal((await fs.readdir(f.managed)).includes('should-not-clone'), false); await page.click('#remoteImportCancel');
-    await page.evaluate(() => { const a = window.DitaApp; a.state.capabilities.remoteGit = false; a.events.emit('workspace:changed'); });
+    await page.evaluate(async () => { const a = window.DitaApp, workspace = await (await a.api.request('/api/workspace')).json(); a.session.refreshDirectory({ ...workspace, capabilities: { ...workspace.capabilities, remoteGit: false } }); a.events.emit('workspace:changed'); });
     assert.equal(await page.locator('#remoteImportButton').isEnabled(), false); assert.match(await page.locator('#remoteImportButton').getAttribute('title'), /在线演示/);
-    await page.evaluate(() => { const a = window.DitaApp, file = a.state.filesMap.get('a.dita'); a.setFileContent(file, file.disk); a.state.capabilities.remoteGit = true; a.events.emit('workspace:changed'); });
+    await page.evaluate(async () => { const a = window.DitaApp, file = a.state.filesMap.get('a.dita'), workspace = await (await a.api.request('/api/workspace')).json(); a.setFileContent(file, file.disk); a.session.refreshDirectory({ ...workspace, capabilities: { ...workspace.capabilities, remoteGit: true } }); a.events.emit('workspace:changed'); });
   });
   await t.test('mobile remote loading form fits the viewport', async () => {
     await page.setViewportSize({ width: 390, height: 844 }); await page.click('#sidebarToggleButton'); await page.click('#remoteImportButton');

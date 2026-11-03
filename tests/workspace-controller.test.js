@@ -1,4 +1,5 @@
 'use strict';
+const { createSession } = require('../public/workspace-session');
 const test=require('node:test'),assert=require('node:assert/strict');
 const {createController}=require('../public/workspace-controller'),{createEvents}=require('../public/manual-core');
 function fixture(){
@@ -6,7 +7,7 @@ function fixture(){
  const state={root:'old',files:[],maps:[],filesMap:new Map([['a.dita',file]]),activePath:'a.dita',activeView:'map',currentBranch:'main',reviewGroups:new Map(),reviewDecisions:new Map()};
  const dom={rootPath:{},repositorySelect:{value:'new'},branchSelect:{value:'feature'},editor:{}};
  const messages=[],locks=[],requests=[],events=createEvents();let answer=true;
- const A={state,dom,events,saving:false,project:{load:async()=>{}},setStatus:text=>messages.push(text),toast(){},api:{token:'old',adopt(token){this.token=token;},error:async()=> 'denied',request:async(url,options)=>{requests.push([url,options]);return {ok:false};}}};
+ const A={state,session:createSession(state),dom,events,saving:false,project:{load:async()=>{}},setStatus:text=>messages.push(text),toast(){},api:{token:'old',adopt(token){this.token=token;},error:async()=> 'denied',request:async(url,options)=>{requests.push([url,options]);return {ok:false};}}};
  const initialRequest=A.api.request;A.send=initialRequest;A.api.request=(...args)=>A.send(...args);
  const noop=()=>{},views={renderWorkspaceSwitches:noop,renderMapPicker:noop,renderTabs:noop,updateActivePanes:noop,updateTree:noop,setActiveView:noop,setSwitching:value=>locks.push(value),confirmDiscard:()=>answer};
  return {A,views,file,messages,locks,requests,setAnswer:value=>{answer=value;},controller:createController(A,views)};
@@ -30,6 +31,13 @@ test('tree refresh rejects changed workspace identities before changing state',a
 test('a delayed source jump cannot focus or select a document opened later',async()=>{
  const {createController}=require('../public/document-navigation');let release,focused=0;
  const gate=new Promise(resolve=>{release=resolve;}),state={filesMap:new Map(),maps:[],activePath:'',mode:'visual'},events=createEvents();
- const controller=createController({state,events,api:{token:'workspace'},dom:{editor:{focus(){focused++;},setSelectionRange(){focused++;}}},ditaCore:{collectPreviewPaths:()=>[]},setMode:mode=>{state.mode=mode;},setStatus(){},ensureMapAuthorFile:async path=>{if(path==='slow.dita')await gate;const file={path,current:'<topic/>',gitStatus:'clean'};state.filesMap.set(path,file);return file;}},{renderTabs(){},updateActivePanes(){},updateHistoryButtons(){},updateTree(){}});
+ const session=createSession(state);
+ const controller=createController({state,session,events,api:{token:'workspace'},dom:{editor:{focus(){focused++;},setSelectionRange(){focused++;}}},ditaCore:{collectPreviewPaths:()=>[]},setMode:mode=>session.setMode(mode),setStatus(){},ensureMapAuthorFile:async path=>{if(path==='slow.dita')await gate;const file={path,current:'<topic/>',gitStatus:'clean'};return session.registerDocument(file);}},{renderTabs(){},updateActivePanes(){},updateHistoryButtons(){},updateTree(){}});
  const pending=controller.navigateToSource('slow.dita');await controller.openFile('fast.dita');release();await assert.rejects(pending,/打开位置已变化/);assert.equal(state.activePath,'fast.dita');assert.equal(focused,0);assert.equal(state.mode,'visual');
+});
+
+test('invalid adoption leaves the token, buffers and lifecycle subscribers untouched', async()=>{
+ const f=fixture();let changing=0;f.A.events.on('workspace:willChange',()=>{changing++;});
+ await assert.rejects(f.controller.reloadWorkspace({root:'new',workspaceToken:'new',files:[],maps:[null]}),/响应无效/);
+ assert.equal(changing,0);assert.equal(f.A.api.token,'old');assert.equal(f.A.state.filesMap.get('a.dita'),f.file);assert.equal(f.A.state.root,'old');assert.equal(f.controller.busy,false);
 });

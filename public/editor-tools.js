@@ -183,7 +183,7 @@
       const file = scope && state.filesMap.get(scope.path), stale = file && scope.surface.ditaSourceContent !== file.current;
       matches = query && scope && !stale ? collectMatches(scope.surface, query) : []; if (!query || !scope || stale) truncated = false;
       active = !matches.length ? -1 : reset ? 0 : Math.min(Math.max(0, active), matches.length - 1);
-      if (scope) scope.current = state.filesMap.get(scope.path)?.current;
+      if (scope) scope.sourceContent = state.filesMap.get(scope.path)?.current;
       paint(); dom.editFindMeta.textContent = stale ? '正文已变化，请重新打开此 Topic 后查找' : !query ? '输入要查找的正文文字（不含注脚）' : !matches.length ? '未找到' : (active + 1) + '/' + matches.length + (truncated ? '（已达 2000 处上限，请缩小查找范围）' : '');
       const readOnly = state.mode !== 'visual'; dom.editReplaceButton.disabled = readOnly || !matches.length; dom.editReplaceAllButton.disabled = readOnly || !matches.length || truncated;
       get('editSearchKind').textContent = readOnly ? '只读正文' : '正文';
@@ -218,7 +218,7 @@
         if (state.mode !== 'visual') throw new Error('阅读模式不可替换，请先切换到编写模式');
         if (!scope || !matches.length) return;
         const file = state.filesMap.get(scope.path);
-        if (!file || file.current !== scope.current || scope.surface.ditaSourceContent !== file.current || !scope.surface.isConnected || matches.some(match => !scope.surface.contains(match.range.startContainer))) { refreshFind(); throw new Error('正文已变化，请确认最新匹配后再替换'); }
+        if (!file || file.current !== scope.sourceContent || scope.surface.ditaSourceContent !== file.current || !scope.surface.isConnected || matches.some(match => !scope.surface.contains(match.range.startContainer))) { refreshFind(); throw new Error('正文已变化，请确认最新匹配后再替换'); }
         if (all && truncated) throw new Error('匹配过多，请缩小查找范围后再全部替换');
         const chosen = all ? matches : [matches[active]], target = { ...scope, file, range: chosen[0].range, activePath: state.activePath, workspace: A.api.token, current: file.current };
         const { copy } = selection.clone(target);

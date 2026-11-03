@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": false,
+    "noEmit": true,
+    "strict": true,
+    "target": "ES2023",
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "lib": ["ES2023", "DOM"],
+    "types": ["node"],
+    "skipLibCheck": false
+  },
+  "files": ["types/browser.d.ts", "types/boundaries.test.ts", "public/document-store.js", "public/save.js", "public/snapshot-data.js", "public/manual-service.js", "public/delivery-data.js"]
+}

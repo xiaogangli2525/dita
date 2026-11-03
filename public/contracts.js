@@ -1,45 +1,19 @@
 'use strict';
-// JSDoc contracts for editor autocomplete and module boundaries. This file is
+// UI contracts; checked data contracts have one source in data-contracts.d.ts. This file is
 // type-only documentation: it is not a browser script or a second state store.
 /**
- * @typedef {'editor'|'visual'|'preview'|'review'} EditorMode
- * @typedef {Object} DocumentSnapshot
- * @property {string} path Repository-relative source path.
- * @property {string} current Working XML, possibly unsaved or temporarily invalid.
- * @property {string} disk Last acknowledged filesystem/browser-save XML.
- * @property {string} baseline Git comparison XML; independent of disk and current.
- * @property {string} gitStatus
- * @property {boolean} dirty Always current !== disk.
- *
- * @typedef {DocumentSnapshot & {history?: Object}} DocumentState
- * @typedef {{schema:1, models:string[]}} ProjectConfig
- * @typedef {Object} WorkspaceState
- * @property {string} root
- * @property {string} currentBranch
- * @property {string} activePath
- * @property {EditorMode} mode
- * @property {Map<string, DocumentState>} filesMap
- * @property {Set<string>} mapAuthorPaths
- * @property {{persistence:string, git:boolean, pdf?:boolean, remoteGit?:boolean}} capabilities
+ * @typedef {import('./data-contracts').EditorMode} EditorMode
+ * @typedef {import('./data-contracts').DocumentSnapshot} DocumentSnapshot
+ * @typedef {import('./data-contracts').DocumentState} DocumentState
+ * @typedef {import('./data-contracts').ProjectConfig} ProjectConfig
+ * @typedef {import('./data-contracts').WorkspaceState} WorkspaceState
  *
  * @typedef {Object} WorkspaceApi
  * @property {string} token Live workspace identity; do not cache across awaits.
  * @property {(url:string, options?:Object)=>Promise<Response>} request
  * @property {(response:Response)=>Promise<string>} error
  *
- * @typedef {Object} ManualSnapshot
- * @property {string} workspace
- * @property {string} root
- * @property {string} branch
- * @property {string} path
- * @property {string} content
- * @property {Object} map
- * @property {ReadonlyMap<string,Readonly<{path:string,current:string}>>} files Resolved dependencies; records are copied/frozen. Collections remain Maps and must be treated as read-only.
- * @property {ReadonlyMap<string,DocumentSnapshot>} buffers Captured opened-file values, never live history.
- * @property {{path:string,current:string}|null} filter Captured DITAVAL, independently versioned from topic dependencies.
- * @property {Readonly<ProjectConfig>} project Detached/frozen model config captured before document IO; its models array is frozen too.
- * @property {string|null} projectContent Exact model-config comparison base.
- * @property {{config:Object,expectedContent:string|null,supported:boolean,error?:string}|null} noteRules Captured external export rules; never embedded in authoring XML.
+ * @typedef {import('./data-contracts').ManualSnapshot} ManualSnapshot
  *
  * @typedef {Object} ManualService
  * Pure prepare/list/discovery/save-selection methods are supplied by manual-domain.
@@ -101,17 +75,7 @@
  * @property {ProjectService} project Resolved lazily after application composition.
  * @property {Object} noteRuleStore Resolved lazily; handles rule persistence and workspace identity.
  *
- * @typedef {Object} SavePorts
- * @property {WorkspaceState} state
- * @property {WorkspaceApi} api
- * @property {ManualService} manual
- * @property {{emit:Function}} events
- * @property {boolean} saving Shared busy state, the only writable service port.
- * @property {(xml:string)=>unknown} validateXml
- * @property {()=>void} refreshChrome
- * @property {()=>void} refreshFiles
- * @property {(message:string, error?:boolean)=>void} setStatus
- * @property {(message:string, level?:string)=>void} toast
+ * @typedef {import('./data-contracts').SavePorts} SavePorts
  *
  * @typedef {Object} ExportPorts
  * @property {{show:Function}} noteRules Source-rule review entry, resolved by application composition.

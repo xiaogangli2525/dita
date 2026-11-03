@@ -4,7 +4,7 @@
 
   // The editor owns history/modes; this controller owns the asynchronous Map
   // surface and its refresh jobs. No render tokens or timers escape to app state.
-  function createController({ state, dom, ditaCore, api, events, validateXml, setStatus }, {
+  function createController({ state, session, dom, ditaCore, api, events, validateXml, setStatus }, {
     load, documentLabel, setFileContent, takeHistory, renderAuthorSurface,
     renderTabs, updateTree, renderInspector, updateHistoryButtons, renderMapReview
   }) {
@@ -39,8 +39,7 @@
           if (!response.ok) throw new Error(api.error ? await api.error(response) : `HTTP ${response.status}`);
           const map = await response.json();
           if (!current() || file.current !== content) return;
-          const index = state.maps.findIndex(item => item.path === file.path);
-          if (index < 0) state.maps.push(map); else state.maps[index] = map;
+          session.upsertMap(map);
           if (state.selectedMap === file.path) updateTree();
           if (state.activePath === file.path && ['visual', 'preview', 'review'].includes(state.mode)) await updateMapAuthor(file);
         } catch (error) {
@@ -63,8 +62,7 @@
     }
 
     function updateTitleViews(file) {
-      const map = state.maps.find(item => item.path === file.path);
-      if (map) map.title = mapSource.readTitle(file.current).text;
+      session.updateMapTitle(file.path, mapSource.readTitle(file.current).text);
       dom.editor.value = file.current;
       renderTabs(); updateTree(); updateHistoryButtons();
     }
@@ -88,7 +86,7 @@
       if (!map) return;
       try {
         const entries = ditaCore.collectPreviewPaths(map.children || []);
-        state.mapAuthorPaths = new Set(entries.map(entry => entry.path));
+        session.setAuthorPaths(entries.map(entry => entry.path));
         dom.visualEditor.classList.add('map-author-editor');
         dom.visualEditor.contentEditable = 'false';
         dom.visualEditor.replaceChildren(document.createTextNode('正在加载 Map 全文…'));
@@ -199,7 +197,6 @@
         const next = ditaCore.updateCurrentFromVisual(null, { visualEditor: surface }, topicFile.current);
         if (next !== topicFile.current) {
           setFileContent(topicFile, next, { updateEditor: false, render: false, ...takeHistory(topicFile, event) });
-          topicFile.gitStatus = topicFile.gitStatus === 'unknown' ? 'modified' : topicFile.gitStatus;
           renderTabs();
           updateHistoryButtons();
         }

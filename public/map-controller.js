@@ -1,7 +1,7 @@
 'use strict';
 (function (root) {
   function createMapController(A, { ensureMapAuthorFile, renderTabs, documentLabel }) {
-    const { state, dom, setStatus, setFileContent, openFile } = A;
+    const { state, session, dom, setStatus, setFileContent, openFile } = A;
     const fetch = A.api.request, responseError = A.api.error;
     let operationGeneration = 0, busy = false;
     A.events.on('workspace:willChange', () => { operationGeneration++; busy = false; });
@@ -27,8 +27,7 @@ function renderMapPicker() {
   select.addEventListener('change', () => {
     describeSelection();
     operationGeneration++; busy = false;
-    state.selectedMap = select.value;
-    state.selectedMapSourcePath = '';
+    session.selectMap(select.value);
     updateTree();
   });
   const openButton = document.createElement('button');
@@ -63,7 +62,7 @@ function renderTree(nodes, filter = '') {
       nodeButton.dataset.path = node.path || '';
       nodeButton.dataset.kind = node.type;
       nodeButton.addEventListener('click', () => {
-        state.selectedMapSourcePath = node.sourcePath || '';
+        session.selectMapSource(node.sourcePath || '');
         if (node.type === 'file') Promise.resolve(openFile(node.path)).catch(error=>setStatus(error.message,true));
         else updateTree();
       });
@@ -129,12 +128,11 @@ async function applyMapOperation(operation, details = {}) {
     const result = await response.json();
     if (!current()) return null;
     if (file.current !== before) throw new Error('Map 已修改，请重新执行结构操作');
-    const selectedMap = state.maps.find(map => map.path === mapPath);
-    if (selectedMap) Object.assign(selectedMap, result.map);
+    session.upsertMap(result.map);
     setFileContent(file, result.content);
     if (state.activePath !== mapPath) await openFile(mapPath);
-    state.historyTargetPath = mapPath;
-    state.selectedMapSourcePath = result.selectedSourcePath || '';
+    session.setHistoryTarget(mapPath);
+    session.selectMapSource(result.selectedSourcePath || '');
     updateTree('');
     renderTabs();
     setStatus('Map 结构已更新；可撤销，按 Ctrl/Cmd+S 保存');

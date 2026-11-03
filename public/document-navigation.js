@@ -1,7 +1,7 @@
 'use strict';
 (function (root) {
   function createController(A, { renderTabs, updateActivePanes, updateHistoryButtons, updateTree }) {
-    const { state, dom, ditaCore, setMode, ensureMapAuthorFile, setStatus } = A;
+    const { state, session, dom, ditaCore, setMode, ensureMapAuthorFile, setStatus } = A;
     let openRevision = 0;
     A.events.on('workspace:willChange', () => { openRevision++; });
     A.events.on('file:opened', () => { openRevision++; });
@@ -17,13 +17,12 @@
       }
       if (revision !== openRevision || workspace !== A.api.token || state.filesMap.get(path) !== file) return null;
       A.shell?.sidebar(false);
-      state.activePath = path;
+      session.activateDocument(path);
       if (!preserveFootnotesScope) {
         const manual = state.maps.find(map => map.path === state.selectedMap);
         const inManual = manual && ditaCore.collectPreviewPaths(manual.children || []).some(entry => entry.path === path);
         A.footnotes?.setScope(inManual ? manual.path : path);
       }
-      state.historyTargetPath = path;
       const reviewableModes = ['visual', 'preview', 'review'];
       setMode(reviewableModes.includes(state.mode) ? state.mode : 'visual');
       renderTabs();
@@ -45,10 +44,9 @@
     function closeFile(path) {
       const file = state.filesMap.get(path);
       if (file?.dirty && !confirm(`${path} \u5C1A\u672A\u4FDD\u5B58\uFF0C\u786E\u5B9A\u5173\u95ED\uFF1F`)) return;
-      state.filesMap.delete(path); A.events.emit('file:closed', path);
-      if (state.activePath === path) {
-        state.activePath = Array.from(state.filesMap.keys()).pop() || '';
-        state.historyTargetPath = state.activePath;
+      const wasActive = state.activePath === path;
+      session.closeDocument(path); A.events.emit('file:closed', path);
+      if (wasActive) {
         const nextMode = state.activePath ? state.mode : 'visual';
         setMode(nextMode);
         if (nextMode === 'editor') updateActivePanes();

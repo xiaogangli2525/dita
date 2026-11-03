@@ -40,7 +40,7 @@ npm test              # unit and HTTP regression
 npm run test:browser  # Chromium workflow regression
 ```
 
-ESLint checks recommended correctness rules, including undefined/unused variables and preserved error causes. Browser-evaluated test/PDF callbacks have explicit browser globals; vendored code and source manuals are excluded. Intentional control-character rejection has a local, explained rule exception. CI runs lint on Node 20 and 22 before unit tests. `.editorconfig` sets basic code/text conventions without changing DITA encoding or forcing a repository-wide format rewrite. JSDoc contracts remain documentation rather than a full static type system.
+ESLint checks recommended correctness rules, including undefined/unused variables and preserved error causes. Browser-evaluated test/PDF callbacks have explicit browser globals; vendored code and source manuals are excluded. Intentional control-character rejection has a local, explained rule exception. CI runs lint and `npm run typecheck` on Node 20 and 22 before unit tests. `.editorconfig` sets basic code/text conventions without changing DITA encoding or forcing a repository-wide format rewrite. Pinned TypeScript checks the actual document/proposal/save, manual capture/snapshot and delivery-record implementations through JSDoc and `public/data-contracts.d.ts`; no browser build step is required. UI/rendering modules remain incrementally typed.
 
 ## Remote document libraries
 
@@ -255,7 +255,7 @@ The sidebar offers repository/manual plaintext search with exact source navigati
 
 ## Architecture maintenance
 
-Feature startup is declared in `public/application.js`, including factories, dependency ports, initialization requirements and compatibility APIs. Delivery is an explicitly constructed controller; it no longer initializes through script-load side effects. New document state and save/manual snapshots use the shared `document-store` constructors. Shared JSDoc interfaces are in `public/contracts.js`; current runtime checks and dependency constraints are described in [architecture](docs/architecture.md).
+Feature startup is declared in `public/application.js`, including factories, dependency ports, initialization requirements and compatibility APIs. Delivery is an explicitly constructed controller; it no longer initializes through script-load side effects. New document state and save/manual snapshots use the shared `document-store` constructors. Protected workspace fields and document membership use named operations in `public/workspace-session.js`; captured Maps expose read-only views. Checked data contracts are in `public/data-contracts.d.ts`, while `public/contracts.js` documents the remaining UI ports; current runtime checks and dependency constraints are described in [architecture](docs/architecture.md).
 
 ## 日常编写
 

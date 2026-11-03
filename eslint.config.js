@@ -28,6 +28,15 @@ module.exports = [
       'no-unused-vars': ['error', { argsIgnorePattern: '^_', caughtErrors: 'none' }]
     }
   },
+  {
+    files: ['public/*.js'], ignores: ['public/document-store.js'],
+    rules: { 'no-restricted-syntax': ['error',
+      { selector: 'AssignmentExpression[left.object.name="state"][left.property.name=/^(root|files|maps|selectedMap|selectedMapSourcePath|repositories|branches|currentBranch|capabilities|filesMap|activePath|historyTargetPath|mode|mapAuthorPaths)$/]', message: 'Use the workspace session operation instead of assigning shared state.' },
+      { selector: 'AssignmentExpression[left.object.property.name="state"][left.property.name=/^(root|files|maps|selectedMap|selectedMapSourcePath|repositories|branches|currentBranch|capabilities|filesMap|activePath|historyTargetPath|mode|mapAuthorPaths)$/]', message: 'Use the workspace session operation instead of assigning shared state.' },
+      { selector: 'CallExpression[callee.object.property.name="filesMap"][callee.property.name=/^(set|delete|clear)$/]', message: 'Document membership belongs to the workspace session.' },
+      { selector: 'AssignmentExpression[left.computed!=true][left.property.name=/^(current|disk|dirty|baseline|gitStatus)$/]', message: 'Document content and save acknowledgement belong to document-store operations.' }
+    ] }
+  },
   ...renderingBoundaries.map(({ names, imports }) => ({
     files: names.map(name => 'public/' + name + '.js'),
     rules: {
