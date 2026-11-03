@@ -7,7 +7,8 @@
     const tone = ['danger', 'warning'].includes(type) ? 'danger' : ['caution', 'attention', 'restriction', 'important'].includes(type) ? 'attention' : ['tip', 'fastpath'].includes(type) ? 'tip' : 'info';
     return { label: type === 'other' && other.trim() ? other.trim() : noteTypes[type] || '说明', tone };
   }
+  const bodies = new Set(['body', 'conbody', 'refbody', 'taskbody']);
   const preformatted = new Set(['codeblock', 'msgblock', 'screen', 'pre', 'lines']);
-  const api = { noteTypes, note, preformatted };
+  const api = { noteTypes, note, preformatted, bodies };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaDocumentPresentation = api;
 })(typeof window === 'undefined' ? globalThis : window);

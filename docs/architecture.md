@@ -87,7 +87,10 @@ The application remains a local Node server and buildless browser client. This c
 | XML and document state | `xml-source.js`, `document-store.js`, `lib/document-files.js` | Source ranges/validation, undo and acknowledgements, encoding, real-path containment and atomic writes |
 | Shared domain | `manual-core.js`, `manual-domain.js`, `footnotes-core.js`, `publication-core.js`, `publication-resolver.js` | Versioned model configuration, applicability, publication membership, source edits, reuse resolution, publication preparation and note/model/save-selection projections |
 | Manual service | `manual-service.js` | Capture workspace/model identities before IO, read a Map or Topic and its dependencies, verify freshness and expose domain operations through the existing service contract |
-| Editor/rendering | `app-core.js`, `delivery-core.js`, `diff-core.js` | Author/source conversion, stateless HTML/Markdown rendering, and pure diff algorithms respectively |
+| Rendering compatibility | `app-core.js` | Explicit compatibility exports and state/DOM binding; assembles Author, source, Oxygen, diff and delivery modules |
+| XML/Author adapters | `xml-dom.js`, `author-renderer.js`, `author-source.js`, `oxygen-core.js` | XML validation/DOM/ranges, explicit-document projection, source writes and document-local Oxygen processing |
+| Delivery rendering | `delivery-core.js`, `delivery-document.js`, `markdown-preview.js` | DITA-to-output conversion, data-only HTML layout and standalone Markdown preview/highlighting |
+| Diff algorithms | `diff-core.js` | Pure comparison/grouping and review application algorithms |
 | Editor coordination | `editor-controller.js` | One document history across Source, Topic/Map Author and review; explicit service ports and surface/mode updates |
 | Map authoring | `map-author-controller.js`, `map-source.js` | Instance-local asynchronous Map rendering/refresh jobs; source-range edits for Map/Bookmap titles |
 | Workspace presentation | `workspace-view.js`, `workspace-shell.js`, `menu-controller.js`, `app-dom.js`, `document-label.js`, `delivery-view.js` | Panel visibility, resizing, focus and document labels; presentation of delivery configuration, preflight and export readiness |
@@ -97,6 +100,26 @@ The application remains a local Node server and buildless browser client. This c
 | HTTP and Git boundaries | `lib/api-router.js`, `lib/http-utils.js`, `lib/git-service.js` | Shared request guard and API dispatch, bounded JSON/response helpers, and repository/branch/Git baseline operations |
 
 `app.js` creates the compatibility `DitaApp` facade and delegates feature assembly to `application.js`. Workspace IO, navigation, presentation and event installation live in the controllers listed above. `workspace-shell.js` owns panel visibility and resizing; `inspector.js` owns element properties and table controls. `editor-controller.js` owns document history, modes, Topic synchronization and review coordination; it receives a frozen set of explicit ports, with a lazy selection service for initialization order. Its Map controller receives named IO/view/history callbacks, and input history receives only state/DOM/events. `editor-tools.js` owns Author selection formatting, body find/replace, structural insertion and explicit Source find/insertion; `author-selection.js` owns guarded ranges and detached-clone commits. Feature controllers receive declared capability subsets, while integration/browser callers retain the compatibility facade.
+
+## Author and output rendering boundaries
+
+`app-core.js` is a compatibility facade with explicit exports; existing `DitaVisualCore`/CommonJS callers retain their public API. It binds editor state/DOM only in compatibility methods, and assembles delivery using explicit parser, Oxygen and asset-path functions. New lower-level code imports its actual owner instead of depending on the facade.
+
+| Module | Input / responsibility | Allowed lower dependencies |
+| --- | --- | --- |
+| `xml-dom` | Validated XML to DOM plus canonical source tree; serialization and element identity | `xml-source` |
+| `oxygen-core` | A provided document or source string; local revision indices and tracked-change offsets | None |
+| `author-renderer` | Source, explicit owner document and per-call context to an Author surface | XML DOM, Oxygen, asset and presentation helpers |
+| `author-source` | Source string and detached/live surface to candidate XML; no history/save | XML DOM, Author projection, presentation and shared entity decoding |
+| `markdown-preview` | Markdown string to preview/highlight HTML; no DITA parser or delivery factory | Asset URL policy |
+| `delivery-document` | Already-rendered sections/notes plus escaped metadata to full HTML | None |
+| `delivery-core` | Publication data and injected adapters to HTML/Markdown; per-export images/anchors/notes | Shared domain, output layout/preview and asset/presentation helpers |
+
+The graph is acyclic: source conversion can project a baseline through the renderer, while the renderer never imports the writer. XML DOM and Oxygen modules never import Author or the facade. ESLint enforces the declared import lists, prevents application/IO access and disallows ambient `document` in these adapters. Only the XML DOM adapter chooses the platform DOM parser; the Author renderer requires an owner document. The facade retains browser-document defaults for compatibility. Script order in `index.html` follows the same dependency order as CommonJS.
+
+`xml-dom.parseSource` returns `{ document, tree }` from the existing canonical validator. Source writes adapt its UTF-16 element/text ranges; the old separate XML lexer is removed. Unchanged ranges retain their original declaration, DOCTYPE, quote style, CRLF, CDATA, comments and processing instructions. For annotated text, small text edits preserve annotation/entity positions; edits crossing markers or ambiguous whitespace/CDATA-plus-annotation mappings stop with a Source-editing message. Ordinary CDATA nodes render as inert text in Author and HTML/Markdown, including outside preformatted blocks.
+
+Rendering/source modules do not apply edits, own a workspace or record history. Controllers still check the selected file/surface freshness, call the existing document store and restore the surface on rejected conversion. HTML layout accepts trusted, already-rendered section/note bodies and escapes titles/model/version metadata; it does not replace the publication/URL policy. Per-call Author/export context isolation remains unchanged.
 
 ## Manual domain and workspace boundary
 

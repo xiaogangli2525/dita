@@ -259,3 +259,14 @@ Full local regression: **231 unit/HTTP checks** and **201 Chromium checks**, zer
 `manual-domain.js` runs in a clean Node process without editor/rendering/workspace modules. New cases exercise the shared chapter traversal, resource-only exclusion and duplicate suppression, source-linked notes, real HTTP data-only snapshots for three models, and unchanged inputs. Existing service consumers retain their interfaces while the composition manifest removes the renderer dependency.
 
 Capture regressions change project content/values/errors, repository and branch during an outstanding Map read; every result is rejected. A baseline/current probe confirms that the previous service accepted the new model config into the old capture, while the new service rejects it. Captured model values and file records are copied/frozen; collection compatibility remains explicit. Boundary lint probes reject six ambient/adapter dependencies and allow a shared-domain import.
+
+
+## Author/source and delivery rendering boundaries
+
+Full local regression: **239 unit/HTTP checks** and **203 Chromium checks**, zero failures/skips; lint passes with zero warnings. The public `DitaVisualCore` API remains unchanged. A baseline comparison produces byte-identical ordinary HTML/Markdown for three scopes (six outputs), plus identical Markdown preview/highlighting projections.
+
+`app-core.js` is now an explicit compatibility facade. XML DOM/source-tree adaptation, Author projection, surface-to-source writes and Oxygen processing live in acyclic modules. Author projection takes an owner document; the facade preserves document defaults. Markdown preview and full HTML layout load independently of DITA conversion. Six negative lint probes verify that the rendering layers cannot import upper/cyclic modules or access the application/ambient document; CommonJS clean-process coverage verifies loading without editor/workspace services or DOM globals.
+
+The browser directly runs the extracted Author modules against all 25 Topics in the actual HTTP closure: unchanged views round-trip exactly, two sequential title edits patch the expected source, and live buffers remain untouched. An additional case covers CRLF, a DTD, UTF-16 offsets, CDATA, entities, processing instructions and quoted angle brackets.
+
+These checks exposed two existing content issues: ordinary CDATA text could disappear from Author/HTML/Markdown, and annotated title edits could move PI markers behind the edited text. Regression probes first failed, then passed after inert CDATA text handling and minimal annotated-text patching. Source writes reuse the canonical validator's ranges instead of a second XML lexer. Edits crossing annotations or ambiguous annotation/whitespace/CDATA combinations are refused with a Source-editing message. The unchanged-output comparison above excludes these deliberate fixes.

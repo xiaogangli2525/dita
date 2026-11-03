@@ -7,6 +7,21 @@
     const compact = String(value || '').replace(/[\x00-\x20\x7f]/g, '');
     return /^[a-z][a-z\d+.-]*:/i.test(compact) && !/^(https?:|mailto:|tel:|ftp:)/i.test(compact) ? '' : String(value || '');
   }
+function resolveAssetPath(href, ctx = { topicPath: '' }) {
+  if (!href) return '';
+  let raw = decodeURIComponent(href.split('?')[0].split('#')[0]);
+  if (/^(https?:|data:|\/)/i.test(raw)) return raw;
+  const topicDir = ctx.topicPath ? ctx.topicPath.replace(/[^/]+$/, '') : '';
+  const combined = topicDir + raw;
+  const parts = combined.split('/');
+  const result = [];
+  for (const part of parts) {
+    if (part === '..') result.pop();
+    else if (part !== '.' && part !== '') result.push(part);
+  }
+  return result.join('/');
+}
+
   function imagePresentation(node) {
     const alt = Array.from(node.children || []).find(child => child.localName === 'alt')?.textContent ?? node.getAttribute('alt') ?? '';
     const size = name => { const value = node.getAttribute(name) || ''; return /^\d+(?:\.\d+)?(?:px|pt|pc|mm|cm|in|em|%)?$/.test(value) && parseFloat(value) > 0 ? value + (/\d$/.test(value) ? 'px' : '') : ''; };
@@ -43,6 +58,6 @@
     }
     if (!valid) invalid('图片格式或内容无效');
   }
-  const api = { validateImage, imagePresentation, safeLinkHref };
+  const api = { validateImage, imagePresentation, safeLinkHref, resolveAssetPath };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaAssetCore = api;
 })(typeof window === 'undefined' ? globalThis : window);

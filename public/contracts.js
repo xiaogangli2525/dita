@@ -84,6 +84,17 @@
  * @typedef {Object} DocumentLoader
  * @property {(path:string)=>Promise<DocumentState>} load Shared by Topic tabs and Map surfaces; never replaces an existing working buffer.
  *
+ * @typedef {Object} XmlDomAdapter
+ * @property {(source:string,Parser?:typeof DOMParser)=>{document:Document,tree:Object}} parseSource Validated DOM plus canonical UTF-16 source ranges.
+ * @property {(source:string,Parser?:typeof DOMParser)=>Document} parseXml
+ *
+ * @typedef {Object} AuthorRenderer
+ * @property {(source:string,ownerDocument:Document,normalizeOxy?:boolean,topicPath?:string,parsed?:Document)=>HTMLElement} createAuthorTopic Per-call projection; no application state or IO.
+ * @property {(node:Node,ownerDocument:Document,context?:Object)=>Node|null} renderDitaNode
+ *
+ * @typedef {Object} AuthorSource
+ * @property {(source:string,surface:HTMLElement)=>string} updateSource Candidate XML; may rebase surface identities. Caller owns freshness, history and saving.
+ *
  * @typedef {Object} ManualPorts
  * @property {WorkspaceState} state
  * @property {WorkspaceApi} api
