@@ -16,6 +16,17 @@
     return { schema: 1, models };
   }
   const isModelMarker = value => /^tbd$/i.test(value);
+  // Publication membership belongs to the shared domain, not an HTML renderer.
+  function collectPreviewPaths(nodes, paths = [], seen = new Set()) {
+    for (const node of nodes || []) {
+      if (node.type === 'file' && node.processingRole !== 'resource-only' && /\.(dita|xml)$/i.test(node.path) && !seen.has(node.path)) {
+        seen.add(node.path);
+        paths.push({ path: node.path, title: node.title || node.path });
+      }
+      if (node.children) collectPreviewPaths(node.children, paths, seen);
+    }
+    return paths;
+  }
   function checkModels(values, project) {
     if (!project?.models?.length) return [];
     return [...new Set(values)].filter(value => !isModelMarker(value) && !project.models.includes(value));
@@ -30,6 +41,6 @@
     return { on(name, callback) { if (!listeners.has(name)) listeners.set(name, new Set()); listeners.get(name).add(callback); return () => listeners.get(name)?.delete(callback); },
       emit(name, value) { for (const callback of listeners.get(name) || []) { try { callback(value); } catch (error) { onError(error); } } } };
   }
-  const api = { decode, conditions, matches, common, validateProject, checkModels, isModelMarker, relativeHref, createEvents };
+  const api = { decode, conditions, matches, common, validateProject, checkModels, isModelMarker, collectPreviewPaths, relativeHref, createEvents };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaManualCore = api;
 })(typeof window === 'undefined' ? globalThis : window);

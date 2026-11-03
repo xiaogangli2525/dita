@@ -131,7 +131,8 @@ The light workspace separates document navigation, editing and the attribute/rev
 - `public/author-selection.js` / `public/editor-tools.js`: source-aware selections, bookmarks and detached edits; Author formatting, current-Topic plaintext search/replace, block/resource insertion and explicit Source tools.
 - `public/input-history.js` / `public/note-scope.js`: input grouping/IME lifecycle and the shared model picker for new/existing notes.
 - `public/delivery-core.js` / `public/diff-core.js`: publication rendering and pure diff algorithms.
-- `public/manual-core.js` / `public/manual-service.js`: shared applicability/configuration and immutable manual dependency snapshots.
+- `public/manual-core.js` / `public/manual-domain.js`: shared applicability/configuration, publication membership and pure snapshot-to-publication/note/model operations.
+- `public/manual-service.js`: workspace reads, dependency capture and freshness checks; captures model settings before IO and exposes the same domain operations through the existing service interface.
 - `public/save.js`, `drafts.js`, `project.js`, `search.js`, `resources.js`: independent feature controllers.
 - `public/map-controller.js` / `public/documents.js`: directory and document lifecycle UI.
 - `lib/workspace-tools.js`: authenticated project config, search, provenance and image routes.

@@ -41,6 +41,8 @@ The next UI should support cancel generation, pending/failed states, a visible s
 
 ## Current boundaries and remaining work
 
+- `manual-domain.js` provides data-only `prepare`, `listNotes`, `discoverModels`, `listModels` and `saveCandidates` operations for a captured manual. It can run in Node without the browser editor or workspace service. `manual-service.js` remains the application adapter for acquiring and validating that snapshot; headless consumers must supply their own authorized document/configuration scope. Snapshot collections are read-only by contract, with copied/frozen file records and model settings. These query/publication operations do not grant file-write capabilities or replace the edit-proposal workflow above.
+
 - `baseline` is the committed Git comparison source; `disk` is the last acknowledged disk version; `current` is the working edit. AI review should compare against the captured working source, not against Git HEAD.
 - The server remains a **single local workspace**. Multiple tabs share the repository/branch; workspace tokens reject stale-tab requests after a switch. This is not a multi-user collaboration service.
 - File saves use same-directory temporary writes and rename, plus a comparison with the caller's last-read content. An external program can still race between comparison and rename; no cross-process filesystem transaction is claimed.

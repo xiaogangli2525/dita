@@ -85,8 +85,8 @@ The application remains a local Node server and buildless browser client. This c
 | --- | --- | --- |
 | Composition and contracts | `app.js`, `application.js`, `contracts.js` | Validate factory/dependency declarations, provide narrow feature contexts, expose compatibility APIs, document shared data contracts |
 | XML and document state | `xml-source.js`, `document-store.js`, `lib/document-files.js` | Source ranges/validation, undo and acknowledgements, encoding, real-path containment and atomic writes |
-| Shared domain | `manual-core.js`, `footnotes-core.js`, `publication-core.js`, `publication-resolver.js` | Versioned model configuration, applicability, source edits, reuse resolution and publication preparation |
-| Manual service | `manual-service.js` | Freeze buffers, resolve a Map or Topic and its direct local dependencies, check snapshot identity and provide save/note/publication views of that same scope |
+| Shared domain | `manual-core.js`, `manual-domain.js`, `footnotes-core.js`, `publication-core.js`, `publication-resolver.js` | Versioned model configuration, applicability, publication membership, source edits, reuse resolution, publication preparation and note/model/save-selection projections |
+| Manual service | `manual-service.js` | Capture workspace/model identities before IO, read a Map or Topic and its dependencies, verify freshness and expose domain operations through the existing service contract |
 | Editor/rendering | `app-core.js`, `delivery-core.js`, `diff-core.js` | Author/source conversion, stateless HTML/Markdown rendering, and pure diff algorithms respectively |
 | Editor coordination | `editor-controller.js` | One document history across Source, Topic/Map Author and review; explicit service ports and surface/mode updates |
 | Map authoring | `map-author-controller.js`, `map-source.js` | Instance-local asynchronous Map rendering/refresh jobs; source-range edits for Map/Bookmap titles |
@@ -97,6 +97,18 @@ The application remains a local Node server and buildless browser client. This c
 | HTTP and Git boundaries | `lib/api-router.js`, `lib/http-utils.js`, `lib/git-service.js` | Shared request guard and API dispatch, bounded JSON/response helpers, and repository/branch/Git baseline operations |
 
 `app.js` creates the compatibility `DitaApp` facade and delegates feature assembly to `application.js`. Workspace IO, navigation, presentation and event installation live in the controllers listed above. `workspace-shell.js` owns panel visibility and resizing; `inspector.js` owns element properties and table controls. `editor-controller.js` owns document history, modes, Topic synchronization and review coordination; it receives a frozen set of explicit ports, with a lazy selection service for initialization order. Its Map controller receives named IO/view/history callbacks, and input history receives only state/DOM/events. `editor-tools.js` owns Author selection formatting, body find/replace, structural insertion and explicit Source find/insertion; `author-selection.js` owns guarded ranges and detached-clone commits. Feature controllers receive declared capability subsets, while integration/browser callers retain the compatibility facade.
+
+## Manual domain and workspace boundary
+
+`manual-domain.js` accepts a captured snapshot and derives publication data, source-linked notes, model discovery and save candidates. Its named helpers separate project checks, rule projection, source indexing and usage mapping. It does not receive application state, DOM handles, network functions or the editor core. A Node batch/AI adapter can reuse these operations with explicit input data; it must still acquire an authorized scope and apply edits through the proposal/history boundary.
+
+`manual-service.js` owns workspace reads, Map resolution, dependency capture, filter listing and freshness checks. The existing service methods delegate to the domain functions, so save, note, search and delivery controllers retain their interfaces. The composition manifest no longer grants the service `ditaCore`. Model config is copied and frozen after project readiness but before document IO; workspace, repository, branch, model-config content/error and actual model values must still match during capture and before use. Edits or configuration replacement during IO stop capture instead of mixing generations.
+
+Captured file records and model settings are detached/frozen; Map collections and rule-review metadata retain their existing compatible shapes. Consumers must treat snapshot collections as read-only and create derived copies. This is not a new fully immutable collection implementation. Rule review can still replace its captured rule metadata after an acknowledged save through the existing store.
+
+`manual-core.collectPreviewPaths` is the single shared membership traversal. `publication-core.preparePublication` uses it by default; delivery retains a compatibility alias. Headless callers no longer need to construct an Author/delivery renderer just to enumerate chapters. Existing first-use order, duplicate suppression and resource-only handling are preserved.
+
+ESLint restricts the declared document-rule modules to known shared dependencies and vendored SAX, rejecting application/rendering/IO imports and common ambient DOM/network/storage access. The clean-process regression executes model filtering and note indexing without loading the editor or workspace services; the real HTTP regression prepares three models from data-only snapshots and verifies unchanged sources. These checks protect the boundary without adding a framework or a build step.
 
 ## Map title and asynchronous surface ownership
 

@@ -66,8 +66,8 @@ test('workspace modules register factories without reading the DOM or applicatio
 
 test('domain modules stay independent of application, UI and filesystem controllers', () => {
   const directory = path.join(__dirname, '../public');
-  for (const name of ['manual-core', 'xml-source', 'map-source', 'document-store', 'footnotes-core', 'publication-core', 'publication-resolver', 'table-core', 'search-core', 'reference-paths', 'note-reuse-core']) {
+  for (const name of ['manual-core', 'manual-domain', 'xml-source', 'map-source', 'document-store', 'footnotes-core', 'publication-core', 'publication-resolver', 'table-core', 'search-core', 'reference-paths', 'note-reuse-core']) {
     const source = fs.readFileSync(path.join(directory, name + '.js'), 'utf8');
-    assert.doesNotMatch(source, /(?:window|root)\.DitaApp|require\(['"]\.\/(?:app|editor-controller|export|workspace-shell|save|documents)['"]\)/, name);
+    assert.doesNotMatch(source, /(?:window|root)\.DitaApp|require\(['"]\.\/(?:app|app-core|delivery-core|manual-service|application|editor-controller|export|workspace-shell|save|documents)['"]\)/, name);
   }
 });
