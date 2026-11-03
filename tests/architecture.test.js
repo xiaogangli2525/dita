@@ -1,4 +1,5 @@
 'use strict';
+const { createSession } = require('../public/workspace-session');
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
@@ -51,7 +52,7 @@ function editor() {
   const events = domain.createEvents(), changes = [], requests = [];
   events.on('document:changed', file => changes.push(file.path));
   const state = { activePath: map.path, historyTargetPath: map.path, mode: 'editor', filesMap: new Map([map, topic, other].map(file => [file.path, file])), mapAuthorPaths: new Set([topic.path]), maps: [], reviewDecisions: new Map() };
-  const A = { state, events, ditaCore: core, api: { token: 'first', request: async url => { requests.push(url); throw new Error('Unexpected IO'); } },
+  const A = { state, session: createSession(state), events, ditaCore: core, api: { token: 'first', request: async url => { requests.push(url); throw new Error('Unexpected IO'); } },
     dom: { editor: create('textarea'), visualEditor: create('div'), undoButton: create('button'), redoButton: create('button') },
     setStatus() {}, refreshChrome() {}, validateXml: source => core.parseXml(source) };
   const controller = createEditorController(A, { renderTabs() {}, renderOutline() {}, renderInspector() {}, updateTree() {}, refreshChrome() {} });

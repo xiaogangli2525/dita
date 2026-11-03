@@ -1,7 +1,7 @@
 'use strict';
 (function (root) {
   function createDocumentController(A, { renderTabs, updateActivePanes, updateTree, refreshWorkspaceTree }) {
-    const { state, setStatus, setMode } = A;
+    const { state, session, setStatus, setMode } = A;
     const fetch = A.api.request, responseError = A.api.error;
     const fileNameFromPath = value => value.split('/').pop();
     const saveFile = () => A.save.saveCurrent();
@@ -75,21 +75,18 @@ async function saveAsFile() {
       const untouched = current === sentTarget?.file && current.current === sentTarget.current && current.disk === sentTarget.disk;
       const compatibleDisk = current.disk === sentTarget?.disk || current.disk === result.content || typeof expectedContent === 'string' && current.disk === expectedContent;
       if (compatibleDisk) {
-        current.disk = result.content; current.gitStatus = result.created ? 'untracked' : 'modified';
+        root.DitaDocumentStore.acknowledgeSave(current, result, false);
         if (untouched) changedWorking = A.setFileContent(current, result.content, { render: false });
-        current.dirty = current.current !== current.disk; A.events.emit('document:changed', current);
+        A.events.emit('document:changed', current);
       }
       preserved = !untouched;
     } else if (!sentTarget) {
       current = root.DitaDocumentStore.createDocument({ path: savedPath, content: result.content, gitStatus: result.created ? 'untracked' : 'modified' });
-      state.filesMap.set(savedPath, current);
+      session.registerDocument(current);
     } else preserved = true; // The user closed the target while writing; keep it closed.
-    if (!state.files.some(entry => entry.path === savedPath)) {
-      state.files.push({ type: 'file', path: savedPath, name: fileNameFromPath(savedPath) });
-    }
+    session.ensureFile({ type: 'file', path: savedPath, name: fileNameFromPath(savedPath) });
     if (result.map && (!current || current.current === result.content)) {
-      const index = state.maps.findIndex(map => map.path === savedPath);
-      if (index < 0) state.maps.push(result.map); else state.maps[index] = result.map;
+      session.upsertMap(result.map);
       A.maps.renderPicker();
     }
     if (!preserved && current && navigation === startedNavigation && state.activePath === file.path && state.filesMap.get(file.path) === file && file.current === snapshot) await A.openFile(savedPath);
@@ -147,7 +144,7 @@ get('newDocumentForm').addEventListener('submit', async event => {
     const result = await response.json(); if (!current()) return;
     await refreshWorkspaceTree(); if (!current()) return;
     const savedPath = result.path || target, file = root.DitaDocumentStore.createDocument({ path: savedPath, content: result.content, gitStatus: 'untracked' });
-    if (!state.filesMap.has(savedPath)) state.filesMap.set(savedPath, file);
+    session.registerDocument(file);
     await A.openFile(savedPath); if (!current()) return;
     setMode('visual'); get('newDocumentDialog').close(); setStatus('已创建：' + savedPath);
   } catch (error) { if (current()) get('newDocumentError').textContent = error.message; }

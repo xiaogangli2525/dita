@@ -29,6 +29,8 @@
     historyTargetPath: ''
   };
 
+  const session = window.DitaWorkspaceSession.createSession(state);
+
   const dom = window.DitaAppDom.createDom(document);
   const documentLabel = window.DitaDocumentLabel.documentLabel;
   const view = window.DitaWorkspaceView.createView({
@@ -55,7 +57,7 @@
 
   // Preserve feature/proposal interfaces while keeping construction here.
   Object.assign(A, {
-    state, dom, ditaCore, events, setStatus, toast, validateXml, openFile,
+    state, session, dom, ditaCore, events, setStatus, toast, validateXml, openFile,
     api: workspaceClient, saving: false,
     downloadText: window.DitaBrowserFiles.downloadText,
     downloadXML: window.DitaBrowserFiles.downloadXML,
@@ -73,7 +75,7 @@
     hideLoading: view.hideLoading
   });
   const editor = window.DitaEditorController.createEditorController(Object.freeze({
-    state, dom, ditaCore, events, api: workspaceClient, setStatus, validateXml,
+    state, session, dom, ditaCore, events, api: workspaceClient, setStatus, validateXml,
     get authorSelection() { return A.authorSelection; }
   }), {
     documentLabel, renderTabs, renderOutline, renderInspector, updateTree,
@@ -89,13 +91,13 @@
   Object.assign(A, { setFileContent, setMode, applyAuthorEdit: editor.applyAuthorEdit });
 
   const navigation = window.DitaDocumentNavigation.createController({
-    state, dom, ditaCore, events, api: workspaceClient,
+    state, session, dom, ditaCore, events, api: workspaceClient,
     setMode, ensureMapAuthorFile, setStatus,
     get shell() { return A.shell; },
     get footnotes() { return A.footnotes; }
   }, { renderTabs, updateActivePanes, updateHistoryButtons, updateTree });
   const workspace = window.DitaWorkspaceController.createController({
-    state, dom, events, api: workspaceClient, setStatus, toast,
+    state, session, dom, events, api: workspaceClient, setStatus, toast,
     get project() { return A.project; },
     get footnotes() { return A.footnotes; },
     get saving() { return A.saving; },
@@ -113,7 +115,7 @@
       reloadWorkspace: workspace.reloadWorkspace,
       loadRepositories: workspace.loadRepositories,
       openManual: async path => {
-        state.selectedMap = path; renderMapPicker(); updateTree(''); await openFile(path);
+        session.selectMap(path); renderMapPicker(); updateTree(''); await openFile(path);
       }
     }
   });

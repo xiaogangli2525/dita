@@ -180,13 +180,9 @@
       return snapshot.path.split('/').pop().replace(/\.(ditamap|dita|xml)$/i, '') + (model ? '-' + safe(model) : '') + (version ? '-' + safe(version) : '') + '.' + format;
     }
     async function record(snapshot, source, data, model, format, version, name) {
-      const documents = new Map([[snapshot.path, snapshot.content], ...Array.from(snapshot.files, ([path, file]) => [path, file.current])]);
-      if (snapshot.filter) documents.set(snapshot.filter.path, snapshot.filter.current);
-      if (typeof snapshot.noteRules?.expectedContent === 'string') documents.set('.dita-note-rules.json', snapshot.noteRules.expectedContent);
-      const record = { schema: 1, createdAt: new Date().toISOString(), state: 'download-initiated', manualPath: snapshot.path, model, format, version, filename: name,
-        source, capturedAt: snapshot.capturedAt, filterPath: snapshot.filter?.path || '', modelNotePrefixPolicy:model&&get('exportPrefixNotes')?.checked?'explicit-prefix-v1':'confirmed-rules-only', unsavedPaths: service().saveCandidates(snapshot).map(file => file.path), report: data.report,
-        documents: await Promise.all(Array.from(documents, async ([path, content]) => ({ path, sha256: await root.DitaBrowserFiles.sha256(content) }))),
-        projectSha256: await root.DitaBrowserFiles.sha256(JSON.stringify(snapshot.project)), noteRulesSha256: snapshot.noteRules ? await root.DitaBrowserFiles.sha256(JSON.stringify(snapshot.noteRules.config)) : null, outputSha256: await root.DitaBrowserFiles.sha256(data.output) };
+      const record = await root.DitaDeliveryData.createRecord({ snapshot, source, data, model, format, version, filename: name,
+        prefixes: Boolean(get('exportPrefixNotes')?.checked), unsavedPaths: service().saveCandidates(snapshot).map(file => file.path)
+      }, root.DitaBrowserFiles.sha256);
       root.DitaReleaseStore.createReleaseStore(root.localStorage).append(snapshot.root, record); lastDeliveryRecord = record;
     }
     async function publish(preview, legacy) {

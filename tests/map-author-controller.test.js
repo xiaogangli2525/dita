@@ -1,4 +1,5 @@
 'use strict';
+const { createSession } = require('../public/workspace-session');
 const test = require('node:test'), assert = require('node:assert/strict');
 const { createController } = require('../public/map-author-controller');
 const { createEvents } = require('../public/manual-core');
@@ -12,20 +13,21 @@ function setup() {
   const state = { activePath: file.path, mode: 'visual', filesMap: new Map([[file.path, file]]), maps: [{ path: file.path, title: 'HTTP', children: [{ path: 'slow.dita' }] }] };
   const events = createEvents(), loaded = deferred(), response = deferred(), requested = deferred(), messages = [];
   const api = { token: 'first', request: () => { requested.resolve(); return response.promise; } };
-  const controller = createController({ state, dom: { visualEditor }, api, events, validateXml, ditaCore: { collectPreviewPaths: entries => entries }, setStatus: message => messages.push(message) }, {
+  const session = createSession(state);
+  const controller = createController({ state, session, dom: { visualEditor }, api, events, validateXml, ditaCore: { collectPreviewPaths: entries => entries }, setStatus: message => messages.push(message) }, {
     load: () => loaded.promise, documentLabel: file => file.path, renderTabs() {}, updateTree() {}, renderInspector() {}, renderMapReview() {}
   });
-  return { controller, state, api, file, events, loaded, response, requested, messages, visualEditor };
+  return { controller, state, session, api, file, events, loaded, response, requested, messages, visualEditor };
 }
 
 test('a late Map success or failure cannot replace a newer document, mode or workspace', async () => {
   for (const transition of ['document', 'source', 'workspace', 'replacement']) for (const failed of [false, true]) {
     const view = setup(), pending = view.controller.render(view.file);
     assert.match(view.visualEditor.textContent, /正在加载/);
-    if (transition === 'document') view.state.activePath = 'new.dita';
-    if (transition === 'source') { view.state.mode = 'editor'; view.controller.invalidate(); }
+    if (transition === 'document') { view.session.registerDocument({path:'new.dita',current:'<topic/>'}); view.session.activateDocument('new.dita'); };
+    if (transition === 'source') { view.session.setMode('editor'); view.controller.invalidate(); }
     if (transition === 'workspace') { view.events.emit('workspace:willChange'); view.api.token = 'second'; }
-    if (transition === 'replacement') view.state.filesMap.set(view.file.path, { ...view.file });
+    if (transition === 'replacement') { view.session.closeDocument(view.file.path); view.session.registerDocument({ ...view.file }); view.session.activateDocument(view.file.path); }
     view.visualEditor.textContent = 'New surface';
     if (failed) view.loaded.reject(Error('Old workspace failure'));
     else view.loaded.resolve({ path: 'slow.dita', current: '<topic/>' });

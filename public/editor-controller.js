@@ -8,11 +8,11 @@
   // Coordinates Source/Author/Map surfaces around one document history. View
   // callbacks are injected; state and source rules remain in their own modules.
   function createEditorController(A, views) {
-    const { state, dom, ditaCore, setStatus, validateXml, events, api: workspaceClient } = A;
+    const { state, session, dom, ditaCore, setStatus, validateXml, events, api: workspaceClient } = A;
     const { documentLabel = file => file.path, renderTabs, renderOutline, renderInspector, updateTree,
       refreshChrome: updateDocumentChrome, beforeModeChange, modeChanged } = views;
     let inputHistory = null;
-    const documents = loader.createDocumentLoader({ state, api: workspaceClient, events });
+    const documents = loader.createDocumentLoader({ state, session, api: workspaceClient, events });
     function surfaceFor(file) {
       if (state.activePath === file.path && /\.ditamap$/i.test(file.path)) return dom.visualEditor.querySelector('[data-map-title]');
       return state.activePath === file.path ? dom.visualEditor :
@@ -102,7 +102,7 @@
       if (!file) return false;
       if (!documentStore.editDocument(file, content, { record, historyMeta, group })) return false;
       if (file.path === state.activePath || (/\.ditamap$/i.test(state.activePath) && state.mapAuthorPaths?.has(file.path))) {
-        state.historyTargetPath = file.path;
+        session.setHistoryTarget(file.path);
       }
       if (render) refreshFileViews(file, { updateEditor });
       events.emit('document:changed', file);
@@ -148,7 +148,7 @@
       inputHistory?.breakAll();
       beforeModeChange?.();
       mapController.invalidate();
-      state.mode = mode;
+      session.setMode(mode);
       dom.editorPane.classList.toggle('active', mode === 'editor');
       // Review keeps the Author surface in the main column. The review pane is a
       // docked right sidebar, matching Oxygen Author's reading flow.
@@ -271,7 +271,7 @@
       state, dom, ditaCore, setFileContent, updateVisual, renderTabs, updateHistoryButtons, setStatus
     });
 
-    const mapController = mapAuthor.createController({ state, dom, ditaCore, api: workspaceClient, events, validateXml, setStatus }, {
+    const mapController = mapAuthor.createController({ state, session, dom, ditaCore, api: workspaceClient, events, validateXml, setStatus }, {
       load: documents.load, documentLabel, setFileContent,
       takeHistory: (file, event) => inputHistory?.take(file, event),
       renderAuthorSurface, renderTabs, updateTree, renderInspector,

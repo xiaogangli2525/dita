@@ -88,9 +88,9 @@ test('real author compatibility and DITAVAL delivery share captured source and o
   assert.equal(record.filterPath,'filters/release.ditaval');assert.equal(record.documents.find(d=>d.path===record.filterPath).sha256,createHash('sha256').update(filter).digest('hex'));assert.equal(record.outputSha256,createHash('sha256').update(bytes).digest('hex'));
  });
  await t.test('a changed filter buffer invalidates captured delivery and cannot download stale output',async()=>{
-  await delivery();await page.evaluate(filter=>{const a=window.DitaApp;a.state.filesMap.set('filters/release.ditaval',{path:'filters/release.ditaval',current:'<val/>',disk:filter,dirty:true});},filter);
+  await delivery();await page.evaluate(filter=>{const a=window.DitaApp;const file=window.DitaDocumentStore.createDocument({path:'filters/release.ditaval',content:filter});window.DitaDocumentStore.editDocument(file,'<val/>');a.session.registerDocument(file);},filter);
   await page.click('#modelExportForm [value=download]');await page.waitForFunction(()=>document.getElementById('modelExportError').textContent.includes('内容已变化'));
-  await page.click('#modelExportCancel');await page.evaluate(()=>window.DitaApp.state.filesMap.delete('filters/release.ditaval'));
+  await page.click('#modelExportCancel');await page.evaluate(()=>window.DitaApp.session.closeDocument('filters/release.ditaval'));
  });
  if(process.platform==='linux')await t.test('missing CJK fonts fail native PDF generation with an actionable error',async()=>{
   const fonts=path.join(temp,'empty-fonts');await fs.mkdir(fonts);const config=path.join(temp,'empty-fonts.conf');await fs.writeFile(config,`<?xml version="1.0"?><!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd"><fontconfig><dir>${fonts}</dir><cachedir>${temp}/font-cache</cachedir></fontconfig>`);

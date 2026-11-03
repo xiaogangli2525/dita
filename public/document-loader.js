@@ -3,7 +3,7 @@
   const store = typeof module !== 'undefined' ? require('./document-store') : root.DitaDocumentStore;
   // Topic tabs and Map surfaces share one load per document/workspace. A late
   // read may populate an empty cache, but never replace an acknowledged buffer.
-  function createDocumentLoader({ state, api, events }) {
+  function createDocumentLoader({ state, session, api, events }) {
     const pending = new Map(), revisions = new Map(); let generation = 0;
     function load(path) {
       const cached = state.filesMap.get(path); if (cached) return Promise.resolve(cached);
@@ -16,7 +16,7 @@
         if (workspace !== api.token || started !== generation || revision !== revisions.get(path)) throw new Error('工作区或文档已关闭，已忽略旧的加载结果');
         const current = state.filesMap.get(path); if (current) return current;
         const file = store.createDocument({ path, content, baseline: git.available ? git.content : content, gitStatus: git.status || 'unknown' });
-        state.filesMap.set(path, file); return file;
+        return session.registerDocument(file);
       })().finally(() => { if (pending.get(path) === task) pending.delete(path); });
       pending.set(path, task); return task;
     }
