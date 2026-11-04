@@ -28,7 +28,7 @@
     };
 
     for(const group of Object.values(menuDefinitions))for(const item of group){
-      if(['保存','另存为','下载','查找和替换','源码编辑','编写','阅读（只读）','XML 语法校验','审阅变更'].includes(item[0]))item[3]=()=>Boolean(state.activePath);
+      if(['保存','另存为','下载','查找和替换','源码编辑','编写','阅读（只读）','XML 语法校验'].includes(item[0]))item[3]=()=>Boolean(state.activePath);
       if(item[0]==='撤销')item[3]=()=>!dom.undoButton.disabled;
       if(item[0]==='重做')item[3]=()=>!dom.redoButton.disabled;
       if(item[0]==='格式化 XML')item[3]=()=>Boolean(state.activePath)&&!dom.formatButton.disabled;

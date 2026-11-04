@@ -43,6 +43,10 @@ html, body { height: 100%; margin: 0; }
 .inspector > .review-pane .review-toolbar { flex-wrap: wrap; gap: 5px; padding: 8px 9px; }
 .inspector > .review-pane .review-toolbar button { padding: 5px 7px; font-size: 11px; }
 .inspector > .review-pane .review-meta { flex: 1 0 100%; line-height: 1.45; }
+.review-legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 11px; color: var(--text); }
+.review-legend span::before { content: ''; display: inline-block; width: 12px; margin-right: 5px; border-bottom: 3px solid var(--warning-border); vertical-align: middle; }
+.review-legend span:last-child::before { border-bottom: 2px dashed var(--danger); }
+.review-empty { margin: 16px 12px; padding: 12px; border: 1px solid var(--border); border-radius: 6px; color: var(--muted); line-height: 1.6; }
 .inspector > .review-pane .review-title {
   flex: 1 0 100%;
   color: var(--warning);
@@ -149,6 +153,13 @@ html, body { height: 100%; margin: 0; }
   background:var(--selection-bg);
 }
 .visual-editor .author-focus { outline: 2px solid var(--warning-border); outline-offset: 2px; transition: outline-color .2s; }
+.visual-editor [data-review-change] {
+  background-color: var(--warning-soft);
+  box-shadow: inset 3px 0 var(--warning-border);
+}
+.visual-editor [data-review-deletion] { outline: 1px dashed var(--danger); }
+.visual-editor [data-review-deletion="before"] { outline: none; border-top: 2px dashed var(--danger); }
+.visual-editor [data-review-deletion="after"] { outline: none; border-bottom: 2px dashed var(--danger); }
 .visual-editor .review-target-focus {
   outline: 2px solid var(--warning-border);
   outline-offset: 4px;
@@ -173,7 +184,6 @@ html, body { height: 100%; margin: 0; }
 .review-meta { font-size: 12px; color: var(--text); }
 .map-review-topic { margin: 10px; border: 1px solid var(--border); border-radius: 5px; background: var(--panel); overflow: hidden; }
 .map-review-topic-header { padding: 8px 10px; color: var(--text); background: var(--info-soft); border-bottom: 1px solid var(--border); font-size: 12px; font-weight: 600; }
-.map-review-empty { padding: 24px; color: var(--muted); }
 
 .attributes-panel { overflow: auto; padding: 8px 10px 18px; }
 .inspector-empty { color: var(--muted); font-size: 12px; line-height: 1.6; padding: 8px 2px; }

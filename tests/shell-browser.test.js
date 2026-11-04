@@ -33,6 +33,11 @@ test('workspace shell preserves editing state across panels and delivery steps',
 
   await t.test('compact shell keeps titles readable and source mode directly reachable', async () => {
     assert.equal(await page.locator('#inspector').isVisible(), false);
+    await page.click('[data-menu=dita]');
+    await page.getByRole('menuitem', { name: '审阅变更' }).click();
+    await page.locator('#reviewPane').waitFor();
+    assert.match(await page.locator('#diff').innerText(), /请先从左侧打开/);
+    await page.click('#inspectorCloseButton');
     await page.click('.map-open-author'); await page.waitForSelector('.map-topic-surface');
     assert.match(await page.locator('#documentTitle').innerText(), /MQTT 应用指南/);
     assert.match(await page.locator('#tree').innerText(), /MQTT 功能概述/);

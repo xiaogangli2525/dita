@@ -253,7 +253,7 @@ function groupDiffRows(rows, contextSize = 3) {
   return groups;
 }
 
-function applyDiffGroups(oldText, newText, decisions, _contextSize = 0) {
+function applyDiffGroups(oldText, newText, decisions, _contextSize = 0, defaultDecision = 'reject') {
   // `groupDiffRows` may trim unchanged context between review blocks for a
   // compact display.  That projection must never be used to rebuild the
   // document: omitted context lines would be silently deleted whenever a
@@ -268,7 +268,7 @@ function applyDiffGroups(oldText, newText, decisions, _contextSize = 0) {
       return;
     }
     const decision = decisions instanceof Map ? decisions.get(index) : undefined;
-    const keepNew = decision === 'accept';
+    const keepNew = (decision ?? defaultDecision) === 'accept';
     const oldRows = group.rows.filter(row => row.type === 'old');
     const newRows = group.rows.filter(row => row.type === 'new');
     output.push(...(keepNew ? newRows : oldRows).map(row => row.text));

@@ -6,6 +6,7 @@
   const { normalizeOxyPIs } = typeof module !== 'undefined' ? require('./oxygen-core') : root.DitaOxygenCore;
   const BODY_TAGS = presentation.bodies, resolveAssetPath = assetCore.resolveAssetPath;
   const createAuthorContext = (topicPath = '') => ({ topicPath, fnCounter: 0 });
+  const sourcePath = (node, ctx) => ctx.sourcePaths ? ctx.sourcePaths.get(node) : xmlNodePath(node);
 
   // Source-only attributes remain in inert metadata, never active HTML. Keeping
   // them separately also preserves exact XML when adjacent prose is edited.
@@ -21,7 +22,7 @@
 
   function authorHeading(node, documentRef, tag = 'h3', ctx) {
     const heading = documentRef.createElement(tag);
-    heading.ditaSourcePath = xmlNodePath(node);
+    heading.ditaSourcePath = sourcePath(node, ctx);
     for (const attr of Array.from(node.attributes || [])) setAuthorAttribute(heading, attr.name, attr.value);
     for (const child of node.childNodes) { const rendered = renderDitaNode(child, documentRef, ctx); if (rendered) heading.appendChild(rendered); }
     return heading;
@@ -29,8 +30,17 @@
   function createAuthorTopic(source, documentRef, normalizeOxy = false, topicPath = '', parsed = null) {
     const ctx = createAuthorContext(topicPath);
     const doc = parsed || parseXml(source);
-    if (normalizeOxy) normalizeOxyPIs(doc, true);
     const root = doc.documentElement;
+    if (normalizeOxy && /<\?oxy_/.test(source)) {
+      // Oxygen wrappers can move source nodes and change their sibling indexes.
+      ctx.sourcePaths = new WeakMap();
+      function indexPaths(node, path) {
+        ctx.sourcePaths.set(node, path);
+        Array.from(node.children).forEach((child, index) => indexPaths(child, path ? path + '/' + index : String(index)));
+      }
+      indexPaths(root, '');
+      normalizeOxyPIs(doc, true);
+    }
     const container = documentRef.createElement('article');
     container.ditaSourceContent = source;
     const sourceTitle = Array.from(root.childNodes).find(node => node.localName === 'title');
@@ -71,7 +81,7 @@
 
   function renderDitaNode(node, documentRef, ctx = createAuthorContext()) {
     const rendered = renderAuthorNode(node, documentRef, ctx);
-    if (rendered && node.nodeType === 1) rendered.ditaSourcePath = xmlNodePath(node);
+    if (rendered && node.nodeType === 1) rendered.ditaSourcePath = sourcePath(node, ctx);
     return rendered;
   }
 
@@ -177,13 +187,13 @@
       for (const item of rows) {
         const row = item.node;
         const tr = documentRef.createElement('tr');
-        tr.ditaSourcePath = xmlNodePath(row);
+        tr.ditaSourcePath = sourcePath(row, ctx);
         tr.setAttribute('data-dita-row-attrs', JSON.stringify(Object.fromEntries(Array.from(row.attributes || []).map(attribute => [attribute.name, attribute.value]))));
         tr.setAttribute('data-dita-section', item.section);
         if (row.getAttribute('outputclass')) tr.setAttribute('data-dita-outputclass', row.getAttribute('outputclass'));
         for (const entry of row.children) {
           const cell = documentRef.createElement(item.section === 'thead' ? 'th' : 'td');
-          cell.ditaSourcePath = xmlNodePath(entry);
+          cell.ditaSourcePath = sourcePath(entry, ctx);
           cell.setAttribute('data-dita-source', 'entry');
           const first = names.indexOf(entry.getAttribute('namest')), last = names.indexOf(entry.getAttribute('nameend'));
           if (first >= 0 && last > first) cell.setAttribute('colspan', String(last - first + 1));
@@ -216,7 +226,7 @@
         if (child.nodeType !== 1) continue;
         if (['li', 'sli'].includes(child.localName)) {
           const item = documentRef.createElement('li');
-          item.ditaSourcePath = xmlNodePath(child);
+          item.ditaSourcePath = sourcePath(child, ctx);
           item.setAttribute('data-dita-source', child.localName === 'sli' ? 'sli' : 'li');
           for (const attr of Array.from(child.attributes || [])) setAuthorAttribute(item, attr.name, attr.value);
           for (const nested of child.childNodes) {
@@ -275,14 +285,14 @@
             if (entry.nodeType !== 1) continue;
             if (entry.localName === 'dt') {
               const dt = documentRef.createElement('dt');
-              dt.ditaSourcePath = xmlNodePath(entry);
+              dt.ditaSourcePath = sourcePath(entry, ctx);
               for (const attr of Array.from(entry.attributes || [])) setAuthorAttribute(dt, attr.name, attr.value);
               dt.setAttribute('data-dita-source', 'dt');
               for (const child of entry.childNodes) { const rendered = renderDitaNode(child, documentRef, ctx); if (rendered) dt.appendChild(rendered); }
               el.appendChild(dt);
             } else if (entry.localName === 'dd') {
               const dd = documentRef.createElement('dd');
-              dd.ditaSourcePath = xmlNodePath(entry);
+              dd.ditaSourcePath = sourcePath(entry, ctx);
               for (const attr of Array.from(entry.attributes || [])) setAuthorAttribute(dd, attr.name, attr.value);
               dd.setAttribute('data-dita-source', 'dd');
               for (const dc of entry.childNodes) {
