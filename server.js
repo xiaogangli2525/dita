@@ -373,7 +373,7 @@ const server = http.createServer(async (req, res) => {
       // AI works only on the submitted immutable source, performs no workspace
       // IO, and verifies its token again on completion. Do not hold a workspace
       // read/write lock during a potentially slow upstream model request.
-      if (url.pathname === '/api/ai/propose' || url.pathname === '/api/ai/config') {
+      if (['/api/ai/propose', '/api/ai/scan', '/api/ai/config'].includes(url.pathname)) {
         await handleApi(req, res, url.pathname, url.searchParams); return;
       }
       await workspaceLock(req.method !== 'GET' && url.pathname !== '/api/export/pdf', () => handleApi(req, res, url.pathname, url.searchParams));

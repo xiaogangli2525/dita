@@ -13,9 +13,22 @@ test('AI authoring runs through the local provider, review and shared document h
   const provider = http.createServer(async (req, res) => {
     const chunks = []; for await (const chunk of req) chunks.push(chunk);
     const body = JSON.parse(Buffer.concat(chunks)), input = JSON.parse(body.messages[1].content); received.push(input);
+    if (input.task === 'scan') {
+      const first = input.evidence.find(item => item.text.includes('超时单位为秒'));
+      const second = input.evidence.find(item => item.text.includes('示例使用毫秒'));
+      const wording = input.evidence.find(item => item.text.includes('发送请求'));
+      const findings = [];
+      if (input.phase === 'cross' && first && second) findings.push({ category: 'technical', summary: '超时单位写法不一致', suggestion: '以研发核实的单位为准',
+        evidence: [{ id: first.id, quote: '超时单位为秒' }, { id: second.id, quote: '示例使用毫秒' }] });
+      if (input.phase === 'section' && wording) findings.push({ category: 'wording', summary: '统一请求表述', suggestion: '将发送请求统一为发起请求',
+        evidence: [{ id: wording.id, quote: '发送请求' }] }, { category: 'wording', summary: '虚构建议', suggestion: '无效', evidence: [{ id: wording.id, quote: '原文不存在' }] });
+      res.end(JSON.stringify({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify({ findings }) } }] }));
+      return;
+    }
     const first = input.document.parts.find(part => part.text.includes('发送')) || input.document.parts[0];
     const previous = input.conversation?.previousResult?.edits?.[0]?.after || first.text;
     const result = input.instruction.includes('方案') ? {summary:'方案：保留技术含义，将发送请求改为发起请求，其他内容不变。',questions:[],edits:[]} : input.instruction.includes('待确认') ? { summary: '缺少正确参数', questions: ['请提供已经核实的值。'], edits: [] } :
+      input.instruction.includes('以参数表为准') ? { summary: '按核实口径修订示例', questions: [], edits: [{ id: first.id, before: first.text, after: first.text.replace('毫秒', '秒') }] } :
       input.instruction.includes('60 秒') ? { summary: '已根据补充信息修改', questions: [], edits: [{ id: first.id, before: first.text, after: '发起请求（超时 60 秒）' }] } :
       input.instruction.includes('简短') ? { summary: '继续精简，保留先前润色', questions: [], edits: [{ id: first.id, before: first.text, after: previous.replace('然后', '') }] } :
       input.instruction.includes('先润色') ? { summary: '已润色可确定的部分', questions: ['尚未提供超时值。'], edits: [{ id: first.id, before: first.text, after: first.text.replace('发送', '发起') }] } :
@@ -60,6 +73,40 @@ test('AI authoring runs through the local provider, review and shared document h
     const page = await fresh(st);
     await page.locator('#visualEditor p').first().evaluate(node => { const text = node.firstChild, range = document.createRange(); range.setStart(text, 0); range.setEnd(text, 4); node.closest('[contenteditable]').focus(); const selection = window.getSelection(); selection.removeAllRanges(); selection.addRange(range); });
     await page.click('#aiButton'); assert.equal(await page.locator('#aiScope').inputValue(), 'selection'); assert.equal(await page.locator('#aiOriginal').textContent(), '发送请求');
+  });
+  await t.test('manual scan compares commands, validates evidence and hands a chosen passage to review', async st => {
+    const page = await fresh(st);
+    await page.evaluate(async () => {
+      const a = window.DitaApp;
+      await a.openFile('b.dita'); await a.openFile('main.ditamap');
+      for (const [path, text] of [['a.dita', 'AT+MHTTPREQUEST 超时单位为秒'], ['b.dita', 'AT+MHTTPREQUEST 示例使用毫秒']]) {
+        const file = a.state.filesMap.get(path);
+        a.setFileContent(file, file.current.replace('</body>', '<p>' + text + '</p></body>'));
+      }
+    });
+    await page.click('#aiButton'); await page.click('#aiScanButton');
+    assert.equal(await page.locator('#aiScanScope').inputValue(), 'manual');
+    await page.click('#aiScanStart');
+    const conflict = page.locator('.ai-scan-card').filter({ hasText: '超时单位写法不一致' });
+    await conflict.waitFor();
+    assert.equal(await conflict.locator('.ai-scan-evidence').count(), 2);
+    assert.match(await page.locator('#aiScanStatus').innerText(), /完成 2\/2 批/);
+    assert.equal(await page.getByText('虚构建议', { exact: true }).count(), 0);
+    await conflict.locator('.ai-scan-evidence').filter({ hasText: 'b.dita' }).getByRole('button', { name: '定位原文' }).click();
+    await page.locator('#visualEditor .footnote-located').filter({ hasText: '示例使用毫秒' }).waitFor();
+    await page.click('#aiButton'); await page.click('#aiScanButton');
+    await conflict.locator('.ai-scan-evidence').filter({ hasText: 'b.dita' }).getByRole('button', { name: '核对后修改此处' }).click();
+    assert.equal(await page.locator('#aiScanDialog').isVisible(), false);
+    assert.equal(await page.locator('#aiSend').isDisabled(), true);
+    await page.fill('#aiReply', '以参数表为准，示例用秒'); await page.click('#aiSend');
+    await page.locator('#aiApply:enabled').waitFor();
+    assert.match(await page.locator('#aiTechnicalReview').innerText(), /单位变化/);
+    await page.click('#aiApply');
+    await page.waitForFunction(() => window.DitaApp.state.filesMap.get('b.dita').current.includes('示例使用秒'));
+    assert.equal(await fs.readFile(path.join(temporary, 'b.dita'), 'utf8'), second);
+    await page.click('#aiScanButton');
+    assert.match(await page.locator('#aiScanResults').innerText(), /手册内容已变化/);
+    assert.equal(await conflict.getByRole('button', { name: '定位原文' }).first().isDisabled(), true);
   });
   await t.test('manual search requires an explicit candidate and applies to the selected topic', async st => {
     const page = await fresh(st); await page.click('#aiButton'); await page.fill('#aiReply', '润色发送请求的描述'); await page.locator('#aiTask > summary').click(); await page.selectOption('#aiScope', 'manual'); await page.fill('#aiSearch', '发送请求'); await page.click('#aiLocate');

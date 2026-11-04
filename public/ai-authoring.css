@@ -69,6 +69,18 @@
 .ai-compose-actions { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:9px; }
 .ai-compose-actions span { font-size:11px; color:var(--muted); }
 .ai-composer .ai-status { margin:0 0 8px; min-height:0; }
+.ai-scan-actions { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+.ai-scan-actions label { display:flex; align-items:center; gap:7px; font-size:13px; }
+.ai-scan-actions select { padding:6px; color:var(--text); background:var(--panel); border:1px solid var(--border); border-radius:5px; }
+.ai-scan-results { display:grid; gap:12px; overflow-wrap:anywhere; }
+.ai-scan-results h3 { margin:0; font-size:14px; }
+.ai-scan-results details { color:var(--muted); font-size:12px; }
+.ai-scan-card { padding:14px; border:1px solid var(--border); border-radius:9px; background:var(--surface); }
+.ai-scan-card h4 { margin:6px 0; font-size:15px; }
+.ai-scan-card p { margin:0 0 10px; font-size:13px; line-height:1.6; }
+.ai-scan-evidence { display:grid; gap:5px; padding:9px 10px; margin-top:7px; border-left:2px solid var(--accent); background:var(--panel); }
+.ai-scan-evidence strong { font-size:11px; color:var(--muted); }
+.ai-scan-evidence button { font-size:12px; }
 @media(max-width:600px) {
   .ai-dialog { padding:20px 16px; }
   .ai-heading h2 { font-size:18px; }

@@ -7,6 +7,10 @@
     let controller = null, generation = 0, opening = 0, configuration = null, opener = null, busy = false, applying = false;
     const connection = root.DitaAiConnection.createController({ api: A.api, events: A.events,
       changed: value => { configuration = value; renderConfiguration(); controls(); }, pending: () => controls() });
+    const scanner = root.DitaAiScan.createController(A, {
+      path: () => filePath, available: () => configuration?.available && !connection.saving,
+      prepare: prepareScanEdit, leave: close
+    });
     const say = (text, failure = false) => { for (const id of ['aiStatus', 'aiReplyStatus']) { get(id).textContent = text; get(id).classList.toggle('is-error', failure); } };
     function renderConfiguration() {
       get('aiProvider').textContent = configuration?.available ? configuration.model + ' · ' + (configuration.persisted ? '连接已保存' : '使用启动配置') : '尚未配置模型，点击右上角“模型设置”配置一次即可。';
@@ -18,6 +22,7 @@
       get('aiNewTask').hidden = !continued; get('aiNewTask').disabled = locked;
       get('aiLocate').disabled = locked; get('aiCancel').hidden = !busy;
       get('aiApply').disabled = locked || !proposal; get('aiInputs').disabled = locked; get('aiSettingsButton').disabled = locked;
+      get('aiScanButton').disabled = locked || !filePath || !configuration;
       get('aiComposer').hidden = false; get('aiReply').disabled = connection.saving;
       get('aiStatus').hidden = true; get('aiWelcome').hidden = continued || busy;
       get('aiSend').disabled = locked || !configuration?.available || !filePath || !get('aiReply').value.trim();
@@ -49,6 +54,21 @@
       selected = { path: hit.path, ...core.target(hit.source, hit.start, hit.end) };
       resetThread(); drawSource(); say('已选定原文。说明要求后即可修改，后续可以直接接着对话。'); controls();
       get('aiSource').open = false;
+    }
+    function prepareScanEdit(hit, finding, snapshot) {
+      if (!A.manual.current(snapshot)) throw Error('手册内容已变化，请重新扫描。');
+      choose(hit); manual = snapshot; fresh();
+      get('aiCandidates').replaceChildren(); get('aiModel').value = '';
+      const input = get('aiReply');
+      if (finding.category === 'wording') {
+        input.value = '请只修订当前选中的原文，保留所有技术事实和型号范围。扫描问题：' + finding.summary + '。建议：' + finding.suggestion;
+        controls(); void generate();
+      } else {
+        input.value = '';
+        get('aiSource').open = true;
+        say('已选定修订位置。请核对「' + finding.summary + '」，然后在下方写明以哪处为准或填写核实结果。');
+        controls(); queueMicrotask(() => input.focus({ preventScroll: true }));
+      }
     }
     function chooseDocument(file, query) {
       selected = { path: file.path, ...core.documentTarget(file.source ?? file.current, query) };
@@ -233,6 +253,7 @@
     get('aiButton').addEventListener('mousedown', event => event.preventDefault());
     get('aiButton').addEventListener('click', show); get('aiClose').addEventListener('click', close);
     get('aiSettingsButton').addEventListener('click', () => connection.open());
+    get('aiScanButton').addEventListener('click', scanner.open);
     get('aiLocate').addEventListener('click', locate);
     get('aiSend').addEventListener('click', send); get('aiApply').addEventListener('click', () => apply());
     get('aiCancel').addEventListener('click', () => { stop(); say('已取消本轮，保留已有对话和提案。'); });

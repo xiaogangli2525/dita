@@ -242,7 +242,7 @@
     </details>
     <details id="aiSource" class="ai-source" hidden open><summary id="aiLocation" class="ai-location"></summary><pre id="aiOriginal"></pre><p id="aiConditions" class="ai-muted"></p></details>
     <p id="aiProvider" class="ai-provider"></p>
-    <div class="ai-generate-actions"><button id="aiNewTask" type="button" hidden>新任务</button><button id="aiCancel" type="button" hidden>取消生成</button></div>
+    <div class="ai-generate-actions"><button id="aiScanButton" type="button" aria-haspopup="dialog" aria-controls="aiScanDialog" disabled>全文扫描</button><button id="aiNewTask" type="button" hidden>新任务</button><button id="aiCancel" type="button" hidden>取消生成</button></div>
     <p id="aiStatus" class="ai-status" role="status" aria-live="polite"></p>
     <div id="aiWelcome" class="ai-welcome"><strong>从一句修改要求开始</strong><p>可以先讨论修改方案，也可以直接粘贴测试反馈。明确的修改先做成提案，未确定的地方再一起核对。</p><div class="ai-starters"><button type="button" data-ai-start="先帮我看看当前内容有哪些地方可以改进，给出修改方案。">先讨论修改方案</button><button type="button" data-ai-start="润色当前内容，让表达更简洁，保留命令、参数和技术含义。">润色当前内容</button></div></div>
     <div id="aiCandidates" class="ai-candidates" aria-label="需要明确的修改位置"></div>
@@ -251,6 +251,14 @@
       <div id="aiAcceptArea"><div class="ai-review-actions"><button id="aiReject" type="button">放弃提案</button></div><p class="ai-muted">请核对技术事实与型号范围。应用后可撤销，正常保存才写入文件。</p></div>
     </section>
     <div id="aiComposer" class="ai-composer"><p id="aiReplyStatus" class="ai-status" role="status" aria-live="polite"></p><label for="aiReply">告诉我你想怎么改</label><textarea id="aiReply" rows="3" maxlength="6000" placeholder="直接说修改要求，或粘贴测试反馈……"></textarea><div class="ai-compose-actions"><span>Ctrl / ⌘ + Enter 发送</span><button id="aiSend" class="primary-action" type="button" disabled>发送</button></div></div>
+  </dialog>
+
+  <dialog id="aiScanDialog" class="workspace-dialog ai-dialog" aria-labelledby="aiScanHeading" aria-describedby="aiScanIntro">
+    <header class="ai-heading"><div><span class="ai-eyebrow">手册核对</span><h2 id="aiScanHeading">全文扫描</h2></div><button id="aiScanClose" type="button">返回 AI 写作</button></header>
+    <p id="aiScanIntro" class="ai-muted">将当前范围的正文分批发送给已配置的模型。扫描结果会列出原文出处，可选一处开启修订任务。</p>
+    <div class="ai-scan-actions"><label>扫描范围 <select id="aiScanScope"><option value="topic">当前章节</option><option value="manual">当前功能手册</option></select></label><button id="aiScanStart" type="button" class="primary-action">开始扫描</button><button id="aiScanCancel" type="button" hidden>停止扫描</button></div>
+    <p id="aiScanStatus" class="ai-status" role="status" aria-live="polite"></p>
+    <section id="aiScanResults" class="ai-scan-results" aria-label="扫描建议"></section>
   </dialog>
 
   <dialog id="aiConnectionDialog" class="workspace-dialog ai-settings-dialog" aria-labelledby="aiConnectionHeading">
@@ -515,9 +523,11 @@
   <script src="/save.js"></script>
   <script src="/search-core.js"></script>
   <script src="/ai-edit-core.js"></script>
+  <script src="/ai-scan-core.js"></script>
   <script src="/ai-conversation.js"></script>
   <script src="/ai-context.js"></script>
   <script src="/ai-connection.js"></script>
+  <script src="/ai-scan.js"></script>
   <script src="/ai-authoring.js"></script>
   <script src="/search.js"></script>
   <script src="/resources.js"></script>
