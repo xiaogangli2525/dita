@@ -1,5 +1,7 @@
 export {};
 declare global {
+  var DitaAiEditCore: typeof import('../public/ai-edit-core');
+  var DitaAiConversation: typeof import('../public/ai-conversation');
   var DitaDocumentStore: typeof import('../public/document-store');
   var DitaSnapshotData: typeof import('../public/snapshot-data');
   var DitaDeliveryData: typeof import('../public/delivery-data');

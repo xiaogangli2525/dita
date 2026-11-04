@@ -234,7 +234,7 @@ The HTTP server still performs workspace-token/origin checks before tool routes,
 
 ## Extension guidance
 
-Add shared rules to a domain module with a versioned contract; do not reproduce them in a controller. Add a UI feature as a controller created at the composition root and consume the manual/document APIs. New delivery formats should consume `prepare()` output and keep IO injected. A future AI adapter can consume a captured manual scope and produce an edit proposal for the existing review/undo boundary; it must not bypass snapshot checks or perform automatic filesystem/Git writes.
+Add shared rules to a domain module with a versioned contract; do not reproduce them in a controller. Add a UI feature as a controller created at the composition root and consume the manual/document APIs. New delivery formats should consume `prepare()` output and keep IO injected. The AI authoring adapter consumes an explicitly selected range from a captured source and produces an edit proposal for the shared history boundary; it never bypasses snapshot checks or automatically writes files/Git.
 
 The static hosted demonstration is a separate persistence adapter. It reuses the same frontend/domain code and supplies browser-local mock workspace routes. Its capability metadata declares browser persistence and no real Git provenance. It is not a deployed multi-user filesystem/Git server.
 
@@ -356,3 +356,28 @@ The project-model controller clears configuration and comparison bases on `works
 
 
 Appearance detail checks resolve the real inherited/translucent background of representative controls, chapter labels, summaries and placeholder text. Muted colors are selected against tinted surfaces as well as paper. Shared hover-border and scrollbar-thumb tokens keep controls and long writing/panel regions coherent across presets; component focus rules use the semantic focus ring instead of low-contrast divider colors. Disabled primary actions retain their non-hover palette. The appearance dialog's current-style badge derives the resolved style from the existing preference service, including live system changes; no additional preference state is introduced.
+
+
+## AI authoring adapter
+
+`ai-context` locates local candidates or maps a unique Author selection to source. `ai-edit-core` owns bounded source text fragments and validates exact original text, fragment IDs, duplicate edits, pending questions and XML validity. It preserves all markup and bytes outside edited text ranges. `ai-authoring` owns its dialog, async lifecycle and review state, using declared composition ports and the existing document proposal/history commands. `app.js` only passes the new capability to the menu.
+
+`ai-provider` implements compatible Chat Completions using the local service connection configuration and the versioned `ai-writing-rules` document on every request. It has no workspace IO and exposes only nonsecret configuration. `ai-routes` sits behind the usual Host/Origin/token guard; it does not hold the workspace lock over upstream latency and verifies the token after completion. Both browser and server validate model results. Provider implementation and boundary fixtures participate in strict type checks.
+
+The feature is opt-in through a separate settings dialog or startup environment defaults; demo mode cannot use inherited model keys. Generation uses only selected text/conditions and the user instruction/model field. Search is local and bounded; a manual snapshot can contain dependency definitions, whose shared impact still needs human review. This is a text revision workflow, not an autonomous repository agent or a technical-fact/DITA-schema validator. See [setup and limits](ai-editing.md). The separate [SDK knowledge-base plan](knowledge-base-plan.md) remains deferred.
+
+
+### Conversational revision and persistent connection
+
+`ai-conversation` owns immutable user requirements and the latest cumulative proposal against one captured source. The checked boundary bounds rounds/input and validates earlier patches before they can enter model context. After applying, the controller rebases to the resulting source and clears applied patch operations while retaining user requirements and pending questions. Failures/cancellation leave the previous valid proposal available; a file/workspace/base change invalidates it. Context is local to this dialog session, never global across workspaces or stored as a provider-side chat.
+
+The UI separates a conversation composer, cumulative review and a single explicit apply action. Clearly supported edits can accompany pending questions. Unsupported structural operations have a direct limitation field instead of an endless clarification loop. `ai-writing-policy` reads the repository-owned rules at service startup, independent of the JSON protocol and the workspace operation playbook.
+
+`ai-config-store` persists only the connection fields in the OS user's configuration directory, using a same-directory temporary file, sync and rename with restricted POSIX permissions. Saved settings override environment defaults; demo mode does not read credentials. Configuration responses omit secrets. A failed save retains the previous runtime connection. The configuration adapter is separate from document/workspace IO and can be injected in tests.
+
+
+### Chat-first document context
+
+Opening the assistant exposes one composer and the current context. A selected range is reused; otherwise `documentTarget` gathers bounded editable text from the current Topic with per-fragment inherited conditions. Large Topics rank relevant blocks and explicitly mark partial context. Ambiguous Map matches require one inline chapter choice, rather than an upfront scope form. The server rebuilds the same scope, so fragment IDs and source guards remain deterministic across turns.
+
+Plans and cumulative edits share the conversation. Explicit execution of a plan can generate/apply guarded text edits; newly generated technical-value/command/model/unit/constraint changes instead show concrete differences for review. Technical change flags and exact source lines aid review; they are not domain-fact or full cross-reference consistency validation.

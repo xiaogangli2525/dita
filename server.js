@@ -370,6 +370,12 @@ const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
     if (url.pathname.startsWith('/api/')) {
+      // AI works only on the submitted immutable source, performs no workspace
+      // IO, and verifies its token again on completion. Do not hold a workspace
+      // read/write lock during a potentially slow upstream model request.
+      if (['/api/ai/propose', '/api/ai/scan', '/api/ai/config'].includes(url.pathname)) {
+        await handleApi(req, res, url.pathname, url.searchParams); return;
+      }
       await workspaceLock(req.method !== 'GET' && url.pathname !== '/api/export/pdf', () => handleApi(req, res, url.pathname, url.searchParams));
       return;
     }

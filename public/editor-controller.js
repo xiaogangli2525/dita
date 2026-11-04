@@ -137,6 +137,10 @@
       state.suppressVisualInput = true;
       updateVisual(file);
       state.suppressVisualInput = false;
+      if (state.mode === 'review') {
+        if (file && /\.ditamap$/i.test(file.path)) renderMapReview(file);
+        else renderDiff(file);
+      }
       renderOutline();
       renderInspector(null);
       updateHistoryButtons();
@@ -195,7 +199,7 @@
       return documents.load(path);
     }
 
-    function updateVisual(file, reviewMode = false) {
+    function updateVisual(file, reviewMode = state.mode === 'review') {
       mapController.invalidate();
       if (state.selectedVisualElement?.classList) state.selectedVisualElement.classList.remove('author-selected');
       state.selectedVisualElement = null;

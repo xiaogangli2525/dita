@@ -57,6 +57,7 @@
       feature('authorSelection', 'DitaAuthorSelection', 'createController', 'state dom api events ditaCore applyAuthorEdit validateXml'),
       feature('appearance', 'DitaAppearance', 'createController', 'theme authorSelection', ['authorSelection']),
       feature('bodyNavigation', 'DitaBodyNavigation', 'createController', 'state dom api events authorSelection openFile setMode setStatus', ['authorSelection']),
+      feature('aiAuthoring', 'DitaAiAuthoring', 'createController', 'state dom api events manual authorSelection bodyNavigation navigateToSource openFile setFileContent validateXml setStatus', ['manual', 'authorSelection', 'bodyNavigation']),
       feature('search', 'DitaSearch', 'createSearchController', 'state api events manual bodyNavigation navigateToSource', ['manual', 'bodyNavigation']),
       feature('authorCommands', 'DitaAuthorCommands', 'createController', 'state dom ditaCore authorSelection applyAuthorEdit validateXml', ['authorSelection'], {
         create: typeof catalog.DitaAuthorCommands?.createController === 'function' ? c => catalog.DitaAuthorCommands.createController({ state: c.state, dom: c.dom, core: c.ditaCore, selection: c.authorSelection, apply: c.applyAuthorEdit, validate: c.validateXml }) : undefined

@@ -14,9 +14,20 @@ test('real browser editing, reading and review workflow', async t => {
   const root = path.join(temporary, 'docs');
   await fs.mkdir(root);
   const initial = '<topic id="a"><title>Title</title><body><p>Original</p></body></topic>';
+  const reviewSource = [
+    '<topic id="review"><title>Review</title><body>',
+    '<p id="first">Same wording</p>',
+    '<p id="second">Same wording</p>',
+    '<p>Unchanged between edits</p>',
+    '<p>Remove this block</p>',
+    '<p id="next">Following paragraph</p>',
+    '<table><tgroup cols="1"><tbody><row><entry>Old parameter</entry></row></tbody></tgroup></table>',
+    '</body></topic>'
+  ].join('\n');
   const deleted = '<p>' + 'deleted content '.repeat(40) + '</p>';
   const oxygen = '<topic id="oxy"><title>Oxygen</title><body><p><?oxy_insert_start author="A"?>Inserted<?oxy_insert_end?></p><?oxy_delete author="A" content="' + deleted.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '"?></body></topic>';
   await fs.writeFile(path.join(root, 'a.dita'), initial);
+  await fs.writeFile(path.join(root, 'review.dita'), reviewSource);
   await fs.writeFile(path.join(root, 'oxy.dita'), oxygen);
   await fs.writeFile(path.join(root, 'main.ditamap'), '<map><title>Map</title><topicref href="a.dita"/><topicref href="oxy.dita"/></map>');
   await fs.cp(path.join(__dirname, 'fixtures/manual'), path.join(root, 'manual'), { recursive: true });
@@ -261,6 +272,45 @@ test('real browser editing, reading and review workflow', async t => {
     assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.get('a.dita').baseline), initial);
     assert.equal(writes.length, before);
   });
+  await t.test('review marks source-aligned paragraphs, table cells and deletion locations', async () => {
+    await open('review.dita');
+    try {
+      await page.click('#reviewButton');
+      assert.match(await page.locator('#diff').innerText(), /当前 Topic 没有待审阅/);
+      const revised = reviewSource
+        .replace('id="second">Same wording', 'id="second">Revised wording')
+        .replace('<p>Remove this block</p>\n', '')
+        .replace('Old parameter', 'New parameter');
+      await source(revised);
+      await page.click('[data-menu=dita]');
+      await page.getByRole('menuitem', { name: '审阅变更' }).click();
+      const changed = page.locator('#visualEditor [data-review-change]');
+      const next = page.locator('#visualEditor #next');
+      assert.deepEqual(await changed.allTextContents(), ['Revised wording', 'New parameter']);
+      assert.equal(await next.getAttribute('data-review-deletion'), 'before');
+      assert.equal(await page.locator('#visualEditor #first').getAttribute('data-review-change'), null);
+      const parameter = page.locator('#diff .diff-block').filter({ hasText: 'parameter' });
+      await parameter.locator('.diff-block-header').click();
+      assert.equal(await page.locator('#visualEditor td.review-target-focus').count(), 1);
+      await parameter.getByRole('button', { name: '拒绝此块' }).click();
+      assert.deepEqual(await changed.allTextContents(), ['Revised wording']);
+      assert.equal(await current(), revised.replace('New parameter', 'Old parameter'));
+      await parameter.getByRole('button', { name: '撤销决定' }).click();
+      const deletion = page.locator('#diff .diff-block').filter({ hasText: 'Remove this block' });
+      await deletion.getByRole('button', { name: '拒绝此块' }).click();
+      assert.equal(await next.getAttribute('data-review-deletion'), null);
+      assert.deepEqual(await changed.allTextContents(), ['Revised wording', 'New parameter']);
+      await page.setViewportSize({ width: 390, height: 844 });
+      const body = await page.locator('#visualPane').boundingBox();
+      const panel = await page.locator('#inspector').boundingBox();
+      assert.ok(body.y + body.height <= panel.y + 1, 'the diff panel should leave the document visible');
+      await page.click('#inspectorCloseButton');
+      assert.equal(await changed.count(), 0);
+    } finally {
+      await page.setViewportSize({ width: 1440, height: 1000 });
+      await source(reviewSource);
+    }
+  });
   await t.test('Oxygen-only bulk actions work and restore the complete deletion', async () => {
     await open('oxy.dita'); await page.click('#reviewButton'); await page.selectOption('#reviewScope', 'oxygen');
     assert.equal(await page.locator('#rejectAllButton').isEnabled(), true);
@@ -276,6 +326,7 @@ test('real browser editing, reading and review workflow', async t => {
   await t.test('Map bulk rejection preserves files until explicit Save', async () => {
     await open('main.ditamap'); await page.click('#reviewButton');
     await page.waitForSelector('.map-topic-surface'); await page.selectOption('#reviewScope', 'git');
+    assert.deepEqual(await page.locator('.map-topic-surface[data-map-topic-path="a.dita"] [data-review-change]').allTextContents(), ['Saved change']);
     const before = writes.length;
     await page.click('#rejectAllButton');
     assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.get('a.dita').current), initial);

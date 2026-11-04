@@ -1,50 +1,96 @@
-# AI-assisted authoring: integration boundary
+# AI 辅助写作：使用与接入边界
 
-This change prepares the document-editing boundary; it does **not** call an AI provider, send document content externally, or store API keys. The current UI remains a local document editor. A provider and model can be selected in a follow-up implementation.
+提供 **选区修订** 和 **粘贴问题 → 定位原文 → 连续对话修订 → 应用修改**。问题直接粘贴，不做 Excel 导入。知识库另见 [后续计划](knowledge-base-plan.md)，本轮不实施。
 
-## The workflow to build next
+## 如何使用
 
-1. The user chooses a task (draft a topic, rewrite a selection, explain or summarize) and explicitly selects the source documents to include.
-2. Capture the workspace token, document path and exact working content **before** starting the model request. For drafts, create a new unsaved document model instead of overwriting an existing topic.
-3. Call a provider adapter on the server. Credentials come from server environment variables; they never enter browser code or Git. Keep provider configuration separate from the XML/domain logic.
-4. Receive a candidate full XML document. Validate XML well-formedness, constrain the intended DITA root/type and required identifiers, and show a diff against the captured source. XML well-formedness alone is not DITA schema validation.
-5. Apply only after the user accepts the proposal, and only if the workspace and working document still match its captured base. Reject stale proposals and offer regeneration or a deliberate merge.
-6. Apply through `setFileContent`, preserving the existing undo history. The proposal does not save to disk or commit to Git. Explicit Save uses the same optimistic conflict checks as human edits.
+1. 打开文档，唤出右侧 **AI 写作**，直接在底部输入要求。已有选区时围绕选区，没有选区时自动使用当前章节；无需先填写表单或手动定位段落。
+2. 可以先说“给我修改方案”，也可以直接粘贴测试反馈。模型结合本次及此前要求、上一轮方案和当前可编辑内容回复。一个章节内可修改多个相关段落，保留各自的条件和格式。
+3. 在同一输入框继续纠正方案或补充事实。点击“查看原文与修改对照”可逐项审核，点击“应用修改”或输入“应用这版”“按这个改”应用当前提案。纯方案得到明确执行指令后会生成具体修改；涉及数值、单位、命令、型号或约束变化时先显示对照，等待核对。
+4. 仅在当前打开整份 Map、存在多个同样相关的章节时，显示章节候选供选择；选定后接着原要求处理。“调整修改范围”是可选入口，不是聊天前置步骤。
+5. 应用进入共享撤销/重做，正常保存才写入文件。可以继续修改同一位置；关闭/重开未变化的目标保留会话及未发送输入，刷新页面不保留对话。换文档/工作区或原文变化后不沿用旧提案。
 
-## Implemented interfaces
+对话最多 12 轮、用户要求累计 24000 字符；达到限制时明确提示先应用需保留的修改，再开始新任务，不默默丢弃要求。取消/失败保留上一版提案和输入，等待时可先写下一条。Ctrl/Cmd+Enter 发送。
 
-`public/document-store.js` exports:
+## 全文扫描
 
-- `createSaveCoordinator(send)`: deduplicates in-flight saves per document. Advances `disk` to the acknowledged content while preserving newer `current` edits.
-- `createProposal({file, workspaceToken, content, instruction}, validate)`: creates an immutable proposal with `before`, `after`, `path`, `workspaceToken`, and `status`.
-- `applyProposal(proposal, {file, workspaceToken}, validate, commit)`: checks the workspace/path/base, revalidates the candidate, and delegates an undoable change to the editor.
+在 **AI 写作 → 全文扫描** 选择当前章节或功能手册，再点击 **开始扫描**。扫描使用当前手册快照，包含编辑区的未保存内容与已解析的复用来源。正文分批发送给已配置的模型，界面显示处理进度、成功批次及覆盖说明。手册扫描也会按 AT 命令抽取相关片段做跨章节核对。
 
-The browser exposes `DitaApp.prepareProposal(content, instruction)` and `DitaApp.applyProposal(proposal)` for a future review controller. These are integration primitives, not a completed AI panel. A future async provider controller **must capture `file.current` and workspace identity at request start**, construct its proposal against that snapshot, and retain that proposal through review. Calling `prepareProposal` only after a delayed generation would incorrectly use the newest buffer as its base.
+每条建议附有可定位的原文引文和已声明的条件。点击 **定位原文** 后，可重新打开扫描面板继续查看。术语和表述类建议可以选一处直接生成修订提案。遇到技术事实、型号或步骤疑点，先在证据中选定修订位置，再把核实结果填入对话。应用提案后的正文标记可在 **DITA → 审阅变更** 中查看。
 
-Example without a provider dependency:
+长手册按预算扫描。引用限制、失败批次与未通过引文校验的建议会显示在覆盖说明中。手册发生变化后，重新扫描以取得与当前正文对应的建议。
 
-```js
-const fileSnapshot = { path: file.path, current: file.current };
-const tokenSnapshot = workspaceClient.token;
-const content = await provider.generate({ instruction, xml: fileSnapshot.current });
-const proposal = DitaDocumentStore.createProposal({
-  file: fileSnapshot,
-  workspaceToken: tokenSnapshot,
-  content,
-  instruction
-}, validateXml);
-// Display lineDiff(proposal.before, proposal.after), wait for explicit acceptance.
-DitaApp.applyProposal(proposal);
+## 准确性与边界
+
+- 系统保留 DITA 标签、ID、条件、引用及未编辑范围；修改前后验证源码片段和 XML，拒绝过期基线。XML 良构不代表技术事实正确。
+- 当前章节的可编辑内容默认进入上下文，每个片段携带继承条件；大型章节按要求聚焦相关片段，界面和模型会收到“局部上下文”提示，不宣称覆盖整个手册。跨章节一次围绕一个 Topic 修订。
+- 参数数值/范围、单位、AT 命令、型号及能力约束措辞变化会单独提示，每处修改显示源码行号及适用条件。此类提示是启发式审核辅助，不是参数正确性证明或完整一致性验证。
+- 缺少技术依据时保留相关事实、提出具体问题；明确的其他修改可以先完成。修订规则要求核对同一参数的说明、表格和示例，不把相同数字一概替换。
+- 不新增章节、型号条件或跨文件批量改结构。复用引用、未审核 Oxygen 修订保留原状；应在定义来源或受支持路径处理。
+- 实际准确率需要用真实测试反馈及研发确认的正确修改验收，不能使用模型自评置信度替代。目前自动测试以模拟模型验证流程和保护边界。
+
+## 模型配置
+
+适配 **OpenAI 兼容 Chat Completions** 协议。实际兼容性和质量需在公司批准的接口上验证。当前未预设供应商、模型或密钥，不会默默选择外部服务。
+
+从 AI 窗口右上角 **模型设置**，或 **编辑 → AI 模型连接** 打开独立连接窗口，填写 API 基础地址、模型名和 Key，点击 **保存连接**。配置一次，重启后仍有效；写作界面只显示当前模型。保存连接不会调用模型，发送修改请求时才发送文档内容。Key 输入在成功/失败后清空，响应只返回是否已配置；同接口留空保留已有 Key，换地址不会沿用旧 Key。
+
+连接保存在运行服务的用户配置目录：Windows 为 `%APPDATA%/DITA Lite/ai-connection.json`；macOS/Linux 为 `$XDG_CONFIG_HOME/dita-lite/ai-connection.json` 或 `~/.config/dita-lite/ai-connection.json`。这是包含密钥的本地配置文件，应用使用受限目录/文件权限（POSIX 为 0700/0600），不进入文档仓库或浏览器存储。可通过 `DITA_AI_CONFIG_FILE` 指定服务端配置文件位置；应选择仓库之外的用户私有目录。已保存的界面设置优先于启动环境配置；未保存时使用环境默认值。
+
+也可以在启动环境中固定配置，下例使用占位值：
+
+```powershell
+$env:DITA_AI_BASE_URL = 'https://your-approved-endpoint.example/v1'
+$env:DITA_AI_MODEL = 'your-model-name'
+$env:DITA_AI_API_KEY = 'your-secret-key'
+$env:DOCS_ROOT = 'E:\work\dita\repo_http'
+npm start
 ```
 
-The next UI should support cancel generation, pending/failed states, a visible scope summary, and accept/reject without auto-saving. Unselected documents and repository secrets should not be collected automatically. Treat instructions embedded in source documents as document content, not provider/system instructions.
+macOS/Linux 对应设置 `export DITA_AI_BASE_URL=...`、`export DITA_AI_MODEL=...`、`export DITA_AI_API_KEY=...` 后运行 `npm start`。应用不自动读取 `.env`；请通过终端或受控服务配置注入。真实密钥不要写入仓库、浏览器或测试截图。
 
-## Current boundaries and remaining work
+| 配置 | 说明 |
+| --- | --- |
+| `DITA_AI_BASE_URL` | 基础路径，通常以 `/v1` 结尾；服务追加 `/chat/completions`。不含鉴权查询参数或 URL 用户名/密码 |
+| `DITA_AI_MODEL` | 接口提供的准确模型名，必填 |
+| `DITA_AI_API_KEY` | 服务端 Bearer 密钥；本机无鉴权服务可不填 |
+| `DITA_AI_TIMEOUT_MS` | 超时毫秒数，默认 60000，限制在 1000–120000 |
+| `DITA_AI_JSON_MODE=0` | 对不支持 JSON 模式的接口不发送 `response_format`；仍强制校验返回 JSON |
+| `DITA_AI_TOKEN_PARAMETER` | 默认 `max_tokens`；要求新参数的模型可设为 `max_completion_tokens`，输出上限 4096 |
+| `DITA_AI_ALLOW_HTTP=1` | 显式允许非本机的内网 HTTP 接口，默认要求 HTTPS |
+| `DITA_AI_NO_AUTH=1` | 显式声明内网接口无需鉴权，不能替代应有密钥 |
+| `DITA_AI_CONFIG_FILE` | 用户模型配置文件路径；不设置时使用系统用户配置目录 |
 
-- `manual-domain.js` provides data-only `prepare`, `listNotes`, `discoverModels`, `listModels` and `saveCandidates` operations for a captured manual. It can run in Node without the browser editor or workspace service. `manual-service.js` remains the application adapter for acquiring and validating that snapshot; headless consumers must supply their own authorized document/configuration scope. Snapshot collections are read-only by contract, with copied/frozen file records and model settings. These query/publication operations do not grant file-write capabilities or replace the edit-proposal workflow above.
+`npm run dev` 演示模式始终关闭模型连接，即使继承了密钥。真实接口使用 `npm start`；默认只监听本机。服务仍是单用户本地工作区，不是多用户 AI 网关。
 
-- `baseline` is the committed Git comparison source; `disk` is the last acknowledged disk version; `current` is the working edit. AI review should compare against the captured working source, not against Git HEAD.
-- The server remains a **single local workspace**. Multiple tabs share the repository/branch; workspace tokens reject stale-tab requests after a switch. This is not a multi-user collaboration service.
-- File saves use same-directory temporary writes and rename, plus a comparison with the caller's last-read content. An external program can still race between comparison and rename; no cross-process filesystem transaction is claimed.
-- Map saves validate the batch before writing but are not multi-file transactions. If a later write fails, the UI reports the count already saved and preserves the remaining dirty buffers.
-- Real model integration still needs provider credentials/configuration, cancellation, request limits, a review panel, DITA-level validation, and provider-contract tests.
+## 架构与校验
+
+- `ai-context.js`：从 Author/源码选区或 `manual-service` 快照定位候选。重复或不能准确映射的可视选区拒绝猜测。
+- `ai-edit-core.js`：Node/浏览器共用的纯数据边界；用 XML source ranges 提取文字片段，校验 ID/原文匹配、重复修改、长度和 XML。按逆序源码范围替换，保留范围外原始字节，不整份序列化文档。
+- `ai-authoring.js`：独立界面控制器，通过声明的端口捕获请求前 `path/current/workspaceToken`，展示结果、取消、接受/放弃。不直接写共享 state 或文档字段。
+- `ai-conversation.js`：受检查的多轮上下文边界，保留用户要求与最新累计提案；结果副本不可变，应用后能基于新原文继续。
+- `ai-connection.js` / `ai-settings.js` / `ai-config-store.js`：独立设置窗口、服务端连接状态及原子写入的用户配置；不存浏览器/项目文件，不返回密钥，切换地址不沿用旧 Key。
+- `ai-provider.js`：服务端请求、超时/取消、最多两个并发、256 KB 响应限制、完整 JSON 与拒答检测。禁止重定向，不向浏览器回显上游错误正文或密钥。真实实现参与严格类型检查。
+- `ai-routes.js`：在既有 Host/Origin/工作区 token 检查之后，只处理提交的源码快照，无工作区文件 IO；长请求不持有工作区锁，完成时再次验证 token。
+- `ai-contracts.d.ts`：请求、片段、结果和配置的数据契约；运行时同样验证模型输出，JSON 模式不能替代校验。
+
+模型返回 `summary`、`questions`、`edits[{id,before,after}]`。允许明确的修改与待补充问题同时返回；前后文字用 `textContent` 展示，修改后文字进行 XML 转义。模型不能指定路径、执行工具或改标签属性。
+
+`document-store.createProposal` 绑定请求开始前的工作副本；`applyProposal` 检查路径、工作区和原文仍一致，再调用共享编辑接口。切换工作区、改动原文或关闭窗口会取消/丢弃未完成请求；已完成对话可在原文未变化时恢复；手册搜索还验证整个快照。不能覆盖等待期间的新编辑。`baseline`、`disk`、`current` 保持各自含义。
+
+校验保证范围、结构和并发边界，不代表技术事实正确，也不是完整 DITA DTD 校验。参数、型号和固件范围仍需研发核对。首版采用本地关键词定位，不让模型遍历仓库，不包含向量库/知识图谱。
+
+## 默认修改规则
+
+每轮请求的系统消息自动包含仓库维护的 [AI 文字修订规则](ai-writing-rules.md)，不需要用户重复粘贴。服务端启动时读取这份规则，修改后重启生效。规则强调直接执行明确要求、使用此前回答、保留 DITA/型号差异，以及只追问缺少的关键技术事实。
+
+`assistant-playbook.md` 面向仓库操作、保存和交付的自动化，不全量发送给当前文字模型。模型规则与 JSON 输出协议分开维护，实际请求包含规则正文，不是只给文件名。
+
+## 验证范围
+
+自动测试使用本地模拟兼容接口，覆盖真实 HTTP 请求、鉴权/token、选区与手册定位、源码保留、审核、待确认、恶意/越界输出、取消、过期原文、撤销重做、保存互不阻塞和多皮肤窄屏布局。
+
+未配置真实模型时明确显示未配置并禁用生成；模拟测试不证明真实模型质量或供应商兼容性。实际接入后，用真实 HTTP 手册及已核实问题补做人工验收。
+
+协议参考：[Chat Completions](https://developers.openai.com/api/reference/resources/chat/subresources/completions/methods/create)、[JSON 模式](https://developers.openai.com/api/docs/guides/structured-outputs?api-mode=chat)。兼容接口可能仅支持部分参数。
+
