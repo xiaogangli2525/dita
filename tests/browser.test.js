@@ -151,7 +151,7 @@ test('real browser editing, reading and review workflow', async t => {
     await open('main.ditamap'); await ui.openNotes(page);
     await page.waitForFunction(() => document.getElementById('footnoteCount').textContent === '3');
     await page.selectOption('#footnoteModel', '');
-    await page.locator('.footnote-actions button').first().click();
+    await page.locator('.footnote-actions').getByRole('button', { name: '定位正文', exact: true }).first().click();
     await page.waitForFunction(() => window.DitaApp.state.activePath === 'main.ditamap');
     assert.equal(await page.locator('#footnoteScope').innerText(), 'main.ditamap');
     assert.match(await page.evaluate(() => window.DitaApp.state.filesMap.get('a.dita').current), /Changed elsewhere/);
