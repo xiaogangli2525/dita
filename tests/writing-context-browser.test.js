@@ -40,7 +40,7 @@ test('contextual writing and model note details preserve source and editing cont
       getSelection().removeAllRanges(); getSelection().addRange(range);
       node.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }));
     }, { start, end });
-    if (summon) { await page.keyboard.press('Alt+Slash'); await page.waitForSelector('#authorQuickTools:not([hidden])'); }
+    if (summon) { await page.keyboard.press('Alt+z'); await page.waitForSelector('#authorQuickTools:not([hidden])'); }
   }
   await t.test('clicks, text selections and arrow movement never summon the tools automatically', async subtest => {
     const page = await fresh(subtest);
@@ -50,8 +50,8 @@ test('contextual writing and model note details preserve source and editing cont
     assert.equal(await page.locator('#authorQuickTools').isVisible(), false);
     await page.keyboard.press('ArrowLeft'); await page.keyboard.press('ArrowRight');
     assert.equal(await page.locator('#authorQuickTools').isVisible(), false);
-    await page.keyboard.press('Alt+Slash'); assert.equal(await page.locator('#authorQuickTools').isVisible(), true);
-    await page.keyboard.press('Alt+Slash'); assert.equal(await page.locator('#authorQuickTools').isVisible(), false);
+    await page.keyboard.press('Alt+z'); assert.equal(await page.locator('#authorQuickTools').isVisible(), true);
+    await page.keyboard.press('Alt+z'); assert.equal(await page.locator('#authorQuickTools').isVisible(), false);
     assert.equal(await page.evaluate(() => [...window.DitaApp.state.filesMap.values()].some(f => f.dirty)), false);
   });
   await t.test('nearby formatting keeps the exact selection and supports undo without editing XML metadata', async subtest => {
@@ -86,7 +86,7 @@ test('contextual writing and model note details preserve source and editing cont
     await page.locator('#first').dispatchEvent('compositionstart'); assert.equal(await page.locator('#authorQuickTools').isVisible(), false);
     await page.locator('#first').dispatchEvent('compositionend');
     await page.locator('#first').evaluate(node => { const range = document.createRange(); range.selectNodeContents(node); getSelection().removeAllRanges(); getSelection().addRange(range); node.dispatchEvent(new PointerEvent('pointerup', { bubbles:true })); });
-    await page.keyboard.press('Alt+Slash'); assert.equal(await page.locator('#authorQuickTools').isVisible(), false, 'selection crossing protected fn has no tools');
+    await page.keyboard.press('Alt+z'); assert.equal(await page.locator('#authorQuickTools').isVisible(), false, 'selection crossing protected fn has no tools');
     await select(page, '#first', 1); await page.evaluate(() => window.DitaApp.setMode('editor')); assert.equal(await page.locator('#authorQuickTools').isVisible(), false);
     assert.equal(await page.evaluate(() => [...window.DitaApp.state.filesMap.values()].some(f => f.dirty)), false);
   });
@@ -129,7 +129,7 @@ test('contextual writing and model note details preserve source and editing cont
     await page.evaluate(source => { const a = window.DitaApp; a.setFileContent(a.state.filesMap.get('a.dita'), source); }, pending);
     await page.click('[data-menu=help]'); await page.locator('#menuPopup button').filter({ hasText: '快捷键' }).click();
     await page.waitForSelector('#shortcutHelpDialog[open]');
-    assert.match(await page.locator('#shortcutHelpDialog').innerText(), /Alt \+ \//);
+    assert.match(await page.locator('#shortcutHelpDialog').innerText(), /Alt \+ Z/);
     assert.equal(await page.locator('#menuPopup').isVisible(), false);
     assert.equal(await page.evaluate(() => document.activeElement.id), 'shortcutHelpClose');
     await page.keyboard.press('Control+z');
@@ -152,7 +152,7 @@ test('contextual writing and model note details preserve source and editing cont
       function point(offset){const w=document.createTreeWalker(node,NodeFilter.SHOW_TEXT);let n;while((n=w.nextNode())){if(offset<=n.length)return[n,offset];offset-=n.length;}return[node,node.childNodes.length];}
       const r=document.createRange();r.setStart(...point(p.start));r.setEnd(...point(p.end));getSelection().removeAllRanges();getSelection().addRange(r);
     },{start,end});
-    await page.keyboard.press('Alt+Slash');await page.waitForSelector('#authorQuickTools:not([hidden])');
+    await page.keyboard.press('Alt+z');await page.waitForSelector('#authorQuickTools:not([hidden])');
   }
   async function quick(page, selector){const b=page.locator('#authorQuickTools '+selector);if(!await b.isVisible())await page.click('#authorQuickTools [data-quick-more]');await b.click();}
   const toolsCurrent=page=>page.evaluate(()=>window.DitaApp.state.filesMap.get('tools.dita').current);

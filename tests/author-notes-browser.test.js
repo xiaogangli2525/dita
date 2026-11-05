@@ -46,6 +46,7 @@ test('Author footnotes and writing UI', async t => {
   await open('a.dita');
 
   await t.test('opening and cancelling insertion preserves XML, DOM and the saved caret', async () => {
+    await page.locator('#visualEditor [data-fn-text="EXISTING"][data-fn-number="1"]').waitFor();
     await caret('#bold', '加粗 & 中文', 2);
     const before = await content(), dom = await page.locator('#visualEditor').innerHTML();
     await page.click('#newFootnoteButton'); await page.locator('#newFootnoteDialog[open]').waitFor(); await page.fill('#newFootnoteContent', 'CANCELLED'); await page.click('#newFootnoteCancel');

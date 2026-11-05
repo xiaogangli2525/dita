@@ -50,19 +50,24 @@
       const issues = projectIssues(snapshot, model, profile);
       if (issues.length) throw Object.assign(new Error(issues.map(item => item.path + '：' + item.message).join('\n')), { issues });
     }
+    const publish = (files, projection = {}) => publication.preparePublication({
+      map: snapshot.map, files, model, profile,
+      ruleConfirmed: projection.confirmed, ruleExclusions: projection.excluded
+    });
+    // Resolve actual uses before deciding which original notes can affect delivery.
+    const baseline = useRules && model ? publish(snapshot.files) : null;
+    const activeOrigins = baseline && new Set(baseline.notes.map(note => note.origin.path + '\n' + note.origin.start));
     const projection = useRules ? rulesCore.project(snapshot.files, snapshot.noteRules?.config, model, {
-      prefixes, profile,
+      prefixes, profile, activeOrigins,
       knownModels: [...(snapshot.project.models || []), ...discoverModels(snapshot, profile).models]
     }) : { files: snapshot.files };
     if (projection.issues?.length) {
       const message = projection.issues.some(item => item.kind === 'model-scope') ?
         '有注脚的型号范围需要核对，请使用独立规则后再导出' : '注脚规则已过期，请重新核对后导出';
-      throw Object.assign(new Error(message), { issues: projection.issues });
+      throw Object.assign(new Error(message), { issues: [...projection.issues, ...projection.noteReview] });
     }
-    const result = publication.preparePublication({
-      map: snapshot.map, files: projection.files, model, profile,
-      ruleConfirmed: projection.confirmed, ruleExclusions: projection.excluded
-    });
+    const result = baseline && !projection.applied && !projection.prefixApplied ? baseline : publish(projection.files, projection);
+    result.noteReview = projection.noteReview || [];
     Object.assign(result.report, {
       ruleApplied: projection.applied || 0,
       ruleFilteredParts: projection.filteredParts || 0,

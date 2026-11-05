@@ -5,6 +5,7 @@
     const $ = id => document.getElementById(id);
     const panel = $('footnotesPanel');
     let shown = false, notes = [], revision = '', generation = 0, timer;
+    const expandedContexts = new Set();
     let editing = null, scopePath = '', peekNote = null, peekMarker = null, peekGeneration = 0;
     const peek = $('footnotePeek');
     const picker = root.DitaNoteScope.createPicker(A, 'footnote', 'footnoteEditForm', 'footnoteProducts');
@@ -17,6 +18,7 @@
         // Do not leave actionable notes from the previous document on screen
         // while the new manual is being captured by the debounced refresh.
         notes = [];
+        expandedContexts.clear();
         $('footnoteScope').textContent = path || '当前功能文档';
         $('footnoteCount').textContent = '—';
         $('footnoteUnassigned').textContent = '—';
@@ -47,9 +49,9 @@
         const header = el('div', 'footnote-card-heading');
         header.append(el('span', 'footnote-number', note.label || String(note.index + 1)),
           el('span', !note.unmarked ? 'footnote-model-badge' : 'footnote-unassigned', note.common ? '已确认通用' : note.conditions.join(' ∩ ') || '待确认适用范围'));
-        card.append(header, el('p', 'footnote-context', note.context || '文档注脚'), el('p', 'footnote-text', note.text || (note.referenced ? '引用注脚，请在引用源中维护。' : '（空注脚）')));
-        card.append(el('p', 'note-card-impact', (note.reused ? '公共来源 · ' : '本地注脚 · ') + (note.usages?.length || 0) + ' 处使用（当前手册）'));
-        const path = el('small', 'footnote-path', note.path); path.title = note.path; card.append(path);
+        const text = note.text || (note.referenced ? '引用注脚，请在引用源中维护。' : '（空注脚）');
+        const excerpt = Array.from(text.split('\n').slice(0, 3).join('\n')).slice(0, 150).join('').trimEnd();
+        card.append(header, el('p', 'footnote-text', excerpt === text ? text : excerpt + '…'));
         const actions = el('div', 'footnote-actions');
         const locate = el('button', '', '定位正文'); locate.type = 'button'; locate.addEventListener('click', () => focus(note));
         const edit = el('button', 'footnote-edit-button', '编辑注脚'); edit.type = 'button'; edit.disabled = false;
@@ -57,7 +59,21 @@
         if (note.reused) edit.textContent = '编辑引用源';
         edit.addEventListener('click', () => beginEdit(note));
         const rules = el('button', '', '导出型号规则'); rules.type = 'button'; rules.addEventListener('click', () => A.noteRules.show(note));
-        actions.append(locate, edit, rules); card.append(actions); list.append(card);
+        actions.append(edit, locate, rules); card.append(actions);
+        const context = el('details', 'footnote-card-context');
+        const key = note.path + '\n' + note.xmlPath;
+        context.open = expandedContexts.has(key);
+        const disclosure = el('summary', '', excerpt === text ? '命令上下文与来源' : '完整注脚、命令上下文与来源');
+        disclosure.addEventListener('click', () => {
+          if (context.open) expandedContexts.delete(key);
+          else expandedContexts.add(key);
+        });
+        context.append(disclosure);
+        if (excerpt !== text) context.append(el('p', 'footnote-text', text));
+        if (note.context) context.append(el('p', 'footnote-context', note.context));
+        context.append(el('p', 'note-card-impact', (note.reused ? '公共来源 · ' : '本地注脚 · ') + (note.usages?.length || 0) + ' 处使用（当前手册）'),
+          el('small', 'footnote-path', note.path));
+        card.append(context); list.append(card);
       }
       syncMode();
     }

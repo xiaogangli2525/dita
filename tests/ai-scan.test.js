@@ -47,3 +47,18 @@ test('scan result requires literal quotes, valid IDs and multiple origins for cr
   assert.deepEqual(result, { findings: [item], omitted: 3 });
   assert.throws(() => core.validateBatch({ ...batch, evidence: [batch.evidence[0], batch.evidence[0]] }), { status: 400 });
 });
+
+test('scan evidence follows unchanged text after an insertion and rejects changed scope or ambiguous duplicates', () => {
+  const source = '<topic><title>T</title><body><p>待修改的正文</p><p product="ML307R">参数说明</p><p>重复文字</p><p>重复文字</p></body></topic>';
+  const document = file('a.dita', source);
+  const { records } = core.collect([document]);
+  const find = text => records.find(record => record.input.text === text);
+  const next = source.replace('待修改的正文', '重新编写的一段正文');
+  const unchanged = core.rebase(document, next, records);
+  assert.equal(unchanged.has(find('待修改的正文').input.id), false);
+  assert.equal(unchanged.get(find('参数说明').input.id).start, next.indexOf('参数说明'));
+  const changedScope = next.replace('ML307R', 'MN318').replace('<p>重复文字</p>', '');
+  const changed = core.rebase(document, changedScope, records);
+  assert.equal(changed.has(find('参数说明').input.id), false);
+  assert.equal(changed.has(find('重复文字').input.id), false);
+});

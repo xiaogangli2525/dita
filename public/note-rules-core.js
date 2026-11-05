@@ -55,27 +55,35 @@
       if(seen.has(key(result)))throw Error('同一注脚存在重复规则');seen.add(key(result));return result;
     });return {schema:1,rules};
   }
-  function project(files,config,model,{prefixes=false,profile,knownModels=[]}={}){
-    config=validate(config||{schema:1,rules:[]});const output=new Map(files),confirmed=new Map(),excluded=new Map(),issues=[];
+  function project(files,config,model,{prefixes=false,profile,knownModels=[],activeOrigins}={}){
+    config=validate(config||{schema:1,rules:[]});const output=new Map(files),confirmed=new Map(),excluded=new Map(),issues=[],noteReview=[];
+    const active = note => !activeOrigins || activeOrigins.has(note.path + '\n' + note.start);
     let filteredParts=0,applied=0,prefixCandidates=0,prefixApplied=0,prefixExcluded=0,prefixProfileFiltered=0;
-    if(!model)return {files:output,confirmed,excluded,filteredParts,applied,issues,prefixCandidates,prefixApplied,prefixExcluded,prefixProfileFiltered};
+    if(!model)return {files:output,confirmed,excluded,filteredParts,applied,issues,noteReview,prefixCandidates,prefixApplied,prefixExcluded,prefixProfileFiltered};
     for(const [path,file]of files){
       const rules=config.rules.filter(rule=>rule.path===path);
       const originals=notes.listFootnotes(file.current,path),matched=new Map(),replacements=[];
       for(const rule of rules){
         const note=originals.find(note=>note.xmlPath===rule.xmlPath);
-        if(!matches(rule,note)){issues.push({path,message:'注脚规则已过期，请重新核对：'+rule.xmlPath});continue;}
+        if(!matches(rule,note)){issues.push({path,kind:'stale-rule',note,message:'注脚规则已过期，请重新核对：'+rule.xmlPath});continue;}
+        if(!active(note))continue;
         let inner=partition(note).render(rule.decisions,model);filteredParts+=rule.decisions.filter(d=>d.scope==='models'&&!d.models.includes(model)).length;
         if(prefixes){const compact=modelText.analyze({...note,before:'<fn>'+inner+'</fn>',inner},model,{knownModels});if(!compact.excluded&&!compact.unresolved.length)inner=compact.inner;}
         matched.set(note.xmlPath,!notes.textOf(inner).trim()&&!/<image\b/.test(inner));applied++;
         const opening=note.before.slice(0,note.openEnd-note.start).replace(/\/\s*>$/,'>');replacements.push({start:note.start,end:note.end,value:opening+inner+'</fn>'});
       }
       for(const note of originals){
-        if(rules.some(rule=>rule.xmlPath===note.xmlPath)||note.common||!manual.matches(note.conditions,model))continue;
+        if(!active(note)||rules.some(rule=>rule.xmlPath===note.xmlPath)||note.common||!manual.matches(note.conditions,model))continue;
         const projected=modelText.analyze(note,model,{profile,knownModels});
         if(projected.scoped||projected.unresolved.length)prefixCandidates++;
-        if(!prefixes)continue;
-        if(projected.unresolved.length){issues.push({path,xmlPath:note.xmlPath,kind:'model-scope',message:'注脚含不能按明确前缀判断的型号说明，请核对独立规则：'+projected.unresolved[0].slice(0,100)});continue;}
+        if(projected.unresolved.length){
+          const item={path,xmlPath:note.xmlPath,note,kind:'model-scope',message:'型号适用范围需逐段核对：'+projected.unresolved[0].slice(0,100)};
+          (prefixes?issues:noteReview).push(item);continue;
+        }
+        if(!prefixes){
+          if(projected.scoped)noteReview.push({path,xmlPath:note.xmlPath,note,kind:'prefix',message:'注脚用明确的型号前缀区分内容，可启用前缀筛选或核对独立规则。'});
+          continue;
+        }
         if(!projected.scoped)continue;
         prefixApplied++;prefixExcluded+=projected.excluded;prefixProfileFiltered+=projected.profileFiltered;
         const inner=projected.inner,opening=note.before.slice(0,note.openEnd-note.start).replace(/\/\s*>$/,'>');
@@ -88,7 +96,7 @@
         if(!confirmed.has(path))confirmed.set(path,new Set());confirmed.get(path).add(note.start);
         if(matched.get(note.xmlPath)){if(!excluded.has(path))excluded.set(path,new Set());excluded.get(path).add(note.start);}
       }
-    }return {files:output,confirmed,excluded,filteredParts,applied,issues,prefixCandidates,prefixApplied,prefixExcluded,prefixProfileFiltered};
+    }return {files:output,confirmed,excluded,filteredParts,applied,issues,noteReview,prefixCandidates,prefixApplied,prefixExcluded,prefixProfileFiltered};
   }
   const api={key,matches,partition,suggest,validate,project};if(typeof module!=='undefined')module.exports=api;else root.DitaNoteRulesCore=api;
 })(typeof window==='undefined'?globalThis:window);

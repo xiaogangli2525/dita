@@ -25,8 +25,13 @@
     }
 
     /** @param {import('./data-contracts').ManualSnapshot} snapshot */
+    function contextCurrent(snapshot) {
+      return sameContext(snapshot) && (!A.noteRuleStore || A.noteRuleStore.current(snapshot.noteRules));
+    }
+
+    /** @param {import('./data-contracts').ManualSnapshot} snapshot */
     function current(snapshot) {
-      if (!sameContext(snapshot) || A.noteRuleStore && !A.noteRuleStore.current(snapshot.noteRules)) return false;
+      if (!contextCurrent(snapshot)) return false;
       /** @type {[string,string][]} */
       const entries = [[snapshot.path, snapshot.content], ...Array.from(snapshot.files, /** @returns {[string,string]} */ ([path, file]) => [path, file.current])];
       if (snapshot.filter) entries.push([snapshot.filter.path, snapshot.filter.current]);
@@ -118,7 +123,7 @@
     }
 
     return Object.freeze({
-      ...domain, capture, current, listFilters,
+      ...domain, capture, current, contextCurrent, listFilters,
       /** @param {import('./data-contracts').ManualSnapshot} snapshot */
       verifyRules: snapshot => A.noteRuleStore?.verify(snapshot.noteRules),
       scopePath: () => /\.ditamap$/i.test(A.state.activePath) ? A.state.activePath : A.state.selectedMap || A.state.activePath

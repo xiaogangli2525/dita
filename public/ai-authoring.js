@@ -3,13 +3,13 @@
   function createController(A) {
     const core = root.DitaAiEditCore, store = root.DitaDocumentStore, conversationCore = root.DitaAiConversation;
     const context = root.DitaAiContext.createContext(A), get = id => document.getElementById(id), dialog = get('aiDialog');
-    let selected = null, proposal = null, selection = null, filePath = '', token = '', manual = null, thread = null;
+    let selected = null, proposal = null, selection = null, filePath = '', token = '', manual = null, thread = null, scanTask = null;
     let controller = null, generation = 0, opening = 0, configuration = null, opener = null, busy = false, applying = false;
     const connection = root.DitaAiConnection.createController({ api: A.api, events: A.events,
       changed: value => { configuration = value; renderConfiguration(); controls(); }, pending: () => controls() });
     const scanner = root.DitaAiScan.createController(A, {
       path: () => filePath, available: () => configuration?.available && !connection.saving,
-      prepare: prepareScanEdit, leave: close
+      prepare: prepareScanEdit, activity: controls
     });
     const say = (text, failure = false) => { for (const id of ['aiStatus', 'aiReplyStatus']) { get(id).textContent = text; get(id).classList.toggle('is-error', failure); } };
     function renderConfiguration() {
@@ -21,7 +21,7 @@
       const locked = busy || connection.saving, continued = Boolean(get('aiConversation').children.length);
       get('aiNewTask').hidden = !continued; get('aiNewTask').disabled = locked;
       get('aiLocate').disabled = locked; get('aiCancel').hidden = !busy;
-      get('aiApply').disabled = locked || !proposal; get('aiInputs').disabled = locked; get('aiSettingsButton').disabled = locked;
+      get('aiApply').disabled = locked || !proposal; get('aiInputs').disabled = locked; get('aiSettingsButton').disabled = locked || scanner.running();
       get('aiScanButton').disabled = locked || !filePath || !configuration;
       get('aiComposer').hidden = false; get('aiReply').disabled = connection.saving;
       get('aiStatus').hidden = true; get('aiWelcome').hidden = continued || busy;
@@ -30,6 +30,7 @@
     }
     function clearResult() { proposal = null; get('aiReview').hidden = true; get('aiChanges').replaceChildren(); controls(); }
     function resetThread() {
+      scanTask = null;
       thread = selected ? conversationCore.create(selected) : null;
       get('aiConversation').replaceChildren(); get('aiConversation').hidden = true;
       get('aiTask').open = false; clearResult();
@@ -37,6 +38,7 @@
     function stop() { generation++; controller?.abort(); controller = null; busy = false; controls(); }
     function fresh() {
       if (token !== A.api.token) throw Error('工作区已切换，请重新打开 AI 修订');
+      scanTask?.check();
       if (manual && !A.manual.current(manual)) throw Error('手册内容或型号配置已变化，请重新定位');
       const file = selected && A.state.filesMap.get(selected.path);
       if (file && file.current !== selected.source) throw Error('原文已变化，请重新选择并生成修改');
@@ -55,11 +57,16 @@
       resetThread(); drawSource(); say('已选定原文。说明要求后即可修改，后续可以直接接着对话。'); controls();
       get('aiSource').open = false;
     }
-    function prepareScanEdit(hit, finding, snapshot) {
-      if (!A.manual.current(snapshot)) throw Error('手册内容已变化，请重新扫描。');
-      choose(hit); manual = snapshot; fresh();
+    function prepareScanEdit(hit, finding, task) {
+      if (document.querySelector('dialog[open]')) throw Error('请先关闭当前窗口。');
+      task.check();
+      stop(); opener = document.activeElement;
+      token = A.api.token; filePath = hit.path; selection = hit; manual = null;
+      choose(hit); scanTask = task; fresh();
+      get('aiScope').value = 'selection';
       get('aiCandidates').replaceChildren(); get('aiModel').value = '';
       const input = get('aiReply');
+      dialog.showModal();
       if (finding.category === 'wording') {
         input.value = '请只修订当前选中的原文，保留所有技术事实和型号范围。扫描问题：' + finding.summary + '。建议：' + finding.suggestion;
         controls(); void generate();
@@ -207,6 +214,10 @@
         const note = document.createElement('p'); note.className = 'ai-applied'; note.textContent = (command ? '已按“' + command + '”应用修改' : '以上修改已应用到编辑区') + ' · 可撤销'; get('aiConversation').append(note);
         say(selected ? '已应用，可继续对话修改同一位置；正常保存才写入文件。' : '已应用，此处已无可编辑文字，请重新定位。');
         A.setStatus('AI 修改已应用 · 可撤销 · 请核对后保存');
+        if (scanTask) {
+          const completed = scanTask; scanTask = null;
+          close(); completed.applied();
+        }
       } catch (error) { if (id === generation) say(error.message, true); }
       finally { if (id === generation) { busy = false; controls(); if (selected) get('aiReply').focus({ preventScroll: true }); } }
     }
@@ -252,8 +263,12 @@
     }
     get('aiButton').addEventListener('mousedown', event => event.preventDefault());
     get('aiButton').addEventListener('click', show); get('aiClose').addEventListener('click', close);
-    get('aiSettingsButton').addEventListener('click', () => connection.open());
-    get('aiScanButton').addEventListener('click', scanner.open);
+    function configure() {
+      if (scanner.running()) { A.setStatus('全文扫描正在使用当前模型，完成或停止后可调整连接。'); return; }
+      connection.open();
+    }
+    get('aiSettingsButton').addEventListener('click', configure);
+    get('aiScanButton').addEventListener('click', () => { close(); scanner.open(); });
     get('aiLocate').addEventListener('click', locate);
     get('aiSend').addEventListener('click', send); get('aiApply').addEventListener('click', () => apply());
     get('aiCancel').addEventListener('click', () => { stop(); say('已取消本轮，保留已有对话和提案。'); });
@@ -274,7 +289,7 @@
       if (!dialog.open || !selected || applying) return;
       try { fresh(); } catch (error) { stop(); selected = null; resetThread(); controls(); say(error.message, true); }
     });
-    return { show, configure: () => connection.open() };
+    return { show, configure };
   }
   root.DitaAiAuthoring = { createController };
 })(window);

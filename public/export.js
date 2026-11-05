@@ -33,7 +33,9 @@
     let filterGeneration = 0;
     const selectedFilters = new Map();
     const prefixChoices = new Map();
+    const modelChoices = new Map();
     let configuringScope = '', configuringWorkspace = '';
+    const choiceKey = () => configuringWorkspace + '\n' + configuringScope;
     const service = () => A.manual;
     const nativePdf = () => A.state.capabilities?.pdf === true;
     function formatHint() {
@@ -47,17 +49,61 @@
       const path = snapshot ? [...snapshot.files.keys(), snapshot.path].find(path => error.message.startsWith(path + '：')) : '';
       return [{ path: path || '', severity: 'error', message: error.message }];
     }
+    function openRules(note) {
+      const snapshot = configuration?.snapshot;
+      if (!snapshot || !service().current(snapshot)) {
+        get('modelExportError').textContent = '内容已变化，请重新打开交付设置。'; return;
+      }
+      const model = get('exportModel').value;
+      modelChoices.set(choiceKey(), model);
+      get('modelExportDialog').close();
+      void A.noteRules.show(note, {
+        scope: snapshot.path, model,
+        onClose: () => { if (snapshot.workspace === A.api.token) void openModelExport({ scope: snapshot.path, recheck: true }); }
+      });
+    }
     function showIssues(issues) {
       const list = get('deliveryChecks'); if (!list) return;
       list.replaceChildren();
+      const notes = issues.filter(item => item.note);
+      const count = get('deliveryNoteIssueCount');
+      count.hidden = !notes.length;
+      count.textContent = notes.length ? (get('exportModel').value || '当前交付') + ' · ' + notes.length + ' 条注脚需核对' : '';
+      get('deliveryEnablePrefix').hidden = !issues.some(item => item.kind === 'prefix');
       for (const item of issues) {
         const row = document.createElement('li'); row.className = 'check-' + item.severity;
-        row.append(document.createTextNode((item.severity === 'error' ? '需处理：' : '提醒：') + item.message));
-        if (item.path && /\.(dita|xml|ditamap)$/i.test(item.path)) {
+        if (item.note) {
+          const note = item.note, title = document.createElement('strong'), excerpt = document.createElement('p'), location = document.createElement('small');
+          const text = note.text.replace(/\s+/g, ' ').trim();
+          title.textContent = ({ prefix: '可按型号前缀筛选', 'model-scope': '需逐段确认型号', 'stale-rule': '独立规则已过期' })[item.kind];
+          excerpt.textContent = text.length > 150 ? text.slice(0, 150) + '…' : text || '（空注脚）';
+          location.textContent = note.path + ' · 第 ' + note.source.slice(0, note.start).split('\n').length + ' 行';
+          const reason = document.createElement('p'); reason.textContent = item.message;
+          const actions = document.createElement('div'); actions.className = 'delivery-note-actions';
+          const locate = document.createElement('button'); locate.type = 'button'; locate.textContent = '定位原文';
+          locate.addEventListener('click', async () => {
+            get('modelExportDialog').close();
+            try { await A.bodyNavigation.node(note.path, note.xmlPath, note.source); }
+            catch {
+              try {
+                if (A.state.filesMap.get(note.path)?.current !== note.source) throw Error('注脚原文已变化，请重新检查交付。');
+                await A.navigateToSource(note.path, note.start, note.end, note.before);
+              } catch (error) { A.setStatus(error.message, true); }
+            }
+          });
+          actions.append(locate);
+          if (A.noteRules && configuration?.snapshot.noteRules?.supported !== false) {
+            const rules = document.createElement('button'); rules.type = 'button'; rules.textContent = '核对这条注脚';
+            rules.addEventListener('click', () => openRules(note)); actions.append(rules);
+          }
+          row.classList.add('delivery-note-issue'); row.append(title, excerpt, location, reason, actions);
+        } else {
+          row.append(document.createTextNode((item.severity === 'error' ? '需处理：' : '提醒：') + item.message));
+        }
+        if (!item.note && item.path && /\.(dita|xml|ditamap)$/i.test(item.path)) {
           const button = document.createElement('button'); button.type = 'button'; button.textContent = item.path;
           button.addEventListener('click', async () => { get('modelExportDialog').close(); try { await A.navigateToSource(item.path); } catch (error) { A.setStatus(error.message, true); } }); row.append(button);
         }
-        if(item.xmlPath&&A.noteRules){const button=document.createElement('button');button.type='button';button.textContent='核对这条注脚';button.addEventListener('click',()=>{get('modelExportDialog').close();A.noteRules.show(item);});row.append(button);}
         list.append(row);
       }
     }
@@ -68,14 +114,18 @@
         get('exportPrefixNotes').disabled=!get('exportModel').value;
         const data = service().prepare(configuration.snapshot, get('exportModel').value, true, {prefixes:get('exportPrefixNotes').checked});
         get('modelExportSummary').textContent = `包含 ${data.report.included} 条注脚；排除 ${data.report.excluded} 条；保留 ${data.report.unmarked} 条待确认注脚。` + (data.report.unused ? ` ${data.report.unused} 条未引用定义不输出。` : '') + (configuration.snapshot.filter ? ` 正文条件排除 ${data.report.filteredElements} 处内容。` : '') + (get('exportModel').value && data.report.unmarked ? ' 其余未设置范围的说明继续保留，请核对是否通用。' : '');
-        const warnings = data.notes.filter(note => note.unmarked).map(note => ({ path: note.origin.path, severity: 'warning', message: '注脚尚未确认适用范围，将保留在交付中' }));
+        const blocking = (data.noteReview || []).map(item => ({ ...item, severity: 'error' }));
+        const warnings = blocking.length ? [] : data.notes.filter(note => note.unmarked).map(note => ({ path: note.origin.path, severity: 'warning', message: '注脚尚未确认适用范围，将保留在交付中' }));
         if (data.report.ruleApplied) get('modelExportSummary').textContent += ` 已应用 ${data.report.ruleApplied} 条独立规则，筛除 ${data.report.ruleFilteredParts} 个片段（原始 DITA 不变）。`;
-        if(data.report.prefixApplied)get('modelExportSummary').textContent+=` 已按明确型号前缀处理 ${data.report.prefixApplied} 条注脚，筛除 ${data.report.prefixExcluded} 个片段；请预览核对。`;
-        else if(data.report.prefixCandidates)get('modelExportSummary').textContent+=` 另有 ${data.report.prefixCandidates} 条注脚仅在文字里区分型号。请启用“型号：说明”筛选或核对独立规则，否则不能完成指定型号交付。`;
+        if(data.report.prefixApplied)get('modelExportSummary').textContent+=` 已按明确型号前缀处理 ${data.report.prefixApplied} 条注脚，筛除 ${data.report.prefixExcluded} 个片段。请预览核对。`;
+        const prefixCount = blocking.filter(item => item.kind === 'prefix').length;
+        const manualCount = blocking.filter(item => item.kind === 'model-scope').length;
+        if (prefixCount) get('modelExportSummary').textContent += ` ${prefixCount} 条注脚可按明确型号前缀筛选。`;
+        if (manualCount) get('modelExportSummary').textContent += ` ${manualCount} 条注脚需逐段确认型号。`;
         if (configuration.snapshot.noteRules?.supported === false) warnings.unshift({path:'',severity:'warning',message:'当前服务不支持独立注脚规则，未应用片段筛选。'});
         if (configuration.source.warning) warnings.unshift({ path: '', severity: 'warning', message: configuration.source.warning });
         for (const [path, file] of configuration.snapshot.files) if (/oxy_(insert|delete|comment)/.test(file.current)) warnings.push({ path, severity: 'warning', message: '含 Oxygen 修订或批注，请检查是否适合交付' });
-        showIssues(warnings); get('modelExportError').textContent = '';
+        showIssues([...blocking, ...warnings]); get('modelExportError').textContent = '';
       } catch (error) { view().invalidate(); get('modelExportSummary').textContent = ''; get('modelExportError').textContent = error.message; showIssues(issue(error, configuration.snapshot)); }
     }
     async function provenance() {
@@ -101,7 +151,7 @@
       get('deliverySource').textContent = `${snapshot.files.size} 个正文／依赖文件 · ${service().saveCandidates(snapshot).length} 个未保存` + (source.commit ? ` · Git ${source.commit.slice(0, 8)}${source.dirty ? '（含未提交修改）' : ''}` : ' · 未取得 Git 版本');
       summary();
     }
-    async function openModelExport() {
+    async function openModelExport({ scope, recheck = false } = {}) {
       if (configuring || exporting) return;
       configuring = true; configuration = null; compiled = null; view().invalidate();
       get('exportModel').replaceChildren(new Option('正在读取…', ''));
@@ -110,10 +160,12 @@
       get('exportFilter').replaceChildren(new Option('正在读取…', '')); get('exportFilter').disabled = true;
       get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = true; });
       get('modelExportError').textContent = ''; get('modelExportSummary').textContent = '正在读取手册及依赖…';
-      get('modelExportScope').textContent = ''; get('deliveryChecks').replaceChildren(); get('modelExportDialog').showModal();
+      get('modelExportScope').textContent = ''; showIssues([]); get('modelExportDialog').showModal();
       const generation = operation;
+      let selectedModel = '';
       try {
-        const scope = service().scopePath(), workspace = A.api.token;
+        scope ||= service().scopePath();
+        const workspace = A.api.token;
         configuringScope = scope; configuringWorkspace = workspace;
         get('exportPrefixNotes').checked=prefixChoices.get(workspace+'\n'+scope)||false;
         const filters = await service().listFilters();
@@ -127,9 +179,17 @@
         const snapshot = await service().capture(scope, { filterPath: get('exportFilter').value }), source = await provenance();
         if (generation !== operation || !get('modelExportDialog').open) return;
         if (!service().current(snapshot)) throw new Error('内容已变化，请重新打开交付设置');
-        useSnapshot(snapshot, source, get('footnoteModel')?.value || '');
+        selectedModel = modelChoices.get(choiceKey()) ?? get('footnoteModel')?.value ?? '';
+        useSnapshot(snapshot, source, selectedModel);
       } catch (error) { if (generation === operation) { view().invalidate(); get('modelExportSummary').textContent = ''; get('modelExportError').textContent = error.message; showIssues(issue(error)); } }
       finally { if (generation === operation) configuring = false; }
+      if (recheck && configuration && generation === operation && get('modelExportDialog').open) {
+        if (get('exportModel').value !== selectedModel) {
+          get('modelExportError').textContent = '原选型号已不在当前交付范围，请重新选择型号后检查。';
+          return;
+        }
+        await publish('check');
+      }
     }
     async function changeFilter() {
       if (!get('modelExportDialog').open || exporting) return;
@@ -159,7 +219,13 @@
     }
     async function convert(snapshot, model, format, version, prefixes=false) {
       const publicationData = service().prepare(snapshot, model, true, {prefixes});
-      if(model&&publicationData.report.prefixCandidates&&!prefixes)throw new Error('注脚仍有按文字区分的型号内容。请启用“型号：说明”筛选，或先核对独立规则，再检查交付。');
+      if(model&&publicationData.report.prefixCandidates&&!prefixes) {
+        const issues = publicationData.noteReview;
+        const message = issues.some(item => item.kind === 'prefix') ?
+          '请对可识别的注脚启用“型号：说明”筛选，或核对独立规则后再检查。' :
+          '请逐段核对下列注脚的型号范围，并确认独立规则后再检查。';
+        throw Object.assign(new Error(message), { issues });
+      }
       let output = await (format === 'md' ? A.ditaCore.exportMapToMarkdown : A.ditaCore.exportMapToHtml)({ map: snapshot.map, files: snapshot.files, model, version, title: snapshot.map.title, publicationData,
         loadImageBytes: path => (loadImageBytes || browserLoadImageBytes)(path, abortController?.signal) });
       let previewHtml;
@@ -260,9 +326,16 @@
       catch (error) { A.setStatus(error.message, true); A.hideLoading?.(); }
     }
 
-    get('exportModel')?.addEventListener('change', summary); get('exportFormat')?.addEventListener('change', () => { compiled = null; formatHint(); view().invalidate(); });
+    get('exportModel')?.addEventListener('change', () => { modelChoices.set(choiceKey(), get('exportModel').value); summary(); });
+    get('exportFormat')?.addEventListener('change', () => { compiled = null; formatHint(); view().invalidate(); });
     get('exportPrefixNotes')?.addEventListener('change',()=>{prefixChoices.set(A.api.token+'\n'+configuringScope,get('exportPrefixNotes').checked);summary();});
-    get('exportReviewRules')?.addEventListener('click',()=>{get('modelExportDialog').close();A.noteRules?.show();});
+    get('exportReviewRules')?.addEventListener('click', () => { if (A.noteRules) openRules(); });
+    get('deliveryEnablePrefix')?.addEventListener('click', () => {
+      if (exporting || !configuration) return;
+      get('exportPrefixNotes').checked = true;
+      prefixChoices.set(choiceKey(), true);
+      summary(); void publish('check');
+    });
     get('exportFilter')?.addEventListener('change', changeFilter);
     get('exportVersion')?.addEventListener('input', () => { compiled = null; view().invalidate(); });
     get('printDeliveryButton')?.addEventListener('click', () => {

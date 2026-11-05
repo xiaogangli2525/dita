@@ -21,11 +21,32 @@ test('real HTTP delivery has one note frame, readable filter labels and reviewed
  const check=(name,fn)=>t.test(name,async()=>{try{await fn();}catch(error){console.error(error);throw error;}});
  await open('http_httpsusermanual.ditamap');
  await check('actual filter rules have Chinese descriptions and unresolved text scopes cannot silently ship',async()=>{
+  await page.click('#footnotesButton');
+  const card = page.locator('.footnote-card').first(), context = card.locator('.footnote-card-context');
+  await card.waitFor();
+  assert.equal(await card.locator('.footnote-text').first().isVisible(), true);
+  assert.equal(await card.getByRole('button', { name: '编辑注脚' }).isVisible(), true);
+  assert.equal(await context.locator('.footnote-context').isVisible(), false);
+  await context.locator('summary').click();
+  await context.locator('.footnote-context').waitFor();
+  assert.match(await context.locator('.footnote-context').innerText(), /AT\+/);
+  await page.click('#inspectorCloseButton');
   await delivery();assert.match(await page.locator('#exportFilter option[value="filters/filter_tbd.ditaval"]').innerText(),/排除产品标记为“待定（tbd）”/);
   await page.selectOption('#exportFilter','filters/filter_tbd.ditaval');await page.waitForFunction(()=>!document.getElementById('exportModel').disabled);await page.selectOption('#exportModel','ML307G');
   assert.match(await page.locator('#exportFilterHint').innerText(),/排除产品标记为“待定（tbd）”/);assert.equal(await page.isChecked('#exportPrefixNotes'),false);
   await page.click('#modelExportForm [value=check]');await page.waitForFunction(()=>document.getElementById('modelExportError').textContent.includes('启用'));
-  await page.click('[data-delivery-step=configure]');await page.check('#exportPrefixNotes');assert.match(await page.locator('#modelExportSummary').innerText(),/已按明确型号前缀处理/);
+  assert.match(await page.locator('#deliveryNoteIssueCount').innerText(), /ML307G.*条注脚需核对/);
+  const finding = page.locator('.delivery-note-issue').first();
+  assert.match(await finding.locator('small').innerText(), /\.dita · 第 \d+ 行/);
+  await finding.getByRole('button', { name: '定位原文' }).click();
+  await page.locator('#visualEditor .footnote-located').waitFor();
+  await delivery();
+  assert.equal(await page.locator('#exportModel').inputValue(), 'ML307G');
+  await page.click('#modelExportForm [value=check]');
+  await page.click('#deliveryEnablePrefix');
+  await page.waitForFunction(()=>document.getElementById('deliveryCheckStatus').textContent.includes('检查通过'));
+  assert.match(await page.locator('#modelExportSummary').innerText(),/已按明确型号前缀处理/);
+  await page.click('[data-delivery-step=configure]');
  });
  for(const model of ['ML307G','ML307N','MN319-A'])await check('actual '+model+' HTML contains only its retained note labels and one frame per note',async()=>{
   if(!await page.locator('#modelExportDialog').isVisible())await delivery();await page.selectOption('#exportModel',model);
@@ -49,7 +70,22 @@ test('real HTTP delivery has one note frame, readable filter labels and reviewed
  });
  await check('ambiguous prose opens the independent-rule review instead of deleting content',async()=>{
   await open('ambiguous.ditamap');await delivery();await page.selectOption('#exportModel','A1');await page.check('#exportPrefixNotes');await page.waitForFunction(()=>document.getElementById('modelExportError').textContent.includes('核对'));
-  await page.click('#exportReviewRules');await page.locator('#noteRulesDialog').waitFor({state:'visible'});await page.locator('.note-rule-part').first().waitFor();assert.match(await page.locator('.note-rule-part').innerText(),/B2/);await page.click('#noteRulesClose');
+  await page.click('#modelExportForm [value=check]');
+  const issue = page.locator('.delivery-note-issue').filter({ hasText: '请根据B2的行为核对。' });
+  assert.match(await issue.innerText(), /需逐段确认型号/);
+  await issue.getByRole('button', { name: '核对这条注脚' }).click();
+  await page.locator('.note-rule-part').waitFor();
+  assert.equal(await page.locator('#noteRulePreviewModel').inputValue(), 'A1');
+  await page.locator('#noteRulesDialog summary').click();
+  assert.match(await page.locator('#noteRuleOriginal').innerText(), /请根据B2的行为核对。/);
+  await page.locator('.note-rule-part select').selectOption('models');
+  await page.locator('.note-rule-part input').fill('B2');
+  await page.click('#noteRuleSave');
+  await page.waitForFunction(()=>document.getElementById('noteRuleStatus').textContent.includes('已确认保存'));
+  await page.click('#noteRulesClose');
+  await page.locator('#modelExportDialog').waitFor();
+  await page.waitForFunction(()=>document.getElementById('deliveryCheckStatus').textContent.includes('检查通过'));
+  assert.equal(await page.locator('#exportModel').inputValue(), 'A1');
  });
  for(const[p,b]of corpus)assert.deepEqual(await fs.readFile(path.join(repo,p)),b);assert.equal(await fs.readFile(path.join(repo,'sample.dita'),'utf8'),sample);assert.deepEqual(errors,[]);
 });

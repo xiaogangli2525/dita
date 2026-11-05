@@ -187,6 +187,39 @@
     return { findings, omitted: result.findings.length - findings.length };
   }
 
-  const api = { categories, collect, plan, line, validateBatch, validateFindings };
+  // Match the exact source and model conditions again. Repeated passages need
+  // an unchanged offset as well, so a duplicate cannot inherit another's action.
+  function rebase(file, current, records, map) {
+    const source = file.current, matches = new Map();
+    const index = (text, entries) => {
+      const groups = new Map();
+      for (const record of entries) {
+        const { kind, conditions, text: excerpt } = record.input;
+        const key = JSON.stringify([kind, conditions, excerpt, text.slice(record.start, record.end)]);
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key).push(record);
+      }
+      return groups;
+    };
+    const before = index(source, records), after = index(current, collect([{ path: file.path, current }], map).records);
+    let prefix = 0, suffix = 0;
+    const limit = Math.min(source.length, current.length);
+    while (prefix < limit && source[prefix] === current[prefix]) prefix++;
+    while (suffix < limit - prefix && source[source.length - 1 - suffix] === current[current.length - 1 - suffix]) suffix++;
+    const delta = current.length - source.length;
+    for (const [key, previous] of before) {
+      const candidates = after.get(key);
+      if (!candidates || candidates.length !== previous.length) continue;
+      for (const record of previous) {
+        const shift = record.end <= prefix ? 0 : record.start >= source.length - suffix ? delta : null;
+        const translated = shift === null ? null : candidates.find(item => item.start === record.start + shift && item.end === record.end + shift);
+        const match = translated || (candidates.length === 1 && candidates[0].xmlPath === record.xmlPath ? candidates[0] : null);
+        if (match) matches.set(record.input.id, match);
+      }
+    }
+    return matches;
+  }
+
+  const api = { categories, collect, plan, line, validateBatch, validateFindings, rebase };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaAiScanCore = api;
 })(typeof window === 'undefined' ? globalThis : window);

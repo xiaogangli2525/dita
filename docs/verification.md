@@ -178,7 +178,7 @@ The GitHub Actions workflow runs the suite on Node 20 and 22. The browser workfl
 
 ## Keyboard-only contextual tools and help
 
-Browser coverage verifies that clicking, selecting and arrow movement do not open contextual tools; Alt+/ opens/toggles them and Escape restores selection. The Help menu opens a visible shortcut dialog, traps focus, closes with Escape/button, preserves the underlying notes panel and fits a 390px viewport. Document shortcuts do not run behind modal help.
+Browser coverage verifies that clicking, selecting and arrow movement do not open contextual tools; Alt+Z opens/toggles them and Escape restores selection. The Help menu opens a visible shortcut dialog, traps focus, closes with Escape/button, preserves the underlying notes panel and fits a 390px viewport. Document shortcuts do not run behind modal help.
 
 Final regression for the keyboard/help change: 164 unit/HTTP checks and 139 Chromium checks passed, with no skips.
 

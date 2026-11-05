@@ -46,7 +46,7 @@
       feature('noteRules', 'DitaNoteRules', 'createController', 'state api events manual noteRuleStore setStatus', ['manual', 'noteRuleStore']),
       feature('project', 'DitaProject', 'createProjectController', 'state api events manual setStatus', ['manual']),
       feature('notePresentation', 'DitaFootnotePresentation', 'createController', 'state dom events manual', ['manual']),
-      feature('delivery', 'DitaExport', 'createExportController', 'state dom api manual noteRules ditaCore setStatus toast navigateToSource downloadText showLoading hideLoading', ['manual'], {
+      feature('delivery', 'DitaExport', 'createExportController', 'state dom api manual noteRules ditaCore setStatus toast bodyNavigation navigateToSource downloadText showLoading hideLoading', ['manual'], {
         expose: ['openModelExport', 'releaseExportPreview', 'previewMapHtml', 'previewMapMd', 'exportMapToHtmlFile', 'exportMapToMarkdownFile', 'lastDeliveryRecord', 'lastExportReport']
       }),
       feature('save', 'DitaSave', 'createSaveController', 'state api events manual saving refreshChrome refreshFiles validateXml setStatus toast', ['manual'], { writable: ['saving'] }),
@@ -57,7 +57,7 @@
       feature('authorSelection', 'DitaAuthorSelection', 'createController', 'state dom api events ditaCore applyAuthorEdit validateXml'),
       feature('appearance', 'DitaAppearance', 'createController', 'theme authorSelection', ['authorSelection']),
       feature('bodyNavigation', 'DitaBodyNavigation', 'createController', 'state dom api events authorSelection openFile setMode setStatus', ['authorSelection']),
-      feature('aiAuthoring', 'DitaAiAuthoring', 'createController', 'state dom api events manual authorSelection bodyNavigation navigateToSource openFile setFileContent validateXml setStatus', ['manual', 'authorSelection', 'bodyNavigation']),
+      feature('aiAuthoring', 'DitaAiAuthoring', 'createController', 'state dom api events manual authorSelection bodyNavigation navigateToSource openFile setFileContent validateXml setStatus shell', ['manual', 'authorSelection', 'bodyNavigation']),
       feature('search', 'DitaSearch', 'createSearchController', 'state api events manual bodyNavigation navigateToSource', ['manual', 'bodyNavigation']),
       feature('authorCommands', 'DitaAuthorCommands', 'createController', 'state dom ditaCore authorSelection applyAuthorEdit validateXml', ['authorSelection'], {
         create: typeof catalog.DitaAuthorCommands?.createController === 'function' ? c => catalog.DitaAuthorCommands.createController({ state: c.state, dom: c.dom, core: c.ditaCore, selection: c.authorSelection, apply: c.applyAuthorEdit, validate: c.validateXml }) : undefined
