@@ -22,10 +22,12 @@
 .footnote-number { font-family: ui-monospace, monospace; font-size: 11px; color: var(--muted); }
 .footnote-model-badge, .footnote-unassigned { font-size: 11px; padding: 4px 7px; border-radius: 5px; color: var(--accent); background: var(--accent-soft); overflow-wrap: anywhere; }
 .footnote-unassigned { color: var(--warning); background: var(--warning-soft); }
-.footnote-context { font-size: 12px; font-weight: 600; font-family: inherit; color: var(--text); margin: 12px 0 6px; overflow-wrap: anywhere; }
-.footnote-text { font-size: 12px; color: var(--text); line-height: 1.9; margin: 0 0 10px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.footnote-context { font-size: 12px; font-family: inherit; color: var(--muted); margin: 8px 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.footnote-text { font-size: 12px; color: var(--text); line-height: 1.9; margin: 8px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
 .footnote-path { display: block; font-size: 9px; color: var(--muted); overflow-wrap: anywhere; }
-.footnote-actions { display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--border); margin-top: 10px; padding-top: 10px; }
+.footnote-actions { display: flex; flex-wrap: wrap; gap: 4px 8px; margin-top: 6px; }
+.footnote-card-context { border-top:1px solid var(--border); margin-top:6px; padding-top:6px; font-size:11px; color:var(--muted); }
+.footnote-card-context summary { cursor:pointer; }
 .footnote-actions button { border: 0; background: transparent; color: var(--muted); font-size: 11px; padding: 4px 3px; }
 .footnote-actions .footnote-edit-button { color:var(--accent); }
 .footnote-empty { color: var(--muted); line-height: 1.9; font-size: 12px; padding: 20px 0; }
@@ -192,10 +194,19 @@
 .delivery-steps button[aria-current="step"] { background:var(--accent-soft); color:var(--accent); font-weight:600; }
 #deliveryReady { border:1px solid var(--border); border-radius:8px; padding:16px; }
 #deliveryReady h3 { margin:0 0 8px; font-size:16px; }
-.delivery-checks { padding:0; list-style:none; max-height:240px; }
+.delivery-checks { padding:0; list-style:none; max-height:none; overflow:visible; }
 .delivery-checks li { padding:12px; margin:8px 0; border-radius:6px; line-height:1.8; background:var(--warning-soft); }
 .delivery-checks .check-error { background:var(--danger-soft); }
 .delivery-checks button { display:block; max-width:100%; text-align:left; margin:6px 0 0; padding:5px 8px; border:1px solid currentColor; border-radius:5px; background:transparent; color:inherit; font:inherit; }
+.footnote-dialog .delivery-note-count { color:var(--text); font-weight:600; }
+.delivery-checks .delivery-note-issue { border:1px solid var(--border); background:var(--panel); }
+.delivery-note-issue :is(p,small) { display:block; margin:4px 0; overflow-wrap:anywhere; }
+.delivery-note-issue p:first-of-type { color:var(--text); }
+.delivery-note-issue small { color:var(--muted); }
+.delivery-note-actions { display:flex; flex-wrap:wrap; gap:8px; }
+.delivery-note-actions button { color:var(--accent); border-color:var(--border); }
+#deliveryEnablePrefix { margin-bottom:4px; background:var(--accent-soft); color:var(--accent); }
+#modelExportError:empty { display:none; }
 .inspector .review-toolbar { background:var(--panel); border-color:var(--border); padding:12px 16px; }
 .inspector .diff { font-size:13px; }
 .attributes-panel { padding:16px; }

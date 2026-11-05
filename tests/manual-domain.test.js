@@ -50,3 +50,19 @@ test('real HTTP snapshots can be prepared headlessly for several models without 
   }
   assert.deepEqual([...files].map(([name, file]) => [name, file.current]), before);
 });
+
+test('delivery diagnostics include only model-visible notes, including sources of shared references', () => {
+  const files = new Map([
+    ['a.dita', { current: '<topic><body><p><fn>A1：当前范围。B2：另一范围。</fn><xref type="fn" href="shared.dita#s/used"/><xref product="B2" type="fn" href="shared.dita#s/other"/><fn audience="internal">请按B2的实际情况执行。</fn></p></body></topic>' }],
+    ['shared.dita', { current: '<topic id="s"><body><p><fn id="used">请按B2的实际情况核对。</fn><fn id="other">请按B2的实际情况测试。</fn></p></body></topic>' }]
+  ]);
+  const snapshot = { map: { children: [{ type: 'file', path: 'a.dita' }] }, files, project: { models: ['A1', 'B2'] },
+    filter: { current: '<val><prop att="audience" val="internal" action="exclude"/></val>' } };
+  const review = engine.prepare(snapshot, 'A1').noteReview;
+  assert.deepEqual(review.map(({ path, kind, note }) => [path, kind, note.text]), [
+    ['a.dita', 'prefix', 'A1：当前范围。B2：另一范围。'],
+    ['shared.dita', 'model-scope', '请按B2的实际情况核对。']
+  ]);
+  assert.throws(() => engine.prepare(snapshot, 'A1', true, { prefixes: true }),
+    error => error.issues.length === 1 && error.issues[0].note.before.includes('id="used"'));
+});

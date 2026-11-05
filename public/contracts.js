@@ -86,6 +86,7 @@
  * @property {Object} ditaCore
  * @property {(message:string,error?:boolean)=>void} setStatus
  * @property {(message:string,level?:string)=>void} toast
+ * @property {{node:Function}} bodyNavigation
  * @property {Function} navigateToSource
  * @property {Function} downloadText
  * @property {Function} showLoading

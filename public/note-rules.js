@@ -2,7 +2,7 @@
 (function(root){
   function createController(A){
     const core=root.DitaNoteRulesCore,get=id=>document.getElementById(id),dialog=get('noteRulesDialog');
-    let snapshot,entries=[],selected=null,parts=[],generation=0,busy=false,writing=false,knownModels=[];
+    let snapshot,entries=[],selected=null,parts=[],generation=0,busy=false,writing=false,knownModels=[],returnToDelivery=null;
     const drafts=new Map();
     const values=()=>parts.map(p=>({scope:p.scope.value,models:p.models.value}));
     function remember(){if(selected&&drafts.has(core.key(selected)))drafts.get(core.key(selected)).values=values();}
@@ -38,15 +38,22 @@
       previewModels();get('noteRuleSave').disabled=!parts.length||busy;get('noteRuleDelete').disabled=!saved||busy;preview();
     }
     function drawList(){get('noteRuleList').replaceChildren();entries.forEach(note=>{const rule=snapshot.noteRules.config.rules.find(r=>core.key(r)===core.key(note)),state=rule?(core.matches(rule,note)?'已确认':'已过期'):'待确认',button=el('button',state+' · '+note.text.slice(0,52));button.type='button';button.dataset.key=core.key(note);button.title=note.path;button.addEventListener('click',()=>select(note));get('noteRuleList').append(button);});}
-    async function show(preferred){
+    async function show(preferred,{scope=A.manual.scopePath(),model='',onClose=null}={}){
+      returnToDelivery=onClose;
+      get('noteRulesClose').textContent=onClose?'返回交付检查':'关闭';
       const ticket=++generation;selected=null;parts=[];snapshot=null;busy=true;writing=false;lockForm(false);drafts.clear();
       for(const id of ['noteRulesCount','noteRuleOriginal','noteRulePreview','noteRuleSource'])get(id).textContent='';get('noteRuleList').replaceChildren();get('noteRuleParts').replaceChildren();get('noteRuleStatus').textContent='正在读取手册与独立规则…';error('');get('noteRuleSave').disabled=true;get('noteRuleDelete').disabled=true;if(!dialog.open)dialog.showModal();
       try{
-        const captured=await A.manual.capture(A.manual.scopePath(),{resources:true});if(ticket!==generation||!dialog.open)return;snapshot=captured;
+        const captured=await A.manual.capture(scope,{resources:true});if(ticket!==generation||!dialog.open)return;snapshot=captured;
         if(!snapshot.noteRules?.supported)throw Error('当前服务尚不支持独立导出规则，请更新服务端。');if(snapshot.noteRules.error)throw Error(snapshot.noteRules.error);
         const unique=new Map();for(const note of A.manual.listNotes(snapshot).notes){const source=note.sourceNote||note;unique.set(core.key(source),{...source,number:note.number});}entries=[...unique.values()];
-        knownModels=[...new Set([...(snapshot.project.models||[]),...A.manual.listModels(snapshot),...A.manual.discoverModels(snapshot).pending])].sort();get('noteRulePreviewModel').replaceChildren(new Option('全部型号（原始内容）',''));get('noteRuleModels').replaceChildren();for(const model of knownModels){get('noteRulePreviewModel').add(new Option(model,model));const option=el('option');option.value=model;get('noteRuleModels').append(option);}if(knownModels.length)get('noteRulePreviewModel').value=knownModels[0];
-        get('noteRulesCount').textContent=`当前手册 ${entries.length} 条来源注脚；规则单独保存，原始 DITA 不变。`;busy=false;drawList();const target=preferred&&(preferred.sourceNote||preferred),note=entries.find(n=>target&&core.key(n)===core.key(target))||entries[0];if(note)select(note);else get('noteRuleStatus').textContent='当前手册没有可配置的注脚。';
+        knownModels=[...new Set([model,...(snapshot.project.models||[]),...A.manual.listModels(snapshot),...A.manual.discoverModels(snapshot).pending].filter(Boolean))].sort();get('noteRulePreviewModel').replaceChildren(new Option('全部型号（原始内容）',''));get('noteRuleModels').replaceChildren();for(const model of knownModels){get('noteRulePreviewModel').add(new Option(model,model));const option=el('option');option.value=model;get('noteRuleModels').append(option);}get('noteRulePreviewModel').value=model||knownModels[0]||'';
+        get('noteRulesCount').textContent=`当前手册 ${entries.length} 条来源注脚；规则单独保存，原始 DITA 不变。`;busy=false;drawList();
+        const target=preferred&&(preferred.sourceNote||preferred),note=target?entries.find(n=>core.key(n)===core.key(target)):entries[0];
+        if(target&&(!note||target.before!==undefined&&(target.before!==note.before||target.context!==note.context||JSON.stringify(target.conditions)!==JSON.stringify(note.conditions)))){
+          get('noteRuleStatus').textContent='目标注脚已变化，请返回并重新检查交付。';return;
+        }
+        if(note)select(note);else get('noteRuleStatus').textContent='当前手册没有可配置的注脚。';
       }catch(e){if(ticket===generation){error(e.message);get('noteRuleStatus').textContent='读取失败，未修改任何原文或规则。';}}finally{if(ticket===generation)busy=false;}
     }
     async function persist(remove=false){
@@ -60,7 +67,9 @@
     }
     get('noteRulesButton').addEventListener('click',()=>show());get('noteRulesClose').addEventListener('click',close);get('noteRuleSave').addEventListener('click',()=>persist());get('noteRuleDelete').addEventListener('click',()=>persist(true));get('noteRulePreviewModel').addEventListener('change',preview);
     dialog.addEventListener('cancel',event=>{if(writing||dirty()&&!root.confirm('有尚未保存的注脚规则选择，确定放弃并关闭？'))event.preventDefault();});
-    get('noteRuleSuggestions').addEventListener('click',()=>{for(const p of parts)if(p.suggestion.length){p.scope.value='models';p.models.value=p.suggestion.join(' ');p.scope.dispatchEvent(new Event('change'));}preview();});get('noteRuleCommon').addEventListener('click',()=>{for(const p of parts){p.scope.value='common';p.scope.dispatchEvent(new Event('change'));}preview();});dialog.addEventListener('close',()=>{generation++;busy=false;writing=false;lockForm(false);});A.events.on('workspace:willChange',()=>dialog.close());return {show};
+    get('noteRuleSuggestions').addEventListener('click',()=>{for(const p of parts)if(p.suggestion.length){p.scope.value='models';p.models.value=p.suggestion.join(' ');p.scope.dispatchEvent(new Event('change'));}preview();});get('noteRuleCommon').addEventListener('click',()=>{for(const p of parts){p.scope.value='common';p.scope.dispatchEvent(new Event('change'));}preview();});
+    dialog.addEventListener('close',()=>{generation++;busy=false;writing=false;lockForm(false);const back=returnToDelivery;returnToDelivery=null;back?.();});
+    A.events.on('workspace:willChange',()=>{returnToDelivery=null;dialog.close();});return {show};
   }
   root.DitaNoteRules={createController};
 })(window);

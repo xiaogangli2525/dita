@@ -22,11 +22,13 @@
       layout.classList.toggle('panel-open', Boolean(panel));
       dom.inspector.classList.toggle('notes-open', panel === 'notes');
       dom.inspector.classList.toggle('reviewing', panel === 'review');
-      dom.inspectorTitle.textContent = ({ properties: '内容设置', notes: '型号注脚', review: '审阅变更' })[panel] || '辅助面板';
+      dom.inspector.classList.toggle('scanning', panel === 'ai-scan');
+      dom.inspectorTitle.textContent = ({ properties: '内容设置', notes: '型号注脚', review: '审阅变更', 'ai-scan': '全文扫描' })[panel] || '辅助面板';
+      get('aiScanPanel').hidden = panel !== 'ai-scan';
       dom.attributesPanel.hidden = panel !== 'properties';
       dom.inspectorElement.hidden = panel !== 'properties';
       if (panel !== 'properties') dom.contextToolbar.hidden = true;
-      document.querySelector('.inspector-tabs').hidden = panel === 'review';
+      document.querySelector('.inspector-tabs').hidden = panel === 'review' || panel === 'ai-scan';
       for (const [id, name] of [['propertiesTab', 'properties'], ['footnotesTab', 'notes']]) {
         get(id).classList.toggle('active', panel === name);
         get(id).setAttribute('aria-selected', String(panel === name));

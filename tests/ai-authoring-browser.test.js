@@ -14,14 +14,25 @@ test('AI authoring runs through the local provider, review and shared document h
     const chunks = []; for await (const chunk of req) chunks.push(chunk);
     const body = JSON.parse(Buffer.concat(chunks)), input = JSON.parse(body.messages[1].content); received.push(input);
     if (input.task === 'scan') {
+      if (input.evidence.some(item => item.text.startsWith('拆批测试'))) {
+        const large = input.evidence.length >= 8, failed = input.evidence.some(item => item.text.includes('拆批测试 9'));
+        const content = large ? '{"findings":[' : failed ? '模型未使用 JSON' : '{"findings":[]}';
+        res.end(JSON.stringify({ choices: [{ finish_reason: large ? 'length' : 'stop', message: { content } }] }));
+        return;
+      }
       const first = input.evidence.find(item => item.text.includes('超时单位为秒'));
       const second = input.evidence.find(item => item.text.includes('示例使用毫秒'));
       const wording = input.evidence.find(item => item.text.includes('发送请求'));
+      const independent = input.evidence.find(item => item.path === 'b.dita' && item.text.includes('配置证书后发送请求'));
       const findings = [];
       if (input.phase === 'cross' && first && second) findings.push({ category: 'technical', summary: '超时单位写法不一致', suggestion: '以研发核实的单位为准',
         evidence: [{ id: first.id, quote: '超时单位为秒' }, { id: second.id, quote: '示例使用毫秒' }] });
       if (input.phase === 'section' && wording) findings.push({ category: 'wording', summary: '统一请求表述', suggestion: '将发送请求统一为发起请求',
         evidence: [{ id: wording.id, quote: '发送请求' }] }, { category: 'wording', summary: '虚构建议', suggestion: '无效', evidence: [{ id: wording.id, quote: '原文不存在' }] });
+      if (input.phase === 'section' && independent) findings.push({ category: 'wording', summary: '核对证书步骤表述', suggestion: '统一证书步骤写法',
+        evidence: [{ id: independent.id, quote: '配置证书后发送请求' }] });
+      if (input.phase === 'section' && second) findings.push({ category: 'missing', summary: '补充示例前置条件', suggestion: '确认执行条件',
+        evidence: [{ id: second.id, quote: '示例使用毫秒' }] });
       res.end(JSON.stringify({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify({ findings }) } }] }));
       return;
     }
@@ -88,15 +99,18 @@ test('AI authoring runs through the local provider, review and shared document h
     assert.equal(await page.locator('#aiScanScope').inputValue(), 'manual');
     await page.click('#aiScanStart');
     const conflict = page.locator('.ai-scan-card').filter({ hasText: '超时单位写法不一致' });
+    const dependent = page.locator('.ai-scan-card').filter({ hasText: '补充示例前置条件' });
+    const independent = page.locator('.ai-scan-card').filter({ hasText: '核对证书步骤表述' });
     await conflict.waitFor();
     assert.equal(await conflict.locator('.ai-scan-evidence').count(), 2);
     assert.match(await page.locator('#aiScanStatus').innerText(), /完成 2\/2 批/);
     assert.equal(await page.getByText('虚构建议', { exact: true }).count(), 0);
     await conflict.locator('.ai-scan-evidence').filter({ hasText: 'b.dita' }).getByRole('button', { name: '定位原文' }).click();
     await page.locator('#visualEditor .footnote-located').filter({ hasText: '示例使用毫秒' }).waitFor();
-    await page.click('#aiButton'); await page.click('#aiScanButton');
+    assert.equal(await page.locator('#aiScanPanel').isVisible(), true);
+    assert.equal(await page.locator('#aiDialog').isVisible(), false);
     await conflict.locator('.ai-scan-evidence').filter({ hasText: 'b.dita' }).getByRole('button', { name: '核对后修改此处' }).click();
-    assert.equal(await page.locator('#aiScanDialog').isVisible(), false);
+    assert.equal(await page.locator('#aiDialog').isVisible(), true);
     assert.equal(await page.locator('#aiSend').isDisabled(), true);
     await page.fill('#aiReply', '以参数表为准，示例用秒'); await page.click('#aiSend');
     await page.locator('#aiApply:enabled').waitFor();
@@ -104,9 +118,32 @@ test('AI authoring runs through the local provider, review and shared document h
     await page.click('#aiApply');
     await page.waitForFunction(() => window.DitaApp.state.filesMap.get('b.dita').current.includes('示例使用秒'));
     assert.equal(await fs.readFile(path.join(temporary, 'b.dita'), 'utf8'), second);
-    await page.click('#aiScanButton');
-    assert.match(await page.locator('#aiScanResults').innerText(), /手册内容已变化/);
+    assert.equal(await page.locator('#aiDialog').isVisible(), false);
+    assert.equal(await page.locator('#aiScanPanel').isVisible(), true);
+    assert.equal(await conflict.getByText('已处理', { exact: true }).count(), 1);
+    assert.equal(await dependent.getByText('证据已变化 · 需重扫', { exact: true }).count(), 1);
     assert.equal(await conflict.getByRole('button', { name: '定位原文' }).first().isDisabled(), true);
+    assert.equal(await independent.getByRole('button', { name: '定位原文' }).isEnabled(), true);
+    await independent.getByRole('button', { name: '定位原文' }).click();
+    await page.locator('#visualEditor .footnote-located').filter({ hasText: '配置证书后发送请求' }).waitFor();
+    await page.click('#authorUndoButton');
+    await page.waitForFunction(() => !document.querySelector('.ai-scan-badge'));
+    assert.equal(await conflict.getByRole('button', { name: '定位原文' }).first().isEnabled(), true);
+    await page.setViewportSize({ width: 390, height: 844 });
+    const body = await page.locator('#visualPane').boundingBox(), panel = await page.locator('#inspector').boundingBox();
+    assert.ok(body.y + body.height <= panel.y + 1, 'scan results leave the document visible on narrow screens');
+  });
+  await t.test('partial scan recovery shows covered evidence without marking the whole batch complete', async st => {
+    const page = await fresh(st);
+    await page.evaluate(() => {
+      const a = window.DitaApp, file = a.state.filesMap.get('a.dita');
+      const paragraphs = Array.from({ length: 10 }, (_, index) => '<p>拆批测试 ' + index + '</p>').join('');
+      a.setFileContent(file, file.current.replace('</body>', paragraphs + '</body>'));
+    });
+    await page.click('#aiButton'); await page.click('#aiScanButton'); await page.click('#aiScanStart');
+    await page.waitForFunction(() => document.getElementById('aiScanStatus').textContent.includes('覆盖 7/14'));
+    assert.match(await page.locator('#aiScanStatus').innerText(), /完成 0\/1 批/);
+    assert.match(await page.locator('#aiScanResults').innerText(), /第 1 批部分完成/);
   });
   await t.test('manual search requires an explicit candidate and applies to the selected topic', async st => {
     const page = await fresh(st); await page.click('#aiButton'); await page.fill('#aiReply', '润色发送请求的描述'); await page.locator('#aiTask > summary').click(); await page.selectOption('#aiScope', 'manual'); await page.fill('#aiSearch', '发送请求'); await page.click('#aiLocate');

@@ -41,6 +41,42 @@ test('provider bounds concurrency, aborts requests and releases slots after canc
   a.abort(); b.abort(); await Promise.all([first, second]);
   const aborted = new AbortController(); aborted.abort(); await assert.rejects(provider.generate({ instruction: '润色', scope }, aborted.signal), /取消/);
 });
+const scanEvidence = Array.from({ length: 8 }, (_, index) => ({ id: 'e' + index, path: 'chapter.dita', kind: 'p', conditions: [], text: '扫描证据 ' + index }));
+const scanBatch = { phase: 'section', evidence: scanEvidence };
+const scanReply = (content, finish_reason = 'stop') => new Response(JSON.stringify({ choices: [{ finish_reason, message: { content } }] }));
+
+test('scan accepts one complete fenced JSON result with a reasoning prelude and keeps evidence validation', async () => {
+  const valid = { category: 'wording', summary: '核对表述', suggestion: '确认术语', evidence: [{ id: 'e0', quote: '扫描证据 0' }] };
+  const content = '<think>已核对</think>\n\x60\x60\x60json\n' + JSON.stringify({ findings: [
+    valid, { ...valid, evidence: [{ id: 'e1', quote: '不存在的引文' }] }
+  ] }) + '\n\x60\x60\x60';
+  const provider = createAiProvider({ env, fetchImpl: async () => scanReply(content, null) });
+  assert.deepEqual(await provider.scan(scanBatch), { findings: [valid], omitted: 1 });
+});
+
+test('a truncated scan retries smaller sections and reports only successful evidence coverage', async () => {
+  const sent = [];
+  const provider = createAiProvider({ env, fetchImpl: async (_url, options) => {
+    const evidence = JSON.parse(JSON.parse(options.body).messages[1].content).evidence;
+    sent.push(evidence.map(item => item.id));
+    if (evidence.length === 8) return scanReply('{"findings":[', 'length');
+    return evidence[0].id === 'e0' ? response({ findings: [] }) : scanReply('invalid');
+  } });
+  const result = await provider.scan(scanBatch);
+  assert.deepEqual(sent.map(batch => batch.length), [8, 4, 4]);
+  assert.deepEqual(result.covered, ['e0', 'e1', 'e2', 'e3']);
+  assert.deepEqual(result.findings, []);
+  assert.match(result.failures[0], /扫描 JSON/);
+});
+
+test('scan rejects refusals and truncated cross-chapter comparisons without retrying or reporting coverage', async () => {
+  let requests = 0;
+  const provider = createAiProvider({ env, fetchImpl: async () => scanReply('{"findings":[]}', ++requests === 1 ? 'content_filter' : 'length') });
+  await assert.rejects(provider.scan(scanBatch), /拒绝/);
+  const cross = { phase: 'cross', command: 'AT+HTTP', evidence: scanEvidence.map((item, index) => ({ ...item, path: index < 4 ? 'chapter.dita' : 'example.dita' })) };
+  await assert.rejects(provider.scan(cross), /长度上限/);
+  assert.equal(requests, 2);
+});
 test('connection settings keep secrets server-side and never carry a key to a different endpoint', () => {
   const store = { load: () => null, save() {} }, settings = createAiSettings({ env, store });
   const input = { baseUrl: env.DITA_AI_BASE_URL, model: env.DITA_AI_MODEL, key: '', allowHttp: false, noAuth: false };
