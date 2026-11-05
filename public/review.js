@@ -1,5 +1,6 @@
 'use strict';
 (function (root) {
+  const markup = typeof module !== 'undefined' ? require('./review-markup') : root.DitaReviewMarkup;
   function createReviewController({ state, dom, ditaCore, setFileContent, updateVisual, renderTabs, updateHistoryButtons, setStatus }) {
     const { lineDiff, groupDiffRows, applyDiffGroups, inlineDiff } = ditaCore;
     const REVIEW_CONTEXT_SIZE = 3;
@@ -107,13 +108,14 @@ function appendReviewRows(container, rows, decision) {
 function clearReviewLocations() {
   locations.clear();
   if (legend) legend.hidden = true;
+  markup.clear(dom.visualEditor);
   dom.visualEditor.querySelectorAll('[data-review-change],[data-review-deletion]').forEach(node => {
     delete node.dataset.reviewChange;
     delete node.dataset.reviewDeletion;
   });
 }
 
-function markReviewLocations(file, surface, groups, keyFor) {
+function markReviewLocations(file, surface, groups, keyFor, baseline) {
   if (surface?.ditaSourceContent !== file.current || !groups.some(group => group.type === 'changed')) return;
   const source = file.current;
   let tree;
@@ -150,7 +152,11 @@ function markReviewLocations(file, surface, groups, keyFor) {
 
   const lines = [0];
   for (const match of source.matchAll(/\n/g)) lines.push(match.index + 1);
-  const eol = source.includes('\r\n') ? '\r\n' : '\n';
+  const oldLines = [0];
+  for (const match of baseline.matchAll(/\n/g)) oldLines.push(match.index + 1);
+  let decorations;
+  try { decorations = markup.create({ source, baseline, surface, createAuthorTopic: ditaCore.createAuthorTopic }); }
+  catch { /* Invalid/unsupported baseline XML keeps source-level review and locations. */ }
   let originalShift = 0, rejectedShift = 0, spanIndex = 0;
   groups.forEach((group, index) => {
     if (group.type !== 'changed') return;
@@ -164,18 +170,24 @@ function markReviewLocations(file, surface, groups, keyFor) {
 
     const targets = new Set();
     let offset = lines[line - 1 + rejectedShift] ?? source.length;
+    let oldOffset = oldLines[(oldRows[0]?.oldIndex ?? 1) - 1] ?? baseline.length;
     const finish = lines[line - 1 + rejectedShift + newRows.length];
     const working = newRows.length ? source.slice(offset, finish === undefined ? source.length : finish - (source[finish - 2] === '\r' ? 2 : 1)) : '';
-    const before = oldRows.map(row => row.text).join(eol);
+    const before = oldRows.map(row => row.text).join(baseline.includes('\r\n') ? '\r\n' : '\n');
     let added = '', removed = '';
     const mark = () => {
       const end = offset + added.length;
       while (spanIndex < spans.length && spans[spanIndex].end <= offset) spanIndex++;
+      if (!decision) {
+        const anchor = spans[spanIndex]?.target || spans[spanIndex - 1]?.target;
+        const ghosts = decorations?.mark({ start: offset, end, oldStart: oldOffset, oldEnd: oldOffset + removed.length, anchor }) || [];
+        for (const ghost of ghosts) targets.add(ghost);
+      }
       if (added) {
         for (let i = spanIndex; i < spans.length && spans[i].start < end; i++) {
           const span = spans[i];
           if (!added.trim() && !span.target.matches('pre')) continue;
-          span.target.dataset.reviewChange = 'changed';
+          if (!decision) span.target.dataset.reviewChange = 'changed';
           targets.add(span.target);
         }
       } else if (removed.trim() && offset >= tree.start && offset <= (tree.close?.end ?? tree.end)) {
@@ -183,24 +195,26 @@ function markReviewLocations(file, surface, groups, keyFor) {
         const target = next?.target || previous?.target;
         if (target) {
           const inside = next && (next.start < offset || (next.start === offset && previous?.target === next.target));
-          target.dataset.reviewDeletion = inside ? 'inside' : next ? 'before' : 'after';
+          if (!decision) target.dataset.reviewDeletion = inside ? 'inside' : next ? 'before' : 'after';
           targets.add(target);
         }
       }
       offset = end;
+      oldOffset += removed.length;
       added = ''; removed = '';
     };
     for (const segment of inlineDiff(before, working)) {
       if (segment.type === 'old') removed += segment.text;
       else if (segment.type === 'new') added += segment.text;
-      else { if (added || removed) mark(); offset += segment.text.length; }
+      else { if (added || removed) mark(); offset += segment.text.length; oldOffset += segment.text.length; }
     }
     if (added || removed) mark();
     if (targets.size) {
       locations.set(key, [...targets]);
-      if (legend) legend.hidden = false;
+      if (legend && !decision) legend.hidden = false;
     }
   });
+  decorations?.finish();
 }
 
 function focusReviewGroup(key) {
@@ -320,7 +334,7 @@ function renderDiff(file, resetSnapshot = false) {
   }
   const groups = state.reviewBaseline === state.reviewCurrent ? [] : groupDiffRows(lineDiff(state.reviewBaseline, state.reviewCurrent), REVIEW_CONTEXT_SIZE);
   const hasGitDiff = groups.some(g => g.type !== 'same');
-  markReviewLocations(file, dom.visualEditor, groups, index => index);
+  markReviewLocations(file, dom.visualEditor, groups, index => index, state.reviewBaseline);
   if (oxyChanges.length && hasGitDiff) {
     const gitHeader = document.createElement('div');
     gitHeader.className = 'diff-section-header';
@@ -477,7 +491,7 @@ function renderMapReview(file) {
     const surface = topic === file ? dom.visualEditor.querySelector('[data-map-title]') :
       Array.from(dom.visualEditor.querySelectorAll('.map-topic-surface')).find(node => node.dataset.mapTopicPath === topic.path);
     const keyFor = index => `${topic.path}::${index}`;
-    markReviewLocations(topic, surface, groups, keyFor);
+    markReviewLocations(topic, surface, groups, keyFor, reviewBaseline);
     for (const [groupIndex, group] of groups.entries()) {
       if (group.type === 'same') {
         const context = document.createElement('div');

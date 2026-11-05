@@ -211,6 +211,7 @@ function inlineDiff(oldText, newText) {
       oldMiddle[oldIndex] === newMiddle[newIndex]
     ) {
       append(result, 'same', [oldMiddle[oldIndex++]]);
+      newIndex++;
     } else if (
       newIndex < newMiddle.length &&
       (oldIndex >= oldMiddle.length || table[oldIndex][newIndex + 1] > table[oldIndex + 1][newIndex])

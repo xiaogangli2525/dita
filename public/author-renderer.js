@@ -8,6 +8,17 @@
   const createAuthorContext = (topicPath = '') => ({ topicPath, fnCounter: 0 });
   const sourcePath = (node, ctx) => ctx.sourcePaths ? ctx.sourcePaths.get(node) : xmlNodePath(node);
 
+  // Review decorations map displayed characters back to source text tokens.
+  // Keep this identity off attributes so it can never enter serialized DITA.
+  function authorText(node, documentRef, ctx, exact = false) {
+    const value = exact ? node.data : node.data.replace(/\s+/g, ' ');
+    if (!exact && !value.trim()) return null;
+    const text = documentRef.createTextNode(value);
+    const siblings = Array.from(node.parentNode?.childNodes || []).filter(child => child.nodeType === 3 || child.nodeType === 4);
+    text.ditaSourceTextPath = sourcePath(node.parentNode, ctx) + ':' + siblings.indexOf(node);
+    return text;
+  }
+
   // Source-only attributes remain in inert metadata, never active HTML. Keeping
   // them separately also preserves exact XML when adjacent prose is edited.
   function setAuthorAttribute(element, name, value) {
@@ -52,6 +63,7 @@
     const bodyContainer = documentRef.createElement('div');
     bodyContainer.setAttribute('data-dita-body', 'true');
     if (body) {
+      bodyContainer.ditaSourcePath = sourcePath(body, ctx);
       for (const node of body.childNodes) {
         const rendered = renderDitaNode(node, documentRef, ctx);
         if (rendered) bodyContainer.appendChild(rendered);
@@ -87,9 +99,7 @@
 
   function renderAuthorNode(node, documentRef, ctx) {
     if (node.nodeType === 3 || node.nodeType === 4) {
-      const text = node.data.replace(/\s+/g, ' ');
-      if (text.trim()) return documentRef.createTextNode(text);
-      return null;
+      return authorText(node, documentRef, ctx);
     }
     if (node.nodeType !== 1) return null;
     const tag = node.localName;
@@ -124,7 +134,7 @@
       element.setAttribute('data-dita-source', tag);
       for (const attribute of Array.from(node.attributes || [])) setAuthorAttribute(element, attribute.name, attribute.value);
       function exactChild(child) {
-        if (child.nodeType === 3 || child.nodeType === 4) return documentRef.createTextNode(child.data);
+        if (child.nodeType === 3 || child.nodeType === 4) return authorText(child, documentRef, ctx, true);
         const rendered = renderDitaNode(child, documentRef, ctx);
         if (rendered && child.nodeType === 1 && child.localName !== 'image' && child.localName !== 'fn' && !(child.localName === 'xref' && child.getAttribute('type') === 'fn')) {
           rendered.replaceChildren(...Array.from(child.childNodes).map(exactChild).filter(Boolean));
@@ -201,7 +211,7 @@
           cell.setAttribute('data-dita-entry-attrs', JSON.stringify(Object.fromEntries(Array.from(entry.attributes || []).map(attribute => [attribute.name, attribute.value]))));
           for (const child of entry.childNodes || []) {
             const rendered = child.nodeType === 3
-              ? documentRef.createTextNode(child.data)
+              ? authorText(child, documentRef, ctx, true)
               : renderDitaNode(child, documentRef, ctx);
             if (rendered) cell.appendChild(rendered);
           }
@@ -210,6 +220,7 @@
         let section = htmlSections.get(item.section);
         if (!section) {
           section = documentRef.createElement(item.section === 'thead' ? 'thead' : 'tbody');
+          section.ditaSourcePath = sourcePath(row.parentNode, ctx);
           htmlSections.set(item.section, section);
           htmlTable.appendChild(section);
         }

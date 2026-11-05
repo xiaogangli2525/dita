@@ -211,7 +211,7 @@
           <button id="rejectAllButton" type="button" title="拒绝所有修订">拒绝全部</button>
           <button id="closeReviewButton" type="button" title="关闭审阅面板">关闭审阅</button>
           <span id="reviewMeta" class="review-meta" role="status"></span>
-          <span class="review-legend" hidden><span>浅色底纹表示新增或修改</span><span>红色虚线表示删除位置</span></span>
+          <span class="review-legend" hidden><span>绿色下划线：新增</span><span>红色删除线：删除</span><span>接受后清除标记</span></span>
         </div>
         <div id="diff" class="diff"></div>
       </div>
@@ -494,6 +494,7 @@
   <script src="/document-presentation.js"></script>
   <script src="/footnotes-core.js"></script>
   <script src="/footnotes.js"></script>
+  <script src="/review-markup.js"></script>
   <script src="/review.js"></script>
   <script src="/document-store.js"></script>
   <script src="/workspace-session.js"></script>

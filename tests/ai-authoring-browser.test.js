@@ -75,7 +75,9 @@ test('AI authoring runs through the local provider, review and shared document h
     assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.get('a.dita').current), original.replace('发送请求', '发起请求'));
     assert.equal(await fs.readFile(path.join(temporary, 'a.dita'), 'utf8'), original);
     await page.click('#aiClose'); await page.click('#reviewButton');
-    assert.match(await page.locator('#visualEditor p[data-review-change]').innerText(), /发起请求/);
+    assert.equal(await page.locator('#visualEditor [data-review-text="old"]').textContent(), '送');
+    assert.equal(await page.locator('#visualEditor [data-review-text="new"]').textContent(), '起');
+    assert.match(await page.locator('#visualEditor p[data-review-change]').innerText(), /发送起请求/);
     await page.click('#sourceButton'); await page.locator('#editor').focus(); await page.keyboard.press('Control+z'); assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.get('a.dita').current), original);
     await page.keyboard.press('Control+y'); assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.get('a.dita').current), original.replace('发送请求', '发起请求'));
     assert.equal(received.at(-1).document.parts[0].text, '发送请求'); assert.doesNotMatch(JSON.stringify(received.at(-1)), /MN318/);
