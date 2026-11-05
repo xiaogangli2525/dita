@@ -44,8 +44,8 @@ html, body { height: 100%; margin: 0; }
 .inspector > .review-pane .review-toolbar button { padding: 5px 7px; font-size: 11px; }
 .inspector > .review-pane .review-meta { flex: 1 0 100%; line-height: 1.45; }
 .review-legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 11px; color: var(--text); }
-.review-legend span::before { content: ''; display: inline-block; width: 12px; margin-right: 5px; border-bottom: 3px solid var(--warning-border); vertical-align: middle; }
-.review-legend span:last-child::before { border-bottom: 2px dashed var(--danger); }
+.review-legend span:first-child { color: var(--success); text-decoration: underline; }
+.review-legend span:nth-child(2) { color: var(--danger); text-decoration: line-through; }
 .review-empty { margin: 16px 12px; padding: 12px; border: 1px solid var(--border); border-radius: 6px; color: var(--muted); line-height: 1.6; }
 .inspector > .review-pane .review-title {
   flex: 1 0 100%;
@@ -154,12 +154,28 @@ html, body { height: 100%; margin: 0; }
 }
 .visual-editor .author-focus { outline: 2px solid var(--warning-border); outline-offset: 2px; transition: outline-color .2s; }
 .visual-editor [data-review-change] {
-  background-color: var(--warning-soft);
-  box-shadow: inset 3px 0 var(--warning-border);
+  box-shadow: inset 2px 0 var(--success-border);
 }
 .visual-editor [data-review-deletion] { outline: 1px dashed var(--danger); }
 .visual-editor [data-review-deletion="before"] { outline: none; border-top: 2px dashed var(--danger); }
 .visual-editor [data-review-deletion="after"] { outline: none; border-bottom: 2px dashed var(--danger); }
+.visual-editor [data-review-text="old"], .visual-editor [data-review-ghost] {
+  color: var(--danger);
+  background: var(--danger-soft);
+  text-decoration: line-through;
+  text-decoration-thickness: 1.5px;
+  text-decoration-skip-ink: none;
+}
+.visual-editor [data-review-text="new"] {
+  color: var(--success);
+  background: var(--success-soft);
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+}
+.visual-editor [data-review-text] { border-radius: 2px; overflow-wrap: anywhere; }
+.visual-editor .review-deleted-block { border-left: 3px solid var(--danger-border); padding-left: 10px; }
+.visual-editor tr.review-deleted-block > :is(td,th) { color: var(--danger); background: var(--danger-soft); text-decoration: line-through; }
 .visual-editor .review-target-focus {
   outline: 2px solid var(--warning-border);
   outline-offset: 4px;

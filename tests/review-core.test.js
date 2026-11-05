@@ -46,6 +46,20 @@ test('inline diff bounds memory for long replacements', () => {
   ]);
 });
 
+test('multiple inline edits advance both sides and preserve the exact old and new text', () => {
+  for (const [before, after, unchanged] of [
+    ['AT+OLD\n    wait(30);', 'AT+NEW\n    wait(60);', 'wait('],
+    ['超时为 <b>30</b> 秒。旧说明。', '超时为 <b>60</b> 秒。新说明。', '秒'],
+    ['A &amp; B &#x1F642; <port>', 'A &amp; C &#x1F600; <port>', '&amp;'],
+    ['😀旧值，第二处🙂旧值', '😃新值，第二处🙃新值', '第二处']
+  ]) {
+    const result = inlineDiff(before, after);
+    assert.equal(result.filter(part => part.type !== 'new').map(part => part.text).join(''), before);
+    assert.equal(result.filter(part => part.type !== 'old').map(part => part.text).join(''), after);
+    assert.ok(result.some(part => part.type === 'same' && part.text.includes(unchanged)));
+  }
+});
+
 test('line diff groups separate edits and preserves context', () => {
   const baseline = [
     '<?xml version="1.0"?>',
