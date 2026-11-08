@@ -80,6 +80,7 @@
 .ai-scan-results { display:grid; align-content:start; gap:10px; min-height:0; overflow:auto; overscroll-behavior:contain; padding:10px 12px; overflow-wrap:anywhere; }
 .ai-scan-results h3 { margin:0; font-size:14px; }
 .ai-scan-summary { margin:0; }
+.ai-scan-freshness { margin:0; padding:8px 10px; min-height:0; border-left:2px solid var(--warning); border-radius:5px; color:var(--warning); background:var(--warning-soft); }
 .ai-scan-results details { color:var(--muted); font-size:12px; }
 .ai-scan-card { padding:14px; border:1px solid var(--border); border-radius:9px; background:var(--surface); }
 .ai-scan-card h4 { margin:6px 0; font-size:15px; }

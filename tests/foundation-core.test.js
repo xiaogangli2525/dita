@@ -87,6 +87,25 @@ test('drafts are isolated by repository and branch and retain their comparison b
   store.put(scope, { ...file, dirty: false }); assert.equal(store.list(scope).length, 0);
   assert.throws(() => createDraftStore({ setItem() { throw new Error('quota'); } }).put(scope, file), /quota/);
 });
+test('clean draft updates preserve unrelated recovery content and remove only acknowledged or owned backups', () => {
+  const data = storage(), store = createDraftStore(data), scope = { root: '/repo', branch: 'main' };
+  const backup = { path: 'a.dita', disk: 'Original', current: 'Prior session', dirty: true };
+  store.put(scope, backup);
+  store.put(scope, { ...backup, current: 'Original', dirty: false });
+  assert.equal(store.list(scope)[0].current, 'Prior session');
+  store.put(scope, { ...backup, disk: backup.current, dirty: false });
+  assert.equal(store.list(scope).length, 0, 'saving the recovered content removes its backup');
+  store.put(scope, backup);
+  store.put(scope, { ...backup, current: 'Original', dirty: false }, backup);
+  assert.equal(store.list(scope).length, 0, 'undo can clear the exact backup owned by this file session');
+  store.put(scope, { ...backup, current: 'Other tab' });
+  store.put(scope, { ...backup, current: 'Original', dirty: false }, backup);
+  assert.equal(store.list(scope)[0].current, 'Other tab', 'cleanup cannot delete a replacement written elsewhere');
+  const key = data.key(0), damaged = JSON.stringify({ schema: 1, ...scope, path: 'a.dita', current: 'Original' });
+  data.setItem(key, damaged);
+  store.put(scope, { ...backup, current: 'Original', dirty: false }, backup);
+  assert.equal(data.getItem(key), damaged, 'a malformed backup is retained for explicit recovery');
+});
 test('plaintext search crosses inline markup, decodes entities and returns exact source selection ranges', () => {
   const source = '<?xml version="1.0"?><topic><body><p>TCP <b>connection</b> &amp; MQTT</p><p>中文参数 <![CDATA[AT+OPEN]]></p></body></topic>';
   for (const [query, span] of [['TCP connection', 'TCP <b>connection'], ['& MQTT', '&amp; MQTT'], ['中文参数', '中文参数'], ['AT+OPEN', 'AT+OPEN']]) {

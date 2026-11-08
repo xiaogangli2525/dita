@@ -1,7 +1,7 @@
 'use strict';
 (function (root) {
   function createDraftController(A) {
-    const get = id => document.getElementById(id), pending = new Map();
+    const get = id => document.getElementById(id), pending = new Map(), owned = new WeakMap();
     const scope = () => ({ root: A.state.root, branch: A.state.currentBranch });
     let store, timer, failed = false;
     try { store = root.DitaDraftStore.createDraftStore(root.localStorage); }
@@ -19,12 +19,18 @@
     }
     function flush() {
       clearTimeout(timer);
-      guarded(() => { for (const { file, identity } of pending.values()) store.put(identity, file); pending.clear(); });
+      guarded(() => {
+        for (const { file, identity, owner } of pending.values()) {
+          store.put(identity, file, owned.get(owner));
+          if (file.dirty) owned.set(owner, file); else owned.delete(owner);
+        }
+        pending.clear();
+      });
       update();
     }
     function changed(file) {
       if (A.state.filesMap.get(file.path) !== file) return;
-      pending.set(JSON.stringify([A.state.root, A.state.currentBranch, file.path]), { file: { path: file.path, current: file.current, disk: file.disk, dirty: file.dirty }, identity: scope() });
+      pending.set(JSON.stringify([A.state.root, A.state.currentBranch, file.path]), { file: { path: file.path, current: file.current, disk: file.disk, dirty: file.dirty }, identity: scope(), owner: file });
       clearTimeout(timer); timer = setTimeout(flush, 350);
     }
     function download(draft) { A.downloadXML(draft.current, draft.path.split('/').pop().replace(/\.(dita|xml|ditamap)$/i, '-draft.xml')); }

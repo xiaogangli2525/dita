@@ -13,6 +13,8 @@
     const sourceFor = (run, path) => A.state.filesMap.get(path)?.current ?? run.disk.get(path) ?? run.snapshot.files.get(path)?.current ?? run.snapshot.content;
     const contextCurrent = run => A.manual.contextCurrent(run.snapshot) &&
       (!/\.ditamap$/i.test(run.snapshot.path) || sourceFor(run, run.snapshot.path) === run.snapshot.content);
+    const outdated = run => !contextCurrent(run) || run.profile !== profile() ||
+      [...run.snapshot.files].some(([path, file]) => sourceFor(run, path) !== file.current);
     function resolve(run, ref) {
       const record = run.records.get(ref.id), path = record.input.path;
       const file = run.snapshot.files.get(path), source = sourceFor(run, path);
@@ -35,6 +37,8 @@
       scope.disabled = busy; start.disabled = busy || !available() || !targets?.[scope.value];
       start.textContent = report ? '重新扫描' : '开始扫描';
       const sameScope = report && report.snapshot.path === targets?.[scope.value];
+      get('aiScanUpdate').hidden = !sameScope || !outdated(report);
+      get('aiScanUpdate').disabled = busy || !available();
       get('aiScanResume').hidden = !sameScope || report.outcomes.size === report.batches.length;
       get('aiScanRetry').hidden = !sameScope || ![...report.outcomes.values()].some(item => item.status === 'failed');
       get('aiScanResume').disabled = busy || !available(); get('aiScanRetry').disabled = busy || !available();
@@ -45,6 +49,7 @@
       clearTimeout(refreshTimer);
       const scroll = results.scrollTop;
       results.replaceChildren();
+      controls();
       if (!report) return;
       const run = report;
       const editableBlocks = new Map();
@@ -54,6 +59,11 @@
       const heading = document.createElement('h3');
       heading.textContent = run.snapshot.path + ' · ' + findings.length + ' 条建议';
       results.append(heading);
+      if (outdated(run)) {
+        const note = document.createElement('p'); note.className = 'ai-status ai-scan-freshness'; note.setAttribute('role', 'status');
+        note.textContent = '正文或扫描配置已变化，完成数对应原快照。点击“更新扫描结果”检查最新内容，并保留可复用的已完成批次。';
+        results.append(note);
+      }
       if (findings.length) {
         const summary = document.createElement('p'); summary.className = 'ai-muted ai-scan-summary';
         summary.textContent = count('pending') + ' 条待核对 · ' + count('applied') + ' 条已处理 · ' + count('stale') + ' 条需重扫';
@@ -172,7 +182,8 @@
       }
       return '已完成 ' + completed + '/' + run.batches.length + ' 批，覆盖 ' + covered.size + '/' + run.records.size +
         ' 个正文片段。' + (failed ? ' ' + failed + ' 批可重试。' : '') +
-        (run.outcomes.size < run.batches.length ? ' 还有 ' + (run.batches.length - run.outcomes.size) + ' 批可继续。' : '');
+        (run.outcomes.size < run.batches.length ? ' 还有 ' + (run.batches.length - run.outcomes.size) + ' 批可继续。' : '') +
+        (outdated(run) ? ' 正文或配置已变化，当前进度对应原快照。' : '');
     }
     function checkpoint(run) {
       scanStore.save(run);
@@ -283,6 +294,7 @@
       finally { if (active()) { controller = null; controls(); activity(); render(); } }
     }
     start.addEventListener('click', () => scan('new'));
+    get('aiScanUpdate').addEventListener('click', () => scan('resume'));
     get('aiScanResume').addEventListener('click', () => scan('resume'));
     get('aiScanRetry').addEventListener('click', () => scan('retry'));
     scope.addEventListener('change', () => prepareReport(false));

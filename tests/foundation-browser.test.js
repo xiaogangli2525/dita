@@ -90,10 +90,18 @@ test('foundation browser workflows', async t => {
     await open('other.dita'); await page.locator('.tab[data-path="topics/connect.dita"] .close').click();
     assert.equal(await page.evaluate(key => localStorage.getItem(key), draftKey), backup, 'closing the clean disk version preserves the previous unsaved draft');
     await open('topics/connect.dita');
+    const saved = page.waitForResponse(response => response.url().endsWith('/api/file') && response.request().method() === 'PUT');
+    await page.click('#saveButton'); await saved;
+    await page.waitForFunction(() => document.getElementById('status').textContent.includes('已保存 1 个文档'));
+    await page.evaluate(() => window.DitaApp.drafts.flush());
+    assert.equal(await page.evaluate(key => localStorage.getItem(key), draftKey), backup, 'saving an unchanged disk version does not discard an older recovery draft');
     await page.click('#draftsButton'); await page.locator('#draftList article').filter({ hasText: 'topics/connect.dita' }).getByRole('button', { name: '恢复到编辑区' }).click();
     await page.waitForFunction(() => window.DitaApp.state.filesMap.get('topics/connect.dita').current.includes('临时搜索词'));
     assert.equal(await current(), working);
+    await page.evaluate(() => window.DitaApp.drafts.flush());
     await source(); await page.focus('#editor'); await page.keyboard.press('Control+z'); assert.equal(await current(), originalConnect);
+    await page.evaluate(() => window.DitaApp.drafts.flush());
+    assert.equal(await page.evaluate(key => localStorage.getItem(key), draftKey), null, 'undo clears a backup created by this editing session');
     await page.keyboard.press('Control+y'); assert.equal(await current(), working); await page.evaluate(() => window.DitaApp.drafts.flush());
     const external = originalConnect.replace('正文始终保留', 'EXTERNAL_BODY'); await fs.writeFile(path.join(repo, 'topics/connect.dita'), external);
     // Recovery must re-read disk even while the original file remains cached in this tab.
