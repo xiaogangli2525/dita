@@ -225,6 +225,11 @@
 @media(max-width:700px) { #modelExportDialog { padding:18px; } }
 .inspector.notes-open > .context-toolbar { display:none; }
 
+/* Hide the hint before the writing actions squeeze it into truncated text. */
+@container document (max-width:850px) {
+  #authoringHint { display:none; }
+}
+
 @container document (max-width:600px) {
   .authoring-context { display:none; }
   .authoring-toolbar { flex-wrap:wrap; padding:8px 12px; }
