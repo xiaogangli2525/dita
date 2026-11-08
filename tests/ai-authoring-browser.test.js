@@ -10,13 +10,14 @@ test('AI authoring runs through the local provider, review and shared document h
   await fs.writeFile(path.join(temporary, 'a.dita'), original); await fs.writeFile(path.join(temporary, 'b.dita'), second);
   await fs.writeFile(path.join(temporary, 'main.ditamap'), '<map><title>HTTP 手册</title><topicref href="a.dita"/><topicref href="b.dita"/></map>');
   const received = [], timers = new Set();
+  let recoveredScan = false;
   const provider = http.createServer(async (req, res) => {
     const chunks = []; for await (const chunk of req) chunks.push(chunk);
     const body = JSON.parse(Buffer.concat(chunks)), input = JSON.parse(body.messages[1].content); received.push(input);
     if (input.task === 'scan') {
       if (input.evidence.some(item => item.text.startsWith('拆批测试'))) {
         const large = input.evidence.length >= 8, failed = input.evidence.some(item => item.text.includes('拆批测试 9'));
-        const content = large ? '{"findings":[' : failed ? '模型未使用 JSON' : '{"findings":[]}';
+        const content = large ? '{"findings":[' : failed && !recoveredScan ? '模型未使用 JSON' : '{"findings":[]}';
         res.end(JSON.stringify({ choices: [{ finish_reason: large ? 'length' : 'stop', message: { content } }] }));
         return;
       }
@@ -146,6 +147,59 @@ test('AI authoring runs through the local provider, review and shared document h
     await page.waitForFunction(() => document.getElementById('aiScanStatus').textContent.includes('覆盖 7/14'));
     assert.match(await page.locator('#aiScanStatus').innerText(), /完成 0\/1 批/);
     assert.match(await page.locator('#aiScanResults').innerText(), /第 1 批部分完成/);
+    const completedIds = await page.evaluate(() => {
+      const key = Object.keys(localStorage).find(key => key.startsWith('dita.ai-scan.v1:'));
+      return JSON.parse(localStorage.getItem(key)).outcomes[0].result.covered;
+    });
+    const beforeRetry = received.length; recoveredScan = true;
+    await page.click('#aiScanRetry');
+    await page.waitForFunction(() => document.getElementById('aiScanStatus').textContent.includes('已完成 1/1'));
+    const retried = received.slice(beforeRetry).filter(input => input.task === 'scan');
+    assert.ok(retried.length);
+    assert.ok(retried.every(input => input.evidence.every(item => !completedIds.includes(item.id))));
+    assert.match(await page.locator('#aiScanStatus').innerText(), /覆盖 14\/14/);
+  });
+  await t.test('stopped scans restore after reload and continue only unprocessed batches', async st => {
+    const page = await fresh(st);
+    let release = () => {};
+    st.after(async () => { release(); await fs.writeFile(path.join(temporary, 'a.dita'), original); });
+    const content = original.replace('</body>', Array.from({ length: 70 }, (_, index) => '<p>恢复扫描 ' + index + ' ' + '说明'.repeat(350) + '</p>').join('') + '</body>');
+    await page.evaluate(content => { const a = window.DitaApp; a.setFileContent(a.state.filesMap.get('a.dita'), content); }, content);
+    await page.click('#saveButton'); await page.waitForFunction(() => !window.DitaApp.state.filesMap.get('a.dita').dirty);
+    let calls = 0;
+    const held = new Promise(resolve => { release = resolve; });
+    await page.route('**/api/ai/scan', async route => {
+      calls++;
+      if (calls === 2) { await held; await route.abort().catch(() => {}); }
+      else await route.continue();
+    });
+    await page.click('#aiButton'); await page.click('#aiScanButton'); await page.click('#aiScanStart');
+    await page.waitForFunction(() => !document.getElementById('aiScanCancel').hidden);
+    await page.waitForFunction(() => Object.keys(localStorage).some(key => key.startsWith('dita.ai-scan.v1:') && JSON.parse(localStorage.getItem(key)).outcomes.length === 1));
+    const first = received.filter(input => input.task === 'scan').at(-1);
+    await page.click('#aiScanCancel'); release();
+    await page.reload(); await page.waitForFunction(() => window.DitaApp?.state.root);
+    await page.evaluate(() => window.DitaApp.openFile('a.dita'));
+    await page.click('#aiButton'); await page.click('#aiScanButton');
+    await page.waitForFunction(() => document.getElementById('aiScanStatus').textContent.includes('已恢复扫描进度'));
+    assert.match(await page.locator('#aiScanStatus').innerText(), /已完成 1\//);
+    const beforeResume = received.length;
+    await page.click('#aiScanResume');
+    await page.waitForFunction(() => document.getElementById('aiScanCancel').hidden && !document.getElementById('aiScanStatus').textContent.includes('正在'));
+    const resumed = received.slice(beforeResume).filter(input => input.task === 'scan');
+    assert.ok(resumed.length);
+    assert.ok(resumed.every(input => JSON.stringify(input.evidence) !== JSON.stringify(first.evidence)));
+    assert.equal(await page.locator('#aiScanResume').isVisible(), false);
+    assert.equal(await page.locator('#aiScanRetry').isVisible(), false);
+    await page.evaluate(() => { const a = window.DitaApp; const file = a.state.filesMap.get('a.dita'); a.setFileContent(file, file.current.replace('恢复扫描 1 ', '修订扫描 1 ')); });
+    await page.click('#saveButton'); await page.waitForFunction(() => !window.DitaApp.state.filesMap.get('a.dita').dirty);
+    await page.reload(); await page.waitForFunction(() => window.DitaApp?.state.root);
+    await page.evaluate(() => window.DitaApp.openFile('a.dita'));
+    await page.click('#aiButton'); await page.click('#aiScanButton');
+    await page.waitForFunction(() => document.getElementById('aiScanStatus').textContent.includes('已恢复扫描进度'));
+    assert.match(await page.locator('#aiScanStatus').innerText(), /已完成 0\//);
+    assert.match(await page.locator('#aiScanResults').innerText(), /原文或配置已变化/);
+    await fs.writeFile(path.join(temporary, 'a.dita'), original);
   });
   await t.test('manual search requires an explicit candidate and applies to the selected topic', async st => {
     const page = await fresh(st); await page.click('#aiButton'); await page.fill('#aiReply', '润色发送请求的描述'); await page.locator('#aiTask > summary').click(); await page.selectOption('#aiScope', 'manual'); await page.fill('#aiSearch', '发送请求'); await page.click('#aiLocate');

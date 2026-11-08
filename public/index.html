@@ -218,8 +218,9 @@
       <section id="aiScanPanel" class="ai-scan-panel" aria-label="全文扫描" hidden>
         <div class="ai-scan-toolbar">
           <p class="ai-muted">按章节或手册扫描，点击引文即可定位正文。</p>
-          <div class="ai-scan-actions"><label>范围 <select id="aiScanScope"><option value="topic">当前章节</option><option value="manual">当前功能手册</option></select></label><button id="aiScanStart" type="button" class="primary-action">开始扫描</button><button id="aiScanCancel" type="button" hidden>停止</button></div>
+          <div class="ai-scan-actions"><label>范围 <select id="aiScanScope"><option value="topic">当前章节</option><option value="manual">当前功能手册</option></select></label><button id="aiScanStart" type="button" class="primary-action">开始扫描</button><button id="aiScanResume" type="button" hidden>继续剩余批次</button><button id="aiScanRetry" type="button" hidden>重试失败批次</button><button id="aiScanCancel" type="button" hidden>停止</button></div>
           <p id="aiScanStatus" class="ai-status" role="status" aria-live="polite"></p>
+          <p id="aiScanStorageWarning" class="ai-muted" role="status" hidden></p>
         </div>
         <div id="aiScanResults" class="ai-scan-results" aria-label="扫描建议"></div>
       </section>
@@ -404,6 +405,7 @@
     <h2 id="noteRulesHeading">注脚的型号导出规则</h2>
     <p>只处理导出副本。规则保存在独立配置中，原始 DITA 保持不变。</p>
     <p id="noteRulesCount" class="muted"></p>
+    <label class="note-rule-filter">显示范围<select id="noteRuleFilter"><option value="all">全部注脚</option><option value="pending">待确认</option><option value="expired">已过期</option><option value="confirmed">已确认</option></select></label>
     <div class="note-rules-layout">
       <nav id="noteRuleList" aria-label="选择注脚规则"></nav>
       <section>
@@ -415,7 +417,7 @@
       </section>
     </div>
     <p id="noteRulesError" class="form-error" role="alert"></p>
-    <div class="dialog-actions"><button id="noteRuleDelete" type="button">移除这条规则</button><button id="noteRulesClose" type="button">关闭</button><button id="noteRuleSave" type="button">确认并保存规则</button></div>
+    <div class="dialog-actions"><button id="noteRuleDelete" type="button">移除这条规则</button><button id="noteRulesClose" type="button">关闭</button><button id="noteRuleSave" type="button">确认并保存规则</button><button id="noteRuleSaveNext" type="button" class="primary-action">保存并下一条</button></div>
   </dialog>
   <datalist id="projectModelOptions"></datalist>
   <dialog id="saveScopeDialog" class="workspace-dialog" aria-labelledby="saveScopeTitle"><form id="saveScopeForm">
@@ -532,6 +534,7 @@
   <script src="/ai-conversation.js"></script>
   <script src="/ai-context.js"></script>
   <script src="/ai-connection.js"></script>
+  <script src="/ai-scan-store.js"></script>
   <script src="/ai-scan.js"></script>
   <script src="/ai-authoring.js"></script>
   <script src="/search.js"></script>

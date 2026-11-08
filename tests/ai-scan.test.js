@@ -1,9 +1,91 @@
 'use strict';
 const test = require('node:test'), assert = require('node:assert/strict'), path = require('node:path');
 const core = require('../public/ai-scan-core');
+const { createScanStore, mergeResult } = require('../public/ai-scan-store');
 const { collectDemoFiles } = require('../scripts/demo-workspace');
 const { decodeXmlBuffer } = require('../lib/document-files');
 const file = (path, current) => ({ path, current });
+
+function progressFixture() {
+  const values = new Map();
+  const storage = { getItem: key => values.get(key) || null, setItem: (key, value) => values.set(key, value) };
+  const snapshot = { root: '/docs', branch: 'main', path: 'main.ditamap', content: '<map/>', project: { schema: 1, models: ['M100'] },
+    projectContent: null, noteRules: { expectedContent: null }, files: new Map([['a.dita', file('a.dita', '<p>First</p>')], ['b.dita', file('b.dita', '<p>Second</p>')]]) };
+  const batches = ['a.dita', 'b.dita'].map((path, index) => ({ phase: 'section', evidence: [{ id: 'e' + index, path, kind: 'p', conditions: [], text: index ? 'Second' : 'First' }] }));
+  const result = mergeResult(batches[0], { findings: [{ category: 'wording', summary: 'Clarify first', suggestion: 'Review wording', evidence: [{ id: 'e0', quote: 'First' }] }] });
+  const run = { snapshot, batches, profile: 'test-model', outcomes: new Map([[0, { status: 'done', result, error: '' }], [1, { status: 'failed', result: null, error: 'Timeout' }]]) };
+  return { storage, run };
+}
+
+test('scan progress restores successful and failed batches with validated evidence', () => {
+  const { storage, run } = progressFixture();
+  createScanStore(storage).save(run);
+  const restored = createScanStore(storage).load(run.snapshot, run.batches, run.profile);
+  assert.equal(restored.restored, true);
+  assert.equal(restored.outcomes.get(0).status, 'done');
+  assert.equal(restored.outcomes.get(0).result.findings[0].summary, 'Clarify first');
+  assert.equal(restored.outcomes.get(1).status, 'failed');
+});
+
+test('scan progress isolates roots, branches, manuals, model settings and conditions', () => {
+  const { storage, run } = progressFixture();
+  createScanStore(storage).save(run);
+  const store = createScanStore(storage);
+  for (const changed of [{ root: '/other' }, { branch: 'release' }, { path: 'other.ditamap' },
+    { project: { schema: 1, models: ['M200'] } }, { content: '<map product="M100"/>' }, { noteRules: { expectedContent: 'new' } }]) {
+    assert.equal(store.load({ ...run.snapshot, ...changed }, run.batches, run.profile).outcomes.size, 0);
+  }
+  assert.equal(store.load(run.snapshot, run.batches, 'other-model').outcomes.size, 0);
+});
+
+test('changed XML invalidates its batches while unchanged files keep their progress', () => {
+  const { storage, run } = progressFixture(); createScanStore(storage).save(run);
+  const changed = { ...run.snapshot, files: new Map(run.snapshot.files) };
+  changed.files.set('a.dita', file('a.dita', '<p outputclass="changed">First</p>'));
+  const next = createScanStore(storage).load(changed, run.batches, run.profile);
+  assert.equal(next.outcomes.has(0), false);
+  assert.equal(next.outcomes.has(1), true);
+  assert.equal(next.discarded, 1);
+});
+
+test('partial retry unions coverage and never completes an uncovered fragment', () => {
+  const batch = { phase: 'section', evidence: ['One', 'Two'].map((text, index) => ({ id: 'e' + index, path: 'a.dita', kind: 'p', conditions: [], text })) };
+  const partial = mergeResult(batch, { findings: [], covered: ['e0'], failures: ['Timeout'] });
+  assert.equal(partial.failures.length, 1);
+  const finished = mergeResult(batch, { findings: [], covered: ['e1'] }, partial);
+  assert.deepEqual(finished.covered, ['e0', 'e1']);
+  assert.deepEqual(finished.failures, []);
+  assert.ok(mergeResult(batch, { findings: [], covered: ['e0'] }).failures.length);
+  assert.throws(() => mergeResult(batch, { findings: [], covered: ['foreign'] }), /覆盖/);
+});
+
+test('recovered scan batches retain more than one model response of valid findings', () => {
+  const evidence = Array.from({ length: 14 }, (_, index) => ({ id: 'e' + index, path: 'a.dita', kind: 'p', conditions: [], text: 'Text ' + index }));
+  const result = mergeResult({ phase: 'section', evidence }, { findings: evidence.map(item => ({ category: 'wording', summary: item.text,
+    suggestion: 'Review wording', evidence: [{ id: item.id, quote: item.text }] })) });
+  assert.equal(result.findings.length, 14);
+});
+
+test('scan storage failure keeps current-page progress and exposes a warning', t => {
+  t.mock.method(console, 'warn', () => {});
+  const { run } = progressFixture();
+  const store = createScanStore({ getItem() { return null; }, setItem() { throw Error('Quota exceeded'); } });
+  store.save(run);
+  assert.match(store.warning, /仅保存在本页/);
+  assert.equal(store.load(run.snapshot, run.batches, run.profile).outcomes.get(0).status, 'done');
+  const corrupt = createScanStore({ getItem() { return '{'; } });
+  assert.equal(corrupt.load(run.snapshot, run.batches, run.profile).outcomes.size, 0);
+  assert.match(corrupt.warning, /仅保存在本页/);
+});
+
+test('a resumable plan retains batches beyond the per-run request budget', () => {
+  const records = Array.from({ length: 700 }, (_, index) => ({ commands: [], input: { id: 'e' + index, path: 'a.dita', kind: 'p', conditions: [], text: 'x'.repeat(1500) } }));
+  const limited = core.plan(records, false), complete = core.plan(records, false, { all: true });
+  assert.ok(limited.skipped > 0);
+  assert.equal(complete.skipped, 0);
+  assert.deepEqual(complete.batches.slice(0, core.limits.sections), limited.batches);
+  assert.equal(complete.batches.length, limited.batches.length + limited.skipped);
+});
 
 test('scan evidence retains source identity, inline wording and model conditions', () => {
   const source = '<topic><title>AT+MHTTPREQUEST</title><body><p>单位为<b>秒</b>。</p><p>参数<fn product="ML307R"><div>ML307R：单位为毫秒。</div></fn>说明。</p></body></topic>';

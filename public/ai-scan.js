@@ -1,10 +1,15 @@
 'use strict';
 (function (root) {
-  function createController(A, { path, available, prepare, activity }) {
+  function createController(A, { path, available, configuration, prepare, activity }) {
     const core = root.DitaAiScanCore, get = id => document.getElementById(id);
     const panel = get('aiScanPanel'), scope = get('aiScanScope'), start = get('aiScanStart');
     const status = get('aiScanStatus'), results = get('aiScanResults');
-    let controller = null, report = null, targets = null, shown = 30, refreshTimer;
+    let controller = null, report = null, targets = null, shown = 30, refreshTimer, loading = false, opening = 0;
+    const progress = root.DitaAiScanStore;
+    let storage;
+    try { storage = root.localStorage; } catch (error) { console.warn('无法读取扫描进度存储', error); }
+    const scanStore = progress.createScanStore(storage);
+    const profile = () => JSON.stringify(configuration());
     const sourceFor = (run, path) => A.state.filesMap.get(path)?.current ?? run.disk.get(path) ?? run.snapshot.files.get(path)?.current ?? run.snapshot.content;
     const contextCurrent = run => A.manual.contextCurrent(run.snapshot) &&
       (!/\.ditamap$/i.test(run.snapshot.path) || sourceFor(run, run.snapshot.path) === run.snapshot.content);
@@ -26,9 +31,14 @@
       return contextCurrent(run) && finding.evidence.every(ref => resolve(run, ref)) ? 'pending' : 'stale';
     }
     function controls() {
-      const busy = Boolean(controller);
+      const busy = Boolean(controller) || loading;
       scope.disabled = busy; start.disabled = busy || !available() || !targets?.[scope.value];
-      get('aiScanCancel').hidden = !busy;
+      start.textContent = report ? '重新扫描' : '开始扫描';
+      const sameScope = report && report.snapshot.path === targets?.[scope.value];
+      get('aiScanResume').hidden = !sameScope || report.outcomes.size === report.batches.length;
+      get('aiScanRetry').hidden = !sameScope || ![...report.outcomes.values()].some(item => item.status === 'failed');
+      get('aiScanResume').disabled = busy || !available(); get('aiScanRetry').disabled = busy || !available();
+      get('aiScanCancel').hidden = !controller;
       results.setAttribute('aria-busy', String(busy));
     }
     function render() {
@@ -50,9 +60,11 @@
         results.append(summary);
       }
       const warnings = [...report.warnings, ...report.errors];
+      const omitted = [...run.outcomes.values()].reduce((total, item) => total + (item.result?.omitted || 0), 0);
+      if (omitted) warnings.push(omitted + ' 条模型建议的证据未通过校验。');
       if (warnings.length) {
         const details = document.createElement('details'), summary = document.createElement('summary'), list = document.createElement('ul');
-        details.open = report.errors.length > 0;
+        details.open = report.errors.length > 0 || report.discarded > 0;
         summary.textContent = warnings.length + ' 项覆盖说明';
         for (const warning of warnings) {
           const item = document.createElement('li'); item.textContent = warning; list.append(item);
@@ -144,7 +156,34 @@
       }
       results.scrollTop = scroll;
     }
-    function stop() { controller?.abort(); controller = null; controls(); activity(); }
+    function updateReport(run) {
+      run.errors = []; run.findings = new Map();
+      for (const [index, outcome] of run.outcomes) {
+        if (outcome.status === 'failed') run.errors.push('第 ' + (index + 1) + ' 批' +
+          (outcome.result ? '部分完成 · ' : ' · ') + (outcome.error || outcome.result.failures.join('。')));
+        for (const finding of outcome.result?.findings || []) run.findings.set(progress.findingKey(finding), finding);
+      }
+    }
+    function summary(run) {
+      const covered = new Set(); let completed = 0, failed = 0;
+      for (const [index, outcome] of run.outcomes) {
+        if (outcome.status === 'done') completed++; else failed++;
+        if (run.batches[index].phase === 'section') for (const id of outcome.result?.covered || []) covered.add(id);
+      }
+      return '已完成 ' + completed + '/' + run.batches.length + ' 批，覆盖 ' + covered.size + '/' + run.records.size +
+        ' 个正文片段。' + (failed ? ' ' + failed + ' 批可重试。' : '') +
+        (run.outcomes.size < run.batches.length ? ' 还有 ' + (run.batches.length - run.outcomes.size) + ' 批可继续。' : '');
+    }
+    function checkpoint(run) {
+      scanStore.save(run);
+      get('aiScanStorageWarning').textContent = scanStore.warning;
+      get('aiScanStorageWarning').hidden = !scanStore.warning;
+    }
+    function stop() {
+      opening++; controller?.abort(); controller = null; loading = false;
+      if (report) checkpoint(report);
+      controls(); activity();
+    }
     function updateTargets(topic, previous) {
       const map = A.manual.scopePath();
       targets = { topic: topic && !/\.ditamap$/i.test(topic) ? topic : '', manual: /\.ditamap$/i.test(map) ? map : '' };
@@ -156,72 +195,98 @@
       }
       scope.value = targets[previous] ? previous : targets.manual && (!targets.topic || report?.snapshot.path === targets.manual) ? 'manual' : 'topic';
     }
-    function open() {
-      if (!controller) updateTargets(path());
+    async function open() {
+      if (!controller && !loading) updateTargets(path());
       if (!report && !controller) status.textContent = available() ? '开始后，所选范围的正文将分批发送给已配置的模型。' : '请先在 AI 写作中配置模型连接。';
       A.shell.openPanel('ai-scan');
+      if (!controller && !loading && available() && (!report || report.snapshot.path !== targets?.[scope.value] || report.profile !== profile())) {
+        await prepareReport(false);
+      }
       controls(); render(); (controller ? get('aiScanCancel') : scope).focus({ preventScroll: true });
     }
-    async function scan() {
+    async function prepareReport(reset) {
       const target = targets?.[scope.value];
-      if (controller || !target || !available()) return;
-      const request = new AbortController(); controller = request; controls(); activity();
-      const active = () => controller === request;
-      status.textContent = '正在读取手册快照…'; results.replaceChildren(); report = null;
+      if (!target) return null;
+      const ticket = ++opening, workspace = A.api.token;
+      loading = true; controls(); activity(); status.textContent = '正在读取手册快照…';
+      if (reset || report?.snapshot.path !== target) results.replaceChildren();
       try {
         const snapshot = await A.manual.capture(target);
-        if (!active()) return;
+        if (ticket !== opening || workspace !== A.api.token) return null;
         const { records, warnings } = core.collect(snapshot.files.values(), snapshot.map);
-        const { batches, skipped } = core.plan(records, scope.value === 'manual');
+        const { batches } = core.plan(records, scope.value === 'manual', { all: true });
+        const model = profile();
+        const cached = reset ? { outcomes: new Map(), restored: false } : scanStore.load(snapshot, batches, model);
         const byPath = new Map();
         for (const record of records) {
-          const path = record.input.path;
-          if (!byPath.has(path)) byPath.set(path, []);
-          byPath.get(path).push(record);
+          if (!byPath.has(record.input.path)) byPath.set(record.input.path, []);
+          byPath.get(record.input.path).push(record);
         }
+        if (cached.discarded) warnings.push(cached.discarded + ' 个旧批次的原文或配置已变化，已重新列为待扫描。');
         shown = 30;
-        report = { snapshot, records: new Map(records.map(item => [item.input.id, item])), byPath, warnings, errors: [], findings: new Map(),
+        report = { snapshot, profile: model, batches, outcomes: cached.outcomes, discarded: cached.discarded || 0,
+          records: new Map(records.map(item => [item.input.id, item])), byPath, warnings, errors: [], findings: new Map(),
           applied: new Map(), live: new Map(), disk: new Map(Array.from(snapshot.buffers, ([path, file]) => [path, file.disk])) };
-        if (skipped) warnings.push('达到单次扫描上限，另有 ' + skipped + ' 个批次未扫描，可分章节继续。');
-        if (!batches.length) { status.textContent = '当前范围没有可扫描的正文。'; return; }
-        const covered = new Set(); let completed = 0, omitted = 0, consecutiveFailures = 0;
-        for (const [index, batch] of batches.entries()) {
+        updateReport(report);
+        status.textContent = cached.restored ? '已恢复扫描进度。' + summary(report) : '共 ' + batches.length + ' 批，点击开始扫描。';
+        if (reset) checkpoint(report);
+        get('aiScanStorageWarning').textContent = scanStore.warning;
+        get('aiScanStorageWarning').hidden = !scanStore.warning;
+        render(); return report;
+      } catch (error) { if (ticket === opening) { report = null; status.textContent = error.message; } return null; }
+      finally { if (ticket === opening) { loading = false; controls(); activity(); render(); } }
+    }
+    async function scan(mode) {
+      if (controller || loading || !targets?.[scope.value] || !available()) return;
+      const request = new AbortController(); controller = request; controls(); activity();
+      const active = () => controller === request;
+      try {
+        const run = await prepareReport(mode === 'new');
+        if (!run || !active()) return;
+        if (!run.batches.length) { status.textContent = '当前范围没有可扫描的正文。'; return; }
+        const budget = { section: 0, cross: 0 };
+        const queue = run.batches.map((batch, index) => ({ batch, index })).filter(({ batch, index }) => {
+          const outcome = run.outcomes.get(index);
+          if (mode === 'retry' ? outcome?.status !== 'failed' : Boolean(outcome)) return false;
+          return ++budget[batch.phase] <= core.limits[batch.phase === 'section' ? 'sections' : 'comparisons'];
+        });
+        let consecutiveFailures = 0;
+        for (const { batch, index } of queue) {
           if (!active()) return;
-          if (!contextCurrent(report)) throw Error('手册目录或型号配置已变化，请重新扫描。');
-          status.textContent = '正在扫描 ' + (index + 1) + ' / ' + batches.length + ' 批 · ' +
+          if (!contextCurrent(run)) throw Error('手册目录或型号配置已变化，请重新扫描。');
+          status.textContent = '正在扫描 ' + (index + 1) + ' / ' + run.batches.length + ' 批 · ' +
             (batch.phase === 'cross' ? '跨章节核对 ' + batch.command : '章节正文');
+          const previous = run.outcomes.get(index)?.result;
+          const remaining = batch.phase === 'section' && previous ? batch.evidence.filter(ref => !previous.covered.includes(ref.id)) : batch.evidence;
+          const requestBatch = remaining.length ? { ...batch, evidence: remaining } : batch;
           try {
-            const response = await A.api.request('/api/ai/scan', { method: 'POST', headers: { 'content-type': 'application/json' }, signal: request.signal, body: JSON.stringify(batch) });
+            const response = await A.api.request('/api/ai/scan', { method: 'POST', headers: { 'content-type': 'application/json' }, signal: request.signal, body: JSON.stringify(requestBatch) });
             if (!response.ok) throw Error(await A.api.error(response));
             const result = await response.json();
             if (!active()) return;
-            if (!contextCurrent(report)) throw Error('手册目录或型号配置已变化，请重新扫描。');
-            omitted += result.omitted; consecutiveFailures = 0;
-            const failures = result.failures || [];
-            if (!failures.length) completed++;
-            else report.errors.push('第 ' + (index + 1) + ' 批部分完成 · ' + failures.join('。'));
-            if (batch.phase === 'section') for (const id of result.covered || batch.evidence.map(item => item.id)) covered.add(id);
-            for (const finding of result.findings) {
-              const key = finding.category + ':' + finding.evidence.map(ref => ref.id).sort().join(',');
-              if (!report.findings.has(key)) report.findings.set(key, finding);
-            }
+            if (!contextCurrent(run)) throw Error('手册目录或型号配置已变化，请重新扫描。');
+            const checked = progress.mergeResult(requestBatch, result);
+            const merged = progress.mergeResult(batch, checked, previous);
+            run.outcomes.set(index, { result: merged, status: merged.failures.length ? 'failed' : 'done', error: '' });
+            consecutiveFailures = 0;
           } catch (error) {
             if (!active()) return;
-            if (!contextCurrent(report)) throw error;
-            report.errors.push('第 ' + (index + 1) + ' 批 · ' + error.message);
-            if (++consecutiveFailures >= 2) break;
+            if (!contextCurrent(run)) throw error;
+            run.outcomes.set(index, { result: previous || null, status: 'failed', error: error.message });
+            consecutiveFailures++;
           }
+          updateReport(run); checkpoint(run); render(); controls();
+          if (consecutiveFailures >= 2) break;
         }
-        if (omitted) warnings.push(omitted + ' 条模型建议的证据未通过校验。');
-        const coverage = '已完成 ' + completed + '/' + (batches.length + skipped) + ' 批，覆盖 ' + covered.size + '/' + records.length + ' 个正文片段。';
-        status.textContent = coverage + (report.findings.size ? ' 请逐条核对。' : completed || covered.size ?
-          ' 已扫描范围没有可展示的建议。' : ' 扫描未成功，具体原因见覆盖说明。');
+        status.textContent = summary(run) + (run.findings.size ? ' 请逐条核对。' : ' 已扫描范围没有可展示的建议。');
       } catch (error) { if (active()) status.textContent = error.message; }
       finally { if (active()) { controller = null; controls(); activity(); render(); } }
     }
-    start.addEventListener('click', scan);
-    scope.addEventListener('change', controls);
-    get('aiScanCancel').addEventListener('click', () => { stop(); status.textContent = '扫描已取消，保留已完成批次的结果。'; render(); });
+    start.addEventListener('click', () => scan('new'));
+    get('aiScanResume').addEventListener('click', () => scan('resume'));
+    get('aiScanRetry').addEventListener('click', () => scan('retry'));
+    scope.addEventListener('change', () => prepareReport(false));
+    get('aiScanCancel').addEventListener('click', () => { stop(); status.textContent = '扫描已取消，保留已完成批次的结果。' + (report ? summary(report) : ''); render(); });
     A.events.on('document:changed', file => {
       if (!report || (!report.byPath.has(file.path) && file.path !== report.snapshot.path)) return;
       report.disk.set(file.path, file.disk);
@@ -242,7 +307,7 @@
       A.events.on(event, () => { if (report && !panel.hidden && !controller) render(); });
     }
     A.events.on('workspace:willChange', () => { stop(); clearTimeout(refreshTimer); report = null; status.textContent = ''; results.replaceChildren(); });
-    return { open, running: () => Boolean(controller) };
+    return { open, running: () => Boolean(controller) || loading };
   }
   root.DitaAiScan = { createController };
 })(window);

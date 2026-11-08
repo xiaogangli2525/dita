@@ -77,10 +77,38 @@ test('external footnote rules are reviewed independently and applied only to cap
     assert.equal(downloaded, false); page.off('download', onDownload);
     await page.click('#modelExportCancel'); await fs.writeFile(rulePath, saved);
     await page.click('#noteRulesButton'); await page.locator('.note-rule-part').first().waitFor();
-    await fs.writeFile(rulePath, saved + '\n'); await page.click('#noteRuleSave');
+    await fs.writeFile(rulePath, saved + '\n'); await page.click('#noteRuleSaveNext');
     await page.waitForFunction(() => document.getElementById('noteRulesError').textContent.includes('变化'));
     assert.equal(await page.inputValue('[aria-label="片段 1 适用范围"]'), 'common');
     assert.equal(await fs.readFile(rulePath, 'utf8'), saved + '\n');
+    await page.click('#noteRulesClose'); await fs.writeFile(rulePath, saved);
+  });
+
+  await t.test('rule filters preserve drafts and save-next advances only after confirmation is persisted', async () => {
+    await page.click('#noteRulesButton'); await page.locator('.note-rule-part').first().waitFor();
+    assert.match(await page.locator('#noteRulesCount').innerText(), /已确认 1\/2/);
+    await page.selectOption('#noteRuleFilter', 'expired');
+    assert.equal(await page.locator('#noteRuleSaveNext').isDisabled(), true);
+    await page.selectOption('#noteRuleFilter', 'confirmed');
+    assert.equal(await page.locator('#noteRuleList button').count(), 1);
+    await page.click('#noteRuleDelete'); await page.waitForFunction(() => document.getElementById('noteRulesCount').textContent.includes('已确认 0/2'));
+    await page.selectOption('#noteRuleFilter', 'pending');
+    assert.equal(await page.locator('#noteRuleList button').count(), 2);
+    await page.selectOption('[aria-label="片段 1 适用范围"]', 'common');
+    await page.selectOption('#noteRuleFilter', 'confirmed');
+    await page.selectOption('#noteRuleFilter', 'pending');
+    assert.equal(await page.inputValue('[aria-label="片段 1 适用范围"]'), 'common');
+    await page.click('#noteRuleSuggestions'); await page.click('#noteRuleSaveNext');
+    await page.waitForFunction(() => document.getElementById('noteRuleStatus').textContent.includes('正在核对下一条'));
+    assert.match(await page.locator('#noteRulesCount').innerText(), /已确认 1\/2/);
+    assert.equal(await page.locator('#noteRuleOriginal').textContent(), '尚未确认的说明。');
+    await page.click('#noteRuleCommon'); await page.click('#noteRuleSaveNext');
+    await page.waitForFunction(() => document.getElementById('noteRuleStatus').textContent.includes('全部确认'));
+    assert.match(await page.locator('#noteRulesCount').innerText(), /已确认 2\/2/);
+    assert.equal(await page.locator('#noteRuleList button').count(), 0);
+    await page.selectOption('#noteRuleFilter', 'confirmed');
+    assert.equal(await page.locator('#noteRuleList button').count(), 2);
+    assert.equal(await fs.readFile(path.join(repo, 'a.dita'), 'utf8'), source);
     await page.click('#noteRulesClose'); await fs.writeFile(rulePath, saved);
   });
 

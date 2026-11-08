@@ -107,7 +107,7 @@
     return { records, warnings };
   }
 
-  function plan(records, compare) {
+  function plan(records, compare, { all = false } = {}) {
     const sections = [];
     let group = [], length = 0;
     for (const { input } of records) {
@@ -141,6 +141,7 @@
       }
       if (new Set(evidence.map(item => item.path)).size > 1) comparisons.push({ phase: 'cross', command, evidence });
     }
+    if (all) return { batches: [...sections, ...comparisons], skipped: 0 };
     return { batches: [...sections.slice(0, limits.sections), ...comparisons.slice(0, limits.comparisons)],
       skipped: Math.max(0, sections.length - limits.sections) + Math.max(0, comparisons.length - limits.comparisons) };
   }
@@ -220,6 +221,6 @@
     return matches;
   }
 
-  const api = { categories, collect, plan, line, validateBatch, validateFindings, rebase };
+  const api = { categories, limits, collect, plan, line, validateBatch, validateFindings, rebase };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaAiScanCore = api;
 })(typeof window === 'undefined' ? globalThis : window);

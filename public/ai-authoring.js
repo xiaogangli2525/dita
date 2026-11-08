@@ -9,6 +9,7 @@
       changed: value => { configuration = value; renderConfiguration(); controls(); }, pending: () => controls() });
     const scanner = root.DitaAiScan.createController(A, {
       path: () => filePath, available: () => configuration?.available && !connection.saving,
+      configuration: () => ({ model: configuration?.model, baseUrl: configuration?.baseUrl, rulesVersion: configuration?.rulesVersion }),
       prepare: prepareScanEdit, activity: controls
     });
     const say = (text, failure = false) => { for (const id of ['aiStatus', 'aiReplyStatus']) { get(id).textContent = text; get(id).classList.toggle('is-error', failure); } };
