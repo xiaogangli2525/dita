@@ -1,19 +1,26 @@
 'use strict';
 (function (root) {
   const markup = typeof module !== 'undefined' ? require('./review-markup') : root.DitaReviewMarkup;
+  const progress = typeof module !== 'undefined' ? require('./review-store') : root.DitaReviewStore;
   function createReviewController({ state, dom, ditaCore, setFileContent, updateVisual, renderTabs, updateHistoryButtons, setStatus }) {
     const { lineDiff, groupDiffRows, applyDiffGroups, inlineDiff } = ditaCore;
     const REVIEW_CONTEXT_SIZE = 3;
     const locations = new Map();
+    let storage;
+    try { storage = root.localStorage; }
+    catch (error) { console.warn('无法读取审阅进度存储', error); }
+    const reviewStore = progress.createReviewStore(storage);
+    let reviewSurface = null, reviewingMap = false;
     const legend = dom.reviewPane?.querySelector('.review-legend');
     const reviewBlocks = 'h1,h2,h3,h4,h5,h6,p,li,pre,td,th,dt,dd,figcaption,img,blockquote,[data-dita-source="fn"],[data-dita-source="note"],[data-dita-source="stentry"]';
     const applyDecisions = (baseline, current, decisions) => applyDiffGroups(baseline, current, decisions, 0, 'accept');
 function resetReviewSnapshot(file) {
+  const saved = file && reviewStore.restore(state, file);
   state.reviewGroups = new Map();
-  state.reviewDecisions = new Map();
+  state.reviewDecisions = saved ? saved.decisions : new Map();
   state.reviewPath = file ? file.path : '';
-  state.reviewBaseline = file ? file.baseline : '';
-  state.reviewCurrent = file ? file.current : '';
+  state.reviewBaseline = saved ? saved.baseline : '';
+  state.reviewCurrent = saved ? saved.current : '';
 }
 
 // A block decision changes file.current while the review still refers to the
@@ -317,7 +324,8 @@ function renderDiff(file, resetSnapshot = false) {
     return;
   }
 
-  if (resetSnapshot || !reviewSnapshotCanReuse(file)) resetReviewSnapshot(file);
+  if (resetSnapshot || reviewSurface !== file || reviewingMap || !reviewSnapshotCanReuse(file)) resetReviewSnapshot(file);
+  reviewSurface = file; reviewingMap = false;
   const fragment = document.createDocumentFragment();
   let changed = 0;
   let oxyCount = 0;
@@ -414,6 +422,8 @@ function renderDiff(file, resetSnapshot = false) {
   const gitSummary = changed ? changed + ' 行变更，' + pending + ' 个待审块' : '';
   const combinedSummary = [oxySummary, gitSummary].filter(Boolean).join('；') || '无变更';
   dom.reviewMeta.textContent = combinedSummary;
+  reviewStore.save(state, file, state.reviewBaseline, state.reviewCurrent, state.reviewDecisions);
+  if (reviewStore.warning) dom.reviewMeta.textContent += ' · ' + reviewStore.warning;
   setStatus(combinedSummary);
 }
 
@@ -426,24 +436,21 @@ function showReviewEmpty(message) {
 
 function renderMapReview(file) {
   clearReviewLocations();
+  const restoreAll = reviewSurface !== file || !reviewingMap;
+  reviewSurface = file; reviewingMap = true;
   state.reviewGroups = new Map();
   const topicFiles = Array.from(state.mapAuthorPaths || [])
     .map(path => state.filesMap.get(path))
     .filter(Boolean);
-  for (const topic of topicFiles) {
-    if (!mapReviewSnapshotCanReuse(topic)) {
-      topic.reviewBaseline = topic.baseline;
-      topic.reviewCurrent = topic.current;
+  for (const topic of [file, ...topicFiles].filter(Boolean)) {
+    if (restoreAll || !mapReviewSnapshotCanReuse(topic)) {
+      const saved = reviewStore.restore(state, topic);
+      topic.reviewBaseline = saved.baseline;
+      topic.reviewCurrent = saved.current;
       for (const key of Array.from(state.reviewDecisions.keys())) {
         if (typeof key === 'string' && key.startsWith(`${topic.path}::`)) state.reviewDecisions.delete(key);
       }
-    }
-  }
-  if (file && !mapReviewSnapshotCanReuse(file)) {
-    file.reviewBaseline = file.baseline;
-    file.reviewCurrent = file.current;
-    for (const key of Array.from(state.reviewDecisions.keys())) {
-      if (typeof key === 'string' && key.startsWith(`${file.path}::`)) state.reviewDecisions.delete(key);
+      for (const [index, decision] of saved.decisions) state.reviewDecisions.set(`${topic.path}::${index}`, decision);
     }
   }
   const changedFiles = topicFiles.filter(topic => topic.reviewCurrent !== topic.reviewBaseline);
@@ -559,6 +566,10 @@ function renderMapReview(file) {
   const gitSummary = changedFiles.length ? changedFiles.length + ' 个 topic 有变更' : '';
   const combinedSummary = [oxySummary, gitSummary].filter(Boolean).join('；') || '无变更';
   dom.reviewMeta.textContent = combinedSummary;
+  for (const topic of [file, ...topicFiles].filter(Boolean)) {
+    reviewStore.save(state, topic, topic.reviewBaseline, topic.reviewCurrent, mapReviewDecisions(topic.path));
+  }
+  if (reviewStore.warning) dom.reviewMeta.textContent += ' · ' + reviewStore.warning;
   setStatus(combinedSummary);
 }
 

@@ -126,7 +126,12 @@
       ...domain, capture, current, contextCurrent, listFilters,
       /** @param {import('./data-contracts').ManualSnapshot} snapshot */
       verifyRules: snapshot => A.noteRuleStore?.verify(snapshot.noteRules),
-      scopePath: () => /\.ditamap$/i.test(A.state.activePath) ? A.state.activePath : A.state.selectedMap || A.state.activePath
+      scopePath() {
+        const { activePath, selectedMap } = A.state;
+        if (!activePath || /\.ditamap$/i.test(activePath)) return activePath || selectedMap;
+        const map = A.state.maps?.find(item => item.path === selectedMap);
+        return map && collectPreviewPaths(map.children || []).some(item => item.path === activePath) ? selectedMap : activePath;
+      }
     });
   }
   const api = { createManualService };

@@ -48,7 +48,7 @@ export interface WorkspaceState {
 export interface CaptureContext { workspace: string; root: string; branch: string; project: ProjectConfig;
   projectContent: string | null | undefined; projectError?: string; buffers: ReadonlyMap<string, DocumentSnapshot> }
 export interface CapturePorts {
-  state: Pick<WorkspaceState, 'root' | 'currentBranch' | 'activePath' | 'selectedMap' | 'filesMap'>;
+  state: Pick<WorkspaceState, 'root' | 'currentBranch' | 'activePath' | 'selectedMap' | 'filesMap'> & { readonly maps?: readonly MapEntry[] };
   api: { readonly token: string; request(url: string, options?: RequestInit): Promise<Response>; error(response: Response): Promise<string> };
   project?: { readonly value: ProjectConfig; readonly error?: string; readonly expectedContent: string | null; ready?(): Promise<void> };
   noteRuleStore?: { current(rules: NoteRulesSnapshot | null): boolean; read(): Promise<NoteRulesSnapshot>; verify(rules: NoteRulesSnapshot | null): Promise<void> };
