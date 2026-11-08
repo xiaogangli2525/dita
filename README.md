@@ -9,6 +9,7 @@ A lightweight local web client for reading, editing, reviewing, and exporting DI
 - [功能走查记录](docs/functional-audit.md)：本轮核对范围、发现与修复、验证证据及待补能力。
 - [AI 辅助写作](docs/ai-editing.md)：模型配置、粘贴问题定位、选区修订、审核与撤销。
 - [AI 文字修订规则](docs/ai-writing-rules.md)：每轮默认发送给模型的执行与保留规则。
+- [真实 HTTP 手册 AI 验收](docs/ai-acceptance.md)：13 项用例预检、已配置模型的实测和报告判读。
 - [随 SDK 交付知识库计划](docs/knowledge-base-plan.md)：已记录的后续方向，暂缓实施。
 
 ## Writing workflow
@@ -45,6 +46,7 @@ Use Node **20.19+ / 22.13+ / 24+** for the pinned ESLint development tools. The 
 npm run lint          # first-party browser, server, scripts and tests; zero warnings
 npm test              # unit and HTTP regression
 npm run test:browser  # Chromium workflow regression
+npm run check:ai      # real HTTP acceptance fixture preflight; no model call
 ```
 
 ESLint checks recommended correctness rules, including undefined/unused variables and preserved error causes. Browser-evaluated test/PDF callbacks have explicit browser globals; vendored code and source manuals are excluded. Intentional control-character rejection has a local, explained rule exception. CI runs lint and `npm run typecheck` on Node 20 and 22 before unit tests. `.editorconfig` sets basic code/text conventions without changing DITA encoding or forcing a repository-wide format rewrite. Pinned TypeScript checks the actual document/proposal/save, manual capture/snapshot and delivery-record implementations through JSDoc and `public/data-contracts.d.ts`; no browser build step is required. UI/rendering modules remain incrementally typed.

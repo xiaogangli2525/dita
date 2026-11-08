@@ -1,0 +1,73 @@
+{
+  "schema": 1,
+  "description": "由真实 HTTP 手册构造的验收用例；并非已收集的测试反馈。自动核对不代替研发审核。",
+  "cases": [
+    {
+      "id": "ssl-note", "title": "SSL 提示改词，保留两条内联 AT 命令", "kind": "edit",
+      "path": "topics/r_https_example.dita", "block": "note", "anchor": "SSL相应参数设置",
+      "turns": [{ "instruction": "仅将“SSL相应参数设置”替换为“SSL相关参数设置”，其他文字、AT 命令和格式全部保留。", "replacements": [["SSL相应参数设置", "SSL相关参数设置"]] }]
+    },
+    {
+      "id": "create-summary", "title": "短描述润色，保留命令与型号注脚", "kind": "edit",
+      "path": "topics/r_at_mhttpcreate.dita", "block": "shortdesc", "anchor": "该命令用于创建HTTP实例",
+      "turns": [{ "instruction": "仅将“创建HTTP实例”替换为“创建 HTTP 实例”，其他内容不变。", "replacements": [["创建HTTP实例", "创建 HTTP 实例"]] }]
+    },
+    {
+      "id": "host-wording", "title": "服务器地址说明改词，保留 URL 和端口", "kind": "edit",
+      "path": "topics/r_at_mhttpcreate.dita", "block": "entry", "anchor": "服务器域名或者IP地址",
+      "turns": [{ "instruction": "仅将“服务器域名或者IP地址”替换为“服务器域名或 IP 地址”，保留参数名、示例 URL 和所有端口数值。", "replacements": [["服务器域名或者IP地址", "服务器域名或 IP 地址"]] }]
+    },
+    {
+      "id": "instance-id", "title": "表格单元格统一 ID 写法，保留不同型号范围", "kind": "edit",
+      "path": "topics/r_at_mhttpterm.dita", "block": "entry", "anchor": "客户端实例id，0~3",
+      "turns": [{ "instruction": "仅将“客户端实例id”替换为“客户端实例 ID”，不要修改主文或注脚中的参数范围及型号列表。", "replacements": [["客户端实例id", "客户端实例 ID"]] }]
+    },
+    {
+      "id": "model-footnote", "title": "只编辑型号注脚，保留共享的四实例说明", "kind": "edit",
+      "path": "topics/r_at_mhttpcreate.dita", "block": "fn", "anchor": "最多可同时创建2个实例",
+      "turns": [{ "instruction": "仅将“同时创建2个实例”替换为“同时创建 2 个实例”，保留注脚全部型号，其他内容不变。", "replacements": [["同时创建2个实例", "同时创建 2 个实例"]] }]
+    },
+    {
+      "id": "read-cache", "title": "缓存说明改词，保留 URC 和型号例外", "kind": "edit",
+      "path": "topics/r_at_mhttpread.dita", "block": "entry", "anchor": "读取后自动清空",
+      "turns": [{ "instruction": "仅将“读取后自动清空”替换为“读取后将自动清空”，保留命令、URC、注脚及其他原文。", "replacements": [["读取后自动清空", "读取后将自动清空"]] }]
+    },
+    {
+      "id": "chapter-context", "title": "整篇章节上下文中只修改指定短描述", "kind": "edit",
+      "path": "topics/r_at_mhttpterm.dita", "block": "document", "anchor": "该命令用于终止当前HTTP传输。",
+      "turns": [{ "instruction": "只修改短描述：将“该命令用于终止当前HTTP传输。”替换为“该命令用于终止当前 HTTP 传输。”。标题、表格、注脚和 ML307B 的说明均保持不变。", "replacements": [["该命令用于终止当前HTTP传输。", "该命令用于终止当前 HTTP 传输。"]] }]
+    },
+    {
+      "id": "continued-note", "title": "连续两轮纠正方案，第二轮保留第一轮要求", "kind": "edit",
+      "path": "topics/r_https_example.dita", "block": "note", "anchor": "SSL相应参数设置",
+      "turns": [
+        { "instruction": "先仅将“SSL相应参数设置”替换为“SSL相关参数设置”，其他原文不变。", "replacements": [["SSL相应参数设置", "SSL相关参数设置"]] },
+        { "instruction": "保留上一轮修改，再仅将“客户使用时”替换为“使用时”。两轮修改应一起保留，其他内容不变。", "replacements": [["SSL相应参数设置", "SSL相关参数设置"], ["客户使用时", "使用时"]] }
+      ]
+    },
+    {
+      "id": "missing-facts", "title": "缺少研发确认值时保留数值并询问", "kind": "clarify",
+      "path": "topics/r_at_mhttpcreate.dita", "block": "entry", "anchor": "最多可同时建立4个实例",
+      "turns": [{ "instruction": "测试人员说最大实例数有误，但没有提供研发确认的正确数值。请先询问需要确认的值，保留主文与各型号注脚的全部原文，不要猜测或改动。", "replacements": [] }]
+    },
+    {
+      "id": "structural-limit", "title": "新增章节请求说明当前结构编辑限制", "kind": "blocked",
+      "path": "topics/r_at_mhttpcreate.dita", "block": "document", "anchor": "创建HTTP实例",
+      "turns": [{ "instruction": "请在手册中新建一个独立的 MQTT 章节，并修改 ditamap 挂载它。当前文字修订接口无法执行时，请说明结构编辑限制，不要改写现有 HTTP 原文或声称已完成。", "replacements": [] }]
+    },
+    {
+      "id": "oxygen-guard", "title": "含未处理 Oxygen 修订的参数段不发送模型", "kind": "guard",
+      "path": "topics/r_at_mhttpcfg.dita", "block": "entry", "anchor": "数据输入超时时间，0~180s",
+      "error": "Oxygen"
+    },
+    {
+      "id": "scan-model-exceptions", "title": "共享四实例和特定型号两实例不误报冲突", "kind": "scan-exceptions",
+      "path": "topics/r_at_mhttpcreate.dita", "anchor": "最多可同时"
+    },
+    {
+      "id": "scan-injected-conflict", "title": "识别内存中人工注入的同条件范围冲突", "kind": "scan-conflict",
+      "path": "topics/r_at_mhttpcreate.dita", "anchor": "客户端实例id，0~3", "command": "AT+MHTTPCREATE",
+      "variant": ["0~3", "0~7"]
+    }
+  ]
+}

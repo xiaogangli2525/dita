@@ -54,6 +54,24 @@ test('scan accepts one complete fenced JSON result with a reasoning prelude and 
   assert.deepEqual(await provider.scan(scanBatch), { findings: [valid], omitted: 1 });
 });
 
+test('writing accepts complete JSON wrappers on a real HTTP note without relaxing source guards', async () => {
+  const fs = require('node:fs'), path = require('node:path');
+  const source = fs.readFileSync(path.join(__dirname, '../examples/http_httpsusermanual/topics/r_https_example.dita'), 'utf8');
+  const block = core.inspect(source).find(item => item.kind === 'note' && source.slice(item.start, item.end).includes('SSL相应参数设置'));
+  const selected = core.target(source, block.start, block.end);
+  const part = selected.parts.find(item => item.text.includes('SSL相应参数设置'));
+  const answer = { summary: '统一表述', questions: [], edits: [{ id: part.id, before: part.text, after: part.text.replace('SSL相应参数设置', 'SSL相关参数设置') }] };
+  for (const content of ['\x60\x60\x60json\n' + JSON.stringify(answer) + '\n\x60\x60\x60', '<think>核对原文</think>\n' + JSON.stringify(answer)]) {
+    const provider = createAiProvider({ env, fetchImpl: async () => scanReply(content) });
+    const actual = await provider.generate({ instruction: '仅把SSL相应参数设置改为SSL相关参数设置', scope: selected });
+    assert.equal(core.applyResult(selected, actual).content, source.replace('SSL相应参数设置', 'SSL相关参数设置'));
+  }
+  for (const content of ['这是修改结果：' + JSON.stringify(answer), JSON.stringify(answer) + '\n' + JSON.stringify(answer), '\x60\x60\x60json\n' + JSON.stringify(answer), JSON.stringify({ ...answer, edits: [{ ...answer.edits[0], before: '过期原文' }] })]) {
+    const provider = createAiProvider({ env, fetchImpl: async () => scanReply(content) });
+    await assert.rejects(provider.generate({ instruction: '润色', scope: selected }));
+  }
+});
+
 test('a truncated scan retries smaller sections and reports only successful evidence coverage', async () => {
   const sent = [];
   const provider = createAiProvider({ env, fetchImpl: async (_url, options) => {
