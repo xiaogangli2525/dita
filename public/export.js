@@ -156,6 +156,7 @@
       configuring = true; configuration = null; compiled = null; view().invalidate();
       get('exportModel').replaceChildren(new Option('正在读取…', ''));
       get('exportModel').disabled = true;
+      get('exportScope').disabled = true;
       get('exportPrefixNotes').disabled=true;get('exportReviewRules').disabled=true;
       get('exportFilter').replaceChildren(new Option('正在读取…', '')); get('exportFilter').disabled = true;
       get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = true; });
@@ -165,6 +166,9 @@
       let selectedModel = '';
       try {
         scope ||= service().scopePath();
+        const paths = [...new Set([scope, A.state.activePath, A.state.selectedMap].filter(Boolean))];
+        get('exportScope').replaceChildren(...paths.map(path => new Option((/\.ditamap$/i.test(path) ? '整本功能手册' : '单篇主题') + ' · ' + path, path)));
+        get('exportScope').value = scope;
         const workspace = A.api.token;
         configuringScope = scope; configuringWorkspace = workspace;
         get('exportPrefixNotes').checked=prefixChoices.get(workspace+'\n'+scope)||false;
@@ -182,7 +186,7 @@
         selectedModel = modelChoices.get(choiceKey()) ?? get('footnoteModel')?.value ?? '';
         useSnapshot(snapshot, source, selectedModel);
       } catch (error) { if (generation === operation) { view().invalidate(); get('modelExportSummary').textContent = ''; get('modelExportError').textContent = error.message; showIssues(issue(error)); } }
-      finally { if (generation === operation) configuring = false; }
+      finally { if (generation === operation) { configuring = false; get('exportScope').disabled = false; } }
       if (recheck && configuration && generation === operation && get('modelExportDialog').open) {
         if (get('exportModel').value !== selectedModel) {
           get('modelExportError').textContent = '原选型号已不在当前交付范围，请重新选择型号后检查。';
@@ -364,6 +368,7 @@
       }
       get('releaseDialog').showModal();
     }
+    get('exportScope')?.addEventListener('change', () => openModelExport({ scope: get('exportScope').value }));
     get('releasesButton')?.addEventListener('click', history); get('releaseClose')?.addEventListener('click', () => get('releaseDialog').close());
     return { openModelExport, releaseExportPreview,
       previewMapHtml: () => legacyExport('html', true), exportMapToHtmlFile: () => legacyExport('html', false),

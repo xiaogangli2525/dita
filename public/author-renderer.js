@@ -12,7 +12,6 @@
   // Keep this identity off attributes so it can never enter serialized DITA.
   function authorText(node, documentRef, ctx, exact = false) {
     const value = exact ? node.data : node.data.replace(/\s+/g, ' ');
-    if (!exact && !value.trim()) return null;
     const text = documentRef.createTextNode(value);
     const siblings = Array.from(node.parentNode?.childNodes || []).filter(child => child.nodeType === 3 || child.nodeType === 4);
     text.ditaSourceTextPath = sourcePath(node.parentNode, ctx) + ':' + siblings.indexOf(node);

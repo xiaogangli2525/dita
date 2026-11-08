@@ -37,6 +37,18 @@ test('manual snapshot shares buffers, dependency save scope and the exact note p
   A.state.filesMap.get('shared.dita').current += ' ';
   assert.equal(service.current(snapshot), false);
 });
+
+test('delivery defaults to the selected manual only for its own topics', () => {
+  const A = app();
+  A.state.maps = [{ path: 'main.ditamap', children: [{ type: 'file', path: 'topic.dita' }] }];
+  A.state.selectedMap = 'main.ditamap';
+  const service = createManualService(A);
+  for (const [active, expected] of [['main.ditamap', 'main.ditamap'], ['topic.dita', 'main.ditamap'],
+    ['independent.dita', 'independent.dita'], ['other.ditamap', 'other.ditamap']]) {
+    A.state.activePath = active;
+    assert.equal(service.scopePath(), expected);
+  }
+});
 test('manual snapshots become stale after save acknowledgements, project updates and workspace switches', async () => {
   for (const change of [A => { A.state.filesMap.get('shared.dita').disk += ' '; }, A => { A.project.expectedContent = 'next'; }, A => { A.api.token = 'next'; }, A => { A.state.filesMap.delete('topic.dita'); }]) {
     const A = app(), service = createManualService(A), snapshot = await service.capture(); change(A); assert.equal(service.current(snapshot), false);

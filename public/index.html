@@ -340,6 +340,7 @@
       </nav>
       <p id="modelExportScope"></p><p id="deliverySource" class="muted"></p>
       <section id="deliveryConfigure" aria-label="配置交付范围">
+      <label>交付范围<select id="exportScope"></select></label>
       <label>适用型号<select id="exportModel"><option value="">全部型号</option></select></label>
       <label class="checkbox-row"><input id="exportPrefixNotes" type="checkbox"/>按“型号：说明”筛选注脚（请预览核对）</label>
       <p class="muted">仅处理明确的型号前缀；共用型号列表在导出副本中只显示当前型号。复杂说明使用独立规则。</p>
@@ -495,6 +496,8 @@
   <script src="/footnotes-core.js"></script>
   <script src="/footnotes.js"></script>
   <script src="/review-markup.js"></script>
+  <script src="/diff-core.js"></script>
+  <script src="/review-store.js"></script>
   <script src="/review.js"></script>
   <script src="/document-store.js"></script>
   <script src="/workspace-session.js"></script>
@@ -511,7 +514,6 @@
   <script src="/markdown-preview.js"></script>
   <script src="/delivery-document.js"></script>
   <script src="/delivery-core.js"></script>
-  <script src="/diff-core.js"></script>
   <script src="/app-core.js"></script>
   <script src="/model-note-text.js"></script>
   <script src="/note-rules-core.js"></script>
