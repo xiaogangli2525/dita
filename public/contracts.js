@@ -93,7 +93,8 @@
  * @property {Function} hideLoading
  *
  * Events: document:changed carries DocumentState; file:opened carries
- * DocumentState; file:closed carries a relative path. workspace:willChange
+ * DocumentState; file:discarded carries DocumentState after a confirmed dirty
+ * close; file:closed carries a relative path. workspace:willChange
  * occurs before token/state replacement; workspace:changed after config load.
  * Snapshot identity must be rechecked after asynchronous work and before apply.
  */

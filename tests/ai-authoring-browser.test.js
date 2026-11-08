@@ -88,6 +88,43 @@ test('AI authoring runs through the local provider, review and shared document h
     await page.locator('#visualEditor p').first().evaluate(node => { const text = node.firstChild, range = document.createRange(); range.setStart(text, 0); range.setEnd(text, 4); node.closest('[contenteditable]').focus(); const selection = window.getSelection(); selection.removeAllRanges(); selection.addRange(range); });
     await page.click('#aiButton'); assert.equal(await page.locator('#aiScope').inputValue(), 'selection'); assert.equal(await page.locator('#aiOriginal').textContent(), '发送请求');
   });
+  for (const mode of ['visual', 'preview', 'review']) await t.test('AI child edits refresh the manual in ' + mode + ' mode', async st => {
+    const page = await fresh(st);
+    await page.evaluate(() => window.DitaApp.openFile('main.ditamap'));
+    const surface = page.locator('.map-topic-surface[data-map-topic-path="a.dita"]');
+    await surface.waitFor();
+    await page.click('#' + (mode === 'visual' ? 'visual' : mode === 'preview' ? 'preview' : 'review') + 'Button');
+    await surface.waitFor();
+    await page.evaluate(() => { window.unchangedTopic = document.querySelector('.map-topic-surface[data-map-topic-path="b.dita"]'); });
+    await page.click('#aiButton'); await page.fill('#aiReply', '将发送请求改为发起请求'); await page.click('#aiSend');
+    const candidate = page.locator('.ai-candidate').filter({ hasText: 'a.dita' });
+    await page.waitForFunction(() => document.querySelector('.ai-candidate,.ai-change'));
+    if (await candidate.count()) await candidate.first().click();
+    await page.waitForSelector('.ai-change', { state: 'attached' });
+    await page.click('#aiApply');
+    await page.waitForFunction(() => window.DitaApp.state.filesMap.get('a.dita').current.includes('发起请求'));
+    await page.click('#aiClose');
+    await page.waitForFunction(() => {
+      const surface = document.querySelector('.map-topic-surface[data-map-topic-path="a.dita"]');
+      return surface?.ditaSourceContent === window.DitaApp.state.filesMap.get('a.dita').current;
+    });
+    assert.equal(await surface.getAttribute('contenteditable'), mode === 'visual' ? 'true' : 'false');
+    assert.equal(await page.evaluate(() => window.unchangedTopic === document.querySelector('.map-topic-surface[data-map-topic-path="b.dita"]')), true);
+    if (mode === 'review') {
+      assert.equal(await surface.locator('[data-review-text="old"]').textContent(), '送');
+      assert.equal(await surface.locator('[data-review-text="new"]').textContent(), '起');
+      assert.match(await page.locator('#reviewMeta').innerText(), /1 个 topic 有变更/);
+    } else assert.match(await surface.innerText(), /发起请求/);
+    await page.locator('#aiButton').focus(); await page.keyboard.press('Control+z');
+    await page.waitForFunction(() => document.querySelector('.map-topic-surface[data-map-topic-path="a.dita"]')?.ditaSourceContent === window.DitaApp.state.filesMap.get('a.dita').current && !window.DitaApp.state.filesMap.get('a.dita').current.includes('发起请求'));
+    assert.match(await surface.innerText(), /发送请求/);
+    if (mode === 'review') assert.equal(await surface.locator('[data-review-text]').count(), 0);
+    await page.keyboard.press('Control+y');
+    await page.waitForFunction(() => document.querySelector('.map-topic-surface[data-map-topic-path="a.dita"]')?.ditaSourceContent === window.DitaApp.state.filesMap.get('a.dita').current && window.DitaApp.state.filesMap.get('a.dita').current.includes('发起请求'));
+    if (mode === 'review') assert.equal(await surface.locator('[data-review-text="new"]').textContent(), '起');
+    else assert.match(await surface.innerText(), /发起请求/);
+    assert.equal(await fs.readFile(path.join(temporary, 'a.dita'), 'utf8'), original);
+  });
   await t.test('manual scan compares commands, validates evidence and hands a chosen passage to review', async st => {
     const page = await fresh(st);
     await page.evaluate(async () => {

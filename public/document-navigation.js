@@ -45,6 +45,7 @@
       const file = state.filesMap.get(path);
       if (file?.dirty && !confirm(`${path} \u5C1A\u672A\u4FDD\u5B58\uFF0C\u786E\u5B9A\u5173\u95ED\uFF1F`)) return;
       const wasActive = state.activePath === path;
+      if (file?.dirty) A.events.emit('file:discarded', file);
       session.closeDocument(path); A.events.emit('file:closed', path);
       if (wasActive) {
         const nextMode = state.activePath ? state.mode : 'visual';

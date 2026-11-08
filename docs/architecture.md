@@ -217,7 +217,8 @@ The note panel lists publishable note definitions/occurrences with the same ance
 | Event | Emitted for | Consumers |
 | --- | --- | --- |
 | `document:changed` | Edit, undo/redo, or save acknowledgement | Draft backup, active content-search refresh and current-Topic writing search |
-| `file:opened` / `file:closed` | Document lifecycle | Recovery availability and explicit closed-file draft disposal |
+| `file:opened` / `file:closed` | Document lifecycle | Recovery availability and pending-write cancellation on close; closing a clean file preserves older recovery drafts |
+| `file:discarded` | Confirmed close of an unsaved document, before removing its buffer | Remove the explicitly discarded document's recovery draft |
 | `workspace:willChange` | Before replacing root/branch state | Flush pending recovery drafts under the old identity |
 | `workspace:changed` | After adopting workspace/config | Recovery list and stale search clearing |
 | `project:changed` | Model config acknowledgement | Refresh note/model information |

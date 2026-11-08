@@ -36,6 +36,20 @@ test('a delayed source jump cannot focus or select a document opened later',asyn
  const pending=controller.navigateToSource('slow.dita');await controller.openFile('fast.dita');release();await assert.rejects(pending,/打开位置已变化/);assert.equal(state.activePath,'fast.dita');assert.equal(focused,0);assert.equal(state.mode,'visual');
 });
 
+test('document close announces discarded content only after a dirty-close confirmation', t => {
+ const {createController}=require('../public/document-navigation'),state={filesMap:new Map(),activePath:'',mode:'visual'},session=createSession(state),events=createEvents();
+ const file={path:'a.dita',current:'<topic/>',dirty:true},discarded=[],closed=[];
+ session.registerDocument(file);session.activateDocument(file.path);
+ events.on('file:discarded',value=>discarded.push(value));events.on('file:closed',value=>closed.push(value));
+ let answer=false;const original=Object.getOwnPropertyDescriptor(globalThis,'confirm');
+ Object.defineProperty(globalThis,'confirm',{configurable:true,value:()=>answer});
+ t.after(()=>{if(original)Object.defineProperty(globalThis,'confirm',original);else delete globalThis.confirm;});
+ const controller=createController({state,session,events,dom:{},ditaCore:{},setMode:mode=>session.setMode(mode)},{renderTabs(){},updateActivePanes(){},updateTree(){}});
+ controller.closeFile(file.path);assert.equal(state.filesMap.get(file.path),file);assert.deepEqual(discarded,[]);assert.deepEqual(closed,[]);
+ answer=true;controller.closeFile(file.path);assert.deepEqual(discarded,[file]);assert.deepEqual(closed,[file.path]);assert.equal(state.filesMap.has(file.path),false);
+ session.registerDocument({...file,dirty:false});controller.closeFile(file.path);assert.equal(discarded.length,1);assert.equal(closed.length,2);
+});
+
 test('invalid adoption leaves the token, buffers and lifecycle subscribers untouched', async()=>{
  const f=fixture();let changing=0;f.A.events.on('workspace:willChange',()=>{changing++;});
  await assert.rejects(f.controller.reloadWorkspace({root:'new',workspaceToken:'new',files:[],maps:[null]}),/响应无效/);

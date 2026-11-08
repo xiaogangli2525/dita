@@ -84,6 +84,12 @@ test('foundation browser workflows', async t => {
   await scenario('refresh recovery is undoable and refuses an externally changed disk base', async () => {
     await page.evaluate(() => window.DitaApp.drafts.flush()); await page.reload(); await ready(); await open('topics/connect.dita');
     assert.doesNotMatch(await current(), /临时搜索词/);
+    const draftKey = await page.evaluate(() => 'dita.draft.v1:' + JSON.stringify([window.DitaApp.state.root, window.DitaApp.state.currentBranch, 'topics/connect.dita']));
+    const backup = await page.evaluate(key => localStorage.getItem(key), draftKey);
+    assert.ok(backup);
+    await open('other.dita'); await page.locator('.tab[data-path="topics/connect.dita"] .close').click();
+    assert.equal(await page.evaluate(key => localStorage.getItem(key), draftKey), backup, 'closing the clean disk version preserves the previous unsaved draft');
+    await open('topics/connect.dita');
     await page.click('#draftsButton'); await page.locator('#draftList article').filter({ hasText: 'topics/connect.dita' }).getByRole('button', { name: '恢复到编辑区' }).click();
     await page.waitForFunction(() => window.DitaApp.state.filesMap.get('topics/connect.dita').current.includes('临时搜索词'));
     assert.equal(await current(), working);
@@ -101,6 +107,20 @@ test('foundation browser workflows', async t => {
     const downloadPromise = page.waitForEvent('download'); await row.getByRole('button', { name: '下载草稿' }).click();
     const download = await downloadPromise; assert.match(await fs.readFile(await download.path(), 'utf8'), /临时搜索词/);
     assert.equal(await fs.readFile(path.join(repo, 'topics/connect.dita'), 'utf8'), external);
+  });
+  await scenario('only a confirmed dirty close discards the current backup, including pending writes', async () => {
+    await open('other.dita'); await source(other.replace('OTHER', 'CLOSE_BACKUP'));
+    await page.waitForFunction(() => {
+      const a = window.DitaApp, key = 'dita.draft.v1:' + JSON.stringify([a.state.root, a.state.currentBranch, 'other.dita']);
+      return localStorage.getItem(key)?.includes('CLOSE_BACKUP');
+    });
+    const key = await page.evaluate(() => 'dita.draft.v1:' + JSON.stringify([window.DitaApp.state.root, window.DitaApp.state.currentBranch, 'other.dita']));
+    await source(other.replace('OTHER', 'CLOSE_PENDING'));
+    // The suite accepts the native unsaved-change confirmation.
+    await page.locator('.tab[data-path="other.dita"] .close').click();
+    await page.evaluate(() => window.DitaApp.drafts.flush());
+    assert.equal(await page.evaluate(key => localStorage.getItem(key), key), null);
+    assert.equal(await fs.readFile(path.join(repo, 'other.dita'), 'utf8'), other);
   });
   async function picker(kind) {
     if (!await page.locator('#insertElementSelect').isVisible()) await page.click('.editing-tools summary'); await page.selectOption('#insertElementSelect', kind === 'image' ? 'image' : 'xref'); await page.click('#insertElementButton');

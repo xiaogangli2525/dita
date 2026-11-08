@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test'), assert = require('node:assert/strict'), path = require('node:path');
 const core = require('../public/ai-scan-core');
-const { createScanStore, mergeResult } = require('../public/ai-scan-store');
+const { createScanStore, mergeResult, findingKey } = require('../public/ai-scan-store');
 const { collectDemoFiles } = require('../scripts/demo-workspace');
 const { decodeXmlBuffer } = require('../lib/document-files');
 const file = (path, current) => ({ path, current });
@@ -64,6 +64,31 @@ test('recovered scan batches retain more than one model response of valid findin
   const result = mergeResult({ phase: 'section', evidence }, { findings: evidence.map(item => ({ category: 'wording', summary: item.text,
     suggestion: 'Review wording', evidence: [{ id: item.id, quote: item.text }] })) });
   assert.equal(result.findings.length, 14);
+});
+
+test('distinct issues on shared evidence survive retries and cached progress', () => {
+  const { storage, run } = progressFixture();
+  const batch = { phase: 'cross', command: 'AT+TEST', evidence: [
+    { id: 'e0', path: 'a.dita', kind: 'p', conditions: [], text: '超时单位为秒，默认值为30。' },
+    { id: 'e1', path: 'b.dita', kind: 'p', conditions: [], text: '超时单位为毫秒，默认值为60。' }
+  ] };
+  const findings = [
+    { category: 'technical', summary: '超时单位冲突', suggestion: '核对单位', evidence: [{ id: 'e0', quote: '超时单位为秒' }, { id: 'e1', quote: '超时单位为毫秒' }] },
+    { category: 'technical', summary: '默认值冲突', suggestion: '核对默认值', evidence: [{ id: 'e0', quote: '默认值为30' }, { id: 'e1', quote: '默认值为60' }] }
+  ];
+  const result = mergeResult(batch, { findings });
+  assert.equal(result.findings.length, 2);
+  const retry = { ...findings[0], suggestion: '请研发核实单位', evidence: [...findings[0].evidence].reverse() };
+  const combined = mergeResult(batch, { findings: [retry] }, result);
+  assert.equal(combined.findings.length, 2, 'reordered evidence and revised advice still identify the same issue');
+  assert.equal(combined.findings[0].suggestion, retry.suggestion);
+  const another = { ...findings[0], summary: '单位适用型号未说明' };
+  assert.notEqual(findingKey(another), findingKey(findings[0]), 'different problems with identical quotes remain independent');
+  assert.notEqual(findingKey({ ...findings[0], evidence: findings[1].evidence }), findingKey(findings[0]), 'different quotes remain independent even with identical summaries');
+  run.batches = [batch]; run.outcomes = new Map([[0, { status: 'done', result: combined, error: '' }]]);
+  createScanStore(storage).save(run);
+  const restored = createScanStore(storage).load(run.snapshot, run.batches, run.profile);
+  assert.deepEqual(restored.outcomes.get(0).result.findings, combined.findings);
 });
 
 test('scan storage failure keeps current-page progress and exposes a warning', t => {
