@@ -18,9 +18,18 @@
       }
       return result.sort((a, b) => b.updatedAt - a.updatedAt);
     }
-    function put(scope, file) {
+    function put(scope, file, previous) {
       if (!scope.root || !file?.path) return;
-      if (!file.dirty) { storage.removeItem(key(scope, file.path)); return; }
+      if (!file.dirty) {
+        const name = key(scope, file.path), raw = storage.getItem(name);
+        if (!raw) return;
+        const draft = JSON.parse(raw);
+        // A clean save/accept may concern the disk version while an older
+        // session still has recoverable changes. Compare before removing it.
+        if (draft?.schema === 1 && typeof draft.base === 'string' && draft.root === scope.root && draft.branch === scope.branch && draft.path === file.path &&
+            (draft.current === file.current || previous?.path === file.path && draft.current === previous.current && draft.base === previous.disk)) storage.removeItem(name);
+        return;
+      }
       storage.setItem(key(scope, file.path), JSON.stringify({ schema: 1, root: scope.root, branch: scope.branch, path: file.path, base: file.disk, current: file.current, updatedAt: Date.now() }));
     }
     return { list, put, get warnings() { return warnings.slice(); }, remove: (scope, path) => storage.removeItem(key(scope, path)) };

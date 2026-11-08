@@ -173,6 +173,52 @@ test('AI authoring runs through the local provider, review and shared document h
     const body = await page.locator('#visualPane').boundingBox(), panel = await page.locator('#inspector').boundingBox();
     assert.ok(body.y + body.height <= panel.y + 1, 'scan results leave the document visible on narrow screens');
   });
+  await t.test('a scan reports concurrent source changes and refreshes the current source on demand', async st => {
+    const page = await fresh(st);
+    let release, entered;
+    const held = new Promise(resolve => { release = resolve; });
+    const started = new Promise(resolve => { entered = resolve; });
+    st.after(() => release());
+    let calls = 0;
+    await page.route('**/api/ai/scan', async route => {
+      if (++calls === 1) { entered(); await held; await route.fulfill({ status: 200, contentType: 'application/json', body: '{"findings":[]}' }); }
+      else await route.continue();
+    });
+    await page.click('#aiButton'); await page.click('#aiScanButton'); await page.selectOption('#aiScanScope', 'topic'); await page.click('#aiScanStart');
+    await started;
+    await page.evaluate(() => { const a = window.DitaApp, file = a.state.filesMap.get('a.dita'); a.setFileContent(file, file.current.replace('发送请求', '发起请求')); });
+    release();
+    await page.waitForFunction(() => document.getElementById('aiScanCancel').hidden);
+    await page.locator('.ai-scan-freshness').waitFor();
+    assert.match(await page.locator('.ai-scan-freshness').innerText(), /原快照/);
+    await page.setViewportSize({ width: 390, height: 844 });
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+    await page.locator('#aiScanUpdate:enabled').click();
+    await page.waitForFunction(() => document.getElementById('aiScanCancel').hidden && !document.getElementById('aiScanStatus').textContent.includes('正在'));
+    assert.equal(await page.locator('.ai-scan-freshness').count(), 0);
+    assert.equal(await page.locator('#aiScanUpdate').isVisible(), false);
+    assert.ok(received.filter(input => input.task === 'scan').at(-1).evidence.some(item => item.text.includes('发起请求')));
+    assert.equal(await fs.readFile(path.join(temporary, 'a.dita'), 'utf8'), original);
+  });
+  await t.test('updating a manual scan reuses batches whose source files are unchanged', async st => {
+    const page = await fresh(st), requests = [];
+    await page.evaluate(async () => {
+      const a = window.DitaApp; await a.openFile('main.ditamap');
+      const file = a.state.filesMap.get('a.dita');
+      a.setFileContent(file, file.current.replace('</body>', Array.from({ length: 60 }, (_, index) => '<p>独立片段 ' + index + '</p>').join('') + '</body>'));
+    });
+    await page.route('**/api/ai/scan', route => { requests.push(route.request().postDataJSON()); return route.fulfill({ status: 200, contentType: 'application/json', body: '{"findings":[]}' }); });
+    await page.click('#aiButton'); await page.click('#aiScanButton'); await page.selectOption('#aiScanScope', 'manual'); await page.click('#aiScanStart');
+    await page.waitForFunction(() => document.getElementById('aiScanCancel').hidden && document.getElementById('aiScanStatus').textContent.includes('已完成 2/2'));
+    assert.equal(requests.length, 2);
+    assert.ok(requests[0].evidence.every(item => item.path === 'a.dita'));
+    await page.evaluate(() => { const a = window.DitaApp, file = a.state.filesMap.get('b.dita'); a.setFileContent(file, file.current.replace('发送', '发起')); });
+    await page.locator('#aiScanUpdate:visible').waitFor(); await page.click('#aiScanUpdate');
+    await page.waitForFunction(() => document.getElementById('aiScanCancel').hidden && document.getElementById('aiScanStatus').textContent.includes('已完成 2/2'));
+    assert.equal(requests.length, 3, 'the already completed a.dita-only batch is not sent again');
+    assert.ok(requests[2].evidence.some(item => item.path === 'b.dita' && item.text.includes('发起')));
+    assert.equal(await page.locator('.ai-scan-freshness').count(), 0);
+  });
   await t.test('partial scan recovery shows covered evidence without marking the whole batch complete', async st => {
     const page = await fresh(st);
     await page.evaluate(() => {
