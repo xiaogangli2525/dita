@@ -8,15 +8,28 @@
   function validateProject(value) {
     if (!value || Array.isArray(value) || typeof value !== 'object' || value.schema !== 1 || !Array.isArray(value.models) || value.models.length > 200) throw new Error('项目配置格式无效');
     const models = value.models.map(model => {
+      // eslint-disable-next-line no-control-regex -- Reject control characters in untrusted input.
       if (typeof model !== 'string' || !model || model.length > 80 || /[\s()<>"'&/\\\x00-\x1f]/.test(model)) throw new Error('型号须为不含空格、括号和路径符号的名称');
       return model;
     });
     if (new Set(models).size !== models.length) throw new Error('型号清单包含重复项');
     return { schema: 1, models };
   }
+  const isModelMarker = value => /^tbd$/i.test(value);
+  // Publication membership belongs to the shared domain, not an HTML renderer.
+  function collectPreviewPaths(nodes, paths = [], seen = new Set()) {
+    for (const node of nodes || []) {
+      if (node.type === 'file' && node.processingRole !== 'resource-only' && /\.(dita|xml)$/i.test(node.path) && !seen.has(node.path)) {
+        seen.add(node.path);
+        paths.push({ path: node.path, title: node.title || node.path });
+      }
+      if (node.children) collectPreviewPaths(node.children, paths, seen);
+    }
+    return paths;
+  }
   function checkModels(values, project) {
     if (!project?.models?.length) return [];
-    return [...new Set(values)].filter(value => !project.models.includes(value));
+    return [...new Set(values)].filter(value => !isModelMarker(value) && !project.models.includes(value));
   }
   function relativeHref(from, target, fragment = '') {
     const base = from.split('/').slice(0, -1), parts = target.split('/');
@@ -28,6 +41,6 @@
     return { on(name, callback) { if (!listeners.has(name)) listeners.set(name, new Set()); listeners.get(name).add(callback); return () => listeners.get(name)?.delete(callback); },
       emit(name, value) { for (const callback of listeners.get(name) || []) { try { callback(value); } catch (error) { onError(error); } } } };
   }
-  const api = { decode, conditions, matches, common, validateProject, checkModels, relativeHref, createEvents };
+  const api = { decode, conditions, matches, common, validateProject, checkModels, isModelMarker, collectPreviewPaths, relativeHref, createEvents };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaManualCore = api;
 })(typeof window === 'undefined' ? globalThis : window);

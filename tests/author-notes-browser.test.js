@@ -43,10 +43,10 @@ test('Author footnotes and writing UI', async t => {
     await page.fill('#newFootnoteContent', text); if (model) await page.locator('#newFootnoteModels input').filter({ visible: true }).evaluateAll((inputs, model) => { const input = inputs.find(input => input.value === model); if (!input) throw new Error('Model not found'); input.click(); }, model);
     await page.click('#newFootnoteForm button[type=submit]'); await page.waitForFunction(() => !document.getElementById('newFootnoteDialog').open);
   };
-  const source = async () => { await page.click('#sourceButton'); };
   await open('a.dita');
 
   await t.test('opening and cancelling insertion preserves XML, DOM and the saved caret', async () => {
+    await page.locator('#visualEditor [data-fn-text="EXISTING"][data-fn-number="1"]').waitFor();
     await caret('#bold', '加粗 & 中文', 2);
     const before = await content(), dom = await page.locator('#visualEditor').innerHTML();
     await page.click('#newFootnoteButton'); await page.locator('#newFootnoteDialog[open]').waitFor(); await page.fill('#newFootnoteContent', 'CANCELLED'); await page.click('#newFootnoteCancel');
@@ -151,7 +151,7 @@ test('Author footnotes and writing UI', async t => {
     const saved = await content(); await page.click('#saveButton'); await page.waitForFunction(() => !window.DitaApp.state.filesMap.get('a.dita').dirty);
     assert.equal(iconv.decode(await fs.readFile(path.join(repo, 'a.dita')), 'gbk'), saved);
     assert.ok(saved.startsWith('<?xml version="1.0" encoding="GBK"?>\r\n<!--keep-->'));
-    assert.match(saved, /<codeblock>AT\+OPEN\r\n  OK<\/codeblock>/);
+    assert.match(saved, /<codeblock>AT\+OPEN\r\n {2}OK<\/codeblock>/);
     assert.equal(await page.evaluate(() => { const e = document.getElementById('footnoteList'); return e.clientHeight > 100 && getComputedStyle(e).overflowY === 'auto'; }), true);
   });
   await t.test('paragraph splitting keeps XML identifiers unique and remains undoable', async () => {

@@ -68,7 +68,7 @@ test('PDF and editable Word delivery', async t => {
     assert.equal(await page.locator('#htmlPreviewFrame').getAttribute('sandbox'), 'allow-same-origin'); await page.click('#closeHtmlPreviewButton');
   });
   await t.test('online PDF printing is labelled and never fabricates a download record', async () => {
-    const before = await page.evaluate(() => { window.DitaApp.state.capabilities.pdf = false; return window.DitaApp.lastDeliveryRecord.filename; });
+    const before = await page.evaluate(async () => { const a = window.DitaApp, workspace = await (await a.api.request('/api/workspace')).json(); a.session.refreshDirectory({ ...workspace, capabilities: { ...workspace.capabilities, pdf: false } }); return a.lastDeliveryRecord.filename; });
     await delivery('pdf'); assert.match(await page.locator('#exportFormatHint').innerText(), /打印不写入交付记录/);
     await page.click('#modelExportForm [value=download]'); await page.waitForFunction(() => !document.getElementById('printDeliveryButton').disabled);
     assert.match(await page.frameLocator('#htmlPreviewFrame').locator('body').innerText(), /UNSAVED_BINARY/);

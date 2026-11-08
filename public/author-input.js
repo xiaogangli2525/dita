@@ -122,12 +122,20 @@
       if (next) { commit(ctx, next); return; }
       if (out) throw new Error('已经是第一个单元格，可按 Esc 后用 Tab 离开编辑区');
       const row = document.createElement('tr'); row.dataset.ditaSection = 'tbody'; row.dataset.ditaRowAttrs = '{}';
-      for (const old of cell.parentElement.children) { const entry = fresh('entry', 'td'); entry.dataset.ditaEntryAttrs = '{}'; row.append(entry); }
+      for (let column = 0; column < cell.parentElement.children.length; column++) { const entry = fresh('entry', 'td'); entry.dataset.ditaEntryAttrs = '{}'; row.append(entry); }
       table.querySelector('tbody').append(row); commit(ctx, row.firstElementChild);
     }
     host.addEventListener('beforeinput', event => {
       if (event.defaultPrevented || A.state.mode !== 'visual' || event.isComposing || composing) return;
       const type = event.inputType, selected = root.getSelection(); if (!selected?.rangeCount || !host.contains(selected.anchorNode)) return;
+      const title = element(selected.getRangeAt(0).startContainer).closest('[data-map-title]');
+      if (title) {
+        // Map titles use their own source-preserving input/history path.
+        if (!title.contains(selected.getRangeAt(0).endContainer) || ['insertParagraph', 'insertLineBreak'].includes(type)) {
+          event.preventDefault(); fail(new Error('手册标题仅支持单行文字，请在标题内编辑'));
+        }
+        return;
+      }
       if (['insertParagraph', 'insertLineBreak'].includes(type)) { event.preventDefault(); run(() => enter(context())); return; }
       if (!['insertText', 'insertReplacementText', 'deleteContentBackward', 'deleteContentForward', 'deleteByCut'].includes(type)) return;
       const live = selected.getRangeAt(0), first = selection.blockOf(live.startContainer), last = selection.blockOf(live.endContainer);

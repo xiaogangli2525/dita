@@ -12,7 +12,7 @@
       // The source's own product condition is replaced; ancestor restrictions stay.
       if (original?.products?.length) conditions.pop();
       if (scope === 'models' && selected.length) conditions.push([...new Set(selected)].join(' '));
-      const models = A.project.value.models;
+      const models = A.project.value.models.filter(root.DitaModelDiscovery.isModel);
       const effective = models.filter(model => conditions.every(condition => condition.split(/\s+/).includes(model)));
       const summary = get('ScopeSummary');
       summary.dataset.state = scope === 'models' && !selected.length || models.length && conditions.length && !effective.length ? 'warning' : 'normal';
@@ -22,16 +22,16 @@
     }
     function draw(note, defaultScope) {
       original = note;
-      const selected = new Set(note.products || []), registered = A.project.value.models;
+      const selected = new Set(note.products || []), registered = A.project.value.models.filter(root.DitaModelDiscovery.isModel);
       const known = new Set(registered.length ? registered : Array.from(A.state.filesMap.values()).flatMap(file => {
-        try { return root.DitaFootnotesCore.listFootnotes(file.current).flatMap(note => note.products); } catch { return []; }
+        try { return root.DitaFootnotesCore.listFootnotes(file.current).flatMap(note => note.products).filter(root.DitaModelDiscovery.isModel); } catch { return []; }
       }));
       for (const model of selected) known.add(model);
       get('Models').replaceChildren();
       for (const model of [...known].sort()) {
         const label = document.createElement('label'), check = document.createElement('input'); check.type = 'checkbox'; check.value = model; check.checked = selected.has(model);
         const unknown = registered.length && !registered.includes(model); if (unknown) label.className = 'unknown-model';
-        label.append(check, document.createTextNode(model + (unknown ? '（未登记）' : ''))); get('Models').append(label);
+        label.append(check, document.createTextNode(model + (root.DitaModelDiscovery.isPlaceholder(model) ? '（发布条件，非型号）' : unknown ? '（未登记）' : ''))); get('Models').append(label);
       }
       form.elements.scope.value = defaultScope || (note.common ? 'common' : selected.size ? 'models' : 'unresolved');
       get('Common').disabled = Boolean(note.inherited); productsInput.value = ''; get('CustomModels').hidden = registered.length > 0;

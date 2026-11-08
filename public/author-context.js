@@ -3,7 +3,7 @@
   function createController(A) {
     const toolbar = document.getElementById('authorQuickTools'), selection = A.authorSelection;
     let target = null, composing = false;
-    const shortcut = event => event.altKey && event.code === 'Slash' && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.isComposing && event.keyCode !== 229;
+    const shortcut = event => event.altKey && event.code === 'KeyZ' && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.isComposing && event.keyCode !== 229;
     const more = document.getElementById('quickMoreActions'), moreButton = toolbar.querySelector('[data-quick-more]');
     const elementOf = node => node.nodeType === 1 ? node : node.parentElement;
     function hide() { toolbar.hidden = true; target = null; more.hidden = true; moreButton.setAttribute('aria-expanded', 'false'); }
@@ -78,7 +78,7 @@
       } catch (error) { hide(); A.setStatus(error.message, true); }
     });
     toolbar.addEventListener('keydown', event => {
-      if (event.key === 'Escape' || shortcut(event)) { event.preventDefault(); if (event.repeat) return; const saved = target; hide(); try { if (saved) selection.restoreTarget(saved); } catch { /* stale selection */ } }
+      if (event.key === 'Escape' || shortcut(event)) { event.preventDefault(); event.stopPropagation(); if (event.repeat) return; const saved = target; hide(); try { if (saved) selection.restoreTarget(saved); } catch { /* stale selection */ } }
       if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) {
         event.preventDefault(); const buttons = [...toolbar.querySelectorAll('button')].filter(button => !button.disabled && button.getClientRects().length), index = buttons.indexOf(document.activeElement);
         buttons[event.key === 'Home' ? 0 : event.key === 'End' ? buttons.length - 1 : (index + (event.key === 'ArrowRight' ? 1 : -1) + buttons.length) % buttons.length]?.focus();

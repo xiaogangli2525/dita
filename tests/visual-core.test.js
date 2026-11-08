@@ -5,6 +5,18 @@ const { renderDitaNode, lineDiff } = require('../public/app-core');
 const test = require('node:test');
 const { createTestApp, buildMockDom } = require('./visual-harness');
 
+test('Author preserves spaces between inline elements, including after adjacent edits', () => {
+  const source = '<topic id="t"><title>T</title><body><p><b>AT+CMD</b> <codeph>VALUE</codeph></p><p>Next</p></body></topic>';
+  const app = createTestApp(source);
+  app.updateVisualFromXml(source);
+  assert.equal(app.dom.visualEditor.querySelector('p').textContent, 'AT+CMD VALUE');
+  app.visualToXml();
+  assert.equal(app.state.filesMap.get('topic.dita').current, source);
+  app.dom.visualEditor.querySelector('p').childNodes[0].textContent = 'AT+CMD2';
+  app.visualToXml();
+  assert.equal(app.state.filesMap.get('topic.dita').current, source.replace('AT+CMD', 'AT+CMD2'));
+});
+
 test('bodyless topics retain exact source until a body is written and summaries stay editable outside the body', () => {
   for (const [tag, body] of Object.entries({topic:'body',concept:'conbody',reference:'refbody',task:'taskbody'})) {
     const source = `<?xml version='1.0' encoding='UTF-8'?>\r\n<${tag} id='t'><title>Title</title><shortdesc>Editable summary</shortdesc><prolog><author>A</author></prolog><related-links/></${tag}>`;

@@ -1,5 +1,62 @@
 # Workspace architecture
 
+## Workspace entry-point decomposition
+
+`app.js` now creates shared state and assembles explicit ports for the editor, workspace services and feature composition. It contains no DOM event installation or workspace HTTP implementation. The existing `DitaApp` facade and proposal/save/editor interfaces remain available. Bootstrap view callbacks resolve services after construction, while factories keep their own per-instance state.
+
+| Module | Responsibility |
+| --- | --- |
+| `app-dom.js` | DOM handles only; no listeners, network or application state |
+| `workspace-controller.js` | Initialization, repository/branch switching, token adoption and safe directory refresh |
+| `document-navigation.js` | Last-request-wins document opens, close behavior and guarded source jumps |
+| `workspace-view.js` | Header/save status, tabs, outline, filename search and switching feedback |
+| `app-actions.js` | Delegate toolbar and global keyboard commands to existing feature/editor controllers |
+| `menu-controller.js` | Menu availability, keyboard navigation, focus restoration, bounds and async-action errors |
+
+Workspace switching prevents overlapping requests, rejects switching during an active save, and makes the header/layout inert while a confirmed switch is pending. Failed switches retain current buffers and restore interaction. Directory refresh rejects a different workspace identity before mutating state. Navigation refuses a delayed source jump after a newer document wins. No HTTP/domain work is moved into the view.
+
+UI follow-up includes source-identity outline targets (metadata titles cannot shift headings), keyboard document/navigation tabs, panel-safe menu Escape, outside-click capture, no-file action availability and handled failed opens. Rule review retains partial choices per source during the open session, confirms discarding them on close, freezes editing/selection during writes and allows cancelling slow reads. Delivery content scrolls independently from always-reachable actions; step changes reset content scroll.
+
+
+## Shared-state mutation ownership
+
+`workspace-session.createSession(state)` installs getter-only views for workspace identity, directory/Map metadata, opened-document membership, active document, editor mode, undo target and Map Author membership. Arrays and nested descriptors are copied/frozen. Live Map/Set views support reads/iteration but expose no mutators or private collections through `forEach`.
+
+Workspace, navigation, loader, Map, editor and creation/Save As controllers receive the session capability explicitly. They call `replaceWorkspace`, `refreshDirectory`, `registerDocument`, `closeDocument`, `activateDocument`, `upsertMap`, selection/mode/history operations instead of writing those state fields. Existing-buffer registration never replaces document identity or undo history. Closing an undo target falls back to the active document. Directory refresh preserves dirty Maps' last valid projections until their guarded source resolver publishes another projection. Invalid workspace payloads are rejected before lifecycle notification and token adoption.
+
+Document content, disk acknowledgement and dirty/Git status mutations belong to `document-store`; `acknowledgeSave` is shared by ordinary saving and Save As. Save requests are copied/frozen before asynchronous sending, and mismatched path/content acknowledgements fail before advancing disk. Newer working edits and the Git comparison base remain independent.
+
+ESLint rejects direct controller assignments to protected state and document fields, and direct mutation of the opened-document collection. The editor still owns transient review decisions, visual-input suppression and selected DOM elements; these UI-only fields are not promoted into the workspace session. Live document handles remain compatible with history operations; their content writes are constrained by the store interface and lint rather than new Proxy objects.
+
+## Explicit prose-model export policy
+
+`model-note-text.js` is an opt-in, source-format projection for footnote text. It recognizes complete model-label lists and limited explicit only/unsupported clauses, carries textual scope through continuation sentences and nested containers, and compacts retained labels through XML text spans. Balanced Oxygen insertion spans remain paired; deletion revisions and ambiguous known-model comparisons require review. It does not change the stored fragment-rule schema or source buffers.
+
+`note-rules-core.project` applies reviewed sidecar rules first, then optionally projects unruled notes. It keeps fn shells for the publication pass, passes confirmed/excluded origins through conref resolution and reports policy counts. Profiling is applied to label fragments before interpretation, with its removed-element count retained. `manual-service` and all output formats consume that one projection. All-model publication bypasses prose projection.
+
+The delivery checkbox is explicitly selected per manual/session. Its value participates in compiled-output caching and delivery records. A specific-model export with unresolved textual scope cannot silently return unchanged mixed-model notes. Model choices are disabled while a new condition snapshot loads, preventing a late capture from replacing a newer visible model selection. Rule-review actions retain the current manual scope.
+
+Condition-file listings add bounded Chinese summaries from the actual validated rules; option values remain source paths. HTML note frames are produced once by the XML renderer, with no regex rewrite of nested `note-body` markup. Endnotes retain semantic ordered lists and anchors with dedicated content/return-link styles.
+
+
+## Imported-content and local HTTP boundaries
+
+Author attribute copying uses `setAuthorAttribute` before attaching source attributes to HTML. Event handlers, CSS, source resource overrides and editor-reserved attributes stay in inert JSON metadata; conversion restores them only to XML. This preserves original bytes and adjacent text edits without activating source handlers or permitting a source `data-dita-source` to replace editor identity. Generated image dimensions and application markers remain controlled by the renderer. CALS row/cell attributes continue to use their existing inert metadata.
+
+`asset-core.safeLinkHref` rejects executable URL schemes after removing ASCII control/space obfuscation. Author uses it when copying href; the small Markdown HTML renderer tokenizes source once, escapes text and attribute delimiters, and never runs formatting over generated HTML. DITA publication links retain their stricter local-anchor/external-protocol validation.
+
+The API validates Host before workspace bootstrap and asset reads, including same-origin GET requests with no Origin. Trusted hosts come from loopback addresses, an explicit bind address and `PUBLIC_ORIGIN`; wildcard binding alone does not trust arbitrary hosts. Existing Origin, workspace-token, optimistic-write and real-path checks still apply. Disposable demo mode supports the preview proxy; this does not add shared-server user authentication.
+
+## Independent footnote delivery rules
+
+`note-rules-core.js` is a pure shared module: it validates the versioned sidecar, partitions balanced XML fragments, proposes exact known-model mentions and projects confirmed rules into a new source Map. Source buffers are never edited. Rules bind to source path/XML position plus the original note, surrounding text and inherited product conditions. Changes invalidate the binding rather than triggering a fuzzy match. Inline markup stays atomic; block containers are reconstructed only when retained children remain. Revision PI boundaries stay together.
+
+`note-rule-store.js` owns workspace-aware reads, optimistic saves and export-time revalidation of `.dita-note-rules.json`. `/api/note-rules` uses existing workspace/origin/real-path guards and atomic writes; same-path writes are serialized so overlapping saves cannot both accept the same base. Malformed sidecars return an explicit error and retain their bytes. The store refuses responses from replaced workspaces and prevents older reads from replacing newer save state.
+
+`note-rules.js` owns only the review dialog. It obtains unmodified source notes through `manual-service`, deduplicates public origins, requires an explicit decision for every fragment and saves the independent config. Pending suggestions are never export rules. The original authoring/panel view bypasses projection. `manual-service` captures config in the delivery snapshot, applies rules before conref expansion and passes confirmed/excluded origins to `publication-core`; existing product/DITAVAL constraints still apply. Empty definitions remain through resolution so the publication pass can remove their calls and renumber all remaining notes correctly. Every output format consumes that same publication data.
+
+Export re-reads rules before and after conversion, including cached checked output. Delivery records contain both normalized rule-config SHA-256 and the exact sidecar input hash. Rules for other source paths do not affect a captured manual. The implementation performs explicit fragment filtering, not natural-language rewriting; shared labels and inseparable inline/revision fragments are preserved for human review.
+
 ## DITAVAL and real-library compatibility
 
 `profiling-core.js` is a pure, shared conditional-processing module. `manual-service` reads an explicitly selected workspace DITAVAL into its own snapshot field, filters Map references before resolution and skips excluded dependency branches. `publication-core` applies the same profile to expanded Topics, preserves original note origins and merges overlapping removal ranges. Whole excluded Topics are omitted from delivery entries; their source buffers remain intact. No DITAVAL is inferred from filenames or imported from an Oxygen project. Branch `ditavalref`, custom profiling specializations and flagging are explicit unsupported boundaries.
@@ -36,19 +93,63 @@ The application remains a local Node server and buildless browser client. This c
 
 | Layer | Modules | Responsibility |
 | --- | --- | --- |
-| Composition and contracts | `application.js`, `contracts.js` | Validate factory/dependency declarations, provide narrow feature contexts, expose compatibility APIs, document shared data contracts |
-| XML and document state | `xml-source.js`, `document-store.js`, `lib/document-files.js` | Source ranges/validation, undo and acknowledgements, encoding, real-path containment and atomic writes |
-| Shared domain | `manual-core.js`, `footnotes-core.js`, `publication-core.js`, `publication-resolver.js` | Versioned model configuration, applicability, source edits, reuse resolution and publication preparation |
-| Manual service | `manual-service.js` | Freeze buffers, resolve a Map or Topic and its direct local dependencies, check snapshot identity and provide save/note/publication views of that same scope |
-| Editor/rendering | `app-core.js`, `delivery-core.js`, `diff-core.js` | Author/source conversion, stateless HTML/Markdown rendering, and pure diff algorithms respectively |
-| Editor coordination | `editor-controller.js` | One document history across Source, Topic/Map Author and review; surface/mode updates and pending Map-render lifecycle |
-| Workspace presentation | `workspace-shell.js`, `document-label.js`, `delivery-view.js` | Panel visibility, resizing, focus and document labels; presentation of delivery configuration, preflight and export readiness |
+| Composition and contracts | `app.js`, `application.js`, `contracts.js`, `data-contracts.d.ts` | Validate factory/dependency declarations, provide narrow feature contexts, expose compatibility APIs, document shared data contracts |
+| XML and document state | `xml-source.js`, `document-store.js`, `workspace-session.js`, `snapshot-data.js`, `lib/document-files.js` | Source ranges/validation, undo and acknowledgements, encoding, real-path containment and atomic writes |
+| Shared domain | `manual-core.js`, `manual-domain.js`, `footnotes-core.js`, `publication-core.js`, `publication-resolver.js` | Versioned model configuration, applicability, publication membership, source edits, reuse resolution, publication preparation and note/model/save-selection projections |
+| Manual service | `manual-service.js` | Capture workspace/model identities before IO, read a Map or Topic and its dependencies, verify freshness and expose domain operations through the existing service contract |
+| Rendering compatibility | `app-core.js` | Explicit compatibility exports and state/DOM binding; assembles Author, source, Oxygen, diff and delivery modules |
+| XML/Author adapters | `xml-dom.js`, `author-renderer.js`, `author-source.js`, `oxygen-core.js` | XML validation/DOM/ranges, explicit-document projection, source writes and document-local Oxygen processing |
+| Delivery rendering | `delivery-core.js`, `delivery-document.js`, `markdown-preview.js`, `delivery-data.js` | DITA-to-output conversion, data-only HTML layout and standalone Markdown preview/highlighting |
+| Diff algorithms | `diff-core.js` | Pure comparison/grouping and review application algorithms |
+| Editor coordination | `editor-controller.js` | One document history across Source, Topic/Map Author and review; explicit service ports and surface/mode updates |
+| Map authoring | `map-author-controller.js`, `map-source.js` | Instance-local asynchronous Map rendering/refresh jobs; source-range edits for Map/Bookmap titles |
+| Workspace presentation | `workspace-view.js`, `workspace-shell.js`, `menu-controller.js`, `app-dom.js`, `document-label.js`, `delivery-view.js` | Panel visibility, resizing, focus and document labels; presentation of delivery configuration, preflight and export readiness |
 | Feature controllers | `save.js`, `drafts.js`, `project.js`, `search.js`, `resources.js`, `export.js`, `map-controller.js`, `documents.js`, `author-notes.js`, `editor-tools.js` | Bind DOM to domain/services; do not implement independent applicability or dependency rules |
 | Persistence adapters | `workspace-client.js`, `draft-store.js`, `release-store.js`, `browser-files.js` | Workspace identity on requests, browser-local recovery/history, download and hashing |
 | Server tools | `lib/workspace-tools.js` | Model config, bounded plaintext search, source provenance and image IO; receives the current root and existing IO/response helpers from the authenticated router |
 | HTTP and Git boundaries | `lib/api-router.js`, `lib/http-utils.js`, `lib/git-service.js` | Shared request guard and API dispatch, bounded JSON/response helpers, and repository/branch/Git baseline operations |
 
-`app.js` creates the compatibility `DitaApp` facade, delegates feature assembly to `application.js` and owns remaining navigation and DOM bindings. `workspace-shell.js` owns panel visibility and resizing; `inspector.js` owns element properties and table controls. `editor-controller.js` owns document history, modes, Topic/Map synchronization and review coordination. `editor-tools.js` owns Author selection formatting, body find/replace, structural insertion and explicit Source find/insertion; `author-selection.js` owns guarded ranges and detached-clone commits. Feature controllers receive declared capability subsets, while integration/browser callers retain the compatibility facade.
+`app.js` creates the compatibility `DitaApp` facade and delegates feature assembly to `application.js`. Workspace IO, navigation, presentation and event installation live in the controllers listed above. `workspace-shell.js` owns panel visibility and resizing; `inspector.js` owns element properties and table controls. `editor-controller.js` owns document history, modes, Topic synchronization and review coordination; it receives a frozen set of explicit ports, with a lazy selection service for initialization order. Its Map controller receives named IO/view/history callbacks, and input history receives only state/DOM/events. `editor-tools.js` owns Author selection formatting, body find/replace, structural insertion and explicit Source find/insertion; `author-selection.js` owns guarded ranges and detached-clone commits. Feature controllers receive declared capability subsets, while integration/browser callers retain the compatibility facade.
+
+## Author and output rendering boundaries
+
+`app-core.js` is a compatibility facade with explicit exports; existing `DitaVisualCore`/CommonJS callers retain their public API. It binds editor state/DOM only in compatibility methods, and assembles delivery using explicit parser, Oxygen and asset-path functions. New lower-level code imports its actual owner instead of depending on the facade.
+
+| Module | Input / responsibility | Allowed lower dependencies |
+| --- | --- | --- |
+| `xml-dom` | Validated XML to DOM plus canonical source tree; serialization and element identity | `xml-source` |
+| `oxygen-core` | A provided document or source string; local revision indices and tracked-change offsets | None |
+| `author-renderer` | Source, explicit owner document and per-call context to an Author surface | XML DOM, Oxygen, asset and presentation helpers |
+| `author-source` | Source string and detached/live surface to candidate XML; no history/save | XML DOM, Author projection, presentation and shared entity decoding |
+| `markdown-preview` | Markdown string to preview/highlight HTML; no DITA parser or delivery factory | Asset URL policy |
+| `delivery-document` | Already-rendered sections/notes plus escaped metadata to full HTML | None |
+| `delivery-core` | Publication data and injected adapters to HTML/Markdown; per-export images/anchors/notes | Shared domain, output layout/preview and asset/presentation helpers |
+
+The graph is acyclic: source conversion can project a baseline through the renderer, while the renderer never imports the writer. XML DOM and Oxygen modules never import Author or the facade. ESLint enforces the declared import lists, prevents application/IO access and disallows ambient `document` in these adapters. Only the XML DOM adapter chooses the platform DOM parser; the Author renderer requires an owner document. The facade retains browser-document defaults for compatibility. Script order in `index.html` follows the same dependency order as CommonJS.
+
+`xml-dom.parseSource` returns `{ document, tree }` from the existing canonical validator. Source writes adapt its UTF-16 element/text ranges; the old separate XML lexer is removed. Unchanged ranges retain their original declaration, DOCTYPE, quote style, CRLF, CDATA, comments and processing instructions. For annotated text, small text edits preserve annotation/entity positions; edits crossing markers or ambiguous whitespace/CDATA-plus-annotation mappings stop with a Source-editing message. Ordinary CDATA nodes render as inert text in Author and HTML/Markdown, including outside preformatted blocks.
+
+Rendering/source modules do not apply edits, own a workspace or record history. Controllers still check the selected file/surface freshness, call the existing document store and restore the surface on rejected conversion. HTML layout accepts trusted, already-rendered section/note bodies and escapes titles/model/version metadata; it does not replace the publication/URL policy. Per-call Author/export context isolation remains unchanged.
+
+## Manual domain and workspace boundary
+
+`manual-domain.js` accepts a captured snapshot and derives publication data, source-linked notes, model discovery and save candidates. Its named helpers separate project checks, rule projection, source indexing and usage mapping. It does not receive application state, DOM handles, network functions or the editor core. A Node batch/AI adapter can reuse these operations with explicit input data; it must still acquire an authorized scope and apply edits through the proposal/history boundary.
+
+`manual-service.js` owns workspace reads, Map resolution, dependency capture, filter listing and freshness checks. The existing service methods delegate to the domain functions, so save, note, search and delivery controllers retain their interfaces. The composition manifest no longer grants the service `ditaCore`. Model config is copied and frozen after project readiness but before document IO; workspace, repository, branch, model-config content/error and actual model values must still match during capture and before use. Edits or configuration replacement during IO stop capture instead of mixing generations.
+
+Captured source records, model settings, Map metadata and external rule metadata are detached/frozen by `snapshot-data.createSnapshot`. Captured Maps expose read-only iterable views over private collections; `Object.freeze(new Map())` is not used as an immutability guarantee. Consumers create derived copies. Rule review replaces its local snapshot through `createSnapshot` after an acknowledged rule save, preserving the original capture.
+
+`manual-core.collectPreviewPaths` is the single shared membership traversal. `publication-core.preparePublication` uses it by default; delivery retains a compatibility alias. Headless callers no longer need to construct an Author/delivery renderer just to enumerate chapters. Existing first-use order, duplicate suppression and resource-only handling are preserved.
+
+ESLint restricts the declared document-rule modules to known shared dependencies and vendored SAX, rejecting application/rendering/IO imports and common ambient DOM/network/storage access. The clean-process regression executes model filtering and note indexing without loading the editor or workspace services; the real HTTP regression prepares three models from data-only snapshots and verifies unchanged sources. These checks protect the boundary without adding a framework or a build step.
+
+## Map title and asynchronous surface ownership
+
+`map-author-controller.js` owns render generations and debounced directory jobs inside each instance. Completions check the workspace, active document identity, source and mode before changing the surface. Workspace changes cancel timers and invalidate pending successes and failures. Current directory failures report an error while retaining buffers; incomplete XML during typing keeps the last valid directory.
+
+`map-source.js` patches only the existing title value, preserving declarations, encoding metadata, comments, processing instructions and unrelated source ranges. It handles Map `title`, Bookmap `booktitle/mainbooktitle`, the Bookmap alternative `title`, legacy title attributes, missing/self-closing titles and plain CDATA. Bookmap insertion keeps `booklibrary` before `mainbooktitle`. Titles containing inline markup, revision annotations or content references are displayed read-only with a Source-editing explanation, rather than flattened by a plain text edit. This is source-safe editing, not full DITA schema validation.
+
+The Map title is a separate plaintext editing host. Native input/paste use the shared beforeinput/history pipeline; title-only undo/redo restores the title and caret without remounting chapters. The real HTTP/HTTPS acceptance library exercises continuous title input, grouped undo, save/reopen and unchanged dependency bytes. A separate GBK Bookmap covers CRLF, library/subtitle and trailing processing instructions. Late load/refresh and controller-isolation regressions live in `tests/map-author-controller.test.js`.
 
 ## Workspace presentation contract
 
@@ -74,7 +175,7 @@ Immediate dependencies must be ready before construction. Some relationships are
 
 `export.js` now registers `createExportController` and performs no DOM/event/application access at script load. Explicit construction owns its preview URL, configuration, cancellation, last delivery record and check result. The manual service and image-loading adapter are injected; export cannot silently construct another manual service. Compatibility methods and result getters are forwarded by the composition root. The unused parallel Topic loader/cache and obsolete dropdown-menu state have been removed: all publication reads use the shared manual snapshot service.
 
-`contracts.js` describes document values, workspace IO, manual snapshots and important save/export/manual ports using JSDoc. It is not loaded in the browser and introduces no runtime store. These definitions help editor navigation and review; this project does not yet perform whole-project static type checking. Runtime factory checks and regression tests enforce the current boundaries.
+`data-contracts.d.ts` is the checked source for document snapshots/history, pending/applied proposals, save request/acknowledgement/results, manual captures and delivery request/compiled-output/record data. `contracts.js` aliases these types and documents remaining UI ports. `npm run typecheck` uses pinned TypeScript with strict checks and no emit; `@ts-check` covers the actual `document-store`, `save`, `snapshot-data`, `manual-service` and `delivery-data` implementations. Compile-time negative fixtures verify rejected fields, mutable snapshots and unsupported output formats. CI runs this check on Node 20 and 22. This is incremental boundary checking, not a claim that the entire JavaScript project is statically checked.
 
 `document-store.createDocument()` is the single production constructor for opened Topics, Map children, new documents and Save As results. It establishes separate current/disk/Git-baseline values. `snapshotDocument()` returns a frozen, history-free value copy and derives dirty state from current versus disk. Manual capture and scoped saves consume these copies; snapshots cannot retain live undo arrays or change when later input/undo occurs.
 
@@ -133,13 +234,13 @@ The HTTP server still performs workspace-token/origin checks before tool routes,
 
 ## Extension guidance
 
-Add shared rules to a domain module with a versioned contract; do not reproduce them in a controller. Add a UI feature as a controller created at the composition root and consume the manual/document APIs. New delivery formats should consume `prepare()` output and keep IO injected. A future AI adapter can consume a captured manual scope and produce an edit proposal for the existing review/undo boundary; it must not bypass snapshot checks or perform automatic filesystem/Git writes.
+Add shared rules to a domain module with a versioned contract; do not reproduce them in a controller. Add a UI feature as a controller created at the composition root and consume the manual/document APIs. New delivery formats should consume `prepare()` output and keep IO injected. The AI authoring adapter consumes an explicitly selected range from a captured source and produces an edit proposal for the shared history boundary; it never bypasses snapshot checks or automatically writes files/Git.
 
 The static hosted demonstration is a separate persistence adapter. It reuses the same frontend/domain code and supplies browser-local mock workspace routes. Its capability metadata declares browser persistence and no real Git provenance. It is not a deployed multi-user filesystem/Git server.
 
 ## Verified and bounded scope
 
-Unit/HTTP and Chromium checks cover editor/review/export behavior and the model, draft, search, upload, save-scope and delivery workflows. Boundary checks cover independent Git service instances, live repository roots, real repository switches with stale-tab rejection, Map child undo/review identity and disposal of pending Map refreshes. `shell-browser.test.js` additionally verifies panel state, keyboard resizing, document save scope, delivery-check invalidation, modal Escape and narrow-screen navigation. Real company documentation was not accessible; integration uses the fictional MQTT fixture. Existing supported/unsupported DITA boundaries remain documented in `publication-compatibility.md`.
+Unit/HTTP and Chromium checks cover editor/review/export behavior and the model, draft, search, upload, save-scope and delivery workflows. Boundary checks cover independent Git service instances, live repository roots, real repository switches with stale-tab rejection, Map child undo/review identity and disposal of pending Map refreshes. `shell-browser.test.js` additionally verifies panel state, keyboard resizing, document save scope, delivery-check invalidation, modal Escape and narrow-screen navigation. Integration now includes the supplied Chinese HTTP/HTTPS manual and its reachable shared content, images and DITAVAL, plus synthetic fixtures for race, conflict and unsupported-input cases. Historical MQTT fixtures remain test-only. This verifies software behavior, not the technical truth of product specifications. Existing supported/unsupported DITA boundaries remain documented in `publication-compatibility.md`.
 
 Repository search scans at most 2,000 documents / 10 MiB per request, skips files above 1 MiB and returns at most 100 hits (30 per file), with truncation/warning indicators. It decodes actual XML text and entities, maps hits back to source ranges and overlays unsaved buffers in the client. This is bounded on-demand search, not a persistent large-corpus index. Draft and release storage is limited to the current browser and is not a backup service or server-side release archive.
 
@@ -180,7 +281,7 @@ Resources and notes now use the same guarded selection adapter as formatting and
 
 `body-navigation.js` shares rendered source paths between search and footnotes. It reuses a mounted Map child, checks the expected source, highlights the target and retains one preceding writing bookmark. Content not rendered in Author can be located through the explicit Source action in search. This navigation is independent of file persistence.
 
-The current performance check uses a synthetic 400-paragraph Topic and twelve sequential source-preserving edits. Conversion still processes a complete Topic; one redundant XML parse is now removed by passing the existing parsed source into the projection renderer. Large-corpus indexing, Map virtualization and a general incremental document model remain future work to be guided by real company manuals.
+The current performance check uses a synthetic 400-paragraph Topic and twelve sequential source-preserving edits. Conversion still processes a complete Topic; one redundant XML parse is now removed by passing the existing parsed source into the projection renderer. The supplied HTTP manual is covered by delivery acceptance; this synthetic timing check does not benchmark its full library. Large-corpus indexing, Map virtualization and a general incremental document model remain future work guided by measured bottlenecks.
 
 ## Remote library boundary
 
@@ -195,7 +296,7 @@ Clone runs in a hidden sibling staging directory and cleans failures before publ
 
 ## Contextual writing and note applicability
 
-`author-context.js` owns a small selection/caret toolbar outside the editable DOM. It opens only through Alt+/, never from pointer or selection movement. It delegates commands to `editor-tools`, which already owns validation, detached projections, history and resource dialogs. It checks source/workspace/selection freshness before restoring a selection and executing; input, IME, scrolling, mode changes and document events dismiss the UI. No second editor or command implementation is introduced.
+`author-context.js` owns a small selection/caret toolbar outside the editable DOM. It opens only through Alt+Z, never from pointer or selection movement. It delegates commands to `editor-tools`, which already owns validation, detached projections, history and resource dialogs. It checks source/workspace/selection freshness before restoring a selection and executing; input, IME, scrolling, mode changes and document events dismiss the UI. No second editor or command implementation is introduced.
 
 `manual-service.listNotes` attaches deduplicated visible usages grouped by source identity in one pass, retaining inherited conditions per occurrence. Synthetic origin entries and named definitions do not count as uses; block conrefs count even without separately editable fn markers. The source-preserving publication graph remains authoritative. Counts are explicitly scoped to the current manual.
 
@@ -220,3 +321,63 @@ Automatic note presentation captures run only when Author contains note markers;
 `document-presentation.js` owns the standard note labels/tones and preformatted block vocabulary shared by Author, inspector, conversions and delivery. `document.css` owns the document typography separately from shell/panel layout. Generated Author labels use projection metadata and CSS, never editable text nodes.
 
 Author renders codeblock, msgblock, screen, pre and lines as preformatted surfaces while retaining inline XML nodes, exact whitespace and source mappings. Delivery preserves response blocks in HTML/Markdown and emits CALS colgroups for proportional column widths. Note types and custom othertype labels flow through the existing source-preserving attribute command and undo history.
+
+
+## Model discovery and release markers
+
+`model-discovery.js` shares candidate discovery between project setup, footnote filters and delivery. It reads product tokens and explicit CALS applicability tables headed 模组系列 / 模组子型号. Table discovery uses the first column as the series name; it does not split or infer submodels or parse natural-language footnotes. Evidence records retain the source path and declaration kind.
+
+`tbd` is a release marker, omitted from model candidates and registry validation. Rows restricted entirely to that marker remain pending rather than imported as supported models. DITAVAL and source publication behavior are unchanged. Existing registry values are projected without the marker; the stored file stays untouched until explicit Save. Discovery only fills the editable registry form, and unassigned footnotes continue to be retained with an explicit delivery warning.
+
+
+## Export and recovery failures
+
+Author projections own an explicit context per render, passed through headings, inline nodes, images and footnote markers. Delivery owns a context per export; the public standalone Markdown conversion creates a fresh one. Neither module retains a fallback context across operations. Reentrant Author projections and overlapping exports are regression-tested.
+
+HTML and Markdown share image preparation. When an embedding loader is provided, failed, empty or invalid results stop the export with image-path issues. Calls without a loader retain the existing reference-based API behavior. The controller adds cancellation and UI state; it no longer duplicates image-failure policy. Git provenance failures remain warnings bound to the captured delivery record.
+
+Release history read/format errors propagate so the UI can distinguish unavailable history from an empty list; appending never overwrites corrupted history. Draft listing returns recoverable entries plus warnings, preserves damaged entries, and propagates storage-access failures. Messages and diagnostics do not include document content.
+
+
+## Maintenance checks and model-settings lifecycle
+
+`npm run lint` checks first-party JavaScript in the browser, backend, scripts and tests. The pinned ESLint configuration separates Node code from browser/evaluated-browser contexts, excludes vendored source and manual inputs, and requires zero warnings. Intentional control-character filters carry local explanatory exceptions. `.editorconfig` applies text conventions to code/configuration/documentation, leaving DITA encoding untouched. These checks complement runtime contracts and regression tests; they do not add a build step or whole-project type checking.
+
+The project-model controller clears configuration and comparison bases on `workspace:willChange`. Settings open immediately in a loading state so reads can be cancelled; request/view generations prevent late responses from reopening or repopulating a closed dialog. A failed read disables mutation until reopening succeeds. While a save is pending, inputs/discovery/close are locked and repeated submits are ignored; failed writes retain the form. Export continues to use captured configuration and existing stale/conflict checks.
+
+
+## Appearance preferences
+
+`theme-preference.js` owns validated browser-local preference values and the live system-color-scheme subscription. `theme-init.js` applies the resolved root attribute synchronously in the head, before styles/first paint, preventing a saved dark choice from starting with the light palette. Storage denial falls back to a usable in-memory preference; no workspace identity, document or delivery settings enter this service.
+
+`appearance-controller.js` receives only the theme service and the existing Author selection service. It builds native radio-card choices, exposes a dialog to the rail/View menu, and restores a still-current Author caret on close through the existing guarded selection boundary. It never edits buffers or remounts Author surfaces. The system choice is a full-width automatic-mode row below the four visual presets; its value remains distinct from the resolved root theme.
+
+`tokens.css` holds semantic shell, document, selection and status colors and preset overrides. Existing shell/panel/document styles consume these tokens; rich source semantics and warning/success distinctions remain explicit. Preset miniatures in `appearance.css` use private fixed swatch variables so choices remain recognizable inside any active theme. Export rendering owns its separate CSS and does not receive the appearance preference. Browser regression compares complete HTML bytes across light/dark, preserves unsaved XML/history/selection, checks representative text-color contrast, and covers persistence, live OS changes, unavailable storage and narrow keyboard/scroll operation.
+
+
+Appearance detail checks resolve the real inherited/translucent background of representative controls, chapter labels, summaries and placeholder text. Muted colors are selected against tinted surfaces as well as paper. Shared hover-border and scrollbar-thumb tokens keep controls and long writing/panel regions coherent across presets; component focus rules use the semantic focus ring instead of low-contrast divider colors. Disabled primary actions retain their non-hover palette. The appearance dialog's current-style badge derives the resolved style from the existing preference service, including live system changes; no additional preference state is introduced.
+
+
+## AI authoring adapter
+
+`ai-context` locates local candidates or maps a unique Author selection to source. `ai-edit-core` owns bounded source text fragments and validates exact original text, fragment IDs, duplicate edits, pending questions and XML validity. It preserves all markup and bytes outside edited text ranges. `ai-authoring` owns its dialog, async lifecycle and review state, using declared composition ports and the existing document proposal/history commands. `app.js` only passes the new capability to the menu.
+
+`ai-provider` implements compatible Chat Completions using the local service connection configuration and the versioned `ai-writing-rules` document on every request. It has no workspace IO and exposes only nonsecret configuration. `ai-routes` sits behind the usual Host/Origin/token guard; it does not hold the workspace lock over upstream latency and verifies the token after completion. Both browser and server validate model results. Provider implementation and boundary fixtures participate in strict type checks.
+
+The feature is opt-in through a separate settings dialog or startup environment defaults; demo mode cannot use inherited model keys. Generation uses only selected text/conditions and the user instruction/model field. Search is local and bounded; a manual snapshot can contain dependency definitions, whose shared impact still needs human review. This is a text revision workflow, not an autonomous repository agent or a technical-fact/DITA-schema validator. See [setup and limits](ai-editing.md). The separate [SDK knowledge-base plan](knowledge-base-plan.md) remains deferred.
+
+
+### Conversational revision and persistent connection
+
+`ai-conversation` owns immutable user requirements and the latest cumulative proposal against one captured source. The checked boundary bounds rounds/input and validates earlier patches before they can enter model context. After applying, the controller rebases to the resulting source and clears applied patch operations while retaining user requirements and pending questions. Failures/cancellation leave the previous valid proposal available; a file/workspace/base change invalidates it. Context is local to this dialog session, never global across workspaces or stored as a provider-side chat.
+
+The UI separates a conversation composer, cumulative review and a single explicit apply action. Clearly supported edits can accompany pending questions. Unsupported structural operations have a direct limitation field instead of an endless clarification loop. `ai-writing-policy` reads the repository-owned rules at service startup, independent of the JSON protocol and the workspace operation playbook.
+
+`ai-config-store` persists only the connection fields in the OS user's configuration directory, using a same-directory temporary file, sync and rename with restricted POSIX permissions. Saved settings override environment defaults; demo mode does not read credentials. Configuration responses omit secrets. A failed save retains the previous runtime connection. The configuration adapter is separate from document/workspace IO and can be injected in tests.
+
+
+### Chat-first document context
+
+Opening the assistant exposes one composer and the current context. A selected range is reused; otherwise `documentTarget` gathers bounded editable text from the current Topic with per-fragment inherited conditions. Large Topics rank relevant blocks and explicitly mark partial context. Ambiguous Map matches require one inline chapter choice, rather than an upfront scope form. The server rebuilds the same scope, so fragment IDs and source guards remain deterministic across turns.
+
+Plans and cumulative edits share the conversation. Explicit execution of a plan can generate/apply guarded text edits; newly generated technical-value/command/model/unit/constraint changes instead show concrete differences for review. Technical change flags and exact source lines aid review; they are not domain-fact or full cross-reference consistency validation.

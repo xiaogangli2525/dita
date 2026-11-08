@@ -1,5 +1,5 @@
 'use strict';
-// Isolated sample workspace for trying the UI. Production documents are opened
+// Isolated HTTP workspace for trying the UI. Production documents are opened
 // with npm start and DOCS_ROOT. No user repository is modified by this demo.
 const fs = require('node:fs');
 const os = require('node:os');
@@ -9,7 +9,12 @@ const args = process.argv.slice(2);
 const value = flag => { const index = args.indexOf(flag); return index < 0 ? undefined : args[index + 1]; };
 const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'dita-demo-'));
 const root = path.join(temporary, 'sample-docs');
-fs.cpSync(path.join(__dirname, '../examples/docs'), root, { recursive: true });
+const source = value('--docs') ? path.resolve(value('--docs')) : path.join(__dirname, '../examples/http_httpsusermanual');
+const manual = value('--manual') || (value('--docs') ? 'main.ditamap' : 'http_httpsusermanual.ditamap');
+const { collectDemoFiles } = require('./demo-workspace');
+for (const [relative, bytes] of collectDemoFiles(source, manual)) {
+  const target = path.join(root, relative); fs.mkdirSync(path.dirname(target), { recursive: true }); fs.writeFileSync(target, bytes);
+}
 const git = (...args) => execFileSync('git', args, { cwd: root, stdio: 'ignore' });
 git('init', '-b', 'main'); git('add', '.');
 git('-c', 'user.name=DITA Demo', '-c', 'user.email=demo@example.invalid', 'commit', '-m', 'Sample documents');

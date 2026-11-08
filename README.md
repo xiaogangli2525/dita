@@ -2,6 +2,15 @@
 
 A lightweight local web client for reading, editing, reviewing, and exporting DITA documents.
 
+## 中文操作入口
+
+- [功能与操作说明](docs/authoring-guide.md)：从加载文档库、编写和注脚到保存、审阅、按型号交付；包含快捷键、失败处理和当前限制。
+- [AI / 自动化操作约定](docs/assistant-playbook.md)：skill 风格的任务范围、操作选择、修改提案与复核约定，供后续 AI 接入复用。
+- [功能走查记录](docs/functional-audit.md)：本轮核对范围、发现与修复、验证证据及待补能力。
+- [AI 辅助写作](docs/ai-editing.md)：模型配置、粘贴问题定位、选区修订、审核与撤销。
+- [AI 文字修订规则](docs/ai-writing-rules.md)：每轮默认发送给模型的执行与保留规则。
+- [随 SDK 交付知识库计划](docs/knowledge-base-plan.md)：已记录的后续方向，暂缓实施。
+
 ## Writing workflow
 
 - The compact top bar provides **编写 / 阅读 / 源码** modes and delivery. Repository/branch switches, model settings, drafts and delivery history live in the left navigation. XML-only tools remain beside the document's Save button.
@@ -23,6 +32,22 @@ npm run dev        # disposable sample workspace for trying the UI
 ```
 
 Requires **Node.js 20+** and **Git**. `npm start` edits the repository configured by `DOCS_ROOT`; `npm run dev` uses temporary sample documents and deletes them when the demo stops.
+
+## 界面外观
+
+右侧工具栏 **外观**，或 **查看 → 界面外观**，可即时切换青绿、经典蓝、暖纸、深色，并支持跟随系统。偏好由当前浏览器保存；切换保持编写位置、未保存内容与撤销历史。HTML/PDF/Word 等客户文件保留固定交付版式，不随工作台皮肤变化。
+
+## Development checks
+
+Use Node **20.19+ / 22.13+ / 24+** for the pinned ESLint development tools. The application runtime remains Node 20+. Install the locked dependencies with `npm ci --ignore-scripts`, then run:
+
+```bash
+npm run lint          # first-party browser, server, scripts and tests; zero warnings
+npm test              # unit and HTTP regression
+npm run test:browser  # Chromium workflow regression
+```
+
+ESLint checks recommended correctness rules, including undefined/unused variables and preserved error causes. Browser-evaluated test/PDF callbacks have explicit browser globals; vendored code and source manuals are excluded. Intentional control-character rejection has a local, explained rule exception. CI runs lint and `npm run typecheck` on Node 20 and 22 before unit tests. `.editorconfig` sets basic code/text conventions without changing DITA encoding or forcing a repository-wide format rewrite. Pinned TypeScript checks the actual document/proposal/save, manual capture/snapshot and delivery-record implementations through JSDoc and `public/data-contracts.d.ts`; no browser build step is required. UI/rendering modules remain incrementally typed.
 
 ## Remote document libraries
 
@@ -49,7 +74,7 @@ The browser and server share a vendored copy of **sax 1.6.1** for XML validation
 
 - Author mode: visual editing with Oxygen tracked-change support, caret-based footnote creation and in-place note editing
 - Reading mode: read-only Topic and Map surfaces sharing the Author renderer
-- Review mode: side-by-side diff with accept/reject per change block
+- Review mode: Author content with a right-hand change dock and accept/reject per change block
 - Map view: edit entire ditamap with all referenced topics
 - HTML export: single-file HTML with embedded images, TOC, notes
 - Markdown export: DITA to Markdown with syntax-highlighted preview
@@ -81,6 +106,7 @@ The static online demonstration has no PDF rendering server. Its **PDF（打印�
 |---------|---------|-------------|
 | PORT | 5050 | Server port |
 | HOST | 127.0.0.1 | Bind address |
+| PUBLIC_ORIGIN | unset | Trusted reverse-proxy origin, including its scheme and any non-default port |
 | DOCS_ROOT | ../repo_ml353a | Default DITA repository root |
 | REPOSITORIES_ROOT | parent of DOCS_ROOT | Allowed repo switching scope |
 
@@ -99,13 +125,24 @@ The light workspace separates document navigation, editing and the attribute/rev
 - `public/export.js`: export snapshots, resource loading and preview/download orchestration.
 - `public/publication-core.js`: shared source-preserving model-footnote filtering and reference validation for both publication formats.
 - `public/publication-resolver.js`: bounded local dependency loading, common conref expansion and unsupported-feature checks.
-- `public/app-core.js`: source-preserving Author rendering/conversion.
-- `public/editor-controller.js`: Source/Topic/Map synchronization, document history, mode changes and review coordination, with injected view callbacks.
+- `public/app-core.js`: compatibility facade assembling Author, source, review and delivery APIs.
+- `public/xml-dom.js` / `public/author-renderer.js` / `public/author-source.js`: validated XML/DOM adaptation, explicit-document Author projection and source-preserving writes from a detached surface.
+- `public/oxygen-core.js`: document-local Oxygen presentation and source change enumeration.
+- `public/app.js`: initial state and service assembly; the compatibility facade delegates to controllers.
+- `public/app-dom.js`: DOM handle lookup, without behavior or IO.
+- `public/workspace-controller.js`: workspace initialization, repository/branch changes and guarded directory refresh.
+- `public/document-navigation.js`: document open/close and guarded source-position navigation.
+- `public/workspace-view.js`: document header/status, tabs, outline, filename search and switch feedback.
+- `public/app-actions.js` / `public/menu-controller.js`: toolbar/global commands and accessible menu interaction.
+- `public/editor-controller.js`: shared document history, Source/Topic synchronization, mode changes and review coordination, with explicit service ports and view callbacks.
+- `public/map-author-controller.js` / `public/map-source.js`: isolated Map loading/refresh lifecycle and source-preserving Map/Bookmap title edits; typing and title undo keep chapter surfaces mounted.
 - `public/author-notes.js`: cancellable note insertion and direct marker editing, using the same source and history rules.
 - `public/author-selection.js` / `public/editor-tools.js`: source-aware selections, bookmarks and detached edits; Author formatting, current-Topic plaintext search/replace, block/resource insertion and explicit Source tools.
 - `public/input-history.js` / `public/note-scope.js`: input grouping/IME lifecycle and the shared model picker for new/existing notes.
-- `public/delivery-core.js` / `public/diff-core.js`: publication rendering and pure diff algorithms.
-- `public/manual-core.js` / `public/manual-service.js`: shared applicability/configuration and immutable manual dependency snapshots.
+- `public/delivery-core.js` / `public/delivery-document.js` / `public/markdown-preview.js`: DITA publication conversion, data-only HTML document layout and standalone Markdown preview/highlighting.
+- `public/diff-core.js`: pure diff algorithms.
+- `public/manual-core.js` / `public/manual-domain.js`: shared applicability/configuration, publication membership and pure snapshot-to-publication/note/model operations.
+- `public/manual-service.js`: workspace reads, dependency capture and freshness checks; captures model settings before IO and exposes the same domain operations through the existing service interface.
 - `public/save.js`, `drafts.js`, `project.js`, `search.js`, `resources.js`: independent feature controllers.
 - `public/map-controller.js` / `public/documents.js`: directory and document lifecycle UI.
 - `lib/workspace-tools.js`: authenticated project config, search, provenance and image routes.
@@ -116,9 +153,11 @@ The light workspace separates document navigation, editing and the attribute/rev
 
 Branch switching refuses a dirty Git worktree, including changes already saved by the editor. Commit or stash those changes with Git first. A failed save never intentionally replaces newer working text; download your working copy before reopening a file with a disk conflict.
 
-The HTTP API requires the `workspaceToken` returned by `/api/workspace` in the `x-workspace-token` header for document operations. Updates also require `expectedContent`, the last-read disk content. This is a local single-workspace application, not a shared multi-user server. `PUBLIC_ORIGIN` can explicitly allow a trusted reverse-proxy origin; default access remains localhost.
+The HTTP API validates Host before returning a workspace token, including GET requests that omit Origin, and requires the `workspaceToken` from `/api/workspace` in the `x-workspace-token` header for document operations. Updates also require `expectedContent`, the last-read disk content. This is a local single-workspace application, not a shared multi-user server. `PUBLIC_ORIGIN` explicitly allows a trusted reverse-proxy host and origin; binding `HOST=0.0.0.0` alone does not allow arbitrary hostnames. The disposable demonstration mode supports its preview proxy; default access remains localhost.
 
-See [architecture and extension boundaries](docs/architecture.md), [verification](docs/verification.md) and the [AI authoring integration plan](docs/ai-editing.md). AI proposal primitives are implemented; no AI provider or generation UI is connected yet.
+Author rendering keeps source event handlers, CSS and editor-reserved attributes as inert metadata; they are preserved in XML without becoming active HTML. Executable link schemes are disabled in Author and Markdown HTML rendering. Markdown URLs and code language names use attribute escaping, and generated HTML is not parsed again as Markdown.
+
+See [architecture and extension boundaries](docs/architecture.md), [verification](docs/verification.md) and [AI authoring setup](docs/ai-editing.md). AI writing supports scoped text proposals through a server-configured compatible model endpoint, explicit review and shared undo. No provider/model is chosen by default; demo mode never connects to a model.
 
 ## Writing in Author mode
 
@@ -156,11 +195,31 @@ In **编写** mode, place the caret in a paragraph, list or table, then choose *
 
 Click **型号注脚** while a Topic or function Map is open. The panel indexes actual `fn` elements, shows their surrounding command/context and supports model/keyword filtering, source navigation and editing. A Map scope stays selected while navigating to its individual Topics.
 
-Explicit model associations are stored in each footnote's standard `product` attribute (space-separated model names). Existing prose is never used to infer support. Unlabelled footnotes remain visible under every panel filter. Publication also evaluates product conditions on Topic ancestors. The panel and delivery use the same applicability and dependency rules. Use **交付…** to select the publication model and format.
+The ordinary footnote editor stores explicit model associations in each footnote's standard `product` attribute (space-separated model names). Existing prose is never used to infer support. Unlabelled footnotes remain visible under every panel filter. Publication also evaluates product conditions on Topic ancestors. Use **交付…** to select the publication model and format. To filter existing prose without editing DITA, use the independent rules below.
+
+### 现有注脚只有型号文字时
+
+对于 `ML307G/ML307N：说明` 这类原文格式，在交付设置选择型号后，显式勾选 **按“型号：说明”筛选注脚（请预览核对）**。程序按完整型号匹配，保留共用说明和当前型号对应片段，并将保留片段的共用型号标签缩成当前型号。支持分段、列表、嵌套块、行内加粗/参数标记，以及明确的“目前仅某型号支持”“某型号不支持”格式；型号前缀下的后续句子沿用该范围。不会把 BX-7 当作 BX-70 或 BX-7-MU。
+
+这是一项需主动开启并预览核对的原文格式约定，不会批量确认或写入独立规则。已确认的独立规则优先。存在明确型号文字但未启用处理时，指定型号的检查/导出会要求先处理；含其他型号的复杂比较或不能确定范围的句子会转到 **核对注脚型号规则**，不会静默删除。全部型号交付保持原始内容，所有模式均不写回 DITA。
+
+**正文条件过滤** 的 DITAVAL 是条件配置文件；例如 `exclude product=tbd` 表示排除产品标记为“待定（tbd）”的内容。列表显示文件中实际规则的中文摘要与原文件路径。它仅控制已有标记的正文、图片和注脚，不会从型号文字推断范围。型号文字筛选和所选条件文件共同生效，排除条件不能被前缀恢复。
+
+### 不修改原始 DITA 的注脚交付规则
+
+打开功能 Map，在 **注脚 → 导出型号规则（不改原文）** 中核对当前手册的来源注脚。也可以从单条注脚的 **导出型号规则** 按钮进入。系统按句子和完整 XML 结构展示片段；为每段选择 **所有型号通用** 或 **指定适用型号**，再预览目标型号并点击 **确认并保存规则**。型号可手动输入，多个型号用空格分隔。“填入型号建议”只识别已知型号的明确提及，仍需人工核对支持、不支持等语义；没有型号提及的片段不会自动确认为通用。
+
+规则单独保存在文档库根目录的 `.dita-note-rules.json`，可以与文档一起通过 Git 管理。保存规则立即写入该配置，不修改 `.dita`、不改变当前编写内容，也不加入正文撤销历史。每个功能手册仍独立导出。规则按来源路径、节点位置、原注脚、周围正文及原有型号条件绑定；公共 `conref` 内容和重复注脚引用使用同一来源规则。换到其他来源的手册需要重新核对，其型号名称不受 HTTP 示例限制。
+
+指定型号交付时，共用片段与该型号片段进入导出副本；整条注脚没有保留内容时，调用标记一并移除并连续重排编号。HTML、Markdown、PDF 和 Word 共用这一准备过程。**全部型号** 保留原始注脚；未配置规则的注脚沿用已有适用条件，未标注内容保留并提示待确认。规则只进一步筛选，不能覆盖 DITA 原有 `product` 或所选 DITAVAL 的排除条件。
+
+原注脚、位置、周围正文或型号条件变化后，旧规则会标为过期，指定型号交付会要求重新核对。规则文件被外部修改时，保存会拒绝覆盖；已检查的导出也会要求重新打开交付设置。无效配置保留原文件并显示错误。可用 **移除这条规则** 恢复该注脚的原有交付行为。
+
+独立规则保留加粗、斜体、链接、列表等原始 XML，默认不改写句子或共享型号标签；主动开启明确型号前缀处理时，可在导出副本中压缩匹配的标签。混在同一不可拆分行内元素或修订标记中的差异需要整段核对；保留片段中的其他型号名称不会自动删除。现有手册不会被批量自动确认。
 
 Plain notes use a text editor with safe XML escaping; notes with inline markup use an XML-preserving editor. Updates retain identifiers, links, encoding declarations and surrounding source, use the shared undo history and require explicit Save. Outdated edits are refused. Reused footnotes offer **编辑引用源** and keep their including conditions visible. HTML exports include a linked footnote list with return links; Markdown includes complete numbered footnote definitions.
 
-`npm run dev` opens an isolated MQTT demonstration with fictional M100/M200/M300 models. Open `main.ditamap`, click **型号注脚**, choose M100 and try editing or locating a note. All product limits/commands in this demo are illustrative.
+`npm run dev` opens an isolated copy of the Chinese HTTP/HTTPS manual in `examples/http_httpsusermanual`. Select `http_httpsusermanual.ditamap` to review the real command tables, responses and notes. Referenced shared topics, images and DITAVAL filters are included; editing the demo does not change the source manual. Use `npm run dev -- --docs /path/to/library --manual your-manual.ditamap` for another manual. Fictional MQTT content is retained only under `tests/fixtures/writing-demo` for regression tests.
 
 ### Publish a function manual for a model
 
@@ -177,7 +236,7 @@ In **交付功能手册 → 正文条件过滤**, select a workspace `.ditaval` 
 
 Supported rules are `prop action="include|exclude|passthrough"` for `audience`, `platform`, `product`, `props`, `otherprops` and `deliveryTarget`, with attribute/global defaults and groups. Multiple values in one group use OR; groups and attributes use AND. Excluded ancestors exclude their contents. Flagging, revision flags, custom profiling specializations and branch `ditavalref` are not implemented and fail explicitly. The same captured profile applies to check, preview and all export formats; changing an opened profile buffer invalidates the delivery. Delivery records include its path and SHA-256, alongside the source document hashes. Filtering never writes back to the source library.
 
-An `fn` with an `id` is a reusable definition. Reference it with `xref type="fn"`; unreferenced definitions are omitted, repeated references share one number, and HTML callouts link to one footnote entry and back. The MQTT publishing sample demonstrates repeated references:
+An `fn` with an `id` is a reusable definition. Reference it with `xref type="fn"`; unreferenced definitions are omitted, repeated references share one number, and HTML callouts link to one footnote entry and back. The following example demonstrates repeated references:
 
 ```xml
 <p>First mention<xref href="#topic-id/note-id" type="fn"/>.</p>
@@ -203,7 +262,7 @@ The sidebar offers repository/manual plaintext search with exact source navigati
 
 ## Architecture maintenance
 
-Feature startup is declared in `public/application.js`, including factories, dependency ports, initialization requirements and compatibility APIs. Delivery is an explicitly constructed controller; it no longer initializes through script-load side effects. New document state and save/manual snapshots use the shared `document-store` constructors. Shared JSDoc interfaces are in `public/contracts.js`; current runtime checks and dependency constraints are described in [architecture](docs/architecture.md).
+Feature startup is declared in `public/application.js`, including factories, dependency ports, initialization requirements and compatibility APIs. Delivery is an explicitly constructed controller; it no longer initializes through script-load side effects. New document state and save/manual snapshots use the shared `document-store` constructors. Protected workspace fields and document membership use named operations in `public/workspace-session.js`; captured Maps expose read-only views. Checked data contracts are in `public/data-contracts.d.ts`, while `public/contracts.js` documents the remaining UI ports; current runtime checks and dependency constraints are described in [architecture](docs/architecture.md).
 
 ## 日常编写
 

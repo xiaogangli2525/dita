@@ -2,10 +2,22 @@
 :root {
   color-scheme: light;
   --bg: #f3f5f2; --panel: #fff; --surface: #eef2ee; --sidebar-bg: #fafbf9;
-  --border: #dfe6e0; --text: #25342f; --muted: #64766a;
+  --border-hover: #9cad9f; --scrollbar-thumb: #7e9386;
+  --border: #dfe6e0; --text: #25342f; --muted: #596b5e;
+  --accent-hover: #106150; --on-accent: #fff;
   --accent: #167865; --accent-soft: #e7f1ec; --focus-ring: #167865;
   --danger: #a93640; --add: #168252; --remove: #b83333;
-  --radius: 6px; --popover-shadow: 0 12px 36px #20372d20;
+  --success: #19724f; --success-soft: #eaf7ef; --success-border: #94c8ab;
+  --warning: #805d1b; --warning-soft: #fff7e5; --warning-border: #e3cd94;
+  --danger-soft: #fff0ef; --danger-border: #e5abab;
+  --info: #3c6e8b; --info-soft: #f0f6fa; --info-border: #b7d3e4;
+  --syntax-purple: #7b1fa2; --syntax-soft: #f7eaf4; --syntax-orange: #97501c;
+  --paper: #fff; --canvas: #f3f5f6; --paper-ink: #27353e; --paper-muted: #5b6975;
+  --paper-grid: #dce3e8; --code-bg: #f5f7f9; --code-ink: #263b48; --table-header: #f0f6f9;
+  --backdrop: #16382b55; --shadow-color: #20372d20; --shadow-soft: #25382c08;
+  --selection-bg: #d9ede6; --selection-ink: #25342f;
+  --search-bg: #f8e7a8; --search-current: #e7af4b; --search-ink: #384b3e;
+  --radius: 6px; --popover-shadow: 0 12px 36px var(--shadow-color);
   font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
   font-size: 13px;
 }
@@ -14,13 +26,64 @@ button, input, select, textarea, summary { font: inherit; }
 button, summary { -webkit-tap-highlight-color: transparent; }
 button { border: 1px solid transparent; background: transparent; color: var(--text); border-radius: var(--radius); padding: 7px 11px; }
 button:not(:disabled), summary { cursor: pointer; }
-button:hover, summary:hover { background: var(--surface); }
+button:not(:disabled):hover, summary:hover { background: var(--surface); }
 button:disabled { opacity: .45; cursor: not-allowed; }
 select { padding: 7px 8px; border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); background: var(--panel); }
 :focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
-button.primary-action, .welcome-action { background: var(--accent); border-color: var(--accent); color: #fff; }
-button.primary-action:hover, .welcome-action:hover { background: #106150; }
+button.primary-action, .welcome-action { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+button.primary-action:not(:disabled):hover, .welcome-action:not(:disabled):hover { background: var(--accent-hover); }
 button.outline-action { border-color: var(--border); background: var(--panel); }
 @media(prefers-reduced-motion:reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
+
+/* Presets override semantic colors; layout, authored XML and delivery are shared. */
+:root[data-theme="blue"] {
+  --bg:#f0f3f8; --panel:#fff; --surface:#eaf0f8; --sidebar-bg:#f7f9fc;
+  --border-hover:#a0b1cb; --scrollbar-thumb:#7e92ae;
+  --border:#d9e2ef; --text:#26374c; --muted:#56677f;
+  --accent:#2f62bd; --accent-hover:#244e99; --accent-soft:#e8effc; --focus-ring:#2f62bd;
+  --paper:#fff; --canvas:#edf1f7; --paper-ink:#29394d; --paper-muted:#55667c;
+  --paper-grid:#d9e2ee; --code-bg:#f2f5fa; --code-ink:#2c405a; --table-header:#edf3fc;
+  --selection-bg:#d9e6fd; --selection-ink:#213a61;
+}
+:root[data-theme="paper"] {
+  --bg:#f0ece4; --panel:#fcfaf5; --surface:#eee9de; --sidebar-bg:#f6f2ea;
+  --border-hover:#b7a386; --scrollbar-thumb:#99866d;
+  --border:#ddd5c5; --text:#433b31; --muted:#685c4d;
+  --accent:#84592f; --accent-hover:#714b29; --accent-soft:#f0e6d7; --focus-ring:#84592f;
+  --paper:#fffcf5; --canvas:#ede8de; --paper-ink:#443e34; --paper-muted:#6a6152;
+  --paper-grid:#ddd6c7; --code-bg:#f1ede4; --code-ink:#544a3c; --table-header:#f0eade;
+  --info:#466e85; --info-soft:#edf1ef; --info-border:#c4d2d5;
+  --success-soft:#eaf0e5; --warning-soft:#f7eddb; --danger-soft:#f8e9e3;
+  --selection-bg:#e9d9bd; --selection-ink:#433520;
+}
+:root[data-theme="dark"] {
+  color-scheme:dark;
+  --bg:#151b22; --panel:#202832; --surface:#2b3541; --sidebar-bg:#1b232c;
+  --border-hover:#63788a; --scrollbar-thumb:#63788a;
+  --border:#384553; --text:#e1e8ef; --muted:#a7b6c5;
+  --accent:#77d5bb; --accent-hover:#98e3ce; --on-accent:#102820; --accent-soft:#253e39; --focus-ring:#8ee2cc;
+  --danger:#ffacb4; --danger-soft:#442b33; --danger-border:#7a434e;
+  --success:#85d8b2; --success-soft:#213b31; --success-border:#3c705a;
+  --warning:#efc782; --warning-soft:#3d3425; --warning-border:#75603b;
+  --info:#9dc6ed; --info-soft:#243747; --info-border:#476682;
+  --syntax-purple:#d7b3f0; --syntax-soft:#382b45; --syntax-orange:#efb886;
+  --paper:#202832; --canvas:#151b22; --paper-ink:#dae3ed; --paper-muted:#a8b7c7;
+  --paper-grid:#41505e; --code-bg:#18222c; --code-ink:#d7e4ef; --table-header:#293948;
+  --backdrop:#080e16aa; --shadow-color:#00000055; --shadow-soft:#00000028;
+  --selection-bg:#365b52; --selection-ink:#f1fff9;
+  --search-bg:#6a572d; --search-current:#845e2e; --search-ink:#fff1c9;
+  --add:var(--success); --remove:var(--danger);
+}
+input, textarea { color:var(--text); background:var(--panel); }
+input[type="checkbox"], input[type="radio"] { accent-color:var(--accent); }
+::selection { background:var(--selection-bg); color:var(--selection-ink); }
+
+/* Interaction colors remain visible on tinted surfaces in every preset. */
+input::placeholder, textarea::placeholder { color:var(--muted); opacity:1; }
+button.outline-action:not(:disabled):hover { background:var(--surface); border-color:var(--border-hover); }
+:is(input, select, textarea):not(:disabled):hover:not(:focus) { border-color:var(--border-hover); }
+:where(.sidebar, .view-panel, .tree, .outline, .workspace-search-results, .visual-editor, .editor-pane, #editor, .attributes-panel, .footnotes-panel, .footnote-list, .diff, dialog, .delivery-dialog-content, .md-preview-content) {
+  scrollbar-width:thin; scrollbar-color:var(--scrollbar-thumb) transparent;
 }

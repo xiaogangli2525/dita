@@ -51,7 +51,7 @@ test('exportMapToMarkdown embeds images via loadImageBytes', async () => {
   const dita = '<?xml version="1.0"?><topic id="t"><title>Img Topic</title><body>' +
     '<image href="pic/photo.png" alt="Photo"/></body></topic>';
   const files = new Map([['topics/img.dita', { path: 'topics/img.dita', current: dita }]]);
-  const stubLoader = (p) => Promise.resolve('data:image/png;base64,STUB');
+  const stubLoader = () => Promise.resolve('data:image/png;base64,STUB');
   const md = await core.exportMapToMarkdown({ map: { title: 'M', children: entries }, files, title: 'M', loadImageBytes: stubLoader });
   assert.ok(md.includes('![Photo](data:image/png;base64,STUB)'), 'image should be embedded as data URI');
 });
@@ -73,7 +73,7 @@ test('exportMapToHtml embeds images via loadImageBytes', async () => {
   const dita = '<?xml version="1.0"?><topic id="t"><title>Img Topic</title><body>' +
     '<image href="pic/photo.png" alt="Photo"/></body></topic>';
   const files = new Map([['topics/img.dita', { path: 'topics/img.dita', current: dita }]]);
-  const stubLoader = (p) => Promise.resolve('data:image/png;base64,STUB');
+  const stubLoader = () => Promise.resolve('data:image/png;base64,STUB');
   const html = await core.exportMapToHtml({ map: { title: 'M', children: entries }, files, title: 'M', loadImageBytes: stubLoader });
   assert.ok(html.includes('data:image/png;base64,STUB'), 'html should embed image as data URI');
 });

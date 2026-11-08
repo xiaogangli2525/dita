@@ -14,9 +14,39 @@ test('real browser editing, reading and review workflow', async t => {
   const root = path.join(temporary, 'docs');
   await fs.mkdir(root);
   const initial = '<topic id="a"><title>Title</title><body><p>Original</p></body></topic>';
+  const reviewSource = [
+    '<topic id="review"><title>Review</title><body>',
+    '<p id="first">Same wording</p>',
+    '<p id="second">Same wording</p>',
+    '<p>Unchanged between edits</p>',
+    '<p>Remove this block</p>',
+    '<p id="next">Following paragraph</p>',
+    '<table><tgroup cols="1"><tbody><row><entry>Old parameter</entry></row></tbody></tgroup></table>',
+    '</body></topic>'
+  ].join('\n');
+  const inlineSource = [
+    '<topic id="inline"><title>行内审阅</title><body>',
+    '<p id="sentence">超时为 <b>30</b> 秒，成功后返回 <codeph>OK</codeph>。旧说明。</p>',
+    '<p id="duplicate">旧说明。</p>',
+    '<p id="escaped">A &amp; B &#x1F642; &lt;port&gt;</p>',
+    '<p>保留段落一</p>', '<p>保留段落二</p>', '<p>保留段落三</p>',
+    '<codeblock id="code"><![CDATA[AT+OLD\n    wait(30);]]></codeblock>',
+    '<p>代码与表格之间</p>',
+    '<table><tgroup cols="2"><tbody>',
+    '<row id="deleted-row"><entry>重复参数</entry><entry>删除这一行</entry></row>',
+    '<row id="kept-row"><entry>重复参数</entry><entry>保留这一行</entry></row>',
+    '</tbody></tgroup></table>',
+    '<p id="tail">保留末段</p>',
+    '</body></topic>'
+  ].join('\n');
   const deleted = '<p>' + 'deleted content '.repeat(40) + '</p>';
   const oxygen = '<topic id="oxy"><title>Oxygen</title><body><p><?oxy_insert_start author="A"?>Inserted<?oxy_insert_end?></p><?oxy_delete author="A" content="' + deleted.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '"?></body></topic>';
   await fs.writeFile(path.join(root, 'a.dita'), initial);
+  await fs.writeFile(path.join(root, 'review.dita'), reviewSource);
+  await fs.writeFile(path.join(root, 'inline.dita'), inlineSource);
+  const persistentSource = '<topic id="persist"><title>审阅进度</title><body>\n<p id="one">First original</p>\n<p>Unchanged</p>\n<p id="two">Second original</p>\n</body></topic>';
+  await fs.writeFile(path.join(root, 'persist-topic.dita'), persistentSource);
+  await fs.writeFile(path.join(root, 'persist-map.ditamap'), '<map><title>Persist manual</title><topicref href="persist-topic.dita"/></map>');
   await fs.writeFile(path.join(root, 'oxy.dita'), oxygen);
   await fs.writeFile(path.join(root, 'main.ditamap'), '<map><title>Map</title><topicref href="a.dita"/><topicref href="oxy.dita"/></map>');
   await fs.cp(path.join(__dirname, 'fixtures/manual'), path.join(root, 'manual'), { recursive: true });
@@ -59,6 +89,11 @@ test('real browser editing, reading and review workflow', async t => {
     await page.waitForFunction(file => window.DitaApp.state.activePath === file, file);
   };
   const current = () => page.evaluate(() => { const a = window.DitaApp; return a.state.filesMap.get(a.state.activePath).current; });
+  const effectiveTexts = locator => locator.evaluateAll(nodes => nodes.map(node => {
+    const clone = node.cloneNode(true);
+    clone.querySelectorAll('[data-review-text="old"],[data-review-ghost]').forEach(deletion => deletion.remove());
+    return clone.textContent;
+  }));
   const showSource = async () => { if (!await page.locator('#sourceButton').isVisible()) await page.click('.editing-tools summary'); await page.click('#sourceButton'); if (await page.locator('.editing-tools[open]').count()) await page.click('.editing-tools summary'); };
   const source = async text => { await showSource(); await page.fill('#editor', text); };
   const undo = async () => { await showSource(); await page.focus('#editor'); await page.keyboard.press('Control+z'); };
@@ -140,7 +175,7 @@ test('real browser editing, reading and review workflow', async t => {
     await open('main.ditamap'); await ui.openNotes(page);
     await page.waitForFunction(() => document.getElementById('footnoteCount').textContent === '3');
     await page.selectOption('#footnoteModel', '');
-    await page.locator('.footnote-actions button').first().click();
+    await page.locator('.footnote-actions').getByRole('button', { name: '定位正文', exact: true }).first().click();
     await page.waitForFunction(() => window.DitaApp.state.activePath === 'main.ditamap');
     assert.equal(await page.locator('#footnoteScope').innerText(), 'main.ditamap');
     assert.match(await page.evaluate(() => window.DitaApp.state.filesMap.get('a.dita').current), /Changed elsewhere/);
@@ -261,6 +296,140 @@ test('real browser editing, reading and review workflow', async t => {
     assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.get('a.dita').baseline), initial);
     assert.equal(writes.length, before);
   });
+  await t.test('review marks source-aligned paragraphs, table cells and deletion locations', async () => {
+    await open('review.dita');
+    try {
+      await page.click('#reviewButton');
+      assert.match(await page.locator('#diff').innerText(), /当前 Topic 没有待审阅/);
+      const revised = reviewSource
+        .replace('id="second">Same wording', 'id="second">Revised wording')
+        .replace('<p>Remove this block</p>\n', '')
+        .replace('Old parameter', 'New parameter');
+      await source(revised);
+      await page.click('[data-menu=dita]');
+      await page.getByRole('menuitem', { name: '审阅变更' }).click();
+      const changed = page.locator('#visualEditor [data-review-change]');
+      const next = page.locator('#visualEditor #next');
+      assert.deepEqual(await effectiveTexts(changed), ['Revised wording', 'New parameter']);
+      assert.deepEqual(await page.locator('#visualEditor [data-review-ghost]').allTextContents(), ['Remove this block']);
+      assert.equal(await page.locator('#visualEditor [data-review-ghost]').evaluate(node => node.nextElementSibling.id), 'next');
+      assert.equal(await next.getAttribute('data-review-deletion'), 'before');
+      assert.equal(await page.locator('#visualEditor #first').getAttribute('data-review-change'), null);
+      const parameter = page.locator('#diff .diff-block').filter({ hasText: 'parameter' });
+      await parameter.locator('.diff-block-header').click();
+      assert.equal(await page.locator('#visualEditor td.review-target-focus').count(), 1);
+      await parameter.getByRole('button', { name: '拒绝此块' }).click();
+      assert.deepEqual(await effectiveTexts(changed), ['Revised wording']);
+      assert.equal(await current(), revised.replace('New parameter', 'Old parameter'));
+      await parameter.getByRole('button', { name: '撤销决定' }).click();
+      const deletion = page.locator('#diff .diff-block').filter({ hasText: 'Remove this block' });
+      await deletion.getByRole('button', { name: '拒绝此块' }).click();
+      assert.equal(await next.getAttribute('data-review-deletion'), null);
+      assert.deepEqual(await effectiveTexts(changed), ['Revised wording', 'New parameter']);
+      assert.equal(await page.locator('#visualEditor [data-review-ghost]').count(), 0);
+      await page.setViewportSize({ width: 390, height: 844 });
+      const body = await page.locator('#visualPane').boundingBox();
+      const panel = await page.locator('#inspector').boundingBox();
+      assert.ok(body.y + body.height <= panel.y + 1, 'the diff panel should leave the document visible');
+      await page.click('#inspectorCloseButton');
+      assert.equal(await changed.count(), 0);
+    } finally {
+      await page.setViewportSize({ width: 1440, height: 1000 });
+      await source(reviewSource);
+    }
+  });
+  await t.test('inline review retains deleted words, entities, code and rows until an explicit decision', async () => {
+    await open('inline.dita');
+    const revised = inlineSource.replace('<b>30</b>', '<b>60</b>').replace('。旧说明。</p>', '。新增 &lt;img src=x onerror=alert(1)&gt;。</p>')
+      .replace('&amp; B &#x1F642;', '&amp; C &#x1F600;').replace('AT+OLD', 'AT+NEW').replace('wait(30)', 'wait(60)')
+      .replace('<row id="deleted-row"><entry>重复参数</entry><entry>删除这一行</entry></row>\n', '');
+    await source(revised); await page.click('#reviewButton');
+    const oldText = '#visualEditor [data-review-text="old"]', newText = '#visualEditor [data-review-text="new"]';
+    assert.equal(await page.locator('#sentence [data-dita-source="b"] [data-review-text="old"]').textContent(), '3');
+    assert.equal(await page.locator('#sentence [data-dita-source="b"] [data-review-text="new"]').textContent(), '6');
+    assert.match(await page.locator('#sentence').innerText(), /旧说明/);
+    assert.equal(await page.locator('#duplicate [data-review-text]').count(), 0);
+    assert.equal(await page.locator('#visualEditor img').count(), 0, 'deleted and added model text must remain inert text');
+    assert.deepEqual(await effectiveTexts(page.locator('#sentence')), ['超时为 60 秒，成功后返回 OK。新增 <img src=x onerror=alert(1)>。']);
+    assert.deepEqual(await effectiveTexts(page.locator('#escaped')), ['A & C 😀 <port>']);
+    assert.deepEqual(await effectiveTexts(page.locator('#code')), ['AT+NEW\n    wait(60);']);
+    assert.equal(await page.locator('#visualEditor tbody > tr[data-review-ghost]').count(), 1);
+    assert.equal(await page.locator('#visualEditor #deleted-row').count(), 0, 'deleted projections must not duplicate source IDs');
+    const keptRow = page.locator('tr[data-dita-row-attrs*="kept-row"]');
+    assert.equal(await keptRow.count(), 1);
+    assert.equal(await keptRow.locator('[data-review-text]').count(), 0, 'repeated cells must stay anchored to their own source');
+    assert.equal(await current(), revised);
+    for (const skin of ['forest', 'blue', 'paper', 'dark']) {
+      await page.evaluate(skin => window.DitaTheme.set(skin), skin);
+      const oldStyle = await page.locator(oldText).first().evaluate(node => ({ decoration: getComputedStyle(node).textDecorationLine, color: getComputedStyle(node).color }));
+      const newStyle = await page.locator(newText).first().evaluate(node => ({ decoration: getComputedStyle(node).textDecorationLine, color: getComputedStyle(node).color }));
+      assert.match(oldStyle.decoration, /line-through/); assert.match(newStyle.decoration, /underline/); assert.notEqual(oldStyle.color, newStyle.color);
+    }
+    await page.evaluate(() => window.DitaTheme.set('forest'));
+    if (process.env.DITA_REVIEW_SCREENSHOT) await page.screenshot({ path: process.env.DITA_REVIEW_SCREENSHOT });
+    const pending = await page.locator('[data-review-text]').count();
+    await page.click('#saveButton'); await page.waitForFunction(() => !window.DitaApp.state.filesMap.get('inline.dita').dirty);
+    assert.equal(await fs.readFile(path.join(root, 'inline.dita'), 'utf8'), revised);
+    assert.equal(await page.locator('[data-review-text]').count(), pending, 'saving is not accepting a review');
+    await page.evaluate(() => window.DitaApp.openModelExport({ scope: 'inline.dita' }));
+    await page.locator('#exportModel:not(:disabled)').waitFor();
+    await page.selectOption('#exportModel', ''); await page.selectOption('#exportFormat', 'html');
+    await page.click('#modelExportForm button[value="preview"]');
+    const exported = page.frameLocator('#htmlPreviewFrame');
+    await exported.locator('body').waitFor();
+    assert.match(await exported.locator('body').innerText(), /超时为 60 秒/);
+    assert.doesNotMatch(await exported.locator('body').innerText(), /删除这一行|AT\+OLD/);
+    assert.equal(await exported.locator('[data-review-text],[data-review-ghost],[data-review-decoration]').count(), 0);
+    await page.click('#closeHtmlPreviewButton'); await page.click('#reviewButton');
+    assert.equal(await page.locator('[data-review-text]').count(), pending, 'delivery preview must not accept pending changes');
+    const sentenceChange = page.locator('#diff .diff-block').filter({ hasText: 'id="sentence"' });
+    await sentenceChange.getByRole('button', { name: '接受此块' }).click();
+    assert.equal(await page.locator('#sentence [data-review-text]').count(), 0);
+    assert.deepEqual(await effectiveTexts(page.locator('#sentence')), ['超时为 60 秒，成功后返回 OK。新增 <img src=x onerror=alert(1)>。']);
+    assert.ok(await page.locator('#code [data-review-text]').count() > 0);
+    await page.click('#visualButton'); await page.click('#reviewButton');
+    assert.equal(await page.locator('#sentence [data-review-text]').count(), 0, 'accepted decisions survive a mode switch');
+    await sentenceChange.getByRole('button', { name: '撤销决定' }).click();
+    assert.ok(await page.locator('#sentence [data-review-text="old"]').count() > 0);
+    await sentenceChange.getByRole('button', { name: '拒绝此块' }).click();
+    assert.equal(await page.locator('#sentence [data-review-text]').count(), 0);
+    assert.equal(await page.locator('#sentence').textContent(), '超时为 30 秒，成功后返回 OK。旧说明。');
+    await sentenceChange.getByRole('button', { name: '撤销决定' }).click();
+    await page.click('#visualButton');
+    assert.equal(await page.locator('[data-review-decoration],[data-review-ghost]').count(), 0);
+    await page.locator('#tail').click(); await page.keyboard.press('End'); await page.keyboard.insertText('继续编写');
+    assert.equal(await current(), revised.replace('保留末段', '保留末段继续编写'));
+    await source(inlineSource);
+    await page.click('#saveButton'); await page.waitForFunction(() => !window.DitaApp.state.filesMap.get('inline.dita').dirty);
+  });
+  await t.test('review handles empty paragraphs, pure insertions and XML representation changes', async () => {
+    await open('inline.dita');
+    const empty = inlineSource.replace('<p id="duplicate">旧说明。</p>', '<p id="duplicate"/>');
+    await source(empty); await page.click('#reviewButton');
+    assert.equal(await page.locator('#duplicate [data-review-text="old"]').textContent(), '旧说明。');
+    assert.equal(await page.locator('#escaped [data-review-text]').count(), 0, 'an empty paragraph deletion must not move into the next paragraph');
+    assert.deepEqual(await effectiveTexts(page.locator('#duplicate')), ['']);
+    const inserted = inlineSource.replace('<p id="tail">', '<p id="new-paragraph">新增整段内容</p>\n<p id="tail">');
+    await source(inserted); await page.click('#reviewButton');
+    assert.equal(await page.locator('#new-paragraph [data-review-text="new"]').textContent(), '新增整段内容');
+    assert.equal(await page.locator('#visualEditor [data-review-text="old"]').count(), 0);
+    const emptyTable = inlineSource.replace(/<row id="(?:deleted|kept)-row">.*?<\/row>\n/g, '');
+    await source(emptyTable); await page.click('#reviewButton');
+    assert.equal(await page.locator('#visualEditor tbody > tr[data-review-ghost]').count(), 2, 'deleted rows stay inside the table even when all original rows were removed');
+    assert.doesNotMatch(await current(), /data-review/);
+    const representation = inlineSource.replace('&amp;', '&#38;').replace('<b>30</b>', '<i>30</i>');
+    await source(representation); await page.click('#reviewButton');
+    assert.equal(await page.locator('#visualEditor [data-review-text]').count(), 0, 'formatting and equivalent entity changes must not invent deleted or added wording');
+    const crlf = inlineSource.replace(/\n/g, '\r\n').replace('AT+OLD', 'AT+NEW').replace('wait(30)', 'wait(60)');
+    await showSource();
+    await page.evaluate(crlf => window.DitaApp.setFileContent(window.DitaApp.state.filesMap.get('inline.dita'), crlf), crlf);
+    await page.click('#reviewButton');
+    assert.deepEqual(await page.locator('#code [data-review-text="old"]').allTextContents(), ['OLD', '3']);
+    assert.deepEqual(await effectiveTexts(page.locator('#code')), ['AT+NEW\n    wait(60);']);
+    assert.equal(await current(), crlf);
+    await source(inlineSource);
+    await page.click('#saveButton'); await page.waitForFunction(() => !window.DitaApp.state.filesMap.get('inline.dita').dirty);
+  });
   await t.test('Oxygen-only bulk actions work and restore the complete deletion', async () => {
     await open('oxy.dita'); await page.click('#reviewButton'); await page.selectOption('#reviewScope', 'oxygen');
     assert.equal(await page.locator('#rejectAllButton').isEnabled(), true);
@@ -274,16 +443,64 @@ test('real browser editing, reading and review workflow', async t => {
     await undo(); assert.equal(await current(), oxygen);
   });
   await t.test('Map bulk rejection preserves files until explicit Save', async () => {
+    await open('a.dita'); await source(initial.replace('Original', 'Map pending change'));
+    await page.click('#saveButton'); await page.waitForFunction(() => !window.DitaApp.state.filesMap.get('a.dita').dirty);
     await open('main.ditamap'); await page.click('#reviewButton');
     await page.waitForSelector('.map-topic-surface'); await page.selectOption('#reviewScope', 'git');
+    assert.deepEqual(await effectiveTexts(page.locator('.map-topic-surface[data-map-topic-path="a.dita"] [data-review-change]')), ['Map pending change']);
     const before = writes.length;
     await page.click('#rejectAllButton');
     assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.get('a.dita').current), initial);
-    assert.match(await fs.readFile(path.join(root, 'a.dita'), 'utf8'), /Saved change/);
+    assert.match(await fs.readFile(path.join(root, 'a.dita'), 'utf8'), /Map pending change/);
     assert.equal(writes.length, before);
     await page.click('#saveButton'); await page.click('#saveScopeConfirm');
     await page.waitForFunction(() => Array.from(window.DitaApp.state.filesMap.values()).every(file => !file.dirty));
     assert.equal(await fs.readFile(path.join(root, 'a.dita'), 'utf8'), initial);
+  });
+  await t.test('saved review progress survives reload and Topic/Map transitions while further edits require review', async () => {
+    await open('persist-topic.dita');
+    const revised = persistentSource.replace('First original', 'First revised').replace('Second original', 'Second revised');
+    await source(revised); await page.click('#saveButton');
+    await page.waitForFunction(() => !window.DitaApp.state.filesMap.get('persist-topic.dita').dirty);
+    await page.click('#reviewButton');
+    const first = () => page.locator('#diff .diff-block').filter({ hasText: 'id="one"' });
+    await first().getByRole('button', { name: '接受此块' }).click();
+    assert.equal(await page.locator('#one [data-review-text]').count(), 0);
+    assert.ok(await page.locator('#two [data-review-text]').count());
+    await page.reload(); await page.waitForFunction(() => window.DitaApp?.state.root);
+    await open('persist-topic.dita'); await page.click('#reviewButton');
+    assert.equal(await page.locator('#one [data-review-text]').count(), 0);
+    assert.ok(await page.locator('#two [data-review-text]').count());
+    await open('persist-map.ditamap'); await page.click('#reviewButton');
+    await page.locator('.map-topic-surface #one').waitFor();
+    assert.equal(await page.locator('#one [data-review-text]').count(), 0);
+    assert.ok(await page.locator('#two [data-review-text]').count());
+    await first().getByRole('button', { name: '撤销决定' }).click();
+    assert.ok(await page.locator('#one [data-review-text]').count());
+    await first().getByRole('button', { name: '接受此块' }).click();
+    await open('persist-topic.dita'); await page.click('#reviewButton');
+    assert.equal(await page.locator('#one [data-review-text]').count(), 0);
+    await source(revised.replace('Second revised', 'Second revised again')); await page.click('#reviewButton');
+    assert.equal(await page.locator('#one [data-review-text]').count(), 0);
+    assert.ok(await page.locator('#two [data-review-text]').count());
+    await source(revised.replace('First revised', 'First revised again')); await page.click('#reviewButton');
+    assert.ok(await page.locator('#one [data-review-text]').count());
+  });
+  await t.test('unrelated Topic delivery defaults to the Topic and offers an explicit manual choice', async () => {
+    await page.click('[data-view="map"]');
+    await page.selectOption('#mapSelect', 'main.ditamap');
+    await open('inline.dita'); await page.click('#exportMenuButton');
+    await page.locator('#exportModel:not(:disabled)').waitFor();
+    assert.equal(await page.locator('#exportScope').inputValue(), 'inline.dita');
+    assert.match(await page.locator('#modelExportScope').textContent(), /inline.dita/);
+    await page.selectOption('#exportScope', 'main.ditamap');
+    await page.waitForFunction(() => !document.getElementById('exportModel').disabled && document.getElementById('modelExportScope').textContent.includes('main.ditamap'));
+    assert.equal(await page.locator('#exportScope').inputValue(), 'main.ditamap');
+    await page.click('#modelExportCancel');
+    await open('a.dita'); await page.click('#exportMenuButton');
+    await page.locator('#exportModel:not(:disabled)').waitFor();
+    assert.equal(await page.locator('#exportScope').inputValue(), 'main.ditamap');
+    await page.click('#modelExportCancel');
   });
   if (process.env.DITA_BROWSER_SCREENSHOT) await page.screenshot({ path: process.env.DITA_BROWSER_SCREENSHOT });
   await t.test('390px layout remains contained', async () => {

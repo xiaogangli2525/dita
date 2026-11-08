@@ -11,7 +11,7 @@ test('workspace shell preserves editing state across panels and delivery steps',
     const socket = net.createServer();
     socket.listen(0, '127.0.0.1', () => { const value = socket.address().port; socket.close(() => resolve(value)); });
   });
-  const server = spawn(process.execPath, ['scripts/dev-server.js', '--port', String(port)], {
+  const server = spawn(process.execPath, ['scripts/dev-server.js', '--docs', 'tests/fixtures/writing-demo', '--port', String(port)], {
     cwd: path.join(__dirname, '..'), env: process.env, stdio: ['ignore', 'pipe', 'pipe']
   });
   let browser;
@@ -33,6 +33,11 @@ test('workspace shell preserves editing state across panels and delivery steps',
 
   await t.test('compact shell keeps titles readable and source mode directly reachable', async () => {
     assert.equal(await page.locator('#inspector').isVisible(), false);
+    await page.click('[data-menu=dita]');
+    await page.getByRole('menuitem', { name: '审阅变更' }).click();
+    await page.locator('#reviewPane').waitFor();
+    assert.match(await page.locator('#diff').innerText(), /请先从左侧打开/);
+    await page.click('#inspectorCloseButton');
     await page.click('.map-open-author'); await page.waitForSelector('.map-topic-surface');
     assert.match(await page.locator('#documentTitle').innerText(), /MQTT 应用指南/);
     assert.match(await page.locator('#tree').innerText(), /MQTT 功能概述/);
@@ -157,7 +162,7 @@ test('workspace shell preserves editing state across panels and delivery steps',
         const a = window.DitaApp, title = '通信模组 MQTT 建立安全连接与多型号固件兼容性说明 '.repeat(4);
         let node = { type: 'file', title, path: 'topics/long-title-compatibility.dita', sourcePath: 'test.leaf' };
         for (let i = 0; i < 6; i++) node = { type: 'container', title: '功能分组 ' + i, sourcePath: 'test.' + i, children: [node] };
-        a.state.maps.find(map => map.path === a.state.selectedMap).children = [node]; a.maps.updateTree();
+        a.session.upsertMap({ ...a.state.maps.find(map => map.path === a.state.selectedMap), children: [node] }); a.maps.updateTree();
       });
       const label = page.locator('#tree .map-node-label').last();
       assert.ok((await label.boundingBox()).height > 40, 'long titles should wrap rather than disappear into an ellipsis');
@@ -166,7 +171,7 @@ test('workspace shell preserves editing state across panels and delivery steps',
       await page.fill('#search', '兼容性'); assert.equal(await label.isVisible(), true);
       assert.equal(await page.locator('#mapSelect').getAttribute('title'), await page.locator('#mapSelect option:checked').innerText());
     } finally {
-      await page.evaluate(children => { const a = window.DitaApp; a.state.maps.find(map => map.path === a.state.selectedMap).children = children; a.maps.updateTree(''); }, original);
+      await page.evaluate(children => { const a = window.DitaApp; a.session.upsertMap({ ...a.state.maps.find(map => map.path === a.state.selectedMap), children }); a.maps.updateTree(''); }, original);
       await page.fill('#search', '');
     }
   });

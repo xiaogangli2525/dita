@@ -1,5 +1,7 @@
 # Verification
 
+The entries below record validation at each change milestone. Their test counts, fixture descriptions and then-current feature limits are historical; they are not cumulative or current limitations. Current acceptance includes the supplied HTTP manual, with the latest maintenance result recorded at the end. See `publication-compatibility.md` for supported publication boundaries.
+
 ## Real HTTP library: DITAVAL, author compatibility and PDF fonts
 
 - Base: remote `f7db02e`, including the uploaded `contentmodule`. Acceptance used an isolated copy of the actual HTTP topics plus all reachable common content and images; the company library was not copied to the hosted demo. Six stale references in the two WebHelp Maps now point to the existing matching common/telecom files.
@@ -155,7 +157,7 @@ The GitHub Actions workflow runs the suite on Node 20 and 22. The browser workfl
 
 - `npm test`: **143 passing unit/HTTP checks**. Added boundary cases verify history-free immutable snapshots with distinct disk/Git bases; declared-only feature contexts and the explicit writable busy flag; lazy service resolution; startup-plan validation before feature construction; independent application results and live compatibility getters; missing factory diagnostics; side-effect-free delivery script loading; and domain independence from application/UI controllers.
 - `npm run test:browser`: **82 passing Chromium checks**, zero failures/skips. The complete Source/Author/Map, notes, clipboard, table, draft, Git/workspace, shell/resizing and HTML/MD/PDF/DOCX suite passes through the actual new composition root. Export-flow unit tests construct the delivery controller explicitly and inject image IO.
-- JSDoc contracts are interface documentation for editors/review, not a claim of whole-project static type checking. Browser global factory namespaces and the DitaApp integration facade remain compatibility boundaries. No real company corpus has been supplied; existing fictional/temporary fixtures remain the validation inputs.
+- JSDoc contracts are interface documentation for editors/review, not a claim of whole-project static type checking. Browser global factory namespaces and the DitaApp integration facade remain compatibility boundaries. At this architecture milestone only fictional/temporary fixtures were available. Later HTTP-manual acceptance is recorded separately below.
 
 ## Remote Git document libraries
 
@@ -176,7 +178,7 @@ The GitHub Actions workflow runs the suite on Node 20 and 22. The browser workfl
 
 ## Keyboard-only contextual tools and help
 
-Browser coverage verifies that clicking, selecting and arrow movement do not open contextual tools; Alt+/ opens/toggles them and Escape restores selection. The Help menu opens a visible shortcut dialog, traps focus, closes with Escape/button, preserves the underlying notes panel and fits a 390px viewport. Document shortcuts do not run behind modal help.
+Browser coverage verifies that clicking, selecting and arrow movement do not open contextual tools; Alt+Z opens/toggles them and Escape restores selection. The Help menu opens a visible shortcut dialog, traps focus, closes with Escape/button, preserves the underlying notes panel and fits a 390px viewport. Document shortcuts do not run behind modal help.
 
 Final regression for the keyboard/help change: 164 unit/HTTP checks and 139 Chromium checks passed, with no skips.
 
@@ -195,3 +197,130 @@ Full regression: 167 unit/HTTP checks and 146 Chromium checks passed. An additio
 `document-rendering.test.js` covers five preformatted block types, nested command/variable markup, CRLF and exact XML roundtrips, all 13 standard note types, custom labels, CALS 3:7 column proportions and HTML/Markdown response formatting. The profiling browser regression switches every note type through the inspector, edits a custom title, undoes to the exact original XML and checks readable selected-code contrast. Office delivery regressions exercise real PDF and DOCX bytes.
 
 Visual acceptance uses the Chinese HTTP manual in an isolated local preview: command/response tables, summaries and multiline responses. Reference screenshots inform the independently implemented styles; vendor bundles are not shipped.
+
+
+## Independent model-specific footnote rules
+
+- Full regression: **200 unit/HTTP checks** and **166 Chromium checks** pass, with no skipped cases. Existing HTML/Markdown/PDF/DOCX delivery, source encoding, editing, drafts, remote workspaces and recovery remain covered.
+- Six new domain cases verify balanced rich-fragment projection, common content, unchanged GBK declaration/CRLF source buffers, repeated references/renumbering, public conref origins, stale note/context/product conditions, source isolation and exact model-token suggestions. All **37 notes in the uploaded HTTP corpus** retain their text/markup when all fragments are kept. This does not automatically confirm their applicability.
+- HTTP coverage exercises independent config writes, unchanged original document bytes, optimistic conflicts, simultaneous same-base saves, invalid paths and malformed-config preservation.
+- Actual-browser coverage requires review before save, checks per-model HTML/Markdown downloads and rule hashes, keeps unresolved notes, rejects external rule changes before download/save, preserves choices after conflicts, requires fresh confirmation for another manual and blocks rules after unsaved source changes. Follow-up checks verify 390px containment and reachable save controls; wide/compact screenshots were visually inspected.
+- Fragment classification is explicit human review. Inline markup and revision spans are atomic; no prose rewriting or automatic removal of shared model labels is claimed. Rules remain a sidecar and original DITA is unchanged.
+
+
+## Imported-content and local API audit
+
+Full local regression: **204 unit/HTTP checks** and **170 Chromium checks**, zero failures/skips. Follow-up HTTP checks confirm that an explicitly configured reverse-proxy Host still works.
+
+New domain/browser cases verify that imported event handlers, CSS, image src/srcset overrides and editor-reserved attributes do not become active Author HTML. Dispatching click/hover/error events executes no source handlers and causes no source-specified remote resource requests. Unchanged views and adjacent text edits retain the original XML, including those source-only attributes. Markdown href/src and code-language delimiter probes create neither executable links nor event-handler attributes; code remains literal.
+
+HTTP probes reject foreign Host values on workspace bootstrap, source reads and asset reads even when Origin is omitted; loopback and configured proxy access remain available. This is a targeted local-interface check, not a claim of multi-user authentication.
+
+The HTTP note-corpus test now loads the selected manual's dependency closure (37 notes) with encoding-aware reads, rather than recursively counting unrelated manuals (130 notes in the full checkout). Both Node 20/22 and browser CI passed for that correction before PR #24 was merged.
+
+
+## Model-text delivery and exported note presentation
+
+Full regression: **210 unit/HTTP checks** and **181 Chromium checks**, zero failures/skips. Additional focused checks cover a condition filter removing an entire model label, which must require review rather than treating the remaining description as common.
+
+Domain tests cover exact identifiers and variants, continuation sentences, shared-label compaction with inline XML retained, nested textual scopes, common content, explicit only/unsupported clauses, ambiguous prose, paired/unpaired Oxygen insertions, original-buffer preservation, repeated public calls and HTML/Markdown numbering. All 37 source notes in the real HTTP closure are checked for five target models; 29 have explicit textual scopes before whole-note model/profile exclusions.
+
+The actual browser downloads the real HTTP manual for ML307G, ML307N and MN319-A with the pending-content condition profile. The retained endnote labels contain only the requested model, common explanations remain, semantic numbers and return links agree, and every input file remains byte-identical. Actual HTML output verifies one frame per DITA note with no regex-generated icon or nested duplicate; the SSL explanation and endnote list were visually inspected.
+
+Browser workflows also check Chinese summaries of real filter rules, refusal of unchecked mixed-model text delivery, HTML/MD/PDF/DOCX sharing the selected prefix policy, invalidation of checked output when the policy changes, all-model preservation, and navigation from ambiguous text to independent-rule review. Existing DITAVAL race, editing, save/draft, Git and export regression remains covered.
+
+Prefix interpretation is explicitly enabled and requires preview review. It follows the displayed source-format convention; it does not infer arbitrary technical applicability, rewrite body prose, automatically confirm sidecar rules or change original DITA.
+
+
+## Workspace composition and UI reliability
+
+Full local regression: **216 unit/HTTP checks** and **191 Chromium checks**, zero failures/skips. The browser suite includes the actual HTTP-manual delivery regression, original-byte preservation, model/profile note filtering and HTML/Markdown/PDF/DOCX workflows. A focused workspace/UI, foundation and document-transition run passed all 34 checks.
+
+New domain checks cover per-instance workspace state, overlapping-switch refusal, active-save/dirty-buffer guards, failed-switch recovery, branch-named default Maps, changed-identity refresh rejection and delayed source navigation. Module-load tests verify that all six new factories register without accessing DOM or the application facade during load.
+
+New browser checks cover menu roles, disabled actions, keyboard/focus behavior and Escape without closing an auxiliary panel; document/navigation tab keys; source-aligned outlines excluding metadata titles and updating through edit/undo; pending-switch interaction locks and retained buffers after failure; partial rule choices across rows and close confirmation; delayed writes freezing fields and delayed reads cancelling without reopening; visible delivery actions and bounded menus at 390 × 520; and handled failed document opens. The compact delivery screenshot was visually inspected.
+
+The entry point now assembles explicit services and view/action ports. Existing editor/history, publication and save services remain responsible for their established workflows; this refactor does not replace them or add AI/multi-user services. Original DITA is unchanged. Browser checks use Chromium and do not certify physical IME, assistive technology or every manual specialization.
+
+
+## Maintenance cleanup and project-model settings
+
+Full local regression: **216 unit/HTTP checks** and **194 Chromium checks**, zero failures/skips. `npm run lint` passes with zero warnings; a stdin probe containing both an unused variable and an undefined capability fails with the expected two errors. GitHub Actions now runs lint before unit tests on Node 20 and 22. Existing real HTTP-manual delivery, byte preservation, model/profile note filtering, editing/save/draft/Git and HTML/MD/PDF/DOCX workflows remain green.
+
+Three additional browser scenarios verify cancellable project-setting reads with no late dialog reopen; locked fields/close and deduplicated submits during a delayed write, with form retention after failure; and an actual branch switch followed by a configuration-read failure, which must clear the previous model list/comparison base, disable saving and recover on reopening after the API succeeds. These checks exercise the visible controls and actual temporary Git repository.
+
+Cleanup removes an obsolete source-find closer, unused bindings/ports and redundant default assignments, reuses the existing XML parse during Author refresh, and retains original error causes when adding publication source paths. Intentional path-control filters remain unchanged in behavior and have local lint explanations. `.editorconfig` sets basic code conventions without changing manual encoding; original DITA and vendor source are unchanged. Architecture/compatibility descriptions now distinguish current HTTP acceptance from historical MQTT fixture milestones. No new AI service or broader DITA capability is implied.
+
+
+## Manual domain boundary and stable capture context
+
+Full local regression: **231 unit/HTTP checks** and **201 Chromium checks**, zero failures/skips. Lint passes with zero warnings. The actual HTTP manual, three model deliveries and HTML/Markdown/PDF/DOCX workflows remain covered. The first local browser run stopped PDF output because this resumed environment lacked CJK fonts; after restoring actual Han-character coverage, the full browser suite passed.
+
+`manual-domain.js` runs in a clean Node process without editor/rendering/workspace modules. New cases exercise the shared chapter traversal, resource-only exclusion and duplicate suppression, source-linked notes, real HTTP data-only snapshots for three models, and unchanged inputs. Existing service consumers retain their interfaces while the composition manifest removes the renderer dependency.
+
+Capture regressions change project content/values/errors, repository and branch during an outstanding Map read; every result is rejected. A baseline/current probe confirms that the previous service accepted the new model config into the old capture, while the new service rejects it. Captured model values and file records are copied/frozen; collection compatibility remains explicit. Boundary lint probes reject six ambient/adapter dependencies and allow a shared-domain import.
+
+
+## Author/source and delivery rendering boundaries
+
+Full local regression: **239 unit/HTTP checks** and **203 Chromium checks**, zero failures/skips; lint passes with zero warnings. The public `DitaVisualCore` API remains unchanged. A baseline comparison produces byte-identical ordinary HTML/Markdown for three scopes (six outputs), plus identical Markdown preview/highlighting projections.
+
+`app-core.js` is now an explicit compatibility facade. XML DOM/source-tree adaptation, Author projection, surface-to-source writes and Oxygen processing live in acyclic modules. Author projection takes an owner document; the facade preserves document defaults. Markdown preview and full HTML layout load independently of DITA conversion. Six negative lint probes verify that the rendering layers cannot import upper/cyclic modules or access the application/ambient document; CommonJS clean-process coverage verifies loading without editor/workspace services or DOM globals.
+
+The browser directly runs the extracted Author modules against all 25 Topics in the actual HTTP closure: unchanged views round-trip exactly, two sequential title edits patch the expected source, and live buffers remain untouched. An additional case covers CRLF, a DTD, UTF-16 offsets, CDATA, entities, processing instructions and quoted angle brackets.
+
+These checks exposed two existing content issues: ordinary CDATA text could disappear from Author/HTML/Markdown, and annotated title edits could move PI markers behind the edited text. Regression probes first failed, then passed after inert CDATA text handling and minimal annotated-text patching. Source writes reuse the canonical validator's ranges instead of a second XML lexer. Edits crossing annotations or ambiguous annotation/whitespace/CDATA combinations are refused with a Source-editing message. The unchanged-output comparison above excludes these deliberate fixes.
+
+## Protected workspace mutations and checked data boundaries
+
+- Base: `master@ebaf4ce`. Workspace identity/directory/Map metadata, document membership, active selection, mode and history target now change through `workspace-session` operations. Nested descriptors and live collection views reject direct controller writes. Transient review and DOM selection state remains UI-owned.
+- Document registration retains existing buffer/history identity; closing a child undo target selects the active document. Directory refresh preserves a dirty Map's last valid projection. Invalid adoption is rejected before token replacement or lifecycle invalidation. Normal saves and Save As share validated acknowledgements; copied/frozen requests cannot be altered while queued, and wrong-path/malformed responses leave disk and working values intact.
+- `npm run typecheck` passes with strict, no-emit TypeScript on actual document/proposal/save, snapshot capture and delivery-record implementations. Negative fixtures reject snapshot writes, invalid proposal states, missing save comparison content, invalid acknowledgement content and unsupported delivery output/format fields. CI runs type checking before unit tests on Node 20/22.
+- Full local validation: **247 unit/HTTP tests**, **203 Chromium tests**, lint with zero warnings and the type check all pass. Browser validation includes independent-rule save/refresh, scoped saves, Save As, undo, branch switching, remote capabilities, responsive navigation and real HTTP manual HTML/Markdown/PDF/Word delivery. Capability and directory test fixtures now use explicit session operations instead of changing protected state directly.
+- The original DITA, models, filters and contentmodule sources are unchanged. Snapshots expose detached, read-only iterable collections; rule acknowledgement creates a replacement snapshot. This is incremental boundary checking, not a whole-project TypeScript migration or a new browser build requirement.
+
+
+## Switchable workbench appearance
+
+- Base: `master@8796c50`. Four restrained palettes (forest, blue, warm paper, dark) and an automatic system mode share semantic shell/document/status tokens. The rail and View menu open one native radio-card dialog; its completion action remains visible while a narrow dialog scrolls. Theme application runs before styles to restore a saved dark preference before first paint.
+- Full local validation: **250 unit/HTTP checks**, **210 Chromium checks**, lint with zero warnings and strict boundary type checking pass. New scenarios cover live OS preference changes, browser storage denial, invalid stored IDs, keyboard selection, reload persistence, unchanged unsaved source/undo/source selection/scroll, guarded Author caret restoration and representative foreground/background contrast of at least 4.5:1 in every preset.
+- Actual HTTP/HTTPS Author pages were inspected in all four palettes, including command tables, response code and the footnote side panel, plus the chooser at desktop and 390px width. Colors use semantic variables; authored markup/images are not inverted or rewritten. The original manual sources are unchanged.
+- An identical captured manual exported through the light and dark interfaces produces exactly the same HTML bytes. Delivery CSS remains independent; UI preferences never enter DITA, project configuration or release output styling.
+
+
+## Skin detail pass
+
+- Base: `master@d4d50ab`. A rendered-component audit found muted labels that passed on white but fell below 4.5:1 on mode/workspace/chapter surfaces, a dark native placeholder at 3.23:1, and the dark current-search highlight at 4.02:1. Palette adjustments now cover these actual background combinations and explicit placeholder opacity/color.
+- Menu/tool hover states use the active preset; outlined controls have a visible hover border; disabled primary actions retain their normal palette. Property, Map-title and review focus indicators use the shared focus ring. Thin, themed scrollbars and restrained link underlines refine long writing/reading surfaces. The chooser shows the resolved style, including automatic system changes, through its existing service.
+- Validation: **250 unit/HTTP checks**, **212 Chromium checks**, zero-warning lint and boundary type checking pass. Added real-component contrast and enabled/disabled hover/property-focus checks, plus live system-badge assertions; expanded selected/hovered/search color-pair checks. The caret assertion waits for the actual restored range after native dialog close rather than only observing focus return.
+- Visual inspection used the real HTTP manual, including command tables, response blocks and footnotes, plus desktop/390px appearance dialogs. Existing source preservation and light/dark delivery-byte equivalence remain covered; no original manual content changes.
+
+
+## AI writing first version
+
+- Base: `master@bd80cf3`. Selection editing and pasted-issue lookup use a shared source-range core, explicit candidate selection and immutable request bases. Server-configured compatible models return bounded text patches; both sides validate them before proposal review and shared undo. No automatic filesystem/Git write is introduced.
+- Connection settings are editable in the local UI and kept only in server memory, with environment defaults for persistent startup configuration. Keys are never returned to or stored by the browser; blank keys cannot follow a changed endpoint. Demo mode cannot use model credentials. Generation is cancellable and bounded; upstream messages/redirects/truncated output are refused. Long model requests do not block normal saving, and workspace tokens are checked after completion.
+- Full local validation: **263 unit/HTTP tests**, **223 Chromium tests**, lint with zero warnings and strict boundary/provider type checks pass. New tests cover source/visual selections, manual candidates, accept/undo/redo, pending questions, hostile/invalid output, cancellation, stale buffers/workspaces, nonblocking saves, secret handling and desktop/390px layouts across all skins.
+- The full suite exposed a queued native-dialog close race during appearance reopening. Close/cancel now restore writing state synchronously and ignore an older close event if a new dialog is open. The AI dialog uses the same lifecycle guard. The appearance and AI focused suite and final full browser run pass.
+- Real HTTP/HTTPS corpus lookup processed 25 Topic/XML files without parse failures in a local sample (206 candidates, about 59 ms; an observation, not a performance guarantee). The actual SSL note was previewed in an isolated copied workspace with a clearly labeled local simulated model. No manual source changed.
+- Real provider credentials/model were not supplied. All automated generation uses a local simulated compatible endpoint; real model output quality and provider compatibility remain to be accepted with the configured model. The SDK knowledge-base plan is recorded separately and remains deferred.
+
+
+## Conversational writing follow-up
+
+- Base: AI PR head `06ea615`. The original form sent only the latest instruction and required every question to be resolved before any edit. The new checked conversation boundary retains all user requirements and the previous cumulative proposal against one captured source. Clearly supported edits can coexist with missing technical facts; unsupported structural requests have an explicit limitation field.
+- A fixed reply composer supports followup and Ctrl/Cmd+Enter. Closing/reopening the same unchanged target retains the task, pending reply and proposal. During generation the user can draft the next message; completion does not clear newly typed content. Failed/cancelled rounds preserve the previous proposal. Applying rebases to the updated source and retains prior requirements/pending questions.
+- The Apply action is a single explicit button; exact user phrases such as “应用这版” / “按这个改” invoke the same guarded proposal operation without another model call. Negated/ambiguous phrases cannot trigger that operation, and a missing proposal produces a direct explanation. Source save remains explicit and undo is shared.
+- Model configuration moved to its own dialog. The private per-user connection store survives service recreation, uses atomic replacement and restricted POSIX permissions, excludes credentials from responses and never loads them in demo mode. Failed persistence keeps the existing live connection.
+- Every model request now includes the repository-owned `ai-writing-rules.md`, separate from protocol formatting and the workspace automation playbook. The rules ask the model to execute clear requests and use already supplied facts.
+- Validation: **270 unit/HTTP tests**, **233 Chromium tests**, zero-warning lint and strict boundary/provider/conversation type checks pass. The browser suite covers clarification-to-edit, cumulative refinement, partial work, applying/rebasing, conversational apply, negated apply text, cancellation, retained drafts, reopening and document changes. Store tests cover restart persistence, secret omission, corruption, demo isolation and save failures.
+- Real HTTP SSL content was inspected in a temporary copied workspace using a clearly labeled local mock model, at desktop and 390px widths, including the separate connection dialog. Source bytes remain unchanged. Screenshots are local QA only and excluded from publication. Real-model quality remains unverified without a configured approved endpoint.
+
+
+## Chat-first entry and technical review
+
+- Base: AI PR head `d723dd0`. Opening the assistant now exposes a ready composer and optional scope controls. Current selections are reused; otherwise a bounded document scope automatically gathers editable paragraphs with inherited block/inline conditions. Ambiguous manual matches use an inline chapter choice and continue the same request.
+- A user can discuss a plan, correct it and explicitly execute it in chat. A displayed proposal uses the existing guarded apply action. Approving a plan may generate/apply ordinary text changes, while newly generated numeric/unit/command/model/constraint changes show concrete differences before applying. Exact/negated apply command handling remains covered.
+- Every changed fragment includes its source line and conditions. Heuristic technical-change flags guide review; they are not proof of technical correctness or complete semantic consistency checking. Rule v2 asks for consistent parameter explanations/examples only when the relationship and evidence are clear. No model confidence percentage is treated as validation.
+- Validation: **274 unit/HTTP tests**, **236 Chromium tests**, zero-warning lint and strict type checks pass. Added coverage for automatically scoped multi-paragraph patches, bounded/partial context, reused-content exclusion, inline model conditions, source-preserving edits, chat-to-plan-to-apply, optional manual scope and technical review notices. Desktop/mobile UI was inspected using an isolated real HTTP manual copy and a clearly labeled local mock endpoint; no source document was changed. Screenshots remain local QA.
+- Real-model factual accuracy still requires approved endpoint evaluation against real reported issues and development-approved expected revisions. The existing HTTP corpus is real source material; it alone does not establish whether an arbitrary model's proposed technical correction is correct.

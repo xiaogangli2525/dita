@@ -5,7 +5,8 @@
   const references = new Set(['href', 'conref', 'conrefend', 'copy-to', 'longdescref', 'data', 'xlink:href']);
   const fail = message => { throw Object.assign(new Error(message), { status: 400 }); };
   function normalize(value) {
-    if (typeof value !== 'string' || !value || /^[\/\\]|^[a-z][a-z\d+.-]*:/i.test(value) || /[\x00-\x1f]/.test(value)) fail('请输入仓库内的相对文件路径');
+    // eslint-disable-next-line no-control-regex -- Reject control characters in untrusted input.
+    if (typeof value !== 'string' || !value || /^[/\\]|^[a-z][a-z\d+.-]*:/i.test(value) || /[\x00-\x1f]/.test(value)) fail('请输入仓库内的相对文件路径');
     const parts = [];
     for (const part of value.replace(/\\/g, '/').split('/')) {
       if (!part || part === '.') continue;
@@ -14,11 +15,11 @@
     if (!parts.length) fail('文件路径不能为空'); return parts.join('/');
   }
   function resolve(from, href) {
-    if (!href || /^[\/\\]|^[a-z][a-z\d+.-]*:/i.test(href)) return null;
+    if (!href || /^[/\\]|^[a-z][a-z\d+.-]*:/i.test(href)) return null;
     const match = /^([^?#]*)([\s\S]*)$/.exec(href); let pathname;
     try { pathname = decodeURIComponent(match[1]); } catch { fail('引用包含无效的 URI 编码：' + href); }
     const directory = normalize(from).split('/').slice(0, -1).join('/');
-    return { path: pathname ? normalize((directory ? directory + '/' : '') + pathname) : normalize(from), suffix: match[2], self: !pathname, directory: /[\/]$/.test(pathname) };
+    return { path: pathname ? normalize((directory ? directory + '/' : '') + pathname) : normalize(from), suffix: match[2], self: !pathname, directory: /[/]$/.test(pathname) };
   }
   // Patch only reference attribute values; keep declaration/encoding, source
   // whitespace, comments, processing instructions, IDs and text untouched.

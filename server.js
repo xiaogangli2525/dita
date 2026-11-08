@@ -20,7 +20,6 @@ let DOCS_ROOT = path.resolve(process.env.DOCS_ROOT || path.join(__dirname, '..',
 const DEFAULT_DOCS_ROOT = DOCS_ROOT;
 const REPOSITORIES_ROOT = path.resolve(process.env.REPOSITORIES_ROOT || path.dirname(DEFAULT_DOCS_ROOT));
 const PUBLIC_ROOT = path.join(__dirname, 'public');
-const gitError = (message, status = 400) => Object.assign(new Error(message), { status });
 
 function safeResolve(relativePath) {
   const clean = String(relativePath || '').replace(/\\/g, '/').replace(/^\/+/, '');
@@ -47,7 +46,7 @@ async function checkedResolve(relative, options) {
 
 const git = createGitService({ getRoot: () => DOCS_ROOT, repositoriesRoot: REPOSITORIES_ROOT, checkedResolve });
 const remoteRepositories = createRemoteRepositories({ getRoot: () => DOCS_ROOT, repositoriesRoot: REPOSITORIES_ROOT, runGit: git.runGit });
-const { runGit, gitInfo, listRepositories, listBranches, gitWorktreeStatus, resolveSelectedRepository } = git;
+const { gitInfo, listRepositories, listBranches, gitWorktreeStatus, resolveSelectedRepository } = git;
 
 const MAP_REFERENCE_TAGS = new Set(["map", "bookmap", "topicref", "topichead", "topicgroup", "chapter", "appendix", "notices", "preface", "part", "frontmatter", "backmatter", "booklists"]);
 
@@ -344,7 +343,7 @@ const handleApi = createApiHandler({
   git, remoteRepositories,
   documents: { checkedResolve, walkFileTree, readXmlFile, writeXmlFile, relativePath, isDitaLike },
   maps: { parseXml, childElement, textOf, mapNodeToTree, applyMapOperation },
-  port: PORT, publicOrigin: process.env.PUBLIC_ORIGIN, demoMode: process.env.DITA_DEMO_MODE === '1'
+  port: PORT, publicOrigin: process.env.PUBLIC_ORIGIN, bindHost: HOST, demoMode: process.env.DITA_DEMO_MODE === '1'
 });
 
 async function serveStatic(res, relative) {
@@ -371,6 +370,12 @@ const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
     if (url.pathname.startsWith('/api/')) {
+      // AI works only on the submitted immutable source, performs no workspace
+      // IO, and verifies its token again on completion. Do not hold a workspace
+      // read/write lock during a potentially slow upstream model request.
+      if (['/api/ai/propose', '/api/ai/scan', '/api/ai/config'].includes(url.pathname)) {
+        await handleApi(req, res, url.pathname, url.searchParams); return;
+      }
       await workspaceLock(req.method !== 'GET' && url.pathname !== '/api/export/pdf', () => handleApi(req, res, url.pathname, url.searchParams));
       return;
     }

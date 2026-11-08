@@ -1,127 +1,138 @@
+// @ts-check
 'use strict';
 (function (root) {
+  const snapshots = typeof module !== 'undefined' ? require('./snapshot-data') : root.DitaSnapshotData;
   const resolver = typeof module !== 'undefined' ? require('./publication-resolver') : root.DitaPublicationResolver;
-  const publication = typeof module !== 'undefined' ? require('./publication-core') : root.DitaPublication;
-  const notesCore = typeof module !== 'undefined' ? require('./footnotes-core') : root.DitaFootnotesCore;
-  const domain = typeof module !== 'undefined' ? require('./manual-core') : root.DitaManualCore;
-  const xml = typeof module !== 'undefined' ? require('./xml-source') : root.DitaXmlSource;
+  const domain = typeof module !== 'undefined' ? require('./manual-domain') : root.DitaManualDomain;
+  const { collectPreviewPaths } = typeof module !== 'undefined' ? require('./manual-core') : root.DitaManualCore;
   const store = typeof module !== 'undefined' ? require('./document-store') : root.DitaDocumentStore;
   const profiling = typeof module !== 'undefined' ? require('./profiling-core') : root.DitaProfiling;
-  /** @param {import('./contracts').ManualPorts} A */
+
+  /** Workspace IO and snapshot freshness only; document rules live in manual-domain.
+   * @param {import('./data-contracts').CapturePorts} A */
   function createManualService(A) {
+    /** @returns {import('./data-contracts').ProjectConfig} */
+    const projectValue = () => A.project?.value || { schema: 1, models: [] };
+
+    /** @param {import('./data-contracts').CaptureContext} snapshot */
+    function sameContext(snapshot) {
+      if (!snapshot || snapshot.workspace !== A.api.token || snapshot.root !== A.state.root ||
+          snapshot.branch !== A.state.currentBranch || snapshot.projectContent !== A.project?.expectedContent ||
+          snapshot.projectError !== A.project?.error) return false;
+      const project = projectValue();
+      return snapshot.project.schema === project.schema && snapshot.project.models.length === project.models.length &&
+        snapshot.project.models.every((model, index) => model === project.models[index]);
+    }
+
+    /** @param {import('./data-contracts').ManualSnapshot} snapshot */
+    function contextCurrent(snapshot) {
+      return sameContext(snapshot) && (!A.noteRuleStore || A.noteRuleStore.current(snapshot.noteRules));
+    }
+
+    /** @param {import('./data-contracts').ManualSnapshot} snapshot */
+    function current(snapshot) {
+      if (!contextCurrent(snapshot)) return false;
+      /** @type {[string,string][]} */
+      const entries = [[snapshot.path, snapshot.content], ...Array.from(snapshot.files, /** @returns {[string,string]} */ ([path, file]) => [path, file.current])];
+      if (snapshot.filter) entries.push([snapshot.filter.path, snapshot.filter.current]);
+      return entries.every(([path, content]) => {
+        const file = A.state.filesMap.get(path), captured = snapshot.buffers.get(path);
+        return file ? file.current === content && (!captured || file.disk === captured.disk) : !captured;
+      });
+    }
+
+    /** @param {string} [path]
+     * @param {{resources?:boolean,filterPath?:string}} [options]
+     * @returns {Promise<import('./data-contracts').ManualSnapshot>} */
     async function capture(path = A.state.activePath, { resources = false, filterPath = '' } = {}) {
       if (!path) throw new Error('请先打开文档或功能手册');
       const workspace = A.api.token;
       await A.project?.ready?.();
       if (workspace !== A.api.token) throw new Error('工作区已切换，请重新打开');
-      const buffers = new Map(Array.from(A.state.filesMap, ([key, file]) => [key, store.snapshotDocument(file)]));
+      // Pin model settings before the first document read. Taking them after
+      // asynchronous IO could silently combine old documents with new settings.
+      const project = projectValue();
+      /** @type {import('./data-contracts').CaptureContext} */
+      const context = {
+        workspace, root: A.state.root, branch: A.state.currentBranch,
+        project: Object.freeze({ ...project, models: Object.freeze([...project.models]) }),
+        projectError: A.project?.error, projectContent: A.project?.expectedContent,
+        buffers: new Map(Array.from(A.state.filesMap, ([key, file]) => [key, store.snapshotDocument(file)]))
+      };
+      function assertContext() {
+        if (!sameContext(context)) throw new Error('工作区或型号设置已变化，请重新打开以更新快照');
+      }
+      /** @param {string} filePath */
       async function read(filePath) {
-        if (workspace !== A.api.token) throw new Error('工作区已切换，请重新打开');
-        if (buffers.has(filePath)) return buffers.get(filePath).current;
+        assertContext();
+        const buffered = context.buffers.get(filePath); if (buffered) return buffered.current;
         const response = await A.api.request('/api/file?path=' + encodeURIComponent(filePath));
         if (!response.ok) throw new Error(filePath + '：' + await A.api.error(response));
-        return response.text();
+        const content = await response.text();
+        assertContext();
+        return content;
       }
+
       const content = await read(path);
       if (filterPath && !/\.ditaval$/i.test(filterPath)) throw new Error('请选择工作区内的 DITAVAL 文件');
-      const filter = filterPath ? { path: filterPath, current: await read(filterPath) } : null;
+      const filter = filterPath ? Object.freeze({ path: filterPath, current: await read(filterPath) }) : null;
       let profile;
       try { profile = filter && profiling.compile(filter.current); }
-      catch (error) { throw new Error(filterPath + '：' + error.message); }
+      catch (error) { throw new Error(filterPath + '：' + (error instanceof Error ? error.message : String(error)), { cause: error }); }
       let map;
       if (/\.ditamap$/i.test(path)) {
         const mapSource = profile ? profile.filterSource(content) : content;
         if (!mapSource) throw new Error('DITAVAL 排除了整个手册，请检查过滤规则');
-        const response = await A.api.request('/api/map/resolve', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ path, content: mapSource }) });
+        const response = await A.api.request('/api/map/resolve', {
+          method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ path, content: mapSource })
+        });
         if (!response.ok) throw new Error(await A.api.error(response));
-        map = await response.json(); map.source = mapSource;
+        map = { ...await response.json(), path, source: mapSource };
+        assertContext();
       } else map = { title: path.split('/').pop(), path, children: [{ type: 'file', path }] };
+
       const files = new Map();
-      for (const entry of A.ditaCore.collectPreviewPaths(map.children || [])) files.set(entry.path, { path: entry.path, current: await read(entry.path) });
+      for (const entry of collectPreviewPaths(map.children || [])) files.set(entry.path, { path: entry.path, current: await read(entry.path) });
       if (resources) {
-        async function include(nodes) { for (const node of nodes) { if (node.type === 'file' && /\.(dita|xml)$/i.test(node.path) && !files.has(node.path)) files.set(node.path, { path: node.path, current: await read(node.path) }); if (node.children) await include(node.children); } }
+        /** @param {readonly import('./data-contracts').MapEntry[]} nodes */
+        async function include(nodes) {
+          for (const node of nodes) {
+            if (node.type === 'file' && /\.(dita|xml)$/i.test(node.path) && !files.has(node.path)) {
+              files.set(node.path, { path: node.path, current: await read(node.path) });
+            }
+            if (node.children) await include(node.children);
+          }
+        }
         await include(map.children || []);
       }
       const loaded = await resolver.loadDependencies(files, read, profile);
-      const snapshot = { capturedAt: new Date().toISOString(), path, content, map, files: loaded, filter, workspace, buffers, project: A.project?.value || { schema: 1, models: [] }, projectError: A.project?.error, projectContent: A.project?.expectedContent, root: A.state.root, branch: A.state.currentBranch };
+      const noteRules = A.noteRuleStore ? await A.noteRuleStore.read() : null;
+      const snapshot = snapshots.createSnapshot({
+        ...context, noteRules, capturedAt: new Date().toISOString(), path, content, map, filter,
+        files: loaded
+      });
       if (!current(snapshot)) throw new Error('内容已变化，请重新打开以更新快照');
       return snapshot;
     }
-    function current(snapshot) {
-      if (!snapshot || snapshot.workspace !== A.api.token || snapshot.root !== A.state.root || snapshot.branch !== A.state.currentBranch || snapshot.projectContent !== A.project?.expectedContent) return false;
-      const entries = [[snapshot.path, snapshot.content], ...Array.from(snapshot.files, ([path, file]) => [path, file.current])];
-      if (snapshot.filter) entries.push([snapshot.filter.path, snapshot.filter.current]);
-      return entries.every(([path, content]) => {
-        const file = A.state.filesMap.get(path);
-        return file ? file.current === content && (!snapshot.buffers.has(path) || file.disk === snapshot.buffers.get(path).disk) : !snapshot.buffers.has(path);
-      });
-    }
-    function prepare(snapshot, model = '', validateProject = true) {
-      const errors = [];
-      const profile = snapshot.filter ? profiling.compile(snapshot.filter.current) : null;
-      if (snapshot.projectError) errors.push({ path: '.dita-project.json', message: snapshot.projectError });
-      if (model && snapshot.project.models.length && !snapshot.project.models.includes(model)) errors.push({ path: snapshot.path, message: '型号不在项目清单中：' + model });
-      for (const [path, file] of snapshot.files) {
-        try {
-          resolver.walk(xml.inspectSource(file.current), (node, ancestors) => {
-            if (profile && [...ancestors, node].some(parent => !profile.keep(parent))) return;
-            const value = domain.decode(node.attrs.product);
-            if (/[()]/.test(value)) return;
-            const unknown = domain.checkModels(value.split(/\s+/).filter(Boolean), snapshot.project);
-            if (unknown.length) errors.push({ path, message: '未登记型号：' + unknown.join('、') });
-          });
-        } catch (error) { errors.push({ path, message: error.message }); }
-      }
-      if (validateProject && errors.length) throw Object.assign(new Error(errors.map(item => item.path + '：' + item.message).join('\n')), { issues: errors });
-      return publication.preparePublication({ map: snapshot.map, files: snapshot.files, model, profile }, A.ditaCore.collectPreviewPaths);
-    }
-    function listNotes(snapshot, model = '') {
-      const data = prepare(snapshot, model, false), originals = new Map();
-      const notes = data.notes.map((published, index) => {
-        const origin = published.origin;
-        if (!originals.has(origin.path)) originals.set(origin.path, notesCore.listFootnotes(snapshot.files.get(origin.path).current, origin.path));
-        const source = originals.get(origin.path).find(note => note.start === origin.start);
-        if (!source) throw new Error('无法定位引用源：' + origin.path);
-        const rendered = notesCore.listFootnotes(published.xml)[0];
-        return { ...source, sourceNote: source, index, number: published.number, label: published.label, text: rendered.text, conditions: published.conditions, common: published.common,
-          unmarked: published.unmarked, reused: Boolean(published.key) || published.path !== origin.path || source.referenced, publicationPath: published.path };
-      });
-      const locations = new Map(), models = new Set();
-      for (const [path, file] of snapshot.files) {
-        const nodes = new Map();
-        const visit = (node, indexes) => { nodes.set(node.start, { xmlPath: indexes.join('/'), name: node.name }); const product = domain.decode(node.attrs.product || ''); if (!/[()]/.test(product)) product.split(/\s+/).filter(Boolean).forEach(model => models.add(model)); node.children.filter(child => child.kind === 'element').forEach((child, index) => visit(child, [...indexes, index])); };
-        visit(xml.inspectSource(file.current), []); locations.set(path, nodes);
-      }
-      const calls = data.calls.flatMap(call => {
-        const location = locations.get(call.site.path)?.get(call.site.start), note = notes[call.number - 1];
-        return location && location.name === call.site.name && ['fn', 'xref'].includes(location.name) ? [{ ...call, path: call.site.path, xmlPath: location.xmlPath, note }] : [];
-      });
-      // Count actual uses, including block-level reuse whose individual fn
-      // markers are not directly editable. Definitions are not extra uses.
-      const bySource = new Map();
-      for (const call of data.calls) {
-        if (call.origin || call.definition) continue;
-        const note = notes[call.number - 1], location = locations.get(call.site.path)?.get(call.site.start);
-        if (!note || !location || location.name !== call.site.name) continue;
-        const sourceKey = note.path + '\n' + note.xmlPath, uses = bySource.get(sourceKey) || new Map();
-        const id = call.site.path + '\n' + location.xmlPath;
-        if (!uses.has(id)) uses.set(id, { path: call.site.path, xmlPath: location.xmlPath, label: note.label, conditions: call.conditions || note.conditions });
-        bySource.set(sourceKey, uses);
-      }
-      for (const note of notes) note.usages = [...(bySource.get(note.path + '\n' + note.xmlPath)?.values() || [])];
-      return { notes, calls, models: [...models], report: data.report };
-    }
-    function saveCandidates(snapshot) {
-      return [...new Set([snapshot.path, ...snapshot.files.keys(), ...(snapshot.filter ? [snapshot.filter.path] : [])])].map(path => snapshot.buffers.get(path)).filter(file => file?.dirty);
-    }
+
     async function listFilters() {
       const response = await A.api.request('/api/filters');
       if (response.status === 404) return { files: [] };
       if (!response.ok) throw new Error(await A.api.error(response));
       return response.json();
     }
-    return { capture, current, prepare, listNotes, saveCandidates, listFilters, listModels: snapshot => publication.listModels(snapshot.files, snapshot.filter && profiling.compile(snapshot.filter.current)),
-      scopePath: () => /\.ditamap$/i.test(A.state.activePath) ? A.state.activePath : A.state.selectedMap || A.state.activePath };
+
+    return Object.freeze({
+      ...domain, capture, current, contextCurrent, listFilters,
+      /** @param {import('./data-contracts').ManualSnapshot} snapshot */
+      verifyRules: snapshot => A.noteRuleStore?.verify(snapshot.noteRules),
+      scopePath() {
+        const { activePath, selectedMap } = A.state;
+        if (!activePath || /\.ditamap$/i.test(activePath)) return activePath || selectedMap;
+        const map = A.state.maps?.find(item => item.path === selectedMap);
+        return map && collectPreviewPaths(map.children || []).some(item => item.path === activePath) ? selectedMap : activePath;
+      }
+    });
   }
   const api = { createManualService };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaManualService = api;

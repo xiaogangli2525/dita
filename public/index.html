@@ -5,11 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="专注于 DITA 文档编写、结构编辑与变更审阅的本地工作台" />
   <title>DITA Lite · 文档工作台</title>
+  <script src="/theme-preference.js"></script>
+  <script src="/theme-init.js"></script>
   <link rel="stylesheet" href="/tokens.css" />
   <link rel="stylesheet" href="/styles.css" />
   <link rel="stylesheet" href="/workspace.css" />
   <link rel="stylesheet" href="/panels.css" />
   <link rel="stylesheet" href="/document.css" />
+  <link rel="stylesheet" href="/appearance.css" />
+  <link rel="stylesheet" href="/ai-authoring.css" />
 </head>
 <body>
   <header class="app-header">
@@ -156,12 +160,12 @@
       </div>
       <div id="visualPane" class="visual-pane active">
         <div id="authoringToolbar" class="authoring-toolbar" hidden>
-          <div class="authoring-context"><span class="writing-dot" aria-hidden="true"></span><strong>正文编写 <kbd title="唤出正文快捷工具">Alt+/</kbd></strong><span id="authoringHint">在正文放好光标，新增注脚</span></div>
+          <div class="authoring-context"><span class="writing-dot" aria-hidden="true"></span><strong>正文编写 <kbd title="唤出正文快捷工具">Alt+Z</kbd></strong><span id="authoringHint">在正文放好光标，新增注脚</span></div>
           <div class="authoring-actions">
             <select id="authorBlockSelect" aria-label="转换当前正文类型" title="转换当前段落；列表中用 Tab / Shift+Tab 调整层级"><option value="">转换…</option><option value="p">正文段落</option><option value="ul">无序列表</option><option value="ol">有序列表</option><optgroup id="noteTypeOptions" label="说明类型"></optgroup><option value="codeblock">代码块</option></select>
             <div class="author-format-actions" role="group" aria-label="选中文字格式"><button id="authorBoldButton" type="button" title="加粗／取消粗体 Ctrl/Cmd+B" aria-label="加粗／取消粗体"><strong>B</strong></button><button id="authorItalicButton" type="button" title="斜体／取消斜体 Ctrl/Cmd+I" aria-label="斜体／取消斜体"><em>I</em></button><button id="authorCodeButton" type="button" title="行内代码／取消行内代码" aria-label="行内代码／取消行内代码">&lt;/&gt;</button></div>
             <select id="authorInsertSelect" aria-label="插入正文内容" title="块元素插在当前块之后；图片和链接使用正文光标或选区"><option value="">插入…</option><option value="p">段落</option><option value="ul">无序列表</option><option value="ol">有序列表</option><option value="table">表格</option><option value="section">节</option><option value="note">说明</option><option value="codeblock">代码块</option><optgroup label="光标／选区处"><option value="image">图片</option><option value="xref">链接</option></optgroup></select><button id="authorFindButton" type="button" title="正文查找与替换 Ctrl/Cmd+F">查找</button>
-            <button id="authorUndoButton" type="button" title="撤销 Ctrl/Cmd+Z" disabled>撤销</button><button id="authorRedoButton" type="button" title="重做 Ctrl/Cmd+Y" disabled>重做</button><button id="newFootnoteButton" type="button" class="note-create-action" title="新增注脚 Ctrl/Cmd+Alt+N；正文快捷工具 Alt+/">＋ 新增注脚</button></div>
+            <button id="authorUndoButton" type="button" title="撤销 Ctrl/Cmd+Z" disabled>撤销</button><button id="authorRedoButton" type="button" title="重做 Ctrl/Cmd+Y" disabled>重做</button><button id="newFootnoteButton" type="button" class="note-create-action" title="新增注脚 Ctrl/Cmd+Alt+N；正文快捷工具 Alt+Z">＋ 新增注脚</button></div>
         </div>
         <div id="visualEditor" contenteditable="true" class="visual-editor dita-preview"></div>
       </div>
@@ -186,7 +190,7 @@
         <button id="footnotesTab" type="button" role="tab" aria-selected="false">型号注脚</button>
       </div>
       <section id="footnotesPanel" class="footnotes-panel" hidden aria-label="型号注脚管理">
-        <div class="footnote-panel-intro"><div class="footnote-panel-title"><h2>当前手册</h2><button id="panelNewFootnoteButton" class="note-create-action" type="button" title="先在正文放置光标，再新增注脚">＋ 新增</button></div><p id="footnoteScope">当前功能文档</p></div>
+        <div class="footnote-panel-intro"><div class="footnote-panel-title"><h2>当前手册</h2><button id="panelNewFootnoteButton" class="note-create-action" type="button" title="先在正文放置光标，再新增注脚">＋ 新增</button></div><button id="noteRulesButton" type="button" class="note-rules-open">导出型号规则（不改原文）</button><p id="footnoteScope">当前功能文档</p></div>
         <div class="footnote-stats"><div><strong id="footnoteCount">0</strong><span>条注脚</span></div><div><strong id="footnoteUnassigned">0</strong><span>条待确认</span></div></div>
         <div class="footnote-filters"><label>适用型号<select id="footnoteModel"><option value="">全部型号</option></select></label><input id="footnoteSearch" type="search" placeholder="查找命令、参数或注脚内容" aria-label="查找注脚"/></div>
         <label class="note-pending-filter"><input id="footnoteUnassignedOnly" type="checkbox"/>仅看待确认适用范围</label>
@@ -206,15 +210,26 @@
           <button id="acceptAllButton" type="button" title="接受所有修订">接受全部</button>
           <button id="rejectAllButton" type="button" title="拒绝所有修订">拒绝全部</button>
           <button id="closeReviewButton" type="button" title="关闭审阅面板">关闭审阅</button>
-          <span id="reviewMeta" class="review-meta"></span>
+          <span id="reviewMeta" class="review-meta" role="status"></span>
+          <span class="review-legend" hidden><span>绿色下划线：新增</span><span>红色删除线：删除</span><span>接受后清除标记</span></span>
         </div>
         <div id="diff" class="diff"></div>
       </div>
+      <section id="aiScanPanel" class="ai-scan-panel" aria-label="全文扫描" hidden>
+        <div class="ai-scan-toolbar">
+          <p class="ai-muted">按章节或手册扫描，点击引文即可定位正文。</p>
+          <div class="ai-scan-actions"><label>范围 <select id="aiScanScope"><option value="topic">当前章节</option><option value="manual">当前功能手册</option></select></label><button id="aiScanStart" type="button" class="primary-action">开始扫描</button><button id="aiScanCancel" type="button" hidden>停止</button></div>
+          <p id="aiScanStatus" class="ai-status" role="status" aria-live="polite"></p>
+        </div>
+        <div id="aiScanResults" class="ai-scan-results" aria-label="扫描建议"></div>
+      </section>
     </aside>
     <nav class="panel-rail" aria-label="辅助工具">
+      <button id="aiButton" type="button" aria-haspopup="dialog" aria-controls="aiDialog" title="AI 辅助写作"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5ZM20 2v4m-2-2h4"/></svg><span>AI 写作</span></button>
       <button id="inspectorToggleButton" type="button" data-panel="properties" aria-controls="inspector" aria-expanded="false" title="内容设置"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h5m4 0h7M4 12h9m4 0h3M4 18h2m4 0h10"/><circle cx="11" cy="6" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="8" cy="18" r="2"/></svg><span>设置</span></button>
       <button id="footnotesButton" type="button" data-panel="notes" aria-controls="inspector" aria-expanded="false" title="型号注脚"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v12H9l-5 4zM8 8h8M8 12h5"/></svg><span>注脚</span></button>
       <button type="button" data-panel="review" aria-controls="inspector" aria-expanded="false" title="审阅变更"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>审阅</span></button>
+      <button id="appearanceButton" class="appearance-button" type="button" aria-haspopup="dialog" aria-controls="appearanceDialog" title="界面外观"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18h1a2 2 0 0 0 1.4-3.4 1.3 1.3 0 0 1 .9-2.2H17a4 4 0 0 0 4-4A9 9 0 0 0 12 3Z"/><circle cx="7.5" cy="10" r=".7"/><circle cx="10" cy="6.8" r=".7"/><circle cx="14" cy="6.8" r=".7"/><circle cx="17" cy="10" r=".7"/></svg><span>外观</span></button>
     </nav>
   </main>
 
@@ -222,6 +237,47 @@
     <span id="status" class="status">就绪</span>
     <span class="statusbar-hint">Ctrl/Cmd+S 保存 · Ctrl/Cmd+F 查找</span>
   </footer>
+
+  <dialog id="aiDialog" class="workspace-dialog ai-dialog" aria-labelledby="aiHeading" aria-describedby="aiIntro">
+    <header class="ai-heading"><div><span class="ai-eyebrow">写作助手</span><h2 id="aiHeading">一起把这段文档改好</h2></div><div class="ai-heading-actions"><button id="aiSettingsButton" type="button" aria-haspopup="dialog" aria-controls="aiConnectionDialog" title="模型连接设置">模型设置</button><button id="aiClose" type="button" aria-label="关闭 AI 辅助写作">关闭</button></div></header>
+    <p id="aiIntro" class="ai-muted">直接说想怎样修改。我会结合当前内容给出方案，你可以继续纠正，满意后再应用。</p>
+    <p id="aiContextLabel" class="ai-context-label"></p>
+    <details id="aiTask" class="ai-task"><summary>调整修改范围（可选）</summary>
+    <fieldset id="aiInputs" class="ai-inputs"><legend class="visually-hidden">修改需求与原文定位</legend>
+      <div class="ai-fields"><label>定位范围<select id="aiScope"><option value="selection">打开时选中的文字</option><option value="topic">当前章节</option><option value="manual">当前功能手册</option></select></label><label>涉及型号（可选）<input id="aiModel" maxlength="100" placeholder="例如 ML307R"/></label></div>
+      <div class="ai-search-row"><label>定位关键词（可选）<input id="aiSearch" type="search" maxlength="200" placeholder="命令、参数或原文词句"/></label><button id="aiLocate" type="button">定位原文</button></div>
+    </fieldset>
+    </details>
+    <details id="aiSource" class="ai-source" hidden open><summary id="aiLocation" class="ai-location"></summary><pre id="aiOriginal"></pre><p id="aiConditions" class="ai-muted"></p></details>
+    <p id="aiProvider" class="ai-provider"></p>
+    <div class="ai-generate-actions"><button id="aiScanButton" type="button" aria-controls="aiScanPanel" disabled>全文扫描</button><button id="aiNewTask" type="button" hidden>新任务</button><button id="aiCancel" type="button" hidden>取消生成</button></div>
+    <p id="aiStatus" class="ai-status" role="status" aria-live="polite"></p>
+    <div id="aiWelcome" class="ai-welcome"><strong>从一句修改要求开始</strong><p>可以先讨论修改方案，也可以直接粘贴测试反馈。明确的修改先做成提案，未确定的地方再一起核对。</p><div class="ai-starters"><button type="button" data-ai-start="先帮我看看当前内容有哪些地方可以改进，给出修改方案。">先讨论修改方案</button><button type="button" data-ai-start="润色当前内容，让表达更简洁，保留命令、参数和技术含义。">润色当前内容</button></div></div>
+    <div id="aiCandidates" class="ai-candidates" aria-label="需要明确的修改位置"></div>
+    <section id="aiConversation" class="ai-conversation" aria-label="本次修改对话" hidden></section>
+    <section id="aiReview" class="ai-review" hidden aria-labelledby="aiReviewTitle"><div class="ai-proposal-heading"><h3 id="aiReviewTitle">修改提案</h3><button id="aiApply" type="button" class="primary-action" disabled>应用修改</button></div><p id="aiTechnicalReview" class="ai-technical-review" hidden></p><details id="aiDiff"><summary>查看原文与修改对照</summary><div id="aiChanges"></div></details>
+      <div id="aiAcceptArea"><div class="ai-review-actions"><button id="aiReject" type="button">放弃提案</button></div><p class="ai-muted">请核对技术事实与型号范围。应用后可撤销，正常保存才写入文件。</p></div>
+    </section>
+    <div id="aiComposer" class="ai-composer"><p id="aiReplyStatus" class="ai-status" role="status" aria-live="polite"></p><label for="aiReply">告诉我你想怎么改</label><textarea id="aiReply" rows="3" maxlength="6000" placeholder="直接说修改要求，或粘贴测试反馈……"></textarea><div class="ai-compose-actions"><span>Ctrl / ⌘ + Enter 发送</span><button id="aiSend" class="primary-action" type="button" disabled>发送</button></div></div>
+  </dialog>
+
+  <dialog id="aiConnectionDialog" class="workspace-dialog ai-settings-dialog" aria-labelledby="aiConnectionHeading">
+    <div class="ai-heading"><div><span class="ai-eyebrow">配置一次，持续使用</span><h2 id="aiConnectionHeading">模型连接</h2></div><button id="aiConnectionClose" type="button">完成</button></div>
+    <fieldset id="aiConnectionFields" class="ai-inputs"><legend class="visually-hidden">模型接口</legend>
+      <label>API 基础地址<input id="aiBaseUrl" type="url" maxlength="2000" placeholder="https://your-endpoint.example/v1" autocomplete="off"/></label>
+      <div class="ai-fields"><label>模型名称<input id="aiConnectionModel" maxlength="150" placeholder="接口提供的准确模型名" autocomplete="off"/></label><label>API Key<input id="aiKey" type="password" maxlength="8192" autocomplete="new-password"/></label></div>
+      <details class="ai-advanced"><summary>内网接口选项</summary><label class="checkbox-row"><input id="aiAllowHttp" type="checkbox"/>允许公司内网 HTTP 接口</label><label class="checkbox-row"><input id="aiNoAuth" type="checkbox"/>此接口不需要 Key</label></details>
+      <button id="aiConnectionSave" type="button" class="primary-action">保存连接</button>
+    </fieldset><p id="aiConnectionHint" class="ai-muted" role="status"></p>
+  </dialog>
+
+  <dialog id="appearanceDialog" class="workspace-dialog appearance-dialog" aria-labelledby="appearanceHeading" aria-describedby="appearanceIntro">
+    <div class="appearance-heading"><div><p class="appearance-kicker">你的写作空间</p><div class="appearance-title-row"><h2 id="appearanceHeading">界面外观</h2><span id="appearanceCurrent" class="appearance-current" role="status"></span></div></div><button id="appearanceClose" type="button" aria-label="关闭外观设置">完成</button></div>
+    <p id="appearanceIntro">选择一种舒服的风格，专注于手册本身。</p>
+    <fieldset class="theme-options"><legend class="visually-hidden">选择界面风格</legend><div id="appearanceChoices" class="theme-choices"></div></fieldset>
+    <p id="appearanceHint" class="appearance-hint" role="status"></p>
+    <p class="appearance-scope">仅改变工作台显示，导出的 HTML、PDF、Word 等手册保留交付版式。</p>
+  </dialog>
 
   <dialog id="shortcutHelpDialog" class="workspace-dialog shortcut-help-dialog" aria-labelledby="shortcutHelpHeading" aria-describedby="shortcutHelpIntro">
     <div class="shortcut-help-heading"><h2 id="shortcutHelpHeading">快捷键</h2><button id="shortcutHelpClose" type="button" aria-label="关闭快捷键帮助" autofocus>关闭</button></div>
@@ -235,7 +291,7 @@
     </tbody></table>
     <h3>正文编写</h3>
     <table><thead><tr><th scope="col">操作</th><th scope="col">快捷键</th></tr></thead><tbody>
-      <tr><td>唤出／收起光标旁的快捷工具</td><td><kbd>Alt + /</kbd></td></tr>
+      <tr><td>唤出／收起光标旁的快捷工具</td><td><kbd>Alt + Z</kbd></td></tr>
       <tr><td>在快捷工具间移动</td><td><kbd>←</kbd> <kbd>→</kbd>，<kbd>Enter</kbd> 执行</td></tr>
       <tr><td>收起快捷工具并返回原选区</td><td><kbd>Esc</kbd></td></tr>
       <tr><td>加粗／斜体（先选中文字）</td><td><kbd>Ctrl / ⌘ + B</kbd> / <kbd>Ctrl / ⌘ + I</kbd></td></tr>
@@ -249,9 +305,9 @@
       <tr><td>注脚窗口中应用修改／插入</td><td><kbd>Ctrl / ⌘ + Enter</kbd></td></tr>
       <tr><td>关闭当前窗口或取消</td><td><kbd>Esc</kbd></td></tr>
     </tbody></table>
-    <p class="shortcut-help-note">先在普通正文、列表或表格文字中放置光标或选择文字，再按 Alt+/。鼠标点击和移动光标不会自动弹出工具；顶部工具栏也可直接使用。</p>
+    <p class="shortcut-help-note">先在普通正文、列表或表格文字中放置光标或选择文字，再按 Alt+Z。鼠标点击和移动光标不会自动弹出工具；顶部工具栏也可直接使用。</p>
   </dialog>
-  <div id="authorQuickTools" class="author-quick-tools" role="toolbar" aria-label="正文快捷工具" aria-keyshortcuts="Alt+/" hidden>
+  <div id="authorQuickTools" class="author-quick-tools" role="toolbar" aria-label="正文快捷工具" aria-keyshortcuts="Alt+Z" hidden>
     <button type="button" data-quick-format="b" aria-label="快捷加粗" title="加粗 / 取消粗体"><strong>B</strong></button><button type="button" data-quick-format="i" aria-label="快捷斜体" title="斜体 / 取消斜体"><em>I</em></button><button type="button" data-quick-format="codeph" aria-label="快捷行内代码" title="行内代码">&lt;/&gt;</button><button type="button" data-quick-action="clear">清除格式</button>
     <button type="button" data-quick-action="row-after">下方插行</button><button type="button" data-quick-action="col-after">右侧插列</button><button type="button" data-quick-action="header">设为表头</button>
     <button type="button" data-quick-action="edit-link">编辑链接</button><button type="button" data-quick-action="unlink">取消此链接</button>
@@ -275,6 +331,7 @@
   </section>
   <dialog id="modelExportDialog" class="footnote-dialog" aria-labelledby="modelExportHeading">
     <form id="modelExportForm">
+      <div class="delivery-dialog-content">
       <h2 id="modelExportHeading">交付功能手册</h2>
       <nav class="delivery-steps" aria-label="交付步骤">
         <button type="button" data-delivery-step="configure" aria-current="step">1 配置</button>
@@ -283,24 +340,31 @@
       </nav>
       <p id="modelExportScope"></p><p id="deliverySource" class="muted"></p>
       <section id="deliveryConfigure" aria-label="配置交付范围">
+      <label>交付范围<select id="exportScope"></select></label>
       <label>适用型号<select id="exportModel"><option value="">全部型号</option></select></label>
-      <label>正文条件过滤<select id="exportFilter"><option value="">不使用 DITAVAL</option></select></label>
-      <p id="exportFilterHint" class="muted">选择文档库中的 DITAVAL，过滤正文及注脚中不适用的内容。</p>
+      <label class="checkbox-row"><input id="exportPrefixNotes" type="checkbox"/>按“型号：说明”筛选注脚（请预览核对）</label>
+      <p class="muted">仅处理明确的型号前缀；共用型号列表在导出副本中只显示当前型号。复杂说明使用独立规则。</p>
+      <button id="exportReviewRules" type="button">核对注脚型号规则</button>
+      <label>正文条件过滤<select id="exportFilter"><option value="">不过滤正文（保留全部内容）</option></select></label>
+      <p id="exportFilterHint" class="muted">条件文件（DITAVAL）决定哪些标记内容保留，不负责识别文字中的型号。</p>
       <label>文件格式<select id="exportFormat"><option value="html">HTML（推荐交付）</option><option value="pdf">PDF</option><option value="docx">Word（.docx）</option><option value="md">Markdown</option></select></label>
       <p id="exportFormatHint" class="muted"></p>
       <label>文档版本<input id="exportVersion" maxlength="80" placeholder="例如 V1.2，可留空"/></label>
-      <p>型号选择筛选注脚；DITAVAL 可进一步过滤正文、图片和注脚。未标注型号的注脚会保留，除非被 DITAVAL 排除。</p>
+      <p>型号选择、注脚文字规则和正文条件过滤分别生效。普通共用注脚保留；有型号差异但范围不明确的内容须先核对。</p>
       </section>
       <p id="modelExportSummary" role="status"></p>
+      <p id="modelExportError" class="footnote-edit-error" role="alert"></p>
       <section id="deliveryCheck" aria-label="交付检查" hidden>
         <p id="deliveryCheckStatus" role="status">点击“发布前检查”，核对文档、图片和链接。</p>
+        <p id="deliveryNoteIssueCount" class="delivery-note-count" hidden></p>
+        <button id="deliveryEnablePrefix" type="button" hidden>启用前缀筛选并重新检查</button>
         <ul id="deliveryChecks" class="delivery-checks"></ul>
       </section>
       <section id="deliveryReady" aria-label="确认导出" hidden>
         <h3>文件已准备好</h3><p id="deliveryReadySummary"></p>
         <p>预览和导出使用同一份内容。包含当前未保存修改，导出不会代替保存。</p>
       </section>
-      <p id="modelExportError" class="footnote-edit-error" role="alert"></p>
+      </div>
       <div class="footnote-dialog-actions"><button id="modelExportCancel" type="button">取消</button><button type="submit" value="check">发布前检查</button><button type="submit" value="preview">交付预览</button><button type="submit" value="download" class="primary-action">导出文件</button></div>
     </form>
   </dialog>
@@ -336,6 +400,23 @@
       <div class="footnote-dialog-actions"><button id="newFootnoteCancel" type="button">取消</button><button type="submit" class="primary-action">插入注脚</button></div>
     </form>
   </dialog>
+  <dialog id="noteRulesDialog" class="workspace-dialog note-rules-dialog" aria-labelledby="noteRulesHeading">
+    <h2 id="noteRulesHeading">注脚的型号导出规则</h2>
+    <p>只处理导出副本。规则保存在独立配置中，原始 DITA 保持不变。</p>
+    <p id="noteRulesCount" class="muted"></p>
+    <div class="note-rules-layout">
+      <nav id="noteRuleList" aria-label="选择注脚规则"></nav>
+      <section>
+        <p id="noteRuleSource" class="muted"></p><p id="noteRuleStatus" role="status"></p>
+        <details><summary>查看完整原注脚</summary><p id="noteRuleOriginal" class="note-rule-text"></p></details>
+        <div class="note-rule-tools"><button id="noteRuleSuggestions" type="button">填入型号建议（需核对）</button><button id="noteRuleCommon" type="button">确认整条通用</button></div>
+        <div id="noteRuleParts"></div><datalist id="noteRuleModels"></datalist>
+        <label>筛选预览<select id="noteRulePreviewModel"></select></label><p id="noteRulePreview" class="note-rule-preview"></p>
+      </section>
+    </div>
+    <p id="noteRulesError" class="form-error" role="alert"></p>
+    <div class="dialog-actions"><button id="noteRuleDelete" type="button">移除这条规则</button><button id="noteRulesClose" type="button">关闭</button><button id="noteRuleSave" type="button">确认并保存规则</button></div>
+  </dialog>
   <datalist id="projectModelOptions"></datalist>
   <dialog id="saveScopeDialog" class="workspace-dialog" aria-labelledby="saveScopeTitle"><form id="saveScopeForm">
     <h2 id="saveScopeTitle">保存功能手册及依赖</h2><p>只保存勾选的文件；其他修改继续保留在编辑区。</p>
@@ -345,7 +426,7 @@
   <dialog id="projectDialog" class="workspace-dialog" aria-labelledby="projectHeading"><form id="projectForm">
     <h2 id="projectHeading">项目型号清单</h2><p>每行一个型号。配置保存在当前 Git 仓库，清单仅用于校验，不会批量改动文档。留空表示尚未启用清单校验。</p>
     <label>有效型号<textarea id="projectModels" rows="9" placeholder="M100&#10;M200&#10;M300"></textarea></label>
-    <button id="projectDiscover" type="button">从当前手册导入已有型号</button><p id="projectError" class="form-error" role="alert"></p>
+    <button id="projectDiscover" type="button">从当前手册识别型号</button><p id="projectDiscoverySummary" class="muted" role="status">识别 product 中的型号及“模组系列／模组子型号”表的系列名；不从注脚文字推断适用范围。</p><p id="projectError" class="form-error" role="alert"></p>
     <div class="dialog-actions"><button id="projectClose" type="button">取消</button><button type="submit" class="primary-action">保存清单</button></div>
   </form></dialog>
   <dialog id="draftDialog" class="workspace-dialog" aria-labelledby="draftHeading">
@@ -361,7 +442,7 @@
     <h2 id="remoteImportHeading">加载远程文档库</h2><p>将仓库克隆到服务所在机器的工作区，再选择要编写的功能手册。</p>
     <label>Git 地址<input id="remoteUrl" required maxlength="2048" placeholder="https://github.com/company/manual.git 或 git@host:team/manual.git"/></label>
     <p>私有库使用运行服务机器已有的 Git 凭据或 SSH 配置，请勿在地址中填写密码或 Token。</p>
-    <label>本地名称<input id="remoteName" required maxlength="64" pattern="[A-Za-z0-9][A-Za-z0-9._-]*" placeholder="例如 mqtt-manual"/></label>
+    <label>本地名称<input id="remoteName" required maxlength="64" pattern="[A-Za-z0-9][A-Za-z0-9._-]*" placeholder="例如 http-manual"/></label>
     <label>远程分支<select id="remoteBranch"><option value="">默认分支</option></select></label><button id="remoteBranchesButton" type="button">读取远程分支</button>
     <p id="remoteImportStatus" role="status"></p><p id="remoteImportError" class="form-error" role="alert"></p>
     <div class="dialog-actions"><button id="remoteImportCancel" type="button">取消</button><button type="submit" class="primary-action">克隆并选择手册</button></div>
@@ -378,8 +459,8 @@
   <dialog id="newDocumentDialog" class="workspace-dialog" aria-labelledby="newDocumentHeading"><form id="newDocumentForm">
     <h2 id="newDocumentHeading">新建功能文档</h2><p>选择模板后，在正文中继续编写。文件创建在当前仓库已有目录中。</p>
     <label>文档模板<select id="newDocumentTemplate"></select></label>
-    <label>文档标题<input id="newDocumentTitle" required maxlength="200" placeholder="例如 MQTT 连接命令"/></label>
-    <label>文件路径<input id="newDocumentPath" required placeholder="例如 mqtt-connect.dita"/></label>
+    <label>文档标题<input id="newDocumentTitle" required maxlength="200" placeholder="例如 HTTP 请求命令"/></label>
+    <label>文件路径<input id="newDocumentPath" required placeholder="例如 http-request.dita"/></label>
     <p>新文档可通过目录结构工具加入当前功能手册。</p><p id="newDocumentError" class="form-error" role="alert"></p>
     <div class="dialog-actions"><button id="newDocumentCancel" type="button">取消</button><button id="newDocumentSubmit" type="submit" class="primary-action">创建并编写</button></div>
   </form></dialog>
@@ -414,14 +495,31 @@
   <script src="/document-presentation.js"></script>
   <script src="/footnotes-core.js"></script>
   <script src="/footnotes.js"></script>
+  <script src="/review-markup.js"></script>
+  <script src="/diff-core.js"></script>
+  <script src="/review-store.js"></script>
   <script src="/review.js"></script>
   <script src="/document-store.js"></script>
+  <script src="/workspace-session.js"></script>
+  <script src="/snapshot-data.js"></script>
+  <script src="/delivery-data.js"></script>
   <script src="/workspace-client.js"></script>
   <script src="/publication-resolver.js"></script>
+  <script src="/model-discovery.js"></script>
   <script src="/publication-core.js"></script>
+  <script src="/xml-dom.js"></script>
+  <script src="/oxygen-core.js"></script>
+  <script src="/author-renderer.js"></script>
+  <script src="/author-source.js"></script>
+  <script src="/markdown-preview.js"></script>
+  <script src="/delivery-document.js"></script>
   <script src="/delivery-core.js"></script>
-  <script src="/diff-core.js"></script>
   <script src="/app-core.js"></script>
+  <script src="/model-note-text.js"></script>
+  <script src="/note-rules-core.js"></script>
+  <script src="/note-rule-store.js"></script>
+  <script src="/note-rules.js"></script>
+  <script src="/manual-domain.js"></script>
   <script src="/manual-service.js"></script>
   <script src="/browser-files.js"></script>
   <script src="/draft-store.js"></script>
@@ -429,6 +527,13 @@
   <script src="/project.js"></script>
   <script src="/save.js"></script>
   <script src="/search-core.js"></script>
+  <script src="/ai-edit-core.js"></script>
+  <script src="/ai-scan-core.js"></script>
+  <script src="/ai-conversation.js"></script>
+  <script src="/ai-context.js"></script>
+  <script src="/ai-connection.js"></script>
+  <script src="/ai-scan.js"></script>
+  <script src="/ai-authoring.js"></script>
   <script src="/search.js"></script>
   <script src="/resources.js"></script>
   <script src="/release-store.js"></script>
@@ -440,6 +545,8 @@
   <script src="/documents.js"></script>
   <script src="/input-history.js"></script>
   <script src="/document-loader.js"></script>
+  <script src="/map-source.js"></script>
+  <script src="/map-author-controller.js"></script>
   <script src="/editor-controller.js"></script>
   <script src="/note-scope.js"></script>
   <script src="/author-notes.js"></script>
@@ -457,9 +564,16 @@
   <script src="/body-navigation.js"></script>
   <script src="/document-label.js"></script>
   <script src="/workspace-shell.js"></script>
+  <script src="/appearance-controller.js"></script>
   <script src="/remote-libraries.js"></script>
   <script src="/application.js"></script>
   <script src="/footnote-presentation.js"></script>
+  <script src="/app-dom.js"></script>
+  <script src="/workspace-view.js"></script>
+  <script src="/workspace-controller.js"></script>
+  <script src="/document-navigation.js"></script>
+  <script src="/menu-controller.js"></script>
+  <script src="/app-actions.js"></script>
   <script src="/app.js"></script>
 </body>
 </html>

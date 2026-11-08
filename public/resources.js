@@ -58,7 +58,7 @@
     }
     async function load() {
       const workspace = snapshot.workspace, kind = get('resourceKind').value, generation = ++loadGeneration, active = snapshot;
-      let nextTargets = []; get('resourceTarget').replaceChildren();
+      let nextTargets; get('resourceTarget').replaceChildren();
       if (kind === 'image') {
         const response = await A.api.request('/api/assets'); if (!response.ok) throw new Error(await A.api.error(response));
         const result = await response.json(); nextTargets = result.files.map(path => ({ path, label: path }));
@@ -135,6 +135,7 @@
         if (!file || snapshot.workspace !== A.api.token || file.current !== snapshot.current || snapshot.activePath !== A.state.activePath) throw new Error('内容已变化，请重新打开资源选择器');
         if (snapshot.author && A.state.mode !== 'visual' || !snapshot.author && A.state.mode !== 'editor') throw new Error('编辑模式已变化，请重新打开资源选择器');
         const href = kind === 'link' ? get('resourceHref').value.trim() : hrefOf(target);
+        // eslint-disable-next-line no-control-regex -- Reject control characters in untrusted input.
         if (!href || /[\u0000-\u001f\u007f\\]/.test(href) || href.startsWith('//') || /^(?!https?:|mailto:)[a-z][a-z\d+.-]*:/i.test(href)) throw new Error('请输入有效的文档相对地址、锚点或 HTTP / HTTPS / mailto 链接');
         const label = get('resourceLabel').value.trim() || (snapshot.edit ? '' : target?.label || href), dimensions = {};
         if (kind === 'image') for (const name of ['width', 'height']) {

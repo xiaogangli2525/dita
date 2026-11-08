@@ -55,7 +55,13 @@
       for (const [start, end] of ranges.reverse()) source = source.slice(0, start) + source.slice(end);
       return source;
     }
-    return { keep, filterSource };
+    const names = { product:'产品标记', audience:'读者', platform:'平台', props:'条件', otherprops:'其他条件', deliveryTarget:'发布目标' };
+    const actions = { include:'保留', exclude:'排除', passthrough:'正常保留' };
+    const summary = [...rules].map(([key, action]) => {
+      const [att,value] = key.split('\n');
+      return actions[action] + (att ? names[att] : '所有条件') + (value ? value==='tbd'?'为“待定（tbd）”的内容':'为“'+value+'”的内容' : '的默认内容');
+    }).join('；') || '保留全部标记内容';
+    return { keep, filterSource, summary };
   }
   const api = { compile };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaProfiling = api;

@@ -8,7 +8,6 @@ const domain = require('../public/manual-core');
 const notes = require('../public/footnotes-core');
 const publication = require('../public/publication-core');
 const { findMatches } = require('../public/search-core');
-const core = require('../public/app-core');
 function storage() {
   const map = new Map(); return { get length() { return map.size; }, key: index => [...map.keys()][index], getItem: key => map.get(key) ?? null, setItem: (key, value) => map.set(key, value), removeItem: key => map.delete(key) };
 }
@@ -21,7 +20,7 @@ function app() {
     ['shared.dita', { path: 'shared.dita', current: resource.replace('SHARED', 'WORKING'), disk: resource, dirty: true }],
     ['other.dita', { path: 'other.dita', current: '<topic>dirty</topic>', disk: '<topic/>', dirty: true }]
   ]) };
-  const A = { state, project: { value: { schema: 1, models: ['M100', 'M200'] }, expectedContent: 'config' }, ditaCore: core,
+  const A = { state, project: { value: { schema: 1, models: ['M100', 'M200'] }, expectedContent: 'config' },
     api: { token: 'one', request: async url => { assert.equal(url, '/api/map/resolve'); return { ok: true, json: async () => ({ title: 'Function', children: [{ type: 'file', path: 'topic.dita' }] }) }; }, error: async () => 'failed' } };
   return A;
 }
@@ -37,6 +36,18 @@ test('manual snapshot shares buffers, dependency save scope and the exact note p
   assert.equal(external.sourceNote.source, A.state.filesMap.get('shared.dita').current);
   A.state.filesMap.get('shared.dita').current += ' ';
   assert.equal(service.current(snapshot), false);
+});
+
+test('delivery defaults to the selected manual only for its own topics', () => {
+  const A = app();
+  A.state.maps = [{ path: 'main.ditamap', children: [{ type: 'file', path: 'topic.dita' }] }];
+  A.state.selectedMap = 'main.ditamap';
+  const service = createManualService(A);
+  for (const [active, expected] of [['main.ditamap', 'main.ditamap'], ['topic.dita', 'main.ditamap'],
+    ['independent.dita', 'independent.dita'], ['other.ditamap', 'other.ditamap']]) {
+    A.state.activePath = active;
+    assert.equal(service.scopePath(), expected);
+  }
 });
 test('manual snapshots become stale after save acknowledgements, project updates and workspace switches', async () => {
   for (const change of [A => { A.state.filesMap.get('shared.dita').disk += ' '; }, A => { A.project.expectedContent = 'next'; }, A => { A.api.token = 'next'; }, A => { A.state.filesMap.delete('topic.dita'); }]) {
@@ -122,4 +133,30 @@ test('manual capture waits for project identity before freezing its model rules'
   const promise = createManualService(A).capture(); assert.equal(requested, false);
   A.project.value = { schema: 1, models: ['M100', 'M200', 'M300'] }; A.project.expectedContent = 'latest'; release();
   const snapshot = await promise; assert.deepEqual(snapshot.project.models, ['M100', 'M200', 'M300']); assert.equal(snapshot.projectContent, 'latest');
+});
+
+test('manual capture rejects model/workspace changes during IO instead of mixing capture generations', async () => {
+  for (const change of [
+    A => { A.project.expectedContent = 'updated'; A.project.value = { schema: 1, models: ['M100'] }; },
+    A => { A.project.value.models.push('M300'); },
+    A => { A.project.error = 'Configuration read failed'; },
+    A => { A.state.root = '/another-repository'; },
+    A => { A.state.currentBranch = 'another-branch'; }
+  ]) {
+    const A = app(); let release, started;
+    const held = new Promise(resolve => { started = resolve; });
+    A.api.request = () => new Promise(resolve => { release = () => resolve({ ok: true, json: async () => ({ children: [{ type: 'file', path: 'topic.dita' }] }) }); started(); });
+    const pending = createManualService(A).capture(); await held;
+    change(A); release();
+    await assert.rejects(pending, /变化|快照/);
+  }
+});
+
+test('captured project/file records are detached and protected while service freshness follows live state', async () => {
+  const A = app(), service = createManualService(A), snapshot = await service.capture();
+  assert.notEqual(snapshot.project, A.project.value); assert.notEqual(snapshot.project.models, A.project.value.models);
+  assert.throws(() => snapshot.project.models.push('BAD'), TypeError);
+  assert.throws(() => { snapshot.files.get('topic.dita').current = '<topic>BAD</topic>'; }, TypeError);
+  A.project.value.models.push('M300');
+  assert.deepEqual(snapshot.project.models, ['M100', 'M200']); assert.equal(service.current(snapshot), false);
 });
