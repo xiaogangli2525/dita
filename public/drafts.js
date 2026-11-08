@@ -68,7 +68,10 @@
     A.events.on('workspace:willChange', flush);
     A.events.on('workspace:changed', update);
     A.events.on('file:opened', () => { update(); });
-    A.events.on('file:closed', path => { guarded(() => store.remove(scope(), path)); pending.delete(JSON.stringify([A.state.root, A.state.currentBranch, path])); update(); });
+    // A clean disk version may coexist with a recoverable draft from an older
+    // page. Only an explicit unsaved-change discard removes that backup.
+    A.events.on('file:discarded', file => { guarded(() => store.remove(scope(), file.path)); });
+    A.events.on('file:closed', path => { pending.delete(JSON.stringify([A.state.root, A.state.currentBranch, path])); update(); });
     root.addEventListener('pagehide', flush); root.addEventListener('beforeunload', flush);
     document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flush(); });
     get('draftsButton').addEventListener('click', show); get('draftClose').addEventListener('click', () => get('draftDialog').close());

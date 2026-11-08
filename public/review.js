@@ -222,7 +222,6 @@ function applyOxyChange(file, change, accept) {
   if (state.mode === 'review') {
     const activeFile = state.filesMap.get(state.activePath);
     if (activeFile && /\.ditamap$/i.test(activeFile.path)) {
-      updateVisual(activeFile, true);
       renderMapReview(activeFile);
     } else {
       updateVisual(file, true);
@@ -456,9 +455,7 @@ function applyReviewedGroup(frame, index, decision) {
     setStatus('原文已变化，已更新审阅，请重新核对所选变更块。');
     return;
   }
-  const changed = writeReviewDecisions(frame, new Map([[index, decision]]));
-  const active = state.filesMap.get(frame.rootPath);
-  if (changed && active !== frame.file) updateVisual(active, true);
+  writeReviewDecisions(frame, new Map([[index, decision]]));
   renderTabs();
   updateHistoryButtons();
   renderActiveReview();

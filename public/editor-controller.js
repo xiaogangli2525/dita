@@ -53,9 +53,12 @@
       if (file) mapController.scheduleRefresh(file);
       if (!file) return;
       if (state.activePath !== file.path) {
-        if (state.mode === 'visual' && state.mapAuthorPaths?.has(file.path)) {
+        const active = state.filesMap.get(state.activePath);
+        if (/\.ditamap$/i.test(active?.path || '') && ['visual', 'preview', 'review'].includes(state.mode) && state.mapAuthorPaths?.has(file.path)) {
           const surface = Array.from(dom.visualEditor.querySelectorAll('.map-topic-surface')).find(node => node.dataset.mapTopicPath === file.path);
           if (surface) renderAuthorSurface(file, surface);
+          else updateVisual(active);
+          if (state.mode === 'review') renderMapReview(active);
         }
         return;
       }
@@ -83,19 +86,7 @@
           Array.from(dom.visualEditor.querySelectorAll('.map-topic-surface')).find(node => node.dataset.mapTopicPath === file.path);
         if (surface) { renderAuthorSurface(file, surface); return; }
       }
-      if (state.activePath === file.path) {
-        refreshFileViews(file);
-        return;
-      }
-      const active = state.filesMap.get(state.activePath);
-      if (active && /\.ditamap$/i.test(active.path) && state.mapAuthorPaths?.has(file.path)) {
-        state.suppressVisualInput = true;
-        updateVisual(active);
-        state.suppressVisualInput = false;
-        renderTabs();
-        updateHistoryButtons();
-        if (state.mode === 'review') renderMapReview(active);
-      }
+      refreshFileViews(file);
     }
 
     function setFileContent(file, content, { record = true, updateEditor = true, historyMeta, group, render = true } = {}) {
@@ -298,7 +289,7 @@
         const prefix = current.cloneRange(); prefix.selectNodeContents(block); prefix.setEnd(current.endContainer, current.endOffset);
         bookmark = { path: block.ditaSourcePath, offset: prefix.toString().length };
       }
-      rendered ||= ditaCore.createAuthorTopic(file.current, document, false, file.path);
+      rendered ||= ditaCore.createAuthorTopic(file.current, document, state.mode === 'review', file.path);
       surface.replaceChildren(...rendered.childNodes);
       surface.ditaSourceContent = file.current;
       events.emit('author:rendered');

@@ -1,7 +1,10 @@
 'use strict';
 (function (root) {
   const core = typeof module !== 'undefined' ? require('./ai-scan-core') : root.DitaAiScanCore;
-  const findingKey = finding => finding.category + ':' + finding.evidence.map(ref => ref.id).sort().join(',');
+  // One paragraph can contain several issues of the same category. Identify
+  // the problem and its exact quotes; advice can evolve on a retry.
+  const findingKey = finding => JSON.stringify([finding.category, finding.summary,
+    finding.evidence.map(ref => JSON.stringify([ref.id, ref.quote])).sort()]);
 
   function mergeResult(batch, result, previous = null) {
     if (!result || !Array.isArray(result.findings) || result.findings.length > core.limits.items * 10) throw Error('扫描建议格式无效');
