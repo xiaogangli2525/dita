@@ -101,6 +101,7 @@ The application remains a local Node server and buildless browser client. This c
 | XML/Author adapters | `xml-dom.js`, `author-renderer.js`, `author-source.js`, `oxygen-core.js` | XML validation/DOM/ranges, explicit-document projection, source writes and document-local Oxygen processing |
 | Delivery rendering | `delivery-core.js`, `delivery-document.js`, `markdown-preview.js`, `delivery-data.js` | DITA-to-output conversion, data-only HTML layout and standalone Markdown preview/highlighting |
 | Diff algorithms | `diff-core.js` | Pure comparison/grouping and review application algorithms |
+| Review workflow | `review.js`, `review-view.js`, `review-store.js`, `review-markup.js` | Shared Topic/Map change blocks, Git decision and history transactions, scoped progress storage and source-aligned body decorations |
 | Editor coordination | `editor-controller.js` | One document history across Source, Topic/Map Author and review; explicit service ports and surface/mode updates |
 | Map authoring | `map-author-controller.js`, `map-source.js` | Instance-local asynchronous Map rendering/refresh jobs; source-range edits for Map/Bookmap titles |
 | Workspace presentation | `workspace-view.js`, `workspace-shell.js`, `menu-controller.js`, `app-dom.js`, `document-label.js`, `delivery-view.js` | Panel visibility, resizing, focus and document labels; presentation of delivery configuration, preflight and export readiness |

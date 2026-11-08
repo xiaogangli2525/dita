@@ -1,10 +1,12 @@
 'use strict';
 (function (root) {
   const markup = typeof module !== 'undefined' ? require('./review-markup') : root.DitaReviewMarkup;
+  const views = typeof module !== 'undefined' ? require('./review-view') : root.DitaReviewView;
   const progress = typeof module !== 'undefined' ? require('./review-store') : root.DitaReviewStore;
   function createReviewController({ state, dom, ditaCore, setFileContent, updateVisual, renderTabs, updateHistoryButtons, setStatus }) {
     const { lineDiff, groupDiffRows, applyDiffGroups, inlineDiff } = ditaCore;
     const REVIEW_CONTEXT_SIZE = 3;
+    const reviewView = views.createReviewView({ document: dom.visualEditor?.ownerDocument || root.document, inlineDiff });
     const locations = new Map();
     let storage;
     try { storage = root.localStorage; }
@@ -26,90 +28,57 @@ function resetReviewSnapshot(file) {
 // A block decision changes file.current while the review still refers to the
 // original baseline/current pair. Preserve that session across a temporary
 // mode switch as long as the current content is still derived from it.
-function reviewSnapshotCanReuse(file) {
-  if (!file || state.reviewPath !== file.path) return false;
-  if (state.reviewBaseline !== file.baseline) return false;
-  if (state.reviewCurrent === file.current) return true;
-  return applyDecisions(
-    state.reviewBaseline,
-    state.reviewCurrent,
-    state.reviewDecisions
-  ) === file.current;
+function reviewFrame(file, inManual = reviewingMap) {
+  return {
+    file, inManual, rootPath: state.activePath,
+    baseline: inManual ? file.reviewBaseline ?? file.baseline : state.reviewBaseline,
+    current: inManual ? file.reviewCurrent ?? file.current : state.reviewCurrent,
+    keyFor: inManual ? index => `${file.path}::${index}` : index => index
+  };
 }
 
-function reviewRowLabel(value) {
-  const raw = String(value || '').trim();
-  if (!raw) return '(空行)';
-  const withoutTags = raw.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-  if (withoutTags) return withoutTags;
-  const element = raw.match(/^<\/?([\w:.-]+)\b([^>]*)>/);
-  if (!element) return raw;
-  const attrs = element[2].replace(/\s+/g, ' ').trim().replace(/\/$/, '').trim();
-  return `${element[1]}${attrs ? ` · ${attrs}` : ' 元素'}`;
-}
-
-function reviewDiffLabel(value) {
-  const raw = String(value || '').trim();
-  const label = reviewRowLabel(raw);
-  const element = raw.match(/^<([\w:.-]+)\b([^>]*)>/);
-  if (!element) return label;
-  const attrs = element[2].replace(/\s+/g, ' ').trim().replace(/\/$/, '').trim();
-  return attrs && !label.includes(attrs) ? `${label} · ${attrs}` : label;
-}
-
-// Render a review row from the readable text projection.  Oxygen's Author
-// review surface keeps the surrounding sentence intact and marks only the
-// changed words; doing the same here avoids turning a one-word edit into a
-// large full-line diff in the right dock.
-function createReviewLine(row, decision, segments = null) {
-  const line = document.createElement('div');
-  line.className = `diff-line ${row.type}${segments ? ' inline' : ''}`;
-  if (decision && ((decision === 'accept' && row.type === 'old') || (decision === 'reject' && row.type === 'new'))) {
-    line.classList.add('inactive');
+function decisionsFor(frame, source = state.reviewDecisions) {
+  if (!frame.inManual) return new Map([...source].filter(([key]) => typeof key === 'number'));
+  const prefix = frame.file.path + '::', decisions = new Map();
+  for (const [key, decision] of source) {
+    if (typeof key !== 'string' || !key.startsWith(prefix)) continue;
+    const index = Number(key.slice(prefix.length));
+    if (Number.isInteger(index)) decisions.set(index, decision);
   }
-  const num = document.createElement('div');
-  num.className = 'num';
-  num.textContent = row.type === 'new' ? `+${row.newIndex}` : `-${row.oldIndex}`;
-  const text = document.createElement('div');
-  text.className = 'text';
-  const label = reviewDiffLabel(row.text);
-  text.title = row.text;
-  if (!segments) {
-    text.textContent = label;
-  } else {
-    for (const segment of segments) {
-      if (!segment.text) continue;
-      const part = document.createElement('span');
-      part.className = `diff-inline-${segment.type}`;
-      part.textContent = segment.text;
-      text.append(part);
+  return decisions;
+}
+
+function reviewSnapshotCanReuse(file, inManual = false) {
+  if (!file) return false;
+  if (inManual ? typeof file.reviewBaseline !== 'string' || typeof file.reviewCurrent !== 'string' : state.reviewPath !== file.path) return false;
+  const frame = reviewFrame(file, inManual);
+  return frame.baseline === file.baseline && (frame.current === file.current ||
+    applyDecisions(frame.baseline, frame.current, decisionsFor(frame)) === file.current);
+}
+
+function saveFrame(frame) {
+  reviewStore.save(state, frame.file, frame.baseline, frame.current, decisionsFor(frame));
+}
+
+function appendGitGroups(container, frame, groups) {
+  let changed = 0;
+  for (const [index, group] of groups.entries()) {
+    if (group.type === 'same') {
+      container.append(reviewView.context(group.rows));
+      continue;
     }
+    const key = frame.keyFor(index);
+    changed += group.rows.length;
+    state.reviewGroups.set(key, frame.inManual ? { ...group, topicPath: frame.file.path } : group);
+    const number = frame.inManual ? index + 1 : state.reviewGroups.size;
+    container.append(reviewView.block({
+      group, number, decision: state.reviewDecisions.get(key),
+      label: frame.inManual ? `定位 ${frame.file.path} 的变更` : `定位变更块 ${number}`,
+      focus: () => focusReviewGroup(key),
+      decide: decision => applyReviewedGroup(frame, index, decision)
+    }));
   }
-  line.append(num, text);
-  return line;
-}
-
-function appendReviewRows(container, rows, decision) {
-  const oldRows = rows.filter(row => row.type === 'old');
-  const newRows = rows.filter(row => row.type === 'new');
-  // A replacement of equal line count can be paired for character-level
-  // highlighting. Insertions/deletions and structural changes keep their
-  // complete readable line so the reviewer still sees the affected element.
-  if (oldRows.length && newRows.length && oldRows.length === newRows.length && typeof inlineDiff === 'function') {
-    for (let index = 0; index < oldRows.length; index += 1) {
-      const oldLabel = reviewDiffLabel(oldRows[index].text);
-      const newLabel = reviewDiffLabel(newRows[index].text);
-      const segments = inlineDiff(oldLabel, newLabel);
-      const oldSegments = segments.filter(segment => segment.type === 'same' || segment.type === 'old');
-      const newSegments = segments.filter(segment => segment.type === 'same' || segment.type === 'new');
-      container.append(
-        createReviewLine(oldRows[index], decision, oldSegments),
-        createReviewLine(newRows[index], decision, newSegments)
-      );
-    }
-    return;
-  }
-  for (const row of rows) container.append(createReviewLine(row, decision));
+  return changed;
 }
 
 function clearReviewLocations() {
@@ -262,9 +231,15 @@ function applyOxyChange(file, change, accept) {
   }
 }
 
-function scrollToOxyChange(oxyIndex) {
+function surfaceFor(file) {
+  if (file.path === state.activePath) return /\.ditamap$/i.test(file.path) ?
+    dom.visualEditor.querySelector('[data-map-title]') : dom.visualEditor;
+  return Array.from(dom.visualEditor.querySelectorAll('.map-topic-surface')).find(node => node.dataset.mapTopicPath === file.path);
+}
+
+function scrollToOxyChange(oxyIndex, file) {
   if (typeof oxyIndex !== 'number') return;
-  const el = dom.visualEditor.querySelector('[data-oxy-index="' + oxyIndex + '"]');
+  const el = surfaceFor(file)?.querySelector('[data-oxy-index="' + oxyIndex + '"]');
   if (!el) return;
   el.scrollIntoView({ behavior: 'smooth', block: 'center' });
   el.classList.add('oxy-flash');
@@ -277,7 +252,7 @@ function createOxyChangeBlock(change, oxyIndex, file) {
   block.dataset.oxyIndex = String(oxyIndex);
   block.addEventListener('click', event => {
     if (event.target.closest('button')) return;
-    scrollToOxyChange(oxyIndex);
+    scrollToOxyChange(oxyIndex, file);
   });
   block.style.cursor = 'pointer';
   const typeLabel = document.createElement('span');
@@ -327,7 +302,6 @@ function renderDiff(file, resetSnapshot = false) {
   if (resetSnapshot || reviewSurface !== file || reviewingMap || !reviewSnapshotCanReuse(file)) resetReviewSnapshot(file);
   reviewSurface = file; reviewingMap = false;
   const fragment = document.createDocumentFragment();
-  let changed = 0;
   let oxyCount = 0;
   const oxyChanges = ditaCore.collectOxyTrackedChanges ? ditaCore.collectOxyTrackedChanges(file.current) : [];
   if (oxyChanges.length) {
@@ -340,81 +314,21 @@ function renderDiff(file, resetSnapshot = false) {
       fragment.append(createOxyChangeBlock(change, idx, file));
     });
   }
-  const groups = state.reviewBaseline === state.reviewCurrent ? [] : groupDiffRows(lineDiff(state.reviewBaseline, state.reviewCurrent), REVIEW_CONTEXT_SIZE);
+  const frame = reviewFrame(file, false);
+  const groups = frame.baseline === frame.current ? [] : groupDiffRows(lineDiff(frame.baseline, frame.current), REVIEW_CONTEXT_SIZE);
   const hasGitDiff = groups.some(g => g.type !== 'same');
-  markReviewLocations(file, dom.visualEditor, groups, index => index, state.reviewBaseline);
+  markReviewLocations(file, dom.visualEditor, groups, frame.keyFor, frame.baseline);
   if (oxyChanges.length && hasGitDiff) {
     const gitHeader = document.createElement('div');
     gitHeader.className = 'diff-section-header';
     gitHeader.textContent = 'Git 工作区变更';
     fragment.append(gitHeader);
   }
-  groups.forEach((group, index) => {
-    if (group.type === 'same') {
-      if (!hasGitDiff) return;
-      const line = document.createElement('div');
-      line.className = 'diff-context';
-      line.textContent = group.rows.map(row => reviewRowLabel(row.text)).join(' · ');
-      fragment.append(line);
-      return;
-    }
-
-    changed += group.rows.length;
-    state.reviewGroups.set(index, group);
-    const decision = state.reviewDecisions.get(index);
-    const block = document.createElement('div');
-    block.className = `diff-block${decision ? ` decision-${decision}` : ''}`;
-    block.tabIndex = 0;
-    block.setAttribute('aria-label', `定位变更块 ${state.reviewGroups.size}`);
-    block.addEventListener('click', event => {
-      if (!event.target.closest('button')) focusReviewGroup(index);
-    });
-    block.addEventListener('keydown', event => {
-      if ((event.key === 'Enter' || event.key === ' ') && !event.target.closest('button')) {
-        event.preventDefault();
-        focusReviewGroup(index);
-      }
-    });
-    const blockHeader = document.createElement('div');
-    blockHeader.className = 'diff-block-header';
-    blockHeader.title = '点击定位到 Author 正文';
-    const blockTitle = document.createElement('span');
-    blockTitle.textContent = `变更块 ${state.reviewGroups.size}`;
-    const blockState = document.createElement('span');
-    blockState.className = 'diff-block-state';
-    blockState.textContent = decision === 'accept' ? '已接受' : decision === 'reject' ? '已拒绝' : '待审阅';
-    blockHeader.append(blockTitle, blockState);
-    block.append(blockHeader);
-    appendReviewRows(block, group.rows, decision);
-
-    const actions = document.createElement('div');
-    actions.className = 'diff-actions';
-    const accept = document.createElement('button');
-    accept.type = 'button';
-    accept.textContent = '接受此块';
-    accept.disabled = Boolean(decision);
-    accept.addEventListener('click', () => applyReviewedGroup(file, index, true));
-    const reject = document.createElement('button');
-    reject.type = 'button';
-    reject.textContent = '拒绝此块';
-    reject.disabled = Boolean(decision);
-    reject.addEventListener('click', () => applyReviewedGroup(file, index, false));
-    actions.append(accept, reject);
-    if (decision) {
-      const reset = document.createElement('button');
-      reset.type = 'button';
-      reset.className = 'reset-review';
-      reset.textContent = '撤销决定';
-      reset.addEventListener('click', () => resetReviewedGroup(file, index));
-      actions.append(reset);
-    }
-    block.append(actions);
-    fragment.append(block);
-  });
+  const changed = appendGitGroups(fragment, frame, hasGitDiff ? groups : []);
 
   if (hasGitDiff || oxyCount) dom.diff.replaceChildren(fragment);
   else showReviewEmpty('当前 Topic 没有待审阅的变更。修改正文或应用 AI 提案后，可在这里查看差异。');
-  const decided = Array.from(state.reviewDecisions.values()).length;
+  const decided = decisionsFor(frame).size;
   const pending = Math.max(0, state.reviewGroups.size - decided);
   updateBulkButtons(changed > 0, oxyCount > 0);
 
@@ -422,7 +336,7 @@ function renderDiff(file, resetSnapshot = false) {
   const gitSummary = changed ? changed + ' 行变更，' + pending + ' 个待审块' : '';
   const combinedSummary = [oxySummary, gitSummary].filter(Boolean).join('；') || '无变更';
   dom.reviewMeta.textContent = combinedSummary;
-  reviewStore.save(state, file, state.reviewBaseline, state.reviewCurrent, state.reviewDecisions);
+  saveFrame(frame);
   if (reviewStore.warning) dom.reviewMeta.textContent += ' · ' + reviewStore.warning;
   setStatus(combinedSummary);
 }
@@ -443,7 +357,7 @@ function renderMapReview(file) {
     .map(path => state.filesMap.get(path))
     .filter(Boolean);
   for (const topic of [file, ...topicFiles].filter(Boolean)) {
-    if (restoreAll || !mapReviewSnapshotCanReuse(topic)) {
+    if (restoreAll || !reviewSnapshotCanReuse(topic, true)) {
       const saved = reviewStore.restore(state, topic);
       topic.reviewBaseline = saved.baseline;
       topic.reviewCurrent = saved.current;
@@ -492,71 +406,11 @@ function renderMapReview(file) {
     header.className = 'map-review-topic-header';
     header.textContent = topic.path;
     section.append(header);
-    const reviewBaseline = topic.reviewBaseline ?? topic.baseline;
-    const reviewCurrent = topic.reviewCurrent ?? topic.current;
-    const groups = groupDiffRows(lineDiff(reviewBaseline, reviewCurrent), REVIEW_CONTEXT_SIZE);
-    const surface = topic === file ? dom.visualEditor.querySelector('[data-map-title]') :
-      Array.from(dom.visualEditor.querySelectorAll('.map-topic-surface')).find(node => node.dataset.mapTopicPath === topic.path);
-    const keyFor = index => `${topic.path}::${index}`;
-    markReviewLocations(topic, surface, groups, keyFor, reviewBaseline);
-    for (const [groupIndex, group] of groups.entries()) {
-      if (group.type === 'same') {
-        const context = document.createElement('div');
-        context.className = 'diff-context';
-        context.textContent = group.rows.map(row => reviewRowLabel(row.text)).join(' · ');
-        section.append(context);
-        continue;
-      }
-      const decisionKey = keyFor(groupIndex);
-      state.reviewGroups.set(decisionKey, { ...group, topicPath: topic.path });
-      const decision = state.reviewDecisions.get(decisionKey);
-      const block = document.createElement('div');
-      block.className = `diff-block${decision ? ` decision-${decision}` : ''}`;
-      block.tabIndex = 0;
-      block.setAttribute('aria-label', `定位 ${topic.path} 的变更`);
-      block.addEventListener('click', event => {
-        if (!event.target.closest('button')) focusReviewGroup(decisionKey);
-      });
-      block.addEventListener('keydown', event => {
-        if ((event.key === 'Enter' || event.key === ' ') && !event.target.closest('button')) {
-          event.preventDefault();
-          focusReviewGroup(decisionKey);
-        }
-      });
-      const blockHeader = document.createElement('div');
-      blockHeader.className = 'diff-block-header';
-      const blockTitle = document.createElement('span');
-      blockTitle.textContent = `变更块 ${groupIndex + 1}`;
-      const blockState = document.createElement('span');
-      blockState.className = 'diff-block-state';
-      blockState.textContent = decision === 'accept' ? '已接受' : decision === 'reject' ? '已拒绝' : '待审阅';
-      blockHeader.append(blockTitle, blockState);
-      block.append(blockHeader);
-      appendReviewRows(block, group.rows, decision);
-      const actions = document.createElement('div');
-      actions.className = 'diff-actions';
-      const accept = document.createElement('button');
-      accept.type = 'button';
-      accept.textContent = '接受此块';
-      accept.disabled = Boolean(decision);
-      accept.addEventListener('click', () => applyReviewedMapGroup(file, topic, decisionKey, groupIndex, true));
-      const reject = document.createElement('button');
-      reject.type = 'button';
-      reject.textContent = '拒绝此块';
-      reject.disabled = Boolean(decision);
-      reject.addEventListener('click', () => applyReviewedMapGroup(file, topic, decisionKey, groupIndex, false));
-      actions.append(accept, reject);
-      if (decision) {
-        const reset = document.createElement('button');
-        reset.type = 'button';
-        reset.className = 'reset-review';
-        reset.textContent = '撤销决定';
-        reset.addEventListener('click', () => resetReviewedMapGroup(file, topic, decisionKey));
-        actions.append(reset);
-      }
-      block.append(actions);
-      section.append(block);
-    }
+    const frame = reviewFrame(topic, true);
+    const groups = groupDiffRows(lineDiff(frame.baseline, frame.current), REVIEW_CONTEXT_SIZE);
+    const surface = surfaceFor(topic);
+    markReviewLocations(topic, surface, groups, frame.keyFor, frame.baseline);
+    appendGitGroups(section, frame, groups);
     fragment.append(section);
   }
   dom.diff.replaceChildren(fragment);
@@ -567,111 +421,51 @@ function renderMapReview(file) {
   const combinedSummary = [oxySummary, gitSummary].filter(Boolean).join('；') || '无变更';
   dom.reviewMeta.textContent = combinedSummary;
   for (const topic of [file, ...topicFiles].filter(Boolean)) {
-    reviewStore.save(state, topic, topic.reviewBaseline, topic.reviewCurrent, mapReviewDecisions(topic.path));
+    saveFrame(reviewFrame(topic, true));
   }
   if (reviewStore.warning) dom.reviewMeta.textContent += ' · ' + reviewStore.warning;
   setStatus(combinedSummary);
 }
 
-function mapReviewDecisions(topicPath, exceptKey, replacement) {
-  const decisions = new Map();
-  for (const [key, decision] of state.reviewDecisions || []) {
-    if (typeof key === 'string' && key.startsWith(`${topicPath}::`) && key !== exceptKey) {
-      const index = Number(key.slice(topicPath.length + 2));
-      if (Number.isInteger(index)) decisions.set(index, decision);
-    }
+// Single-block actions and bulk Git review use the same history transaction.
+function writeReviewDecisions(frame, updates) {
+  const before = new Map(state.reviewDecisions);
+  const decisions = new Map(before);
+  for (const [index, decision] of updates) {
+    const key = frame.keyFor(index);
+    if (decision === null) decisions.delete(key); else decisions.set(key, decision);
   }
-  if (replacement) decisions.set(replacement.index, replacement.decision);
-  return decisions;
-}
-
-function mapReviewSnapshotCanReuse(topic) {
-  if (!topic || typeof topic.reviewBaseline !== 'string' || typeof topic.reviewCurrent !== 'string') return false;
-  if (topic.reviewBaseline !== topic.baseline) return false;
-  if (topic.reviewCurrent === topic.current) return true;
-  return applyDecisions(
-    topic.reviewBaseline,
-    topic.reviewCurrent,
-    mapReviewDecisions(topic.path, '', null)
-  ) === topic.current;
-}
-
-function applyReviewedMapGroup(file, topic, decisionKey, groupIndex, accept) {
-  if (!file || !topic) return;
-  const previousDecisions = new Map(state.reviewDecisions || []);
-  const decisions = new Map(state.reviewDecisions || []);
-  decisions.set(decisionKey, accept ? 'accept' : 'reject');
   state.reviewDecisions = decisions;
-  const local = mapReviewDecisions(topic.path, decisionKey, { index: groupIndex, decision: accept ? 'accept' : 'reject' });
-  const next = applyDecisions(topic.reviewBaseline ?? topic.baseline, topic.reviewCurrent ?? topic.current, local);
-  const changed = setFileContent(topic, next, {
-    historyMeta: {
-      reviewDecisionsBefore: previousDecisions,
-      reviewDecisionsAfter: new Map(decisions)
-    }
+  return setFileContent(frame.file, applyDecisions(frame.baseline, frame.current, decisionsFor(frame)), {
+    historyMeta: { reviewDecisionsBefore: before, reviewDecisionsAfter: new Map(decisions) }
   });
-  if (changed && topic !== file) updateVisual(file, true);
+}
+
+function renderActiveReview(refreshSurface = false) {
+  const active = state.filesMap.get(state.activePath);
+  if (active && refreshSurface) updateVisual(active, true);
+  if (active && /\.ditamap$/i.test(active.path)) renderMapReview(active);
+  else renderDiff(active, false);
+}
+
+function applyReviewedGroup(frame, index, decision) {
+  const current = reviewFrame(frame.file, frame.inManual);
+  if (state.activePath !== frame.rootPath || state.filesMap.get(frame.file.path) !== frame.file ||
+      current.baseline !== frame.baseline || current.current !== frame.current || !reviewSnapshotCanReuse(frame.file, frame.inManual)) {
+    renderActiveReview(true);
+    setStatus('原文已变化，已更新审阅，请重新核对所选变更块。');
+    return;
+  }
+  const changed = writeReviewDecisions(frame, new Map([[index, decision]]));
+  const active = state.filesMap.get(frame.rootPath);
+  if (changed && active !== frame.file) updateVisual(active, true);
   renderTabs();
   updateHistoryButtons();
-  renderMapReview(file);
-  setStatus(accept ? `已接受 ${topic.path} 的所选变更块` : `已拒绝 ${topic.path} 的所选变更块`);
+  renderActiveReview();
+  const location = frame.inManual ? ' ' + frame.file.path + ' 的' : '';
+  setStatus(decision === null ? `已撤销${location || '该'}审阅决定` :
+    `已${decision === 'accept' ? '接受' : '拒绝'}${location}所选变更块`);
 }
-
-function resetReviewedMapGroup(file, topic, decisionKey) {
-  if (!file || !topic) return;
-  const previousDecisions = new Map(state.reviewDecisions || []);
-  const decisions = new Map(state.reviewDecisions || []);
-  decisions.delete(decisionKey);
-  state.reviewDecisions = decisions;
-  const local = mapReviewDecisions(topic.path, decisionKey, null);
-  const next = applyDecisions(topic.reviewBaseline ?? topic.baseline, topic.reviewCurrent ?? topic.current, local);
-  const changed = setFileContent(topic, next, {
-    historyMeta: {
-      reviewDecisionsBefore: previousDecisions,
-      reviewDecisionsAfter: new Map(decisions)
-    }
-  });
-  if (changed && topic !== file) updateVisual(file, true);
-  renderTabs();
-  updateHistoryButtons();
-  renderMapReview(file);
-  setStatus(`已撤销 ${topic.path} 的审阅决定`);
-}
-
-function applyReviewedGroup(file, groupIndex, accept) {
-  if (!file) return;
-  const previousDecisions = new Map(state.reviewDecisions || []);
-  const decisions = new Map(state.reviewDecisions || []);
-  decisions.set(groupIndex, accept ? 'accept' : 'reject');
-  state.reviewDecisions = decisions;
-  const next = applyDecisions(state.reviewBaseline, state.reviewCurrent, decisions);
-  setFileContent(file, next, {
-    historyMeta: {
-      reviewDecisionsBefore: previousDecisions,
-      reviewDecisionsAfter: new Map(decisions)
-    }
-  });
-  renderDiff(file, false);
-  setStatus(accept ? '已接受所选变更块' : '已拒绝所选变更块');
-}
-
-function resetReviewedGroup(file, groupIndex) {
-  if (!file) return;
-  const previousDecisions = new Map(state.reviewDecisions || []);
-  const decisions = new Map(state.reviewDecisions || []);
-  decisions.delete(groupIndex);
-  state.reviewDecisions = decisions;
-  const next = applyDecisions(state.reviewBaseline, state.reviewCurrent, decisions);
-  setFileContent(file, next, {
-    historyMeta: {
-      reviewDecisionsBefore: previousDecisions,
-      reviewDecisionsAfter: new Map(decisions)
-    }
-  });
-  renderDiff(file, false);
-  setStatus('已撤销该审阅决定');
-}
-
 
 function reviewFiles() {
   const active = state.filesMap.get(state.activePath);
@@ -706,20 +500,12 @@ function reviewAll(accept) {
       }
       setFileContent(file, next);
     } else {
-      const isMap = /\.ditamap$/i.test(state.activePath);
-      const baseline = isMap ? file.reviewBaseline ?? file.baseline : state.reviewBaseline;
-      const current = isMap ? file.reviewCurrent ?? file.current : state.reviewCurrent;
-      const before = new Map(state.reviewDecisions);
+      const frame = reviewFrame(file, /\.ditamap$/i.test(state.activePath));
       const decisions = new Map();
-      groupDiffRows(lineDiff(baseline, current), REVIEW_CONTEXT_SIZE).forEach((group, index) => {
-        if (group.type === 'same') return;
-        const decision = accept ? 'accept' : 'reject';
-        decisions.set(index, decision);
-        state.reviewDecisions.set(isMap ? `${file.path}::${index}` : index, decision);
+      groupDiffRows(lineDiff(frame.baseline, frame.current), REVIEW_CONTEXT_SIZE).forEach((group, index) => {
+        if (group.type !== 'same') decisions.set(index, accept ? 'accept' : 'reject');
       });
-      setFileContent(file, applyDiffGroups(baseline, current, decisions, REVIEW_CONTEXT_SIZE), {
-        historyMeta: { reviewDecisionsBefore: before, reviewDecisionsAfter: new Map(state.reviewDecisions) }
-      });
+      writeReviewDecisions(frame, decisions);
     }
   }
   const active = state.filesMap.get(state.activePath);

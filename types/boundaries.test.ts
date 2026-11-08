@@ -1,7 +1,10 @@
 import { createDocument, snapshotDocument, createSaveCoordinator, createProposal, applyProposal } from '../public/document-store';
 import { createSnapshot } from '../public/snapshot-data';
 import { createRecord } from '../public/delivery-data';
-import type { ManualSnapshot, CompiledDelivery, WorkspaceState } from '../public/data-contracts';
+import type { ManualSnapshot, CompiledDelivery, WorkspaceState, HistoryMeta } from '../public/data-contracts';
+const reviewHistory: HistoryMeta = { reviewDecisionsBefore: new Map<number | string, string>([[1, 'accept'], ['topics/a.dita::1', 'reject']]) };
+// @ts-expect-error Review decisions captured in history are read-only.
+reviewHistory.reviewDecisionsBefore?.set(2, 'accept');
 const file = createDocument({ path: 'a.dita', content: '<topic/>' });
 const snapshot = snapshotDocument(file);
 // @ts-expect-error Captured buffers cannot be edited.

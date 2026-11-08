@@ -9,6 +9,7 @@ const importsOnly = names => 'CallExpression[callee.name="require"]' + names
 const domainRequire = importsOnly([...documentRules, 'vendor/sax']);
 const renderingBoundaries = [
   { names: ['ai-conversation'], imports: ['ai-edit-core'] },
+  { names: ['review-view'], imports: [] },
   { names: ['xml-dom'], imports: ['xml-source'] },
   { names: ['oxygen-core', 'delivery-document'], imports: [] },
   { names: ['author-renderer'], imports: ['xml-dom', 'asset-core', 'document-presentation', 'oxygen-core'] },
