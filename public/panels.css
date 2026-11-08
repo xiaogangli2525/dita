@@ -300,6 +300,8 @@
 .note-rule-part p,.note-rule-text,.note-rule-preview { white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.8; }
 .note-rule-part small { color:var(--muted); }
 .note-rule-tools { display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; }
+.note-rule-filter { display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+.note-rule-filter select { width:auto; max-width:100%; }
 .note-rule-preview { padding:14px; background:var(--accent-soft); border-radius:7px; }
 @media(max-width:700px) { .note-rules-layout { display:block; } #noteRuleList { max-height:150px; margin-bottom:20px; } }
 
