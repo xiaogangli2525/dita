@@ -8,7 +8,7 @@ export type DocumentSnapshot = Readonly<Omit<DocumentState, 'history'>>;
 export interface HistoryGroup { key: string; time?: number; composition?: boolean; beforeCursor?: string; afterCursor?: string }
 export interface HistoryMeta {
   selectionBefore?: unknown; selectionAfter?: unknown; mapTitle?: boolean;
-  reviewDecisionsBefore?: ReadonlyMap<number, string>; reviewDecisionsAfter?: ReadonlyMap<number, string>;
+  reviewDecisionsBefore?: ReadonlyMap<number | string, string>; reviewDecisionsAfter?: ReadonlyMap<number | string, string>;
 }
 export interface HistoryEntry extends HistoryMeta { before: string; after: string; group?: HistoryGroup }
 export interface DocumentHistory { undo: HistoryEntry[]; redo: HistoryEntry[]; openGroup?: HistoryEntry | null }
