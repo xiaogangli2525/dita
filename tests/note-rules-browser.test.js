@@ -112,6 +112,17 @@ test('external footnote rules are reviewed independently and applied only to cap
     await page.click('#noteRulesClose'); await fs.writeFile(rulePath, saved);
   });
 
+  await t.test('a queued close event cannot cancel a newly opened note-rule dialog', async () => {
+    await page.evaluate(() => {
+      document.getElementById('noteRulesButton').click();
+      // Native close events are queued; a previous close can arrive after reopen.
+      document.getElementById('noteRulesDialog').dispatchEvent(new Event('close'));
+    });
+    await page.locator('.note-rule-part').first().waitFor();
+    assert.equal(await page.locator('.note-rule-part').count(), 3);
+    await page.click('#noteRulesClose');
+  });
+
   await t.test('a different manual requires fresh confirmation and discovers its own model', async () => {
     await open('other.ditamap'); await page.click('#noteRulesButton'); await page.locator('.note-rule-part').first().waitFor();
     assert.equal(await page.locator('.note-rule-part').count(), 1);

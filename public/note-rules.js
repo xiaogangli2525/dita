@@ -116,7 +116,7 @@
     get('noteRulesButton').addEventListener('click',()=>show());get('noteRulesClose').addEventListener('click',close);get('noteRuleSave').addEventListener('click',()=>persist());get('noteRuleDelete').addEventListener('click',()=>persist(true));get('noteRulePreviewModel').addEventListener('change',preview);
     dialog.addEventListener('cancel',event=>{if(writing||dirty()&&!root.confirm('有尚未保存的注脚规则选择，确定放弃并关闭？'))event.preventDefault();});
     get('noteRuleSuggestions').addEventListener('click',()=>{for(const p of parts)if(p.suggestion.length){p.scope.value='models';p.models.value=p.suggestion.join(' ');p.scope.dispatchEvent(new Event('change'));}preview();});get('noteRuleCommon').addEventListener('click',()=>{for(const p of parts){p.scope.value='common';p.scope.dispatchEvent(new Event('change'));}preview();});
-    dialog.addEventListener('close',()=>{generation++;busy=false;writing=false;lockForm(false);const back=returnToDelivery;returnToDelivery=null;back?.();});
+    dialog.addEventListener('close',()=>{if(dialog.open)return;generation++;busy=false;writing=false;lockForm(false);const back=returnToDelivery;returnToDelivery=null;back?.();});
     A.events.on('workspace:willChange',()=>{returnToDelivery=null;dialog.close();});return {show};
   }
   root.DitaNoteRules={createController};
