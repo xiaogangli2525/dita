@@ -75,7 +75,7 @@
       children: [new D.TextRun({ text: ' ', font, size: 8 })]
     }));
     for (const field of pack.cover.fields) {
-      if (field === 'manual.title' || field === 'manual.model' || field === 'company.name' || field === 'manual.documentId') continue;
+      if (field === 'manual.title' || field === 'manual.model' || field === 'company.name') continue;
       const value = fields[field];
       if (!value) continue;
       const label = labels[field] || field;
