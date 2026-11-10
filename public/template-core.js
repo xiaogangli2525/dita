@@ -43,6 +43,7 @@
     if (typeof v.id !== 'string' || typeof v.version !== 'string' || v.version.length > 80 || !/^[a-z][a-z0-9-]{0,63}$/.test(v.id) || !/^\d+\.\d+\.\d+(?:-[a-z0-9.-]{1,30})?$/.test(v.version)) fail('模板 ID 或版本无效');
     const name = text(v.name, 80, '模板名').trim(); if (!name) fail('模板名不能为空');
     if (!Array.isArray(v.formats) || !v.formats.length || v.formats.length > 2 || new Set(v.formats).size !== v.formats.length || v.formats.some(format => !['pdf', 'docx'].includes(format))) fail('模板格式须为 PDF 和/或 DOCX，且不能重复');
+    if (v.renderer === 'manual-v1' && v.formats.includes('docx')) fail('旧版模板需升级新版排版后才能用于 Word');
     const assets = object(v.assets, Object.keys(v.assets || {}).filter(key => /^assets\/[a-zA-Z0-9_-]{1,80}\.(png|jpe?g)$/.test(key)), '资源');
     if (Object.keys(assets).length > 3) fail('最多使用三张模板图片');
     const normalizedAssets = {};
