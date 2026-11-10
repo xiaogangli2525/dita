@@ -4,6 +4,8 @@
 
 文档入口：[功能与操作说明](authoring-guide.md)、[AI / 自动化操作约定](assistant-playbook.md)。源手册采用仓库内用户提供的真实 HTTP/HTTPS 库，测试操作在临时副本中进行。
 
+最新完整流程结果见 [真实 HTTP 手册交付验收](real-manual-acceptance.md)，包含双型号的编辑、审阅、保存、HTML/PDF/Word 交付，以及 Markdown、真实模型和 Word/WPS 的明确验收边界。
+
 ## 发现及处理
 
 | 项目 | 核对结果 | 处理 |

@@ -9,7 +9,7 @@
     "dev": "node scripts/dev-server.js",
     "check:pdf": "node scripts/check-pdf.js",
     "check:ai": "node scripts/check-ai.js",
-    "test:browser": "node --test tests/browser.test.js tests/foundation-browser.test.js tests/office-browser.test.js tests/author-notes-browser.test.js tests/editor-tools-browser.test.js tests/writing-reliability-browser.test.js tests/shell-browser.test.js tests/remote-browser.test.js tests/basic-editing-browser.test.js tests/document-transitions-browser.test.js tests/footnote-numbering-browser.test.js tests/writing-context-browser.test.js tests/profiling-browser.test.js tests/note-rules-browser.test.js tests/content-safety-browser.test.js tests/model-export-browser.test.js tests/workspace-ui-browser.test.js tests/map-author-browser.test.js tests/appearance-browser.test.js tests/ai-authoring-browser.test.js tests/template-browser.test.js",
+    "test:browser": "node --test tests/browser.test.js tests/foundation-browser.test.js tests/office-browser.test.js tests/author-notes-browser.test.js tests/editor-tools-browser.test.js tests/writing-reliability-browser.test.js tests/shell-browser.test.js tests/remote-browser.test.js tests/basic-editing-browser.test.js tests/document-transitions-browser.test.js tests/footnote-numbering-browser.test.js tests/writing-context-browser.test.js tests/profiling-browser.test.js tests/note-rules-browser.test.js tests/content-safety-browser.test.js tests/model-export-browser.test.js tests/workspace-ui-browser.test.js tests/map-author-browser.test.js tests/appearance-browser.test.js tests/ai-authoring-browser.test.js tests/template-browser.test.js tests/real-manual-browser.test.js",
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc -p tsconfig.json"
   },
