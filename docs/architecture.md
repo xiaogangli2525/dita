@@ -214,6 +214,8 @@ The note panel lists publishable note definitions/occurrences with the same ance
 
 `manual-core.createEvents()` supplies a small event boundary. Controllers can subscribe without being called directly from every editor action. An auxiliary listener failure is isolated so it cannot stop other document listeners.
 
+Native dialog `close` events are queued and can arrive after that same dialog has reopened. Close listeners that invalidate capture generations, cancel delivery or restore external focus must first check that the dialog is still closed. Explicit cancel actions remain synchronous; a stale close event cannot cancel a newer open session. The note-rule, delivery and project UI regressions cover this ordering directly.
+
 | Event | Emitted for | Consumers |
 | --- | --- | --- |
 | `document:changed` | Edit, undo/redo, or save acknowledgement | Draft backup, active content-search refresh and current-Topic writing search |
@@ -386,3 +388,7 @@ The UI separates a conversation composer, cumulative review and a single explici
 Opening the assistant exposes one composer and the current context. A selected range is reused; otherwise `documentTarget` gathers bounded editable text from the current Topic with per-fragment inherited conditions. Large Topics rank relevant blocks and explicitly mark partial context. Ambiguous Map matches require one inline chapter choice, rather than an upfront scope form. The server rebuilds the same scope, so fragment IDs and source guards remain deterministic across turns.
 
 Plans and cumulative edits share the conversation. Explicit execution of a plan can generate/apply guarded text edits; newly generated technical-value/command/model/unit/constraint changes instead show concrete differences for review. Technical change flags and exact source lines aid review; they are not domain-fact or full cross-reference consistency validation.
+
+### Repeatable AI acceptance
+
+`scripts/check-ai.js` is a separate maintenance command backed by `scripts/ai-acceptance.js` and a versioned real-HTTP fixture corpus. It reuses the actual provider/settings, edit, scan and conversation boundaries without entering frontend assembly or gaining document-write capabilities. Default execution only prepares source ranges and explicit expected edits; `--live` must find a configured compatible provider before making sequential requests. Reports distinguish preflight, attempted model calls, automatic checks and required human review. Source paths are contained within the selected library, conflict variants exist only in memory, and two consecutive provider failures stop further calls without hiding semantic failures. See [acceptance workflow](ai-acceptance.md).

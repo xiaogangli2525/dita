@@ -9,6 +9,9 @@ test('AI authoring runs through the local provider, review and shared document h
   const second = '<topic id="b"><title>SSL 配置</title><body><p>配置证书后发送请求。</p></body></topic>';
   await fs.writeFile(path.join(temporary, 'a.dita'), original); await fs.writeFile(path.join(temporary, 'b.dita'), second);
   await fs.writeFile(path.join(temporary, 'main.ditamap'), '<map><title>HTTP 手册</title><topicref href="a.dita"/><topicref href="b.dita"/></map>');
+  const realHttpsPath = path.join(__dirname, '../examples/http_httpsusermanual/topics/r_https_example.dita');
+  const realHttps = await fs.readFile(realHttpsPath, 'utf8');
+  await fs.writeFile(path.join(temporary, 'real-https.dita'), realHttps);
   const received = [], timers = new Set();
   let recoveredScan = false;
   const provider = http.createServer(async (req, res) => {
@@ -37,15 +40,16 @@ test('AI authoring runs through the local provider, review and shared document h
       res.end(JSON.stringify({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify({ findings }) } }] }));
       return;
     }
-    const first = input.document.parts.find(part => part.text.includes('发送')) || input.document.parts[0];
+    const first = input.document.parts.find(part => part.text.includes(input.instruction.includes('HTTP验收') ? 'SSL相应参数设置' : '发送')) || input.document.parts[0];
     const previous = input.conversation?.previousResult?.edits?.[0]?.after || first.text;
-    const result = input.instruction.includes('方案') ? {summary:'方案：保留技术含义，将发送请求改为发起请求，其他内容不变。',questions:[],edits:[]} : input.instruction.includes('待确认') ? { summary: '缺少正确参数', questions: ['请提供已经核实的值。'], edits: [] } :
+    const result = input.instruction.includes('HTTP验收') ? { summary: '统一 SSL 提示用词', questions: [], edits: [{ id: first.id, before: first.text, after: first.text.replace('SSL相应参数设置', 'SSL相关参数设置') }] } :
+      input.instruction.includes('方案') ? {summary:'方案：保留技术含义，将发送请求改为发起请求，其他内容不变。',questions:[],edits:[]} : input.instruction.includes('待确认') ? { summary: '缺少正确参数', questions: ['请提供已经核实的值。'], edits: [] } :
       input.instruction.includes('以参数表为准') ? { summary: '按核实口径修订示例', questions: [], edits: [{ id: first.id, before: first.text, after: first.text.replace('毫秒', '秒') }] } :
       input.instruction.includes('60 秒') ? { summary: '已根据补充信息修改', questions: [], edits: [{ id: first.id, before: first.text, after: '发起请求（超时 60 秒）' }] } :
       input.instruction.includes('简短') ? { summary: '继续精简，保留先前润色', questions: [], edits: [{ id: first.id, before: first.text, after: previous.replace('然后', '') }] } :
       input.instruction.includes('先润色') ? { summary: '已润色可确定的部分', questions: ['尚未提供超时值。'], edits: [{ id: first.id, before: first.text, after: first.text.replace('发送', '发起') }] } :
       { summary: input.instruction.includes('恶意') ? '<img src=x onerror=alert(1)>' : '使描述更清晰', questions: [], edits: [{ id: input.instruction.includes('非法') ? 'outside' : first.id, before: first.text, after: first.text.replace('发送', '发起') }] };
-    const send = () => { res.setHeader('content-type', 'application/json'); res.end(JSON.stringify({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(result) } }] })); };
+    const send = () => { res.setHeader('content-type', 'application/json'); res.end(JSON.stringify({ choices: [{ finish_reason: 'stop', message: { content: input.instruction.includes('HTTP验收') ? '\x60\x60\x60json\n' + JSON.stringify(result) + '\n\x60\x60\x60' : JSON.stringify(result) } }] })); };
     if (input.instruction.includes('慢速')) { const timer = setTimeout(() => { timers.delete(timer); send(); }, 1200); timers.add(timer); } else send();
   });
   await new Promise(resolve => provider.listen(0, '127.0.0.1', resolve));
@@ -82,6 +86,29 @@ test('AI authoring runs through the local provider, review and shared document h
     await page.click('#sourceButton'); await page.locator('#editor').focus(); await page.keyboard.press('Control+z'); assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.get('a.dita').current), original);
     await page.keyboard.press('Control+y'); assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.get('a.dita').current), original.replace('发送请求', '发起请求'));
     assert.equal(received.at(-1).document.parts[0].text, '发送请求'); assert.doesNotMatch(JSON.stringify(received.at(-1)), /MN318/);
+  });
+  await t.test('real HTTP note edits retain commands and surrounding source through review and explicit save', async st => {
+    const page = await fresh(st);
+    await page.evaluate(() => window.DitaApp.openFile('real-https.dita'));
+    await page.evaluate(() => window.DitaApp.setMode('editor'));
+    await page.locator('#editor').evaluate(node => {
+      const start = node.value.indexOf('<note id="note_u4x_2gq_qsb"'), end = node.value.indexOf('</note>', start) + '</note>'.length;
+      node.focus(); node.setSelectionRange(start, end);
+    });
+    await page.click('#aiButton');
+    await page.fill('#aiReply', 'HTTP验收：仅将SSL相应参数设置改为SSL相关参数设置，保留全部命令及其他内容'); await page.click('#aiSend');
+    await page.locator('#aiApply:enabled').waitFor(); await page.click('#aiApply');
+    const expected = realHttps.replace('SSL相应参数设置', 'SSL相关参数设置');
+    await page.waitForFunction(expected => window.DitaApp.state.filesMap.get('real-https.dita').current === expected, expected);
+    assert.equal(await fs.readFile(path.join(temporary, 'real-https.dita'), 'utf8'), realHttps);
+    await page.click('#aiClose'); await page.click('#reviewButton');
+    assert.equal(await page.locator('#visualEditor [data-review-text="old"]').textContent(), '应');
+    assert.equal(await page.locator('#visualEditor [data-review-text="new"]').textContent(), '关');
+    await page.locator('#diff').getByRole('button', { name: '接受此块', exact: true }).click();
+    assert.equal(await page.locator('#visualEditor [data-review-text]').count(), 0);
+    await page.click('#saveButton'); await page.waitForFunction(() => !window.DitaApp.state.filesMap.get('real-https.dita').dirty);
+    assert.equal(await fs.readFile(path.join(temporary, 'real-https.dita'), 'utf8'), expected);
+    assert.equal(await fs.readFile(realHttpsPath, 'utf8'), realHttps, 'the supplied manual itself stays unchanged');
   });
   await t.test('visual selection maps exactly to source and preserves the rest of its paragraph', async st => {
     const page = await fresh(st);

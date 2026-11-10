@@ -60,3 +60,4 @@ require('./ai-routes.test');
 require('./ai-conversation.test');
 require('./ai-config-store.test');
 require('./ai-scan.test');
+require('./ai-acceptance.test');
