@@ -30,4 +30,5 @@ jobs:
           cache: npm
       - run: npm ci --ignore-scripts
       - run: npx playwright-core install --with-deps chromium
+      - run: sudo apt-get install -y poppler-utils
       - run: npm run test:browser

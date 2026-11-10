@@ -391,20 +391,32 @@
         <p class="template-eyebrow">企业交付 · 模板库</p><h2 id="templateHeading">创建一套可复用的版式</h2>
         <p class="muted">从当前模板复制，或导入同事分享的模板包。保存后用于 PDF，不改变手册内容。</p>
         <fieldset id="templateDetails">
+          <button id="templateUpgrade" type="button" hidden>升级新版排版</button>
           <label class="template-import">导入模板包<input id="templateImport" type="file" accept=".json,application/json"/></label>
           <div class="template-fields">
             <label>模板名称<input id="templateName" maxlength="80" required/></label><label>版本<input id="templateVersion" placeholder="1.0.0" required/></label>
             <label class="template-wide">模板 ID<input id="templateId" maxlength="64" pattern="[a-z][a-z0-9-]*" required/><small>小写英文、数字和短横线。同一版本不能覆盖，请升级版本保存。</small></label>
             <label class="template-wide">默认企业名称<input id="templateCompany" maxlength="100"/></label>
             <label>纸张<select id="templatePaper"><option>A4</option><option>Letter</option></select></label>
-            <label>封面风格<select id="templateLayout"><option value="brand-panel">品牌色块</option><option value="minimal">简洁留白</option></select></label>
+            <label>封面风格<select id="templateLayout"><option value="brand-panel">品牌页脚</option><option value="minimal">简洁留白</option></select></label>
             <label class="template-color">主色<input id="templatePrimary" type="color"/></label><label class="template-color">强调色<input id="templateAccent" type="color"/></label>
+            <label class="template-color template-wide">封面文字颜色<input id="templateCoverText" type="color"/></label>
           </div>
           <div class="template-options"><label class="checkbox-row"><input id="templateCover" type="checkbox"/>封面</label><label class="checkbox-row"><input id="templateWatermark" type="checkbox"/>正文水印</label><label class="checkbox-row"><input id="templateFrontFooter" type="checkbox"/>目录页显示页码</label></div>
-          <label>水印透明度<input id="templateOpacity" type="number" min="0.01" max="0.15" step="0.01"/></label>
-          <p class="muted">水印默认使用企业名称，也可上传图片。封面不显示页眉、页脚或水印；正文页码按整份文件的物理页计算。</p>
+          <div class="template-fields">
+            <label>水印来源<select id="templateWatermarkSource"><option value="auto">自动选图（专用图优先，其次 Logo）</option><option value="logo">企业 Logo</option><option value="image">专用水印图</option><option value="text">文字水印</option></select></label>
+            <label>不透明度（%）<input id="templateOpacity" type="number" min="1" max="100" step="any"/></label>
+          </div>
+          <div class="template-watermark-preview"><div id="templateWatermarkPage" class="template-mini-page"><img id="templateWatermarkPicture" alt="水印图片预览" hidden/><span id="templateWatermarkText" hidden></span></div><p id="templateWatermarkHint" class="muted" role="status"></p></div>
+          <details class="template-advanced"><summary>水印尺寸与位置</summary><div class="template-fields">
+            <label class="template-wide">图片模式<select id="templateWatermarkFit"><option value="logo">标识图（保持原比例）</option><option value="page">整页水印图（保留原图布局）</option></select></label>
+            <label>宽度（页面 %）<input id="templateWatermarkWidth" type="number" min="25" max="90"/></label><label>垂直位置（页面 %）<input id="templateWatermarkY" type="number" min="30" max="70"/></label>
+            <label>角度（°）<input id="templateWatermarkRotation" type="number" min="-45" max="45"/></label><label>颜色<select id="templateWatermarkTone"><option value="grayscale">灰度</option><option value="original">保持原色</option></select></label>
+          </div><p class="muted">Logo 保持原始图形和比例。已有留白或淡化的整页水印请选择“整页水印图”，可提高不透明度以保留原效果。</p></details>
+          <p class="muted">未选图片时不会用企业名称模拟 Logo；文字水印需明确选择。封面不显示水印，正文页码按物理页计算。</p>
           <details class="template-advanced"><summary>页眉、页脚与正文设置</summary>
-            <div class="template-options"><label class="checkbox-row"><input id="templateBodyHeader" type="checkbox"/>正文页眉</label><label class="checkbox-row"><input id="templateBodyFooter" type="checkbox"/>正文页脚</label><label class="checkbox-row"><input id="templateHeaderRule" type="checkbox"/>页眉分隔线</label></div>
+            <div class="template-options"><label class="checkbox-row"><input id="templateBodyHeader" type="checkbox"/>正文页眉</label><label class="checkbox-row"><input id="templateBodyFooter" type="checkbox"/>正文页脚</label><label class="checkbox-row"><input id="templateHeaderRule" type="checkbox"/>页眉分隔线</label><label class="checkbox-row"><input id="templateFooterRule" type="checkbox"/>页脚分隔线</label></div>
+            <div class="template-fields"><label>页眉与正文间距（mm）<input id="templateHeaderGap" type="number" min="3" max="10"/></label><label>页脚与正文间距（mm）<input id="templateFooterGap" type="number" min="3" max="10"/></label></div>
             <div class="template-fields">
               <label>页眉左侧<select id="templateHeaderLeft"></select></label><label>页脚左侧<select id="templateFooterLeft"></select></label>
               <label>页眉居中<select id="templateHeaderCenter"></select></label><label>页脚居中<select id="templateFooterCenter"></select></label>
@@ -598,6 +610,7 @@
   <script src="/release-store.js"></script>
   <script src="/office-export.js"></script>
   <script src="/template-core.js"></script>
+  <script src="/template-pdf-v1.js"></script>
   <script src="/template-pdf.js"></script>
   <script src="/delivery-templates.js"></script>
   <script src="/delivery-view.js"></script>

@@ -1,6 +1,6 @@
 'use strict';
 const test = require('node:test'), assert = require('node:assert/strict'), fs = require('node:fs/promises'), os = require('node:os'), path = require('node:path'), net = require('node:net');
-const { spawn, execFileSync } = require('node:child_process'), { createHash } = require('node:crypto'), { chromium } = require('playwright-core');
+const { spawn, spawnSync, execFileSync } = require('node:child_process'), { createHash } = require('node:crypto'), { chromium } = require('playwright-core');
 const core = require('../public/template-core');
 
 test('replaceable enterprise PDF templates', async t => {
@@ -26,9 +26,10 @@ test('replaceable enterprise PDF templates', async t => {
   const request = async (method, pack, headers = {}) => fetch('http://127.0.0.1:' + port + '/api/templates', { method, headers: { 'Content-Type': 'application/json', 'x-workspace-token': await page.evaluate(() => window.DitaApp.api.token), ...headers }, ...(pack ? { body: JSON.stringify(pack) } : {}) });
   await start();
   await t.test('A4 enterprise export captures exact template identity, metadata and model scope', async () => {
-    await delivery('pdf'); await page.selectOption('#exportTemplate', 'enterprise-blue@1.0.0');
+    await delivery('pdf'); await page.selectOption('#exportTemplate', 'enterprise-blue@1.1.0');
     assert.equal(await page.locator('#exportDate').inputValue(), '');
     await page.fill('#exportTitle', 'HTTP 技术手册'); await page.fill('#exportCompany', 'TEST COMPANY'); await page.fill('#exportDate', '2026-11-10'); await page.fill('#exportDocumentId', 'QA-001'); await page.fill('#exportClassification', '内部资料');
+    assert.match(await page.locator('#exportTemplateInfo').innerText(), /未配置 Logo/);
     await page.click('#modelExportForm [value=check]'); await page.locator('[data-delivery-step=export]:enabled').waitFor();
     assert.match(await page.locator('#deliveryReadySummary').innerText(), /蓝绿/);
     const bytes = await download(); assert.equal(bytes.subarray(0, 5).toString(), '%PDF-');
@@ -44,8 +45,30 @@ test('replaceable enterprise PDF templates', async t => {
   await t.test('changing a template or cover field invalidates the previous check', async () => {
     await delivery('pdf'); await page.click('#modelExportForm [value=check]'); await page.locator('[data-delivery-step=export]:enabled').waitFor();
     await page.click('[data-delivery-step=configure]'); await page.fill('#exportDocumentId', 'QA-002'); assert.equal(await page.locator('[data-delivery-step=export]').isDisabled(), true);
-    await page.selectOption('#exportTemplate', 'enterprise-paper@1.0.0'); await page.click('#modelExportForm [value=check]'); await page.locator('[data-delivery-step=export]:enabled').waitFor();
+    await page.selectOption('#exportTemplate', 'enterprise-paper@1.1.0'); await page.click('#modelExportForm [value=check]'); await page.locator('[data-delivery-step=export]:enabled').waitFor();
     await page.click('[data-delivery-step=configure]'); assert.equal(await page.locator('#exportDocumentId').inputValue(), 'QA-002'); await page.click('#modelExportCancel');
+  });
+  await t.test('PDF watermark geometry is sheet-relative and footers retain their edge clearance', { skip: Boolean(spawnSync('pdftoppm', ['-v']).error) }, async () => {
+    const art = await page.evaluate(() => { const canvas = document.createElement('canvas'); canvas.width = 300; canvas.height = 100; const context = canvas.getContext('2d'); context.fillStyle = '#ff00ff'; context.fillRect(0, 0, 300, 100); return canvas.toDataURL('image/png'); });
+    const document = require('../public/delivery-document').renderHtmlDocument({ title: 'Geometry', sections: [{ title: 'Chapter', body: '<p>BODY_TEXT</p>' }] });
+    const html = await page.evaluate(html => window.DitaOfficeExport.printable(html), document), token = await page.evaluate(() => window.DitaApp.api.token);
+    for (const size of ['A4', 'Letter']) {
+      const pack = core.builtins()[0]; pack.page.size = size; pack.page.marginsMm = { top: 30, right: 15, bottom: 24, left: 30 }; pack.cover.enabled = false;
+      pack.assets['assets/mark.png'] = art; pack.watermark = { ...pack.watermark, source: 'image', asset: 'assets/mark.png', opacity: 1, widthPercent: 60, offsetYPercent: 52, tone: 'original' };
+      const publication = core.capture(pack, { 'manual.title': 'Geometry', 'manual.documentId': 'FOOTER_ID' });
+      const response = await fetch('http://127.0.0.1:' + port + '/api/export/pdf', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-workspace-token': token }, body: JSON.stringify({ html, publication }) }); assert.equal(response.status, 200);
+      const file = path.join(temp, 'geometry-' + size + '.pdf'), raster = path.join(temp, 'geometry-' + size); await fs.writeFile(file, Buffer.from(await response.arrayBuffer()));
+      execFileSync('pdftoppm', ['-f', '2', '-l', '2', '-r', '72', '-singlefile', '-png', file, raster]);
+      const image = (await fs.readFile(raster + '.png')).toString('base64');
+      const box = await page.evaluate(async data => { const image = new Image(); image.src = 'data:image/png;base64,' + data; await image.decode(); const canvas = document.createElement('canvas'); canvas.width = image.width; canvas.height = image.height; const context = canvas.getContext('2d'); context.drawImage(image, 0, 0); const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data; let left = canvas.width, right = 0, top = canvas.height, bottom = 0; for (let y = 0; y < canvas.height; y++) for (let x = 0; x < canvas.width; x++) { const i = (y * canvas.width + x) * 4; if (pixels[i] > 200 && pixels[i + 1] < 80 && pixels[i + 2] > 200) { left = Math.min(left, x); right = Math.max(right, x); top = Math.min(top, y); bottom = Math.max(bottom, y); } } return { left, right, top, bottom, width: canvas.width, height: canvas.height }; }, image);
+      assert.ok(Math.abs((box.left + box.right) / 2 - box.width / 2) < 3, size + ' watermark horizontal center');
+      assert.ok(Math.abs((box.top + box.bottom) / 2 - box.height * 0.52) < 3, size + ' watermark vertical position');
+      assert.ok(Math.abs((box.right - box.left) - box.width * 0.6) < 3, size + ' watermark width without clipping');
+      assert.ok(Math.abs((box.right - box.left) / (box.bottom - box.top) - 3) < 0.05, size + ' original logo ratio');
+      const xml = execFileSync('pdftotext', ['-f', '2', '-l', '2', '-bbox', file, '-'], { encoding: 'utf8' }), words = [...xml.matchAll(/<word xMin="([\d.]+)" yMin="([\d.]+)" xMax="([\d.]+)" yMax="([\d.]+)">([^<]+)<\/word>/g)];
+      const footer = words.find(word => word[5] === 'FOOTER_ID'); assert.ok(footer); assert.ok(Math.abs(Number(footer[1]) - 30 * 72 / 25.4) < 2);
+      assert.ok(Number(footer[2]) > box.height - (24 - 6) * 72 / 25.4, 'footer starts after reserved content gap'); assert.ok(Number(footer[4]) < box.height - 5 * 72 / 25.4, 'footer clears paper edge');
+    }
   });
   await t.test('Letter paper, cover and watermark toggles operate independently; damaged raster images fail visibly', async () => {
     const pack = core.builtins()[1]; pack.page.size = 'Letter'; pack.cover.enabled = false; pack.watermark.enabled = false; pack.regions.frontMatter.footer = true; pack.footer.center = 'page.currentTotal';
@@ -59,9 +82,13 @@ test('replaceable enterprise PDF templates', async t => {
   let custom;
   await t.test('authors save a custom template, upload images and share an exact portable package', async () => {
     await delivery('pdf'); await page.click('#templateManage'); await page.fill('#templateId', 'test-brand'); await page.fill('#templateName', '测试企业版式'); await page.fill('#templateCompany', 'TEST BRAND');
-    await page.locator('.template-advanced summary').click(); await page.selectOption('#templateHeaderLeft', 'manual.title'); await page.selectOption('#templateFooterCenter', 'page.currentTotal');
+    await page.getByText('页眉、页脚与正文设置', { exact: true }).click(); await page.selectOption('#templateHeaderLeft', 'manual.title'); await page.selectOption('#templateFooterCenter', 'page.currentTotal');
     const data = await page.evaluate(() => { const canvas = document.createElement('canvas'); canvas.width = 300; canvas.height = 80; const ctx = canvas.getContext('2d'); ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, 300, 80); ctx.fillStyle = '#145A78'; ctx.font = '32px sans-serif'; ctx.fillText('TEST BRAND', 20, 52); return canvas.toDataURL('image/png').split(',')[1]; });
     await page.setInputFiles('#templateLogo', { name: 'logo.png', mimeType: 'image/png', buffer: Buffer.from(data, 'base64') }); await page.getByText('assets/logo.png', { exact: true }).waitFor();
+    assert.equal(await page.locator('#templateWatermarkPicture').isVisible(), true); assert.equal(await page.locator('#templateWatermarkText').isVisible(), false);
+    assert.equal(await page.locator('#templateWatermarkPicture').evaluate(image => image.src.split(',')[1]), data);
+    await page.selectOption('#templateWatermarkSource', 'text'); assert.equal(await page.locator('#templateWatermarkText').isVisible(), true);
+    await page.selectOption('#templateWatermarkSource', 'auto'); await page.fill('#templateFooterGap', '7');
     await page.setInputFiles('#templateWatermarkImage', { name: 'watermark.png', mimeType: 'image/png', buffer: Buffer.from(data, 'base64') }); await page.getByText('assets/watermark.png', { exact: true }).waitFor();
     const background = await page.evaluate(() => { const canvas = document.createElement('canvas'); canvas.width = 300; canvas.height = 400; const ctx = canvas.getContext('2d'); ctx.fillStyle = '#eef3f2'; ctx.fillRect(0, 0, 300, 400); return canvas.toDataURL('image/jpeg').split(',')[1]; });
     await page.setInputFiles('#templateBackground', { name: 'cover.jpg', mimeType: 'image/jpeg', buffer: Buffer.from(background, 'base64') }); await page.getByText('assets/cover.jpg', { exact: true }).waitFor();
@@ -70,6 +97,7 @@ test('replaceable enterprise PDF templates', async t => {
     const waiting = page.waitForEvent('download'); await page.click('#templateShare'); const file = await waiting; custom = JSON.parse(await fs.readFile(await file.path(), 'utf8'));
     assert.equal(custom.id, 'test-brand'); assert.ok(custom.assets['assets/logo.png']); assert.equal(custom.company.name, 'TEST BRAND');
     assert.equal(custom.header.left, 'manual.title'); assert.equal(custom.footer.center, 'page.currentTotal');
+    assert.equal(custom.renderer, 'manual-v2'); assert.equal(custom.footer.gapMm, 7); assert.equal(custom.watermark.rotationDeg, 0);
     assert.deepEqual(core.normalizePackage(custom), custom); assert.deepEqual(JSON.parse(await fs.readFile(path.join(templates, 'test-brand@1.0.0.json'), 'utf8')), custom);
     if (process.env.DITA_TEMPLATE_QA_DIR) { await page.screenshot({ path: path.join(process.env.DITA_TEMPLATE_QA_DIR, 'template-picker.png') }); await page.click('#templateManage'); await page.screenshot({ path: path.join(process.env.DITA_TEMPLATE_QA_DIR, 'template-editor.png') }); await page.click('#templateClose'); }
     await page.click('#modelExportCancel');
@@ -93,12 +121,29 @@ test('replaceable enterprise PDF templates', async t => {
     await fs.rename(path.join(templates, 'test-brand@1.1.0.json'), path.join(templates, 'test-brand@1.1.0.backup'));
     await start(); await delivery('pdf'); assert.equal(await page.locator('#exportTemplate').inputValue(), 'test-brand@1.1.0'); assert.match(await page.locator('#exportTemplateWarning').innerText(), /原绑定模板不可用/);
     await page.click('#modelExportForm [value=check]'); await page.waitForFunction(() => document.getElementById('modelExportError').textContent.includes('模板不可用'));
-    await page.click('[data-delivery-step=configure]'); await page.selectOption('#exportTemplate', 'enterprise-blue@1.0.0');
+    await page.click('[data-delivery-step=configure]'); await page.selectOption('#exportTemplate', 'enterprise-blue@1.1.0');
     await page.setViewportSize({ width: 390, height: 844 }); await page.evaluate(() => document.documentElement.dataset.theme = 'dark'); await page.click('#templateManage');
     const box = await page.locator('#templateDialog').boundingBox(); assert.ok(box.x >= 0 && box.x + box.width <= 391);
     assert.equal(await page.locator('#templateDialog').evaluate(node => node.scrollWidth <= node.clientWidth + 1), true);
     if (process.env.DITA_TEMPLATE_QA_DIR) await page.screenshot({ path: path.join(process.env.DITA_TEMPLATE_QA_DIR, 'template-mobile.png') });
     await page.click('#templateClose'); await page.setViewportSize({ width: 1440, height: 1000 }); await page.click('#modelExportCancel');
+  });
+  await t.test('legacy import retains its exact package until an explicit layout upgrade', async () => {
+    await delivery('pdf'); await page.click('#templateManage');
+    const original = core.builtins().find(pack => pack.renderer === 'manual-v1');
+    const legacy = { ...original, id: 'legacy-brand', watermark: { ...original.watermark, opacity: 0.065 } };
+    await page.setInputFiles('#templateImport', { name: 'legacy.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(legacy)) }); await page.locator('#templateUpgrade:not([hidden])').waitFor();
+    assert.equal(await page.locator('#templateWatermarkSource').isDisabled(), true);
+    const waiting = page.waitForEvent('download'); await page.click('#templateDownload'); const file = await waiting;
+    assert.deepEqual(JSON.parse(await fs.readFile(await file.path(), 'utf8')), legacy);
+    await page.click('#templateSave'); await page.waitForFunction(() => !document.getElementById('templateDialog').open); assert.equal(await page.locator('#exportTemplate').inputValue(), 'legacy-brand@1.0.0');
+    await page.click('#templateManage'); await page.setInputFiles('#templateImport', { name: 'legacy.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(legacy)) }); await page.locator('#templateUpgrade:not([hidden])').waitFor();
+    await page.click('#templateUpgrade'); assert.equal(await page.locator('#templateVersion').inputValue(), '1.0.1'); assert.equal(await page.locator('#templateWatermarkSource').isEnabled(), true);
+    await page.selectOption('#templateWatermarkSource', 'image'); await page.locator('details').filter({ has: page.getByText('水印尺寸与位置', { exact: true }) }).evaluate(node => node.open = true); await page.selectOption('#templateWatermarkFit', 'page'); await page.fill('#templateOpacity', '100');
+    await page.click('#templateSave'); await page.waitForFunction(() => !document.getElementById('templateDialog').open);
+    const upgraded = JSON.parse(await fs.readFile(path.join(templates, 'legacy-brand@1.0.1.json'), 'utf8'));
+    assert.equal(upgraded.renderer, 'manual-v2'); assert.equal(upgraded.watermark.opacity, 1); assert.deepEqual(JSON.parse(await fs.readFile(path.join(templates, 'legacy-brand@1.0.0.json'), 'utf8')), legacy);
+    await page.click('#modelExportCancel');
   });
   await t.test('Word retains its own content pipeline and cannot be mislabeled as a branded export', async () => {
     await delivery('docx'); assert.equal(await page.locator('#exportTemplatePanel').isVisible(), false);

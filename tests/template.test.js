@@ -1,8 +1,28 @@
 'use strict';
 const test = require('node:test'), assert = require('node:assert/strict'), fs = require('node:fs/promises'), os = require('node:os'), path = require('node:path');
 const core = require('../public/template-core'), pdf = require('../public/template-pdf'), { createTemplateStore } = require('../lib/template-store');
+const { createHash } = require('node:crypto');
 const html = require('../public/delivery-document').renderHtmlDocument({ title: '原始标题', model: 'M100', version: 'V1', sections: [{ title: '命令', body: '<p>AT+TEST 原始内容</p>' }] });
 const packageValue = () => core.builtins()[0];
+test('legacy template identities and renderer output remain byte-for-byte compatible', () => {
+  const legacy = core.builtins().filter(pack => pack.renderer === 'manual-v1'), hash = value => createHash('sha256').update(value).digest('hex');
+  assert.deepEqual(legacy.map(pack => hash(JSON.stringify(pack))), ['d03a474c3c35cbf59c7459eefa2fbfc0ff539358a1f9916136b08a7d17058726', '8c5e41b117c02a4f43503f1edc9bfb76295871ff084118a6fc566c5fd55252dd']);
+  assert.equal(hash(pdf.render(html, core.capture(legacy[0], { 'manual.title': '旧版手册', 'company.name': '旧版企业' }))), '0bc97c8cb11ab226afa8db7a85e269875c89db3aa173cbe91a2e9a445d38abe2');
+  assert.throws(() => core.normalizePackage({ ...legacy[0], watermark: { ...legacy[0].watermark, source: 'logo' } }), /不受支持/);
+  const next = core.upgrade(legacy[0]); assert.equal(next.renderer, 'manual-v2'); assert.equal(legacy[0].renderer, 'manual-v1');
+});
+test('watermark uses actual selected artwork, with text only as an explicit choice', () => {
+  const pack = packageValue(); assert.deepEqual(core.watermarkSource(pack), { kind: 'none' });
+  pack.company.logo = 'assets/logo.png'; assert.deepEqual(core.watermarkSource(pack), { kind: 'image', asset: 'assets/logo.png' });
+  pack.watermark.asset = 'assets/watermark.png'; assert.equal(core.watermarkSource(pack).asset, 'assets/watermark.png');
+  pack.watermark.source = 'logo'; assert.equal(core.watermarkSource(pack).asset, 'assets/logo.png');
+  pack.watermark.source = 'text'; assert.deepEqual(core.watermarkSource(pack), { kind: 'text', field: 'company.name' });
+  pack.watermark.text = ''; assert.equal(core.watermarkSource(pack).kind, 'none');
+  pack.watermark.enabled = false; assert.equal(core.watermarkSource(pack).kind, 'none');
+  for (const changes of [{ widthPercent: 0 }, { offsetYPercent: 99 }, { rotationDeg: 90 }, { source: 'javascript' }]) assert.throws(() => core.normalizePackage({ ...packageValue(), watermark: { ...packageValue().watermark, ...changes } }), /交付模板/);
+  assert.throws(() => core.normalizePackage({ ...packageValue(), page: { size: 'A4', marginsMm: { top: 24, right: 20, bottom: 12, left: 22 } } }), /页脚空间不足/);
+  assert.throws(() => core.normalizePackage({ ...packageValue(), page: { size: 'A4', marginsMm: { top: 12, right: 20, bottom: 24, left: 22 } } }), /页眉空间不足/);
+});
 test('template capture is detached, explicit and deterministic across property order', () => {
   const pack = packageValue(), snapshot = core.capture(pack, { 'manual.title': 'HTTP 手册', 'manual.model': 'M100', 'company.name': '示例企业' });
   pack.colors.primary = '#FFFFFF'; pack.cover.fields.length = 0;
@@ -17,7 +37,7 @@ test('template boundary rejects unsupported execution, formats, paths and layout
     { page: { ...packageValue().page, size: 'custom' } }, { numbering: { basis: 'body', startAt: 1 } },
     { company: { name: '', logo: 'file:///secret' } }, { assets: { '../logo.png': 'data:image/png;base64,AAAA' } },
     { assets: { 'assets/logo.png': 'data:image/svg+xml,<svg/>' } }, { cover: { ...packageValue().cover, fields: ['window.location'] } },
-    { watermark: { ...packageValue().watermark, opacity: 1 } }]) assert.throws(() => core.normalizePackage({ ...packageValue(), ...changed }), /交付模板/);
+    { watermark: { ...packageValue().watermark, opacity: 1.1 } }]) assert.throws(() => core.normalizePackage({ ...packageValue(), ...changed }), /交付模板/);
 });
 test('embedded image boundaries enforce decoded byte size and dimensions before rendering', () => {
   const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jZtkAAAAASUVORK5CYII=', 'base64');
@@ -36,13 +56,13 @@ test('PDF template keeps content and escapes user fields without replacement-str
 });
 test('template registry preserves installed versions and supports a portable package round trip', async t => {
   const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'dita-templates-')); t.after(() => fs.rm(directory, { recursive: true, force: true }));
-  const store = createTemplateStore({ env: { DITA_TEMPLATE_DIR: directory } }), pack = { ...packageValue(), id: 'company-test' };
-  const before = await store.list(); assert.equal(before.templates.length, 2);
+  const store = createTemplateStore({ env: { DITA_TEMPLATE_DIR: directory } }), pack = { ...packageValue(), id: 'company-test', version: '1.0.0' };
+  const before = await store.list(); assert.equal(before.templates.length, 4);
   const saved = await store.save(pack); assert.equal(saved.sha256.length, 64);
   assert.deepEqual(await createTemplateStore({ env: { DITA_TEMPLATE_DIR: directory } }).save(JSON.parse(JSON.stringify(pack))), saved);
   await assert.rejects(store.save({ ...pack, name: 'changed' }), error => error.status === 409);
   const second = await store.save({ ...pack, version: '1.1.0', name: 'changed' }); assert.notEqual(second.sha256, saved.sha256);
-  assert.equal((await store.list()).templates.length, 4); assert.deepEqual((await fs.readdir(directory)).sort(), ['company-test@1.0.0.json', 'company-test@1.1.0.json']);
+  assert.equal((await store.list()).templates.length, 6); assert.deepEqual((await fs.readdir(directory)).sort(), ['company-test@1.0.0.json', 'company-test@1.1.0.json']);
 });
 test('concurrent template imports cannot overwrite one another and corrupt files remain untouched', async t => {
   const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'dita-template-race-')); t.after(() => fs.rm(directory, { recursive: true, force: true }));
@@ -50,11 +70,11 @@ test('concurrent template imports cannot overwrite one another and corrupt files
   const outcomes = await Promise.allSettled([store.save(pack), store.save({ ...pack, name: 'other' })]);
   assert.equal(outcomes.filter(item => item.status === 'fulfilled').length, 1); assert.equal(outcomes.find(item => item.status === 'rejected').reason.status, 409);
   await fs.writeFile(path.join(directory, 'broken.json'), '{broken');
-  const result = await store.list(); assert.equal(result.templates.length, 3); assert.equal(result.warnings.length, 1);
+  const result = await store.list(); assert.equal(result.templates.length, 5); assert.equal(result.warnings.length, 1);
   assert.equal(await fs.readFile(path.join(directory, 'broken.json'), 'utf8'), '{broken');
 });
 test('demo template registry never writes persistent user configuration', async () => {
   const store = createTemplateStore({ memory: true, env: { DITA_TEMPLATE_DIR: '/should-not-be-created' } });
-  await store.save({ ...packageValue(), id: 'demo-test' }); assert.equal((await store.list()).templates.length, 3);
-  assert.equal((await store.list()).temporary, true); assert.equal((await createTemplateStore({ memory: true }).list()).templates.length, 2);
+  await store.save({ ...packageValue(), id: 'demo-test' }); assert.equal((await store.list()).templates.length, 5);
+  assert.equal((await store.list()).temporary, true); assert.equal((await createTemplateStore({ memory: true }).list()).templates.length, 4);
 });

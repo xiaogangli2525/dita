@@ -9,7 +9,8 @@ const importsOnly = names => 'CallExpression[callee.name="require"]' + names
 const domainRequire = importsOnly([...documentRules, 'vendor/sax']);
 const renderingBoundaries = [
   { names: ['template-core'], imports: [] },
-  { names: ['template-pdf'], imports: ['template-core'] },
+  { names: ['template-pdf'], imports: ['template-core', 'template-pdf-v1'] },
+  { names: ['template-pdf-v1'], imports: ['template-core'] },
   { names: ['ai-conversation'], imports: ['ai-edit-core'] },
   { names: ['ai-task-store'], imports: ['ai-edit-core', 'ai-conversation'] },
   { names: ['review-view'], imports: [] },

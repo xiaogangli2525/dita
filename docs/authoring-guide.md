@@ -190,7 +190,7 @@ Git 审阅比较已加载的 Git 基线与当前编辑内容；拒绝差异会�
 | PDF | 本地服务生成可搜索 PDF；预览与下载使用相同字节 | 需要本机 Chromium 和覆盖实际汉字的字体；静态演示使用打印另存 |
 | Word | 下载可编辑 `.docx`，保留常用表格、图片和注脚链接 | 网页预览是内容预览，最终分页取决于 Word 和字体 |
 
-本地 PDF 首次运行 `npx playwright-core install chromium`，或设置 `DITA_CHROMIUM_EXECUTABLE`；Linux 安装 fontconfig 和中文字体，用 `npm run check:pdf` 检查。PDF 可在“交付版式”选择企业模板，支持 A4/Letter、封面、页眉页脚和浅水印。点击“新建 / 导入模板”配置、上传图片或导入同事分享的 JSON 模板包；点击“导出所选模板包”分享当前版本。标题等交付字段与模板分开，日期不自动填写。模板包保存在服务端用户目录，选择与字段保存在当前浏览器。完整设置见 [企业 PDF 模板](enterprise-template-plan.md)。
+本地 PDF 首次运行 `npx playwright-core install chromium`，或设置 `DITA_CHROMIUM_EXECUTABLE`；Linux 安装 fontconfig 和中文字体，用 `npm run check:pdf` 检查。PDF 可在“交付版式”选择企业模板（1.1.0 为新版），支持 A4/Letter、封面、页眉页脚和浅水印。新版可分开选择企业 Logo、专用图与文字水印，调整尺寸位置、灰度和不透明度，以及页脚分隔与正文间距。导入旧模板保留原版式，点击“升级新版排版”另存新版本后才使用新排版。点击“新建 / 导入模板”配置、上传图片或导入同事分享的 JSON 模板包；点击“导出所选模板包”分享当前版本。标题等交付字段与模板分开，日期不自动填写。模板包保存在服务端用户目录，选择与字段保存在当前浏览器。完整设置见 [企业 PDF 模板](enterprise-template-plan.md)。
 
 未选企业模板的 PDF 及 Word 沿用 Letter。Word 企业模板尚未接入。静态演示打印另存 PDF 无法确认实际保存，不建立真实文件交付记录。
 
