@@ -214,6 +214,8 @@ The note panel lists publishable note definitions/occurrences with the same ance
 
 `manual-core.createEvents()` supplies a small event boundary. Controllers can subscribe without being called directly from every editor action. An auxiliary listener failure is isolated so it cannot stop other document listeners.
 
+Native dialog `close` events are queued and can arrive after that same dialog has reopened. Close listeners that invalidate capture generations, cancel delivery or restore external focus must first check that the dialog is still closed. Explicit cancel actions remain synchronous; a stale close event cannot cancel a newer open session. The note-rule, delivery and project UI regressions cover this ordering directly.
+
 | Event | Emitted for | Consumers |
 | --- | --- | --- |
 | `document:changed` | Edit, undo/redo, or save acknowledgement | Draft backup, active content-search refresh and current-Topic writing search |

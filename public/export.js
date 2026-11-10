@@ -349,7 +349,7 @@
     function cancelDelivery() { operation++; filterGeneration++; configuring = false; abortController?.abort(); }
     get('modelExportCancel')?.addEventListener('click', () => { cancelDelivery(); get('modelExportDialog').close(); });
     get('modelExportDialog')?.addEventListener('cancel', cancelDelivery);
-    get('modelExportDialog')?.addEventListener('close', cancelDelivery);
+    get('modelExportDialog')?.addEventListener('close', () => { if (!get('modelExportDialog').open) cancelDelivery(); });
     get('modelExportForm')?.addEventListener('submit', event => { event.preventDefault(); publish(event.submitter?.value === 'preview' ? true : event.submitter?.value === 'check' ? 'check' : false); });
     function history() {
       const list = get('releaseList'); list.replaceChildren();

@@ -15,7 +15,7 @@
     shortcutHelp.addEventListener('keydown', event => {
       if (event.key === 'Tab' && !event.ctrlKey && !event.metaKey && !event.altKey) { event.preventDefault(); get('shortcutHelpClose').focus(); }
     });
-    shortcutHelp.addEventListener('close', () => document.querySelector('[data-menu="help"]')?.focus({ preventScroll: true }));
+    shortcutHelp.addEventListener('close', () => { if (!shortcutHelp.open) document.querySelector('[data-menu="help"]')?.focus({ preventScroll: true }); });
     A.events.on('workspace:willChange', () => shortcutHelp.close());
     function renderPanel() {
       dom.inspector.hidden = !panel;

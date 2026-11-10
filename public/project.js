@@ -50,7 +50,7 @@
     get('projectButton').addEventListener('click', show);
     get('projectClose').addEventListener('click', () => { if (!writing) get('projectDialog').close(); });
     get('projectDialog').addEventListener('cancel', event => { if (writing) event.preventDefault(); });
-    get('projectDialog').addEventListener('close', () => { viewGeneration++; loaded = false; });
+    get('projectDialog').addEventListener('close', () => { if (!get('projectDialog').open) { viewGeneration++; loaded = false; } });
     get('projectDiscover').addEventListener('click', async () => {
       if (writing || !loaded) return;
       const ticket = viewGeneration;

@@ -75,6 +75,19 @@ test('workspace UI keeps keyboard focus, pending choices and long-dialog control
   const handler=async route=>{if(route.request().method()!=='PUT')return route.continue();count++;reached();await gate;await route.fulfill({status:503,contentType:'application/json',body:'{"error":"模拟保存失败"}'});};await page.route('**/api/project',handler);
   try{await page.click('#projectForm button[type=submit]');await pending;assert.equal(await page.locator('#projectModels').isDisabled(),true);assert.equal(await page.locator('#projectClose').isDisabled(),true);await page.keyboard.press('Escape');assert.equal(await page.locator('#projectDialog').isVisible(),true);await page.locator('#projectForm').evaluate(form=>form.dispatchEvent(new Event('submit',{cancelable:true,bubbles:true})));assert.equal(count,1);release();await page.waitForFunction(()=>document.getElementById('projectError').textContent.includes('模拟保存失败'));assert.equal(await page.inputValue('#projectModels'),draft);assert.equal(await page.locator('#projectModels').isDisabled(),false);}finally{release();await page.unroute('**/api/project',handler);}await page.click('#projectClose');
  });
+ await check('a late project close event does not cancel the reopened model form',async()=>{
+  await page.evaluate(()=>{document.getElementById('projectButton').click();document.getElementById('projectDialog').dispatchEvent(new Event('close'));});
+  await page.locator('#projectModels:not(:disabled)').waitFor();
+  assert.equal(await page.inputValue('#projectModels'),'M100\nM300');
+  await page.click('#projectForm button[type=submit]');
+  await page.waitForFunction(()=>!document.getElementById('projectDialog').open);
+ });
+ await check('a late delivery close event does not cancel the reopened snapshot',async()=>{
+  await page.evaluate(()=>{document.getElementById('exportMenuButton').click();document.getElementById('modelExportDialog').dispatchEvent(new Event('close'));});
+  await page.locator('#exportModel:not(:disabled)').waitFor();
+  assert.ok(await page.locator('#exportModel option[value="M100"]').count());
+  await page.click('#modelExportCancel');
+ });
  await check('a failed configuration load after a real branch switch cannot reuse the previous model list',async()=>{
   execFileSync('git',['add','.'],{cwd:repo,stdio:'ignore'});execFileSync('git',['-c','user.name=Test','-c','user.email=test@example.invalid','commit','-qm','reviewed note rules'],{cwd:repo,stdio:'ignore'});
   const handler=route=>route.fulfill({status:503,contentType:'application/json',body:'{"error":"模拟配置读取失败"}'});await page.route('**/api/project',handler);
