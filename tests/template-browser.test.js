@@ -145,9 +145,15 @@ test('replaceable enterprise PDF templates', async t => {
     assert.equal(upgraded.renderer, 'manual-v2'); assert.equal(upgraded.watermark.opacity, 1); assert.deepEqual(JSON.parse(await fs.readFile(path.join(templates, 'legacy-brand@1.0.0.json'), 'utf8')), legacy);
     await page.click('#modelExportCancel');
   });
-  await t.test('Word retains its own content pipeline and cannot be mislabeled as a branded export', async () => {
-    await delivery('docx'); assert.equal(await page.locator('#exportTemplatePanel').isVisible(), false);
-    const bytes = await download(); assert.equal(bytes.subarray(0, 2).toString(), 'PK'); assert.equal((await page.evaluate(() => window.DitaApp.lastDeliveryRecord)).template, null);
+  await t.test('Word uses the shared enterprise template package with its own native DOCX renderer', async () => {
+    await delivery('docx');
+    assert.equal(await page.locator('#exportTemplatePanel').isVisible(), true);
+    assert.equal(await page.locator('#exportTemplate').inputValue(), 'enterprise-blue@1.2.0');
+    assert.match(await page.locator('#exportTemplateInfo').innerText(), /Word/);
+    const bytes = await download(); assert.equal(bytes.subarray(0, 2).toString(), 'PK');
+    const record = await page.evaluate(() => window.DitaApp.lastDeliveryRecord);
+    assert.equal(record.template.id, 'enterprise-blue'); assert.equal(record.template.version, '1.2.0');
+    assert.equal(record.template.fields['manual.model'], 'M100');
   });
   assert.deepEqual(errors, []);
 });
