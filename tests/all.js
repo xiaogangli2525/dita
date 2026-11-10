@@ -61,3 +61,4 @@ require('./ai-conversation.test');
 require('./ai-config-store.test');
 require('./ai-scan.test');
 require('./ai-acceptance.test');
+require('./ai-task-store.test');

@@ -4,6 +4,8 @@
 .ai-heading h2 { margin:6px 0 0; font-size:22px; letter-spacing:-.4px; }
 .ai-heading-actions { display:flex; gap:7px; flex-shrink:0; }
 .ai-context-label { color:var(--accent); font-size:12px; overflow-wrap:anywhere; }
+.ai-recovery { margin:10px 0; padding:10px 12px; border-radius:7px; background:var(--info-soft); color:var(--info); font-size:12px; line-height:1.7; }
+.ai-recovery.is-stale { background:var(--warning-soft); color:var(--warning); }
 .ai-welcome { padding:20px 18px; margin:14px 0; background:var(--surface); border:1px solid var(--border); border-radius:10px; }
 .ai-welcome > strong { font-size:15px; }
 .ai-welcome p { color:var(--muted); margin:10px 0 14px; }
