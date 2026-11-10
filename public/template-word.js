@@ -276,10 +276,20 @@
     const toc = bodyDoc.body.querySelector('.toc');
     let frontChildren = [];
     if (toc) {
-      const frontDoc = doc.cloneNode(true);
-      frontDoc.body.replaceChildren(toc.cloneNode(true));
-      const front = convertContent(frontDoc.documentElement.outerHTML);
-      frontChildren = front.children; validateWarnings(front.warnings);
+      const title = toc.querySelector('h2')?.textContent?.trim() || '目录';
+      frontChildren = [
+        new D.Paragraph({
+          style: 'Title',
+          children: [new D.TextRun({ text: title, font: pack.typography.bodyFont, size: 36, bold: true, color: pack.colors.primary.replace('#', '') })],
+          spacing: { before: 0, after: 180 }
+        }),
+        new D.TableOfContents(title, {
+          hyperlink: true,
+          headingStyleRange: '1-3',
+          hideTabAndPageNumbersInWebView: true,
+          beginDirty: true
+        })
+      ];
       toc.remove();
     }
     if (pack.cover.enabled) {
@@ -287,7 +297,17 @@
       bodyDoc.body.querySelector('.publication-scope')?.remove();
       bodyDoc.body.querySelector('.publication-version')?.remove();
     }
-    const body = convertContent(bodyDoc.documentElement.outerHTML);
+    const footnotesHeading = bodyDoc.body.querySelector('.export-footnotes > h2');
+    if (footnotesHeading) {
+      const paragraph = bodyDoc.createElement('p');
+      const label = bodyDoc.createElement('strong');
+      label.textContent = footnotesHeading.textContent;
+      paragraph.append(label);
+      footnotesHeading.replaceWith(paragraph);
+    }
+    const body = convertContent(bodyDoc.documentElement.outerHTML, {
+      h1: 'Title', h2: 'Heading1', h3: 'Heading2', h4: 'Heading3', h5: 'Heading4', h6: 'Heading5'
+    });
     validateWarnings(body.warnings);
     cancelled(signal);
     const D = root.docx, sections = [];
