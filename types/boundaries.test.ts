@@ -33,6 +33,8 @@ createRecord({ ...request, format: 'html' }, async () => 'hash');
 createRecord({ ...request, format: 'word' }, async () => 'hash');
 // @ts-expect-error Delivery bytes must be text or a Blob.
 createRecord({ ...request, format: 'pdf', data: { ...data, output: 42 } }, async () => 'hash');
+// @ts-expect-error Template delivery metadata cannot contain nontext fields.
+createRecord({ ...request, format: 'pdf', data: { ...data, template: { id: 'brand', name: 'Brand', version: '1.0.0', renderer: 'manual-v1', sha256: 'hash', fields: { 'manual.title': false } } } }, async () => 'hash');
 
 declare const workspace: WorkspaceState;
 // @ts-expect-error Workspace identity changes through session operations.

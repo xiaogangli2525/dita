@@ -57,7 +57,8 @@ export type DeliveryFormat = 'html' | 'md' | 'pdf' | 'docx';
 export interface DeliveryReport { model: string; included: number; excluded: number; unmarked: number; unused: number;
   filteredElements?: number; ruleApplied?: number; ruleFilteredParts?: number; prefixCandidates?: number;
   prefixApplied?: number; prefixExcluded?: number }
-export interface CompiledDelivery { output: string | Blob; previewHtml: string; report: DeliveryReport }
+export interface DeliveryTemplateRecord { id: string; name: string; version: string; renderer: string; sha256: string; fields: Readonly<Record<string, string>> }
+export interface CompiledDelivery { output: string | Blob; previewHtml: string; report: DeliveryReport; template?: DeliveryTemplateRecord | null }
 export interface DeliverySource { commit?: string | null; branch?: string | null; dirty?: boolean | null; warning?: string }
 export interface DeliveryRequest { snapshot: ManualSnapshot; source: DeliverySource; data: CompiledDelivery;
   model: string; format: DeliveryFormat; version: string; filename: string; prefixes: boolean; unsavedPaths: readonly string[] }
@@ -65,7 +66,7 @@ export interface DeliveryRecord { schema: 1; createdAt: string; state: 'download
   model: string; format: DeliveryFormat; version: string; filename: string; source: DeliverySource; capturedAt: string;
   filterPath: string; modelNotePrefixPolicy: 'explicit-prefix-v1' | 'confirmed-rules-only'; unsavedPaths: readonly string[];
   report: DeliveryReport; documents: { path: string; sha256: string }[];
-  projectSha256: string; noteRulesSha256: string | null; outputSha256: string }
+  projectSha256: string; noteRulesSha256: string | null; outputSha256: string; template: DeliveryTemplateRecord | null }
 export interface SavePorts {
   state: CapturePorts['state'] & { readonly capabilities: { readonly persistence: string; readonly git: boolean } };
   api: CapturePorts['api'];

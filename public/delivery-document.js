@@ -67,7 +67,7 @@
       '<style>' + css + '</style></head><body>',
       '<h1>' + escapeHtmlAttr(title) + '</h1>',
       model ? '<p class="publication-scope">适用型号：' + escapeHtmlAttr(model) + '。</p>' : '',
-      version ? '<p>文档版本：' + escapeHtmlAttr(version) + '</p>' : '',
+      version ? '<p class="publication-version">文档版本：' + escapeHtmlAttr(version) + '</p>' : '',
       toc,
       body,
       '</body></html>'

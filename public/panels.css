@@ -307,6 +307,25 @@
 
 /* Delivery controls stay reachable while long settings and checks scroll. */
 #modelExportDialog { overflow:hidden; }
+.delivery-template-panel { margin:20px 0; padding:16px; border:1px solid var(--border); border-radius:10px; background:var(--surface); }
+.template-panel-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+.template-panel-heading h3 { margin:0; font-size:14px; }
+.template-fields { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px 16px; }
+.template-fields[hidden] { display:none; }
+.template-wide { grid-column:1 / -1; }.template-fields label { min-width:0; margin:0; }
+.template-fields input,.template-fields select { width:100%; box-sizing:border-box; }
+.template-fields small,.template-assets small { display:block; margin-top:5px; color:var(--muted); font-size:11px; overflow-wrap:anywhere; }
+.template-warning { color:var(--warning); font-size:12px; line-height:1.6; }
+.template-dialog { width:min(650px,calc(100vw - 32px)); max-width:650px; overflow:hidden; }
+#templateForm { display:flex; flex-direction:column; max-height:calc(100dvh - 90px); }
+.template-dialog-content { overflow:auto; min-height:0; padding-right:8px; }
+.template-dialog .footnote-dialog-actions { flex:none; border-top:1px solid var(--border); padding-top:14px; }
+.template-dialog fieldset { border:0; padding:0; margin:0; min-width:0; }
+.template-eyebrow { font-size:11px; letter-spacing:1px; color:var(--accent); margin:0 0 6px; }
+.template-options { display:flex; flex-wrap:wrap; gap:10px 20px; margin:18px 0; }
+.template-assets { display:grid; gap:10px; }.template-assets>div { padding:12px; border:1px solid var(--border); border-radius:8px; }.template-assets label { margin:0 0 6px; }.template-assets button { margin-top:8px; }
+.template-color input { height:36px; padding:3px; }
+@media(max-width:600px) { .template-fields { grid-template-columns:minmax(0,1fr); }.template-panel-heading { align-items:flex-start; flex-direction:column; }.template-dialog { padding:18px; }.template-dialog .footnote-dialog-actions { flex-wrap:wrap; } }
 #modelExportForm { display:flex; flex-direction:column; max-height:calc(100dvh - 88px); }
 .delivery-dialog-content { flex:1 1 auto; min-height:0; overflow:auto; scrollbar-gutter:stable; }
 #modelExportForm > .footnote-dialog-actions { flex:none; padding-top:14px; border-top:1px solid var(--border); }

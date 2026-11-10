@@ -18,6 +18,7 @@
       documents: await Promise.all(Array.from(documents, async ([path, content]) => ({ path, sha256: await sha256(content) }))),
       projectSha256: await sha256(JSON.stringify(snapshot.project)),
       noteRulesSha256: snapshot.noteRules ? await sha256(JSON.stringify(snapshot.noteRules.config)) : null,
+      template: data.template ? { ...data.template, fields: { ...data.template.fields } } : null,
       outputSha256: await sha256(data.output) };
   }
   const api = { createRecord };

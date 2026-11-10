@@ -11,7 +11,7 @@ A lightweight local web client for reading, editing, reviewing, and exporting DI
 - [AI 文字修订规则](docs/ai-writing-rules.md)：每轮默认发送给模型的执行与保留规则。
 - [真实 HTTP 手册 AI 验收](docs/ai-acceptance.md)：13 项用例预检、已配置模型的实测和报告判读。
 - [随 SDK 交付知识库计划](docs/knowledge-base-plan.md)：已记录的后续方向，暂缓实施。
-- [企业交付模板设计](docs/enterprise-template-plan.md)：可替换模板包、动态字段、PDF/Word 适配和实施顺序；当前尚未接入导出。
+- [企业 PDF 模板](docs/enterprise-template-plan.md)：可替换模板包、封面、页眉页脚、水印、导入分享与交付追溯；Word 企业版式待接入。
 
 ## Writing workflow
 
@@ -99,7 +99,7 @@ The browser and server share a vendored copy of **sax 1.6.1** for XML validation
 
 Open a functional manual's Map (or an individual Topic), choose **交付功能手册**, select the model, document version and **PDF** or **Word（.docx）**, then check, preview or export. Every format uses the same captured working buffers, local references and model-note rules. Each functional manual remains a separate deliverable. Notes are collected at the end with shared numbering and repeat links, matching HTML.
 
-Local PDF export downloads an actual `.pdf` and previews those same bytes. Word downloads a real Office Open XML `.docx`; its content preview uses HTML, and final pagination depends on Word and installed fonts. Text, headings and tables remain editable. SVG/WebP image assets alone are converted to PNG for Office compatibility. Unsupported conversions stop with a visible error instead of silently losing content. Word and PDF use Letter pages; corporate templates and page-size settings are not implemented.
+Local PDF export downloads an actual `.pdf` and previews those same bytes. Word downloads a real Office Open XML `.docx`; its content preview uses HTML, and final pagination depends on Word and installed fonts. Text, headings and tables remain editable. SVG/WebP image assets alone are converted to PNG for Office compatibility. Unsupported conversions stop with a visible error instead of silently losing content. PDF supports replaceable enterprise templates with A4/Letter paper, covers, headers/footers and faint watermarks. Create/import a portable JSON package under delivery settings, or share the exact selected package with colleagues. Default PDF and Word retain Letter pages; branded Word templates are pending. See [template operation and contract](docs/enterprise-template-plan.md).
 
 The static online demonstration has no PDF rendering server. Its **PDF（打印另存）** option opens a content preview. Click **打印 / 另存 PDF** above the preview, then choose **另存为 PDF** and a destination in the browser dialog. That action cannot verify whether a file was saved and does not create a delivery record. Word still downloads directly in the demo. Other real downloads record a SHA-256 of the exact output bytes in browser-local delivery history.
 
