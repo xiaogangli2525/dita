@@ -353,9 +353,9 @@
       <label>文件格式<select id="exportFormat"><option value="html">HTML（推荐交付）</option><option value="pdf">PDF</option><option value="docx">Word（.docx）</option><option value="md">Markdown</option></select></label>
       <p id="exportFormatHint" class="muted"></p>
       <label>文档版本<input id="exportVersion" maxlength="80" placeholder="例如 V1.2，可留空"/></label>
-      <section id="exportTemplatePanel" class="delivery-template-panel" aria-label="PDF 交付模板" hidden>
+      <section id="exportTemplatePanel" class="delivery-template-panel" aria-label="企业交付模板" hidden>
         <div class="template-panel-heading"><h3>交付版式</h3><button id="templateManage" type="button">新建 / 导入模板</button></div>
-        <label>PDF 模板<select id="exportTemplate"><option value="">沿用简洁版式</option></select></label>
+        <label>企业模板<select id="exportTemplate"><option value="">沿用简洁版式</option></select></label>
         <button id="templateShare" type="button" disabled>导出所选模板包</button>
         <p id="exportTemplateInfo" class="muted"></p><p id="exportTemplateWarning" class="template-warning" role="status" hidden></p>
         <div id="exportTemplateFields" class="template-fields" hidden>
@@ -389,10 +389,12 @@
     <form id="templateForm">
       <div class="template-dialog-content">
         <p class="template-eyebrow">企业交付 · 模板库</p><h2 id="templateHeading">创建一套可复用的版式</h2>
-        <p class="muted">从当前模板复制，或导入同事分享的模板包。保存后用于 PDF，不改变手册内容。</p>
+        <p class="muted">从当前模板复制，或导入同事分享的模板包。保存后可用于 PDF 和 Word（按模板支持格式），不改变手册内容。</p>
         <fieldset id="templateDetails">
           <button id="templateUpgrade" type="button" hidden>升级新版排版</button>
           <label class="template-import">导入模板包<input id="templateImport" type="file" accept=".json,application/json"/></label>
+          <div class="template-options"><label class="checkbox-row"><input id="templateFormatsPdf" type="checkbox" checked/>支持 PDF</label><label class="checkbox-row"><input id="templateFormatsDocx" type="checkbox"/>支持 Word（.docx）</label></div>
+          <p class="muted">PDF 与 Word 使用独立版式渲染器，共享封面、品牌色、Logo、水印和页眉页脚配置。旧版模板需升级后才能启用 Word。</p>
           <div class="template-fields">
             <label>模板名称<input id="templateName" maxlength="80" required/></label><label>版本<input id="templateVersion" placeholder="1.0.0" required/></label>
             <label class="template-wide">模板 ID<input id="templateId" maxlength="64" pattern="[a-z][a-z0-9-]*" required/><small>小写英文、数字和短横线。同一版本不能覆盖，请升级版本保存。</small></label>
