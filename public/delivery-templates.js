@@ -26,7 +26,7 @@
       if (item) {
         const source = core.watermarkSource(item.package);
         if (item.package.watermark.enabled) get('exportTemplateInfo').textContent += source.kind === 'image' ? ' · 图片水印' : source.kind === 'text' ? ' · 文字水印' : ' · 未配置 Logo/水印图，当前不显示水印';
-        if (item.package.renderer === 'manual-v1') get('exportTemplateInfo').textContent += ' · 可选择 1.1.0 新版，或复制当前模板使用新排版';
+        if (item.package.renderer === 'manual-v1') get('exportTemplateInfo').textContent += ' · 可升级新版排版后另存为新版本，或复制当前模板继续编辑';
       }
     }
     function format(format) {
