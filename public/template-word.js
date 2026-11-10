@@ -209,7 +209,7 @@
     if (region.footer) footers.default = new D.Footer({ children: [headerFooterParagraph(D, 'footer', pack, fields, contentWidth)] });
     return { ...(Object.keys(headers).length ? { headers } : {}), ...(Object.keys(footers).length ? { footers } : {}) };
   }
-  function pageProperties(pack, pageWidthTwips, pageHeightTwips) {
+  function pageProperties(D, pack, pageWidthTwips, pageHeightTwips) {
     const margins = pack.page.marginsMm;
     const headerDistance = Math.max(4, margins.top - pack.header.gapMm - 5);
     const footerDistance = Math.max(4, margins.bottom - pack.footer.gapMm - 5);
@@ -295,7 +295,7 @@
       const cover = await coverChildren(D, pack, fields);
       const background = await coverBackgroundHeader(D, pack, pageWidthPx, pageHeightPx);
       sections.push({
-        properties: pageProperties(pack, pageWidthTwips, pageHeightTwips),
+        properties: pageProperties(D, pack, pageWidthTwips, pageHeightTwips),
         ...(background ? { headers: { default: background } } : {}),
         children: cover
       });
