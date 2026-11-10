@@ -124,7 +124,7 @@
     const settings = pack.watermark, source = core.watermarkSource(pack);
     if (source.kind === 'none') return null;
     const canvas = document.createElement('canvas');
-    let width, height, context = canvas.getContext('2d');
+    let width, height, context;
     if (source.kind === 'image') {
       const original = await loadImage(pack.assets[source.asset]);
       const scale = Math.min(1, 1600 / Math.max(original.width, original.height));
