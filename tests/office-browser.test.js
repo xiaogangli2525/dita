@@ -46,6 +46,9 @@ test('PDF and editable Word delivery', async t => {
       const zip = unzipSync(bytes), xml = strFromU8(zip['word/document.xml']);
       assert.match(xml, /w:w="11906" w:h="16838"/, 'enterprise template applies A4 page size');
       assert.match(xml, /TECHNICAL DOCUMENTATION/, 'enterprise cover is native editable Word text');
+      assert.match(xml, /TOC \\o "1-3" \\h \\z/, 'Word contains an updatable native table-of-contents field');
+      assert.match(xml, /PAGEREF _Toc\\d+ \\h/, 'TOC entries contain page-number fields and internal links');
+      assert.match(xml, /w:name="_Toc\\d+"/, 'TOC headings have stable Word bookmarks');
       assert.ok(Object.keys(zip).some(key => /^word\/header\d+\.xml$/.test(key)), 'template includes native Word headers');
       assert.ok(Object.keys(zip).some(key => /^word\/footer\d+\.xml$/.test(key)), 'template includes native Word footers');
       const footer = Object.keys(zip).filter(key => /^word\/footer\d+\.xml$/.test(key)).map(key => strFromU8(zip[key])).join('');
