@@ -38,8 +38,10 @@
     const choiceKey = () => configuringWorkspace + '\n' + configuringScope;
     const service = () => A.manual;
     const nativePdf = () => A.state.capabilities?.pdf === true;
+    const templates = root.DitaDeliveryTemplates?.createController({ api: A.api, changed: () => { compiled = null; view().invalidate(); } });
     function formatHint() {
       const format = get('exportFormat').value;
+      templates?.format(format);
       get('exportFormatHint').textContent = format === 'docx' ? '导出可编辑的 Word 文档，注脚统一附在文末。预览显示内容，最终分页由 Word 决定。' : format === 'pdf' ? nativePdf() ? '生成可搜索文字的 PDF，注脚附在文末。' : '此在线演示将打开打印内容预览。点击预览上方“打印 / 另存 PDF”，在打印窗口选择“另存为 PDF”。打印不写入交付记录。' : '';
       const option = get('exportFormat').querySelector('option[value="pdf"]'); if (option) option.textContent = nativePdf() ? 'PDF' : 'PDF（打印另存）';
       const button = get('modelExportForm').querySelector('[value="download"]'); if (button) button.textContent = format === 'pdf' && !nativePdf() ? '打开打印预览' : '导出文件';
@@ -182,6 +184,8 @@
         get('exportFilterHint').textContent = filters.truncated ? '文件列表过长，仅显示部分 DITAVAL。请缩小文档库范围后重试。' : filters.files.length ? '按所选 DITAVAL 过滤正文、图片和注脚；源文档保持不变。' : '文档库中未找到 DITAVAL；当前保留全部正文。';
         const snapshot = await service().capture(scope, { filterPath: get('exportFilter').value }), source = await provenance();
         if (generation !== operation || !get('modelExportDialog').open) return;
+        await templates?.load({ root: snapshot.root, branch: snapshot.branch, path: snapshot.path, title: snapshot.map.title });
+        if (generation !== operation || !get('modelExportDialog').open) return;
         if (!service().current(snapshot)) throw new Error('内容已变化，请重新打开交付设置');
         selectedModel = modelChoices.get(choiceKey()) ?? get('footnoteModel')?.value ?? '';
         useSnapshot(snapshot, source, selectedModel);
@@ -221,7 +225,7 @@
         }
       }
     }
-    async function convert(snapshot, model, format, version, prefixes=false) {
+    async function convert(snapshot, model, format, version, prefixes=false, publication = null) {
       const publicationData = service().prepare(snapshot, model, true, {prefixes});
       if(model&&publicationData.report.prefixCandidates&&!prefixes) {
         const issues = publicationData.noteReview;
@@ -238,12 +242,14 @@
         if (abortController?.signal.aborted) throw new Error('已取消');
         if (format === 'docx') output = await root.DitaOfficeExport.word(output, abortController?.signal);
         else if (nativePdf()) {
-          const response = await A.api.request('/api/export/pdf', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ html: previewHtml }), signal: abortController?.signal });
+          const response = await A.api.request('/api/export/pdf', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ html: previewHtml, publication }), signal: abortController?.signal });
           if (!response.ok) throw new Error(await A.api.error(response));
           output = await response.blob();
-        } else output = previewHtml;
+        } else { if (publication) previewHtml = root.DitaTemplatePdf.render(previewHtml, publication); output = previewHtml; }
       }
-      return { output, previewHtml, report: publicationData.report };
+      const template = publication ? { id: publication.package.id, name: publication.package.name, version: publication.package.version, renderer: publication.package.renderer,
+        sha256: await root.DitaBrowserFiles.sha256(JSON.stringify(publication.package)), fields: publication.fields } : null;
+      return { output, previewHtml, report: publicationData.report, template };
     }
     function filename(snapshot, model, format, version = '') {
       const safe = value => value.replace(/[^\p{L}\p{N}_-]/gu, '-');
@@ -268,14 +274,16 @@
       const generation = ++operation;
       abortController = new AbortController();
       exporting = true; A.showLoading?.();
+      templates?.lock(true);
       if (!legacy) get('modelExportError').textContent = '';
       if (!legacy) { view().pending(); for (const id of ['exportModel', 'exportPrefixNotes', 'exportFilter', 'exportFormat', 'exportVersion','exportReviewRules']) get(id).disabled = true; get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = true; }); }
       try {
         await service().verifyRules?.(snapshot);
         if (generation !== operation) return;
         const prefixes=!legacy&&get('exportPrefixNotes').checked;
-        const key = JSON.stringify([model, format, version,prefixes]);
-        const data = compiled?.key === key ? compiled.data : await convert(snapshot, model, format, version,prefixes);
+        const publication = legacy ? null : templates?.capture(format, { model, version }) || null;
+        const key = JSON.stringify([model, format, version,prefixes,publication]);
+        const data = compiled?.key === key ? compiled.data : await convert(snapshot, model, format, version,prefixes,publication);
         await service().verifyRules?.(snapshot);
         if (generation !== operation) return;
         if (!service().current(snapshot)) throw new Error('内容已变化，请重新打开交付设置以更新快照');
@@ -322,7 +330,7 @@
         if (generation !== operation) return;
         if (!legacy) { view().failed(); get('modelExportError').textContent = error.message; showIssues(issue(error, snapshot)); }
         A.setStatus(error.message, true); A.toast?.(error.message, 'error');
-      } finally { exporting = false; abortController = null; A.hideLoading?.(); if (!legacy && configuration) { view().settled(); for (const id of ['exportModel', 'exportPrefixNotes','exportFilter', 'exportFormat', 'exportVersion','exportReviewRules']) get(id).disabled = false; get('exportPrefixNotes').disabled=!get('exportModel').value;get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = false; }); } }
+      } finally { exporting = false; abortController = null; templates?.lock(false); A.hideLoading?.(); if (!legacy && configuration) { view().settled(); for (const id of ['exportModel', 'exportPrefixNotes','exportFilter', 'exportFormat', 'exportVersion','exportReviewRules']) get(id).disabled = false; get('exportPrefixNotes').disabled=!get('exportModel').value;get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = false; }); } }
     }
     async function legacyExport(format, preview) {
       if (!/\.ditamap$/i.test(A.state.activePath)) { A.setStatus('请先打开一个 Map 文档，再预览或导出', true); return; }
