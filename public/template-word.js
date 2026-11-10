@@ -266,6 +266,8 @@
   async function render({ doc, convertContent, signal }, publication) {
     cancelled(signal);
     const snapshot = core.capture(publication.package, publication.fields), pack = snapshot.package, fields = snapshot.fields;
+    const D = root.docx;
+    if (!D) throw new Error('Word 组件尚未加载，请刷新页面后重试。');
     if (!pack.formats.includes('docx')) throw new Error('当前企业模板未启用 Word 格式，请选择支持 Word 的模板。');
     if (pack.renderer !== 'manual-v2') throw new Error('旧版模板需要升级新版排版后才能用于 Word。');
     const pageWidthMm = core.sizes[pack.page.size][0], pageHeightMm = core.sizes[pack.page.size][1];
@@ -310,7 +312,7 @@
     });
     validateWarnings(body.warnings);
     cancelled(signal);
-    const D = root.docx, sections = [];
+    const sections = [];
     if (pack.cover.enabled) {
       const cover = await coverChildren(D, pack, fields);
       const background = await coverBackgroundHeader(D, pack, pageWidthPx, pageHeightPx);
