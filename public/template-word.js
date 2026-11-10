@@ -44,7 +44,7 @@
       ...(options.indent ? { indent: options.indent } : {})
     });
   }
-  async function coverChildren(D, pack, fields, pageWidthPx) {
+  async function coverChildren(D, pack, fields) {
     const font = pack.typography.bodyFont, primary = pack.colors.primary, accent = pack.colors.accent;
     const titleColor = pack.cover.textColor || primary, children = [];
     if (pack.company.logo) {
@@ -75,7 +75,7 @@
       children: [new D.TextRun({ text: ' ', font, size: 8 })]
     }));
     for (const field of pack.cover.fields) {
-      if (field === 'manual.title' || field === 'manual.model') continue;
+      if (field === 'manual.title' || field === 'manual.model' || field === 'company.name' || field === 'manual.documentId') continue;
       const value = fields[field];
       if (!value) continue;
       const label = labels[field] || field;
@@ -87,9 +87,6 @@
         ]
       }));
     }
-    children.push(coverText(D, fields['manual.documentId'] ? '文档编号  ·  ' + fields['manual.documentId'] : '', {
-      font, size: 9, color: '#64727A', before: 700, after: 0
-    }));
     return children;
   }
   function slotRuns(D, field, fields, font, color) {
@@ -212,7 +209,7 @@
     if (region.footer) footers.default = new D.Footer({ children: [headerFooterParagraph(D, 'footer', pack, fields, contentWidth)] });
     return { ...(Object.keys(headers).length ? { headers } : {}), ...(Object.keys(footers).length ? { footers } : {}) };
   }
-  function pageProperties(D, pack, pageWidthTwips, pageHeightTwips) {
+  function pageProperties(pack, pageWidthTwips, pageHeightTwips) {
     const margins = pack.page.marginsMm;
     const headerDistance = Math.max(4, margins.top - pack.header.gapMm - 5);
     const footerDistance = Math.max(4, margins.bottom - pack.footer.gapMm - 5);
@@ -228,7 +225,7 @@
       }
     };
   }
-  function documentStyles(D, pack) {
+  function documentStyles(pack) {
     const font = pack.typography.bodyFont, text = pack.colors.text.replace('#', ''), primary = pack.colors.primary.replace('#', '');
     const heading = (size, before, after) => ({
       run: { font: { ascii: 'Arial', hAnsi: 'Arial', eastAsia: font }, size, bold: true, color: primary },
@@ -295,10 +292,10 @@
     cancelled(signal);
     const D = root.docx, sections = [];
     if (pack.cover.enabled) {
-      const cover = await coverChildren(D, pack, fields, pageWidthPx);
+      const cover = await coverChildren(D, pack, fields);
       const background = await coverBackgroundHeader(D, pack, pageWidthPx, pageHeightPx);
       sections.push({
-        properties: pageProperties(D, pack, pageWidthTwips, pageHeightTwips),
+        properties: pageProperties(pack, pageWidthTwips, pageHeightTwips),
         ...(background ? { headers: { default: background } } : {}),
         children: cover
       });
@@ -317,7 +314,7 @@
     const documentFile = new D.Document({
       title: fields['manual.title'] || doc.title,
       creator: fields['company.name'] || 'DITA 文档工作台',
-      styles: documentStyles(D, pack),
+      styles: documentStyles(pack),
       sections
     });
     const output = await D.Packer.toBlob(documentFile);
