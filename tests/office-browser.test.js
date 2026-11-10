@@ -44,6 +44,12 @@ test('PDF and editable Word delivery', async t => {
     if (format === 'pdf') { assert.equal(bytes.subarray(0, 5).toString(), '%PDF-'); assert.ok((bytes.toString('latin1').match(/\/Type \/Page\b/g) || []).length >= 3); }
     else {
       const zip = unzipSync(bytes), xml = strFromU8(zip['word/document.xml']);
+      assert.match(xml, /w:w="11906" w:h="16838"/, 'enterprise template applies A4 page size');
+      assert.match(xml, /TECHNICAL DOCUMENTATION/, 'enterprise cover is native editable Word text');
+      assert.ok(Object.keys(zip).some(key => /^word\/header\d+\.xml$/.test(key)), 'template includes native Word headers');
+      assert.ok(Object.keys(zip).some(key => /^word\/footer\d+\.xml$/.test(key)), 'template includes native Word footers');
+      const footer = Object.keys(zip).filter(key => /^word\/footer\d+\.xml$/.test(key)).map(key => strFromU8(zip[key])).join('');
+      assert.match(footer, /PAGE/); assert.match(footer, /NUMPAGES/);
       assert.match(xml, /UNSAVED_BINARY/); assert.match(xml, /<w:tbl>/); assert.match(xml, /<w:gridSpan w:val="2"/); assert.match(xml, /<w:vMerge/);
       assert.match(xml, /中文|参数范围/); assert.match(strFromU8(zip['word/styles.xml']), /<w:keepNext\/>/); assert.match(xml, /<w:tblHeader\/>/);
       assert.match(xml, /MERGED_CELL/); assert.match(xml, /AT\+TEST41/);
