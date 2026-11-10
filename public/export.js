@@ -240,7 +240,10 @@
       if (format === 'pdf' || format === 'docx') {
         previewHtml = root.DitaOfficeExport.printable(output);
         if (abortController?.signal.aborted) throw new Error('已取消');
-        if (format === 'docx') output = await root.DitaOfficeExport.word(output, abortController?.signal);
+        if (format === 'docx') {
+          if (publication) previewHtml = root.DitaTemplatePdf.render(previewHtml, publication);
+          output = await root.DitaOfficeExport.word(output, abortController?.signal, publication);
+        }
         else if (nativePdf()) {
           const response = await A.api.request('/api/export/pdf', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ html: previewHtml, publication }), signal: abortController?.signal });
           if (!response.ok) throw new Error(await A.api.error(response));
