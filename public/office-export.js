@@ -46,10 +46,10 @@
     await libraries;
   }
   function cancelled(signal) { if (signal?.aborted) throw new Error('已取消'); }
-  function convertContent(html, styleMap = { 'h1': 'Title' }) {
+  function convertContent(html, styleMap = { 'h1': 'Title' }, maxImageWidth = 624) {
     const warnings = [];
     const children = root.docxHtml.htmlToContent(html, {
-      maxImageWidth: 624, styleMap, onWarning: warning => warnings.push(warning)
+      maxImageWidth, styleMap, onWarning: warning => warnings.push(warning)
     });
     return { children, warnings };
   }
@@ -78,7 +78,8 @@
         canvas.getContext('2d').drawImage(picture, 0, 0, canvas.width, canvas.height);
         image.src = canvas.toDataURL('image/png');
       }
-      image.setAttribute('width', String(Math.min(picture.naturalWidth, 624)));
+      // The converter clamps this intrinsic size to the selected page's content width.
+      image.setAttribute('width', String(picture.naturalWidth));
     }
     const D = root.docx;
     if (publication) {

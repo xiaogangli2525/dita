@@ -41,7 +41,8 @@
       const available = library.filter(item => item.package.formats.includes(format));
       select.replaceChildren(new Option('沿用基础版式', ''));
       for (const item of available) select.add(new Option(optionLabel(item.package), core.key(item.package)));
-      const requested = saved?.key || (previous && available.some(item => core.key(item.package) === previous) ? previous : '');
+      const hasSavedChoice = typeof saved?.key === 'string';
+      const requested = hasSavedChoice ? saved.key : (previous && available.some(item => core.key(item.package) === previous) ? previous : '');
       if (requested && available.some(item => core.key(item.package) === requested)) select.value = requested;
       else if (requested) {
         select.add(new Option('缺少模板 · ' + requested, requested)); select.value = requested;
@@ -49,7 +50,7 @@
       } else if (loadError) {
         select.add(new Option('模板不可用 · 请重新选择', '__unavailable__')); select.value = '__unavailable__';
         warn('模板库读取失败：' + loadError);
-      } else if (format === 'docx') {
+      } else if (format === 'docx' && !hasSavedChoice) {
         const standard = available.find(item => item.package.id === 'enterprise-blue') || available[0];
         if (standard) select.value = core.key(standard.package);
       }

@@ -159,8 +159,9 @@
     if (source.kind === 'none') return null;
     const image = await watermarkImage(pack, fields);
     if (!image) return null;
+    const wholePage = source.kind === 'image' && settings.fit === 'page';
     let width, height, yPercent = settings.offsetYPercent;
-    if (source.kind === 'image' && settings.fit === 'page') {
+    if (wholePage) {
       const scale = Math.min(pageWidthPx / image.width, pageHeightPx / image.height);
       width = image.width * scale; height = image.height * scale; yPercent = 50;
     } else {
@@ -171,10 +172,11 @@
     }
     return new D.ImageRun({
       data: image.bytes, type: 'png',
-      transformation: { width, height, rotation: settings.rotationDeg },
+      transformation: { width, height, rotation: wholePage ? 0 : settings.rotationDeg },
       floating: {
         horizontalPosition: { relative: 'page', align: 'center' },
-        verticalPosition: { relative: 'page', offset: Math.round(pageHeightTwips * 635 * yPercent / 100) },
+        // Template coordinates describe the image centre; Word anchors its top edge.
+        verticalPosition: { relative: 'page', offset: Math.round(pageHeightTwips * 635 * yPercent / 100 - height * 9525 / 2) },
         wrap: { type: D.TextWrappingType.NONE },
         behindDocument: true, allowOverlap: true, lockAnchor: true
       },
@@ -198,16 +200,15 @@
     return new D.Header({ children: [new D.Paragraph({ children: [run], spacing: { before: 0, after: 0 } })] });
   }
   async function regionWrappers(D, pack, fields, region, pageWidthPx, pageHeightPx, pageHeightTwips, contentWidth) {
-    const headers = {}, footers = {};
+    const children = [];
     const watermark = region.watermark ? await floatingWatermark(D, pack, fields, pageWidthPx, pageHeightPx, pageHeightTwips) : null;
-    if (region.header || watermark) {
-      const children = [];
-      if (watermark) children.push(new D.Paragraph({ children: [watermark], spacing: { before: 0, after: 0 } }));
-      if (region.header) children.push(headerFooterParagraph(D, 'header', pack, fields, contentWidth));
-      headers.default = new D.Header({ children });
-    }
-    if (region.footer) footers.default = new D.Footer({ children: [headerFooterParagraph(D, 'footer', pack, fields, contentWidth)] });
-    return { ...(Object.keys(headers).length ? { headers } : {}), ...(Object.keys(footers).length ? { footers } : {}) };
+    if (watermark) children.push(new D.Paragraph({ children: [watermark], spacing: { before: 0, after: 0 } }));
+    if (region.header) children.push(headerFooterParagraph(D, 'header', pack, fields, contentWidth));
+    // Omitting a reference links the section to its predecessor, rather than hiding it.
+    return {
+      headers: { default: new D.Header({ children: children.length ? children : [new D.Paragraph('')] }) },
+      footers: { default: new D.Footer({ children: [region.footer ? headerFooterParagraph(D, 'footer', pack, fields, contentWidth) : new D.Paragraph('')] }) }
+    };
   }
   function pageProperties(D, pack, pageWidthTwips, pageHeightTwips) {
     const margins = pack.page.marginsMm;
@@ -307,17 +308,28 @@
       paragraph.append(label);
       footnotesHeading.replaceWith(paragraph);
     }
+    // The HTML importer emits direct run formatting, which takes precedence over
+    // Word styles. Apply the template before conversion while keeping inline DITA
+    // emphasis and the distinct formatting of code blocks and tables.
+    const style = bodyDoc.createElement('style');
+    style.textContent = `body{font-family:"${pack.typography.bodyFont}",Arial,sans-serif;font-size:${pack.typography.bodySizePt}pt;color:${pack.colors.text};}
+      h1,h2,h3,h4,h5,h6,dt{color:${pack.colors.primary};}
+      th,thead td{background-color:${pack.colors.primary};color:#fff;}
+      a,sup.fn-ref{color:${pack.colors.primary};}`;
+    bodyDoc.head.append(style);
     const body = convertContent(bodyDoc.documentElement.outerHTML, {
       h1: 'Title', h2: 'Heading1', h3: 'Heading2', h4: 'Heading3', h5: 'Heading4', h6: 'Heading5'
-    });
+    }, Math.floor(contentWidth / 15));
     validateWarnings(body.warnings);
     cancelled(signal);
     const sections = [];
     if (pack.cover.enabled) {
       const cover = await coverChildren(D, pack, fields);
       const background = await coverBackgroundHeader(D, pack, pageWidthPx, pageHeightPx);
+      const wrappers = await regionWrappers(D, pack, fields, pack.regions.cover, pageWidthPx, pageHeightPx, pageHeightTwips, contentWidth);
       sections.push({
         properties: pageProperties(D, pack, pageWidthTwips, pageHeightTwips),
+        ...wrappers,
         ...(background ? { headers: { default: background } } : {}),
         children: cover
       });
