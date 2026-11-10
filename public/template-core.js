@@ -38,7 +38,8 @@
   }
   function normalizePackage(raw) {
     const v = object(raw, ['schemaVersion', 'id', 'name', 'version', 'renderer', 'formats', 'company', 'page', 'typography', 'colors', 'cover', 'header', 'footer', 'watermark', 'regions', 'numbering', 'assets'], '模板');
-    if (v.schemaVersion !== 1 || v.renderer !== 'manual-v1') fail('模板协议或布局解释器不受支持');
+    if (v.schemaVersion !== 1 || !['manual-v1', 'manual-v2'].includes(v.renderer)) fail('模板协议或布局解释器不受支持');
+    const modern = v.renderer === 'manual-v2';
     if (typeof v.id !== 'string' || typeof v.version !== 'string' || v.version.length > 80 || !/^[a-z][a-z0-9-]{0,63}$/.test(v.id) || !/^\d+\.\d+\.\d+(?:-[a-z0-9.-]{1,30})?$/.test(v.version)) fail('模板 ID 或版本无效');
     const name = text(v.name, 80, '模板名').trim(); if (!name) fail('模板名不能为空');
     if (!Array.isArray(v.formats) || v.formats.length !== 1 || v.formats[0] !== 'pdf') fail('首版企业模板仅支持 PDF');
@@ -57,11 +58,15 @@
     const page = object(v.page, ['size', 'marginsMm'], '纸张'), margins = object(page.marginsMm, ['top', 'right', 'bottom', 'left'], '页边距');
     const typography = object(v.typography, ['bodyFont', 'bodySizePt'], '字体');
     const colors = object(v.colors, ['primary', 'accent', 'text'], '配色');
-    const cover = object(v.cover, ['enabled', 'layout', 'background', 'fields'], '封面');
+    const cover = object(v.cover, ['enabled', 'layout', 'background', 'fields', ...(modern ? ['textColor'] : [])], '封面');
     if (!Array.isArray(cover.fields) || cover.fields.length > fields.length || new Set(cover.fields).size !== cover.fields.length || cover.fields.some(field => !fields.includes(field))) fail('封面字段无效');
     if (cover.enabled && !cover.fields.includes('manual.title')) fail('封面必须包含手册标题');
-    const slots = (value, label) => { const part = object(value, ['left', 'center', 'right', ...(label === '页眉' ? ['rule'] : [])], label); return { left: choice(part.left, pageFields, label), center: choice(part.center, pageFields, label), right: choice(part.right, pageFields, label), ...(label === '页眉' ? { rule: flag(part.rule, label) } : {}) }; };
-    const watermark = object(v.watermark, ['enabled', 'asset', 'text', 'opacity'], '水印');
+    const slots = (value, label) => {
+      const part = object(value, ['left', 'center', 'right', ...(modern || label === '页眉' ? ['rule'] : []), ...(modern ? ['gapMm'] : [])], label);
+      return { left: choice(part.left, pageFields, label), center: choice(part.center, pageFields, label), right: choice(part.right, pageFields, label),
+        ...(modern || label === '页眉' ? { rule: flag(part.rule, label) } : {}), ...(modern ? { gapMm: number(part.gapMm, 3, 10, label + '间距') } : {}) };
+    };
+    const watermark = object(v.watermark, ['enabled', 'asset', 'text', 'opacity', ...(modern ? ['source', 'widthPercent', 'offsetYPercent', 'rotationDeg', 'fit', 'tone'] : [])], '水印');
     const regions = object(v.regions, ['cover', 'frontMatter', 'body'], '分区');
     const normalizedRegions = {};
     for (const name of ['cover', 'frontMatter', 'body']) {
@@ -69,16 +74,21 @@
       normalizedRegions[name] = { header: flag(region.header, '页眉'), footer: flag(region.footer, '页脚'), watermark: flag(region.watermark, '水印') };
     }
     if (Object.values(normalizedRegions.cover).some(Boolean)) fail('封面暂不支持页眉、页脚或水印');
+    const header = slots(v.header, '页眉'), footer = slots(v.footer, '页脚');
+    if (modern && [normalizedRegions.frontMatter, normalizedRegions.body].some(region => region.footer) && margins.bottom < footer.gapMm + 14) fail('页脚空间不足，下页边距至少需 ' + (footer.gapMm + 14) + ' mm，或减小页脚间距');
+    if (modern && [normalizedRegions.frontMatter, normalizedRegions.body].some(region => region.header) && margins.top < header.gapMm + 9) fail('页眉空间不足，上页边距至少需 ' + (header.gapMm + 9) + ' mm，或减小页眉间距');
     const numbering = object(v.numbering, ['basis', 'startAt'], '页码');
     if (numbering.basis !== 'physical' || numbering.startAt !== 1) fail('首版页码按物理页从 1 计数，可按分区隐藏');
-    return { schemaVersion: 1, id: v.id, name, version: v.version, renderer: 'manual-v1', formats: ['pdf'],
+    return { schemaVersion: 1, id: v.id, name, version: v.version, renderer: v.renderer, formats: ['pdf'],
       company: { name: text(company.name, 100, '企业名'), logo: asset(company.logo) },
       page: { size: choice(page.size, Object.keys(sizes), '纸张'), marginsMm: Object.fromEntries(['top', 'right', 'bottom', 'left'].map(side => [side, number(margins[side], 12, 40, '页边距')])) },
       typography: { bodyFont: choice(typography.bodyFont, ['Noto Sans CJK SC', 'Microsoft YaHei', 'Arial'], '字体'), bodySizePt: number(typography.bodySizePt, 9, 13, '正文字号') },
       colors: { primary: color(colors.primary), accent: color(colors.accent), text: color(colors.text) },
-      cover: { enabled: flag(cover.enabled, '封面'), layout: choice(cover.layout, ['brand-panel', 'minimal'], '封面布局'), background: asset(cover.background), fields: [...cover.fields] },
-      header: slots(v.header, '页眉'), footer: slots(v.footer, '页脚'),
-      watermark: { enabled: flag(watermark.enabled, '水印'), asset: asset(watermark.asset), text: choice(watermark.text, ['', ...fields], '水印字段'), opacity: number(watermark.opacity, 0.01, 0.15, '水印透明度') },
+      cover: { enabled: flag(cover.enabled, '封面'), layout: choice(cover.layout, ['brand-panel', 'minimal'], '封面布局'), background: asset(cover.background), fields: [...cover.fields], ...(modern ? { textColor: color(cover.textColor) } : {}) },
+      header, footer,
+      watermark: { enabled: flag(watermark.enabled, '水印'), asset: asset(watermark.asset), text: choice(watermark.text, ['', ...fields], '水印字段'), opacity: number(watermark.opacity, 0.01, modern ? 1 : 0.15, '水印透明度'),
+        ...(modern ? { source: choice(watermark.source, ['auto', 'logo', 'image', 'text'], '水印来源'), fit: choice(watermark.fit, ['logo', 'page'], '水印图片模式'),
+          widthPercent: number(watermark.widthPercent, 25, 90, '水印宽度'), offsetYPercent: number(watermark.offsetYPercent, 30, 70, '水印位置'), rotationDeg: number(watermark.rotationDeg, -45, 45, '水印角度'), tone: choice(watermark.tone, ['grayscale', 'original'], '水印颜色') } : {}) },
       regions: normalizedRegions, numbering: { basis: 'physical', startAt: 1 }, assets: normalizedAssets };
   }
   function builtins() {
@@ -90,7 +100,26 @@
       watermark: { enabled: true, asset: null, text: 'company.name', opacity: 0.06 },
       regions: { cover: { header: false, footer: false, watermark: false }, frontMatter: { header: true, footer: false, watermark: true }, body: { header: true, footer: true, watermark: true } },
       numbering: { basis: 'physical', startAt: 1 }, assets: {} };
-    return [normalizePackage(base), normalizePackage({ ...base, id: 'enterprise-paper', name: '企业标准 · 简洁', cover: { ...base.cover, layout: 'minimal' }, colors: { primary: '#384F51', accent: '#A88252', text: '#272D2D' } })];
+    const previous = [normalizePackage(base), normalizePackage({ ...base, id: 'enterprise-paper', name: '企业标准 · 简洁', cover: { ...base.cover, layout: 'minimal' }, colors: { primary: '#384F51', accent: '#A88252', text: '#272D2D' } })];
+    const current = previous.map(pack => normalizePackage({ ...upgrade(pack), version: '1.1.0', page: { ...pack.page, marginsMm: { top: 24, right: 20, bottom: 24, left: 22 } },
+      footer: { left: 'manual.documentId', center: '', right: 'page.currentTotal', rule: true, gapMm: 6 }, watermark: { ...upgrade(pack).watermark, source: 'auto' } }));
+    return [...current, ...previous];
+  }
+  function upgrade(value) {
+    const pack = normalizePackage(value);
+    if (pack.renderer === 'manual-v2') return pack;
+    return normalizePackage({ ...pack, renderer: 'manual-v2', page: { ...pack.page, marginsMm: { ...pack.page.marginsMm, top: Math.max(20, pack.page.marginsMm.top), bottom: Math.max(24, pack.page.marginsMm.bottom) } },
+      cover: { ...pack.cover, textColor: pack.colors.primary }, header: { ...pack.header, gapMm: 4 }, footer: { ...pack.footer, rule: true, gapMm: 6 },
+      watermark: { ...pack.watermark, source: pack.watermark.asset ? 'image' : pack.company.logo ? 'logo' : 'text', fit: 'logo', widthPercent: 80, offsetYPercent: 53, rotationDeg: 0, tone: 'grayscale' } });
+  }
+  function watermarkSource(pack) {
+    const value = pack.watermark;
+    if (!value.enabled) return { kind: 'none' };
+    if (pack.renderer === 'manual-v1') return value.asset ? { kind: 'image', asset: value.asset } : value.text ? { kind: 'text', field: value.text } : { kind: 'none' };
+    if (value.source === 'auto') return value.asset ? { kind: 'image', asset: value.asset } : pack.company.logo ? { kind: 'image', asset: pack.company.logo } : { kind: 'none' };
+    if (value.source === 'logo') return pack.company.logo ? { kind: 'image', asset: pack.company.logo } : { kind: 'none' };
+    if (value.source === 'image') return value.asset ? { kind: 'image', asset: value.asset } : { kind: 'none' };
+    return value.text ? { kind: 'text', field: value.text } : { kind: 'none' };
   }
   function capture(template, values) {
     const pack = normalizePackage(template), normalized = {};
@@ -101,6 +130,6 @@
     if (date && (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(Date.parse(date)) || new Date(date).toISOString().slice(0, 10) !== date)) fail('发布日期须为有效的 YYYY-MM-DD');
     return { package: pack, fields: normalized };
   }
-  const api = { normalizePackage, builtins, capture, sizes, key: pack => pack.id + '@' + pack.version };
+  const api = { normalizePackage, builtins, capture, upgrade, watermarkSource, sizes, key: pack => pack.id + '@' + pack.version };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaTemplateCore = api;
 })(typeof window === 'undefined' ? globalThis : window);
