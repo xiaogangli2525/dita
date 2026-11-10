@@ -2,36 +2,65 @@
 (function (root) {
   function createController({ api, changed }) {
     const core = root.DitaTemplateCore, get = id => document.getElementById(id), dialog = get('templateDialog');
-    let library = [], context = null, generation = 0, editing = 0, pending = false, draft = null, opener = null;
+    let library = [], context = null, generation = 0, editing = 0, pending = false, draft = null, opener = null, loadError = '';
     const metadata = { 'manual.title': 'exportTitle', 'manual.releaseDate': 'exportDate', 'manual.documentId': 'exportDocumentId', 'manual.classification': 'exportClassification', 'company.name': 'exportCompany' };
     const pageOptions = { '': '无', 'company.name': '企业名称', 'manual.title': '手册标题', 'manual.model': '适用型号', 'manual.version': '文档版本', 'manual.releaseDate': '发布日期', 'manual.documentId': '文档编号', 'manual.classification': '文档级别', 'page.current': '当前页', 'page.total': '总页数', 'page.currentTotal': '当前页 / 总页数' };
     for (const part of ['Header', 'Footer']) for (const side of ['Left', 'Center', 'Right']) get('template' + part + side).replaceChildren(...Object.entries(pageOptions).map(([value, label]) => new Option(label, value)));
-    const optionLabel = pack => pack.name + ' · ' + pack.version + (pack.renderer === 'manual-v1' ? ' · 旧版' : '');
+    const optionLabel = pack => pack.name + ' · ' + pack.version + ' · ' + pack.formats.map(format => format === 'pdf' ? 'PDF' : 'Word').join(' / ') + (pack.renderer === 'manual-v1' ? ' · 旧版' : '');
     const active = () => library.find(item => core.key(item.package) === get('exportTemplate').value);
-    const storageKey = () => 'dita.template-choice.v1:' + JSON.stringify([context.root, context.branch, context.path]);
+    const storageKey = format => 'dita.template-choice.v2:' + JSON.stringify([context.root, context.branch, context.path, format]);
+    const legacyStorageKey = () => 'dita.template-choice.v1:' + JSON.stringify([context.root, context.branch, context.path]);
     function warn(message) { get('exportTemplateWarning').textContent = message; get('exportTemplateWarning').hidden = !message; }
     function remember() {
       if (!context) return;
       const fields = Object.fromEntries(Object.entries(metadata).map(([field, id]) => [field, get(id).value]));
-      try { localStorage.setItem(storageKey(), JSON.stringify({ key: get('exportTemplate').value, fields })); }
+      try { localStorage.setItem(storageKey(get('exportFormat').value), JSON.stringify({ key: get('exportTemplate').value, fields })); }
       catch { warn('模板和信息仅保留在本页，浏览器偏好存储不可用。模板包本身仍保存在服务端。'); }
     }
     function invalidate() { remember(); describe(); changed(); }
     function describe() {
       const item = active();
-      get('exportTemplateInfo').textContent = item ? `${item.package.page.size} · ${item.package.cover.enabled ? '含封面' : '无封面'} · ${item.package.watermark.enabled ? '水印已启用' : '无水印'} · v${item.package.version} · ${item.sha256.slice(0, 10)}` : '沿用简洁版式。企业模板目前用于 PDF；切换模板不会修改原始 DITA。';
+      get('exportTemplateInfo').textContent = item ? `${item.package.page.size} · ${item.package.cover.enabled ? '含封面' : '无封面'} · ${item.package.watermark.enabled ? '水印已启用' : '无水印'} · ${item.package.formats.map(format => format === 'pdf' ? 'PDF' : 'Word').join(' / ')} · v${item.package.version} · ${item.sha256.slice(0, 10)}` : '沿用基础版式；选择企业模板可应用封面、页眉页脚和水印，不修改原始 DITA。';
       get('exportTemplateFields').hidden = !item;
       get('templateShare').disabled = !item;
       if (item) {
         const source = core.watermarkSource(item.package);
         if (item.package.watermark.enabled) get('exportTemplateInfo').textContent += source.kind === 'image' ? ' · 图片水印' : source.kind === 'text' ? ' · 文字水印' : ' · 未配置 Logo/水印图，当前不显示水印';
-        if (item.package.renderer === 'manual-v1') get('exportTemplateInfo').textContent += ' · 可选择 1.1.0 新版，或复制当前模板使用新排版';
+        if (item.package.renderer === 'manual-v1') get('exportTemplateInfo').textContent += ' · 可升级新版排版后另存为新版本，或复制当前模板继续编辑';
       }
     }
-    function format(format) { get('exportTemplatePanel').hidden = format !== 'pdf'; }
+    function format(format) {
+      const supported = ['pdf', 'docx'].includes(format), select = get('exportTemplate'), previous = select.value;
+      get('exportTemplatePanel').hidden = !supported;
+      get('exportTemplatePanel').setAttribute('aria-label', format === 'docx' ? 'Word 交付模板' : 'PDF 交付模板');
+      if (!supported) return;
+      let saved;
+      try {
+        saved = JSON.parse(localStorage.getItem(storageKey(format)) || (format === 'pdf' ? localStorage.getItem(legacyStorageKey()) : 'null') || 'null');
+      } catch { warn('模板选择备份无法读取，本次使用默认版式；原始浏览器数据仍保留。'); }
+      const available = library.filter(item => item.package.formats.includes(format));
+      select.replaceChildren(new Option('沿用基础版式', ''));
+      for (const item of available) select.add(new Option(optionLabel(item.package), core.key(item.package)));
+      const requested = saved?.key || (previous && available.some(item => core.key(item.package) === previous) ? previous : '');
+      if (requested && available.some(item => core.key(item.package) === requested)) select.value = requested;
+      else if (requested) {
+        select.add(new Option('缺少模板 · ' + requested, requested)); select.value = requested;
+        warn('原绑定模板不可用（当前格式不支持），请导入原版本或明确选择其他版式。');
+      } else if (loadError) {
+        select.add(new Option('模板不可用 · 请重新选择', '__unavailable__')); select.value = '__unavailable__';
+        warn('模板库读取失败：' + loadError);
+      } else if (format === 'docx') {
+        const standard = available.find(item => item.package.id === 'enterprise-blue') || available[0];
+        if (standard) select.value = core.key(standard.package);
+      }
+      if (saved?.fields && typeof saved.fields === 'object') {
+        for (const [field, element] of Object.entries(metadata)) if (typeof saved.fields[field] === 'string' && saved.fields[field].length <= 160) get(element).value = saved.fields[field];
+      }
+      describe();
+    }
     async function load(next) {
       const id = ++generation, workspace = api.token;
-      context = next; library = []; get('exportTemplate').replaceChildren(new Option('沿用简洁版式', '')); warn('');
+      context = next; library = []; loadError = ''; get('exportTemplate').replaceChildren(new Option('沿用基础版式', '')); warn('');
       for (const [field, element] of Object.entries(metadata)) get(element).value = field === 'manual.title' ? next.title : '';
       try {
         const response = await api.request('/api/templates'); if (!response.ok) throw Error(await api.error(response));
@@ -40,21 +69,12 @@
         library = value.templates.map(item => ({ ...item, package: core.normalizePackage(item.package) }));
         for (const item of library) get('exportTemplate').add(new Option(optionLabel(item.package), core.key(item.package)));
         if (value.warnings.length || value.temporary) warn([value.temporary ? '演示模式：导入模板只保留至服务重启。' : '', ...value.warnings].filter(Boolean).join('；'));
-        let saved;
-        try { saved = JSON.parse(localStorage.getItem(storageKey()) || 'null'); }
-        catch { warn('模板选择备份无法读取，本次使用简洁版式；原始浏览器数据仍保留。'); }
-        if (saved) {
-          if (typeof saved.key !== 'string' || !saved.fields || typeof saved.fields !== 'object') throw Error('模板选择备份格式无效，请重新选择模板。');
-          if (saved.key && !library.some(item => core.key(item.package) === saved.key)) { get('exportTemplate').add(new Option('缺少模板 · ' + saved.key, saved.key)); warn('原绑定模板不可用，请导入原版本或明确选择其他版式。'); }
-          get('exportTemplate').value = saved.key;
-          for (const [field, element] of Object.entries(metadata)) if (typeof saved.fields[field] === 'string' && saved.fields[field].length <= 160) get(element).value = saved.fields[field];
-        }
-      } catch (error) { if (id === generation) { get('exportTemplate').add(new Option('模板不可用 · 请重新选择', '__unavailable__')); get('exportTemplate').value = '__unavailable__'; warn('模板库读取失败：' + error.message); } }
-      finally { if (id === generation) { format(get('exportFormat').value); describe(); } }
+      } catch (error) { if (id === generation) loadError = error.message; }
+      finally { if (id === generation) format(get('exportFormat').value); }
     }
     function capture(format, values) {
-      if (format !== 'pdf' || !get('exportTemplate').value) return null;
-      const item = active(); if (!item) throw Error('所选模板不可用，请导入原版本或选择其他版式。');
+      if (!['pdf', 'docx'].includes(format) || !get('exportTemplate').value) return null;
+      const item = active(); if (!item || !item.package.formats.includes(format)) throw Error('所选模板不可用或不支持当前格式，请导入原版本或选择其他版式。');
       return core.capture(item.package, { ...Object.fromEntries(Object.entries(metadata).map(([field, element]) => [field, get(element).value])), 'manual.model': values.model, 'manual.version': values.version });
     }
     function watermarkSettings() {
@@ -78,11 +98,12 @@
     function renderEditor() {
       const p = core.upgrade(draft), modern = draft.renderer === 'manual-v2';
       get('templateId').value = p.id; get('templateName').value = p.name; get('templateVersion').value = p.version;
+      get('templateFormatsPdf').checked = p.formats.includes('pdf'); get('templateFormatsDocx').checked = p.formats.includes('docx');
       get('templateCompany').value = p.company.name; get('templatePaper').value = p.page.size; get('templateLayout').value = p.cover.layout;
       get('templatePrimary').value = p.colors.primary; get('templateAccent').value = p.colors.accent;
       get('templateCover').checked = p.cover.enabled; get('templateWatermark').checked = p.watermark.enabled; get('templateOpacity').value = p.watermark.opacity * 100; get('templateOpacity').max = modern ? '100' : '15';
       get('templateUpgrade').hidden = modern;
-      for (const id of ['templateCoverText', 'templateWatermarkSource', 'templateWatermarkFit', 'templateWatermarkTone', 'templateHeaderGap', 'templateFooterGap', 'templateFooterRule']) get(id).disabled = !modern;
+      for (const id of ['templateCoverText', 'templateWatermarkSource', 'templateWatermarkFit', 'templateWatermarkTone', 'templateHeaderGap', 'templateFooterGap', 'templateFooterRule', 'templateFormatsDocx']) get(id).disabled = !modern;
       get('templateCoverText').value = p.cover.textColor; get('templateWatermarkSource').value = p.watermark.source; get('templateWatermarkFit').value = p.watermark.fit;
       get('templateWatermarkWidth').value = p.watermark.widthPercent; get('templateWatermarkY').value = p.watermark.offsetYPercent; get('templateWatermarkRotation').value = p.watermark.rotationDeg; get('templateWatermarkTone').value = p.watermark.tone;
       get('templateFooterRule').checked = p.footer.rule; get('templateHeaderGap').value = p.header.gapMm; get('templateFooterGap').value = p.footer.gapMm;
@@ -95,6 +116,7 @@
     function edited() {
       const p = JSON.parse(JSON.stringify(draft));
       p.id = get('templateId').value.trim(); p.name = get('templateName').value.trim(); p.version = get('templateVersion').value.trim(); p.company.name = get('templateCompany').value.trim();
+      p.formats = ['pdf', 'docx'].filter(format => get(format === 'pdf' ? 'templateFormatsPdf' : 'templateFormatsDocx').checked);
       p.page.size = get('templatePaper').value; p.cover.layout = get('templateLayout').value; p.colors.primary = get('templatePrimary').value; p.colors.accent = get('templateAccent').value;
       p.cover.enabled = get('templateCover').checked; p.watermark.enabled = get('templateWatermark').checked; p.watermark.opacity = watermarkSettings().opacity;
       if (draft.renderer === 'manual-v2') { p.cover.textColor = get('templateCoverText').value; p.watermark = { ...p.watermark, ...watermarkSettings() }; p.header.gapMm = Number(get('templateHeaderGap').value); p.footer.gapMm = Number(get('templateFooterGap').value); p.footer.rule = get('templateFooterRule').checked; } p.regions.frontMatter.footer = get('templateFrontFooter').checked;
@@ -104,7 +126,9 @@
     }
     function open() {
       editing++;
-      opener = document.activeElement; draft = core.upgrade(active()?.package || core.builtins()[0]);
+      opener = document.activeElement; const selectedFormat = get('exportFormat').value;
+      draft = core.upgrade(active()?.package || core.builtins().find(pack => pack.formats.includes(selectedFormat)) || core.builtins()[0]);
+      draft.formats = [...new Set([...draft.formats, ...(['pdf', 'docx'].includes(selectedFormat) ? [selectedFormat] : [])])];
       draft.id = 'company-manual'; draft.name = '我的企业模板'; draft.version = '1.0.0';
       if (!draft.company.name) draft.company.name = get('exportCompany').value;
       renderEditor(); get('templateError').textContent = ''; dialog.showModal(); get('templateName').focus();

@@ -42,7 +42,7 @@
     function formatHint() {
       const format = get('exportFormat').value;
       templates?.format(format);
-      get('exportFormatHint').textContent = format === 'docx' ? '导出可编辑的 Word 文档，注脚统一附在文末。预览显示内容，最终分页由 Word 决定。' : format === 'pdf' ? nativePdf() ? '生成可搜索文字的 PDF，注脚附在文末。' : '此在线演示将打开打印内容预览。点击预览上方“打印 / 另存 PDF”，在打印窗口选择“另存为 PDF”。打印不写入交付记录。' : '';
+      get('exportFormatHint').textContent = format === 'docx' ? '导出可编辑的 Word 文档，目录包含章节链接和页码字段；首次打开请在 Word/WPS 中更新整个目录。注脚统一附在文末；预览仅供内容核对，最终分页由 Word 决定。' : format === 'pdf' ? nativePdf() ? '生成可搜索文字的 PDF，注脚附在文末。' : '此在线演示将打开打印内容预览。点击预览上方“打印 / 另存 PDF”，在打印窗口选择“另存为 PDF”。打印不写入交付记录。' : '';
       const option = get('exportFormat').querySelector('option[value="pdf"]'); if (option) option.textContent = nativePdf() ? 'PDF' : 'PDF（打印另存）';
       const button = get('modelExportForm').querySelector('[value="download"]'); if (button) button.textContent = format === 'pdf' && !nativePdf() ? '打开打印预览' : '导出文件';
     }
@@ -240,7 +240,10 @@
       if (format === 'pdf' || format === 'docx') {
         previewHtml = root.DitaOfficeExport.printable(output);
         if (abortController?.signal.aborted) throw new Error('已取消');
-        if (format === 'docx') output = await root.DitaOfficeExport.word(output, abortController?.signal);
+        if (format === 'docx') {
+          if (publication) previewHtml = root.DitaTemplatePdf.render(previewHtml, publication);
+          output = await root.DitaOfficeExport.word(output, abortController?.signal, publication);
+        }
         else if (nativePdf()) {
           const response = await A.api.request('/api/export/pdf', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ html: previewHtml, publication }), signal: abortController?.signal });
           if (!response.ok) throw new Error(await A.api.error(response));

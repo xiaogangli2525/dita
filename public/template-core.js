@@ -42,7 +42,8 @@
     const modern = v.renderer === 'manual-v2';
     if (typeof v.id !== 'string' || typeof v.version !== 'string' || v.version.length > 80 || !/^[a-z][a-z0-9-]{0,63}$/.test(v.id) || !/^\d+\.\d+\.\d+(?:-[a-z0-9.-]{1,30})?$/.test(v.version)) fail('模板 ID 或版本无效');
     const name = text(v.name, 80, '模板名').trim(); if (!name) fail('模板名不能为空');
-    if (!Array.isArray(v.formats) || v.formats.length !== 1 || v.formats[0] !== 'pdf') fail('首版企业模板仅支持 PDF');
+    if (!Array.isArray(v.formats) || !v.formats.length || v.formats.length > 2 || new Set(v.formats).size !== v.formats.length || v.formats.some(format => !['pdf', 'docx'].includes(format))) fail('模板格式须为 PDF 和/或 DOCX，且不能重复');
+    if (v.renderer === 'manual-v1' && v.formats.includes('docx')) fail('旧版模板需升级新版排版后才能用于 Word');
     const assets = object(v.assets, Object.keys(v.assets || {}).filter(key => /^assets\/[a-zA-Z0-9_-]{1,80}\.(png|jpe?g)$/.test(key)), '资源');
     if (Object.keys(assets).length > 3) fail('最多使用三张模板图片');
     const normalizedAssets = {};
@@ -79,7 +80,7 @@
     if (modern && [normalizedRegions.frontMatter, normalizedRegions.body].some(region => region.header) && margins.top < header.gapMm + 9) fail('页眉空间不足，上页边距至少需 ' + (header.gapMm + 9) + ' mm，或减小页眉间距');
     const numbering = object(v.numbering, ['basis', 'startAt'], '页码');
     if (numbering.basis !== 'physical' || numbering.startAt !== 1) fail('首版页码按物理页从 1 计数，可按分区隐藏');
-    return { schemaVersion: 1, id: v.id, name, version: v.version, renderer: v.renderer, formats: ['pdf'],
+    return { schemaVersion: 1, id: v.id, name, version: v.version, renderer: v.renderer, formats: [...v.formats],
       company: { name: text(company.name, 100, '企业名'), logo: asset(company.logo) },
       page: { size: choice(page.size, Object.keys(sizes), '纸张'), marginsMm: Object.fromEntries(['top', 'right', 'bottom', 'left'].map(side => [side, number(margins[side], 12, 40, '页边距')])) },
       typography: { bodyFont: choice(typography.bodyFont, ['Noto Sans CJK SC', 'Microsoft YaHei', 'Arial'], '字体'), bodySizePt: number(typography.bodySizePt, 9, 13, '正文字号') },
@@ -103,7 +104,8 @@
     const previous = [normalizePackage(base), normalizePackage({ ...base, id: 'enterprise-paper', name: '企业标准 · 简洁', cover: { ...base.cover, layout: 'minimal' }, colors: { primary: '#384F51', accent: '#A88252', text: '#272D2D' } })];
     const current = previous.map(pack => normalizePackage({ ...upgrade(pack), version: '1.1.0', page: { ...pack.page, marginsMm: { top: 24, right: 20, bottom: 24, left: 22 } },
       footer: { left: 'manual.documentId', center: '', right: 'page.currentTotal', rule: true, gapMm: 6 }, watermark: { ...upgrade(pack).watermark, source: 'auto' } }));
-    return [...current, ...previous];
+    const office = current.map(pack => normalizePackage({ ...pack, version: '1.2.0', formats: ['pdf', 'docx'] }));
+    return [...office, ...current, ...previous];
   }
   function upgrade(value) {
     const pack = normalizePackage(value);

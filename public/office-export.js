@@ -46,7 +46,19 @@
     await libraries;
   }
   function cancelled(signal) { if (signal?.aborted) throw new Error('已取消'); }
-  async function word(html, signal) {
+  function convertContent(html, styleMap = { 'h1': 'Title' }) {
+    const warnings = [];
+    const children = root.docxHtml.htmlToContent(html, {
+      maxImageWidth: 624, styleMap, onWarning: warning => warnings.push(warning)
+    });
+    return { children, warnings };
+  }
+  function assertWarnings(warnings) {
+    if (!warnings.length) return;
+    const labels = { 'unsupported-element': '包含不支持的媒体内容', 'missing-image': '图片缺失', 'unsupported-image': '图片格式不支持', 'unsafe-link': '链接不安全', 'invalid-math': '公式无法转换', 'too-deep': '内容嵌套过深', 'table-in-note': '注脚中的表格无法保留原排版' };
+    throw new Error('Word 无法完整保留当前内容：' + [...new Set(warnings.map(w => labels[w.code] || '存在不支持的结构'))].join('、') + '。请使用 HTML 交付并检查原文。');
+  }
+  async function word(html, signal, publication = null) {
     await loadWord(); cancelled(signal);
     const doc = new DOMParser().parseFromString(printable(html), 'text/html');
     // Keep one numbered definition and all repeat links, as in HTML/PDF. The
@@ -68,14 +80,14 @@
       }
       image.setAttribute('width', String(Math.min(picture.naturalWidth, 624)));
     }
-    const warnings = [], D = root.docx;
-    const children = root.docxHtml.htmlToContent(doc.documentElement.outerHTML, {
-      maxImageWidth: 624, styleMap: { 'h1': 'Title' }, onWarning: warning => warnings.push(warning)
-    });
-    if (warnings.length) {
-      const labels = { 'unsupported-element': '包含不支持的媒体内容', 'missing-image': '图片缺失', 'unsupported-image': '图片格式不支持', 'unsafe-link': '链接不安全', 'invalid-math': '公式无法转换', 'too-deep': '内容嵌套过深', 'table-in-note': '注脚中的表格无法保留原排版' };
-      throw new Error('Word 无法完整保留当前内容：' + [...new Set(warnings.map(w => labels[w.code] || '存在不支持的结构'))].join('、') + '。请使用 HTML 交付并检查原文。');
+    const D = root.docx;
+    if (publication) {
+      if (!root.DitaTemplateWord?.render) throw new Error('Word 企业模板组件未加载，请刷新页面后重试。');
+      return root.DitaTemplateWord.render({ doc, convertContent, signal }, publication);
     }
+    const converted = convertContent(doc.documentElement.outerHTML);
+    assertWarnings(converted.warnings);
+    const children = converted.children;
     const documentFile = new D.Document({
       title: doc.title, creator: 'DITA 文档工作台',
       styles: { default: {
