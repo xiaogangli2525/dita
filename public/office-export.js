@@ -46,10 +46,10 @@
     await libraries;
   }
   function cancelled(signal) { if (signal?.aborted) throw new Error('已取消'); }
-  function convertContent(html) {
+  function convertContent(html, styleMap = { 'h1': 'Title' }) {
     const warnings = [];
     const children = root.docxHtml.htmlToContent(html, {
-      maxImageWidth: 624, styleMap: { 'h1': 'Title' }, onWarning: warning => warnings.push(warning)
+      maxImageWidth: 624, styleMap, onWarning: warning => warnings.push(warning)
     });
     return { children, warnings };
   }
