@@ -243,6 +243,8 @@
     <header class="ai-heading"><div><span class="ai-eyebrow">写作助手</span><h2 id="aiHeading">一起把这段文档改好</h2></div><div class="ai-heading-actions"><button id="aiSettingsButton" type="button" aria-haspopup="dialog" aria-controls="aiConnectionDialog" title="模型连接设置">模型设置</button><button id="aiClose" type="button" aria-label="关闭 AI 辅助写作">关闭</button></div></header>
     <p id="aiIntro" class="ai-muted">直接说想怎样修改。我会结合当前内容给出方案，你可以继续纠正，满意后再应用。</p>
     <p id="aiContextLabel" class="ai-context-label"></p>
+    <p id="aiRecoveryStatus" class="ai-recovery" role="status" hidden></p>
+    <p id="aiTaskStorageWarning" class="ai-muted" role="status" hidden></p>
     <details id="aiTask" class="ai-task"><summary>调整修改范围（可选）</summary>
     <fieldset id="aiInputs" class="ai-inputs"><legend class="visually-hidden">修改需求与原文定位</legend>
       <div class="ai-fields"><label>定位范围<select id="aiScope"><option value="selection">打开时选中的文字</option><option value="topic">当前章节</option><option value="manual">当前功能手册</option></select></label><label>涉及型号（可选）<input id="aiModel" maxlength="100" placeholder="例如 ML307R"/></label></div>
@@ -533,6 +535,7 @@
   <script src="/ai-edit-core.js"></script>
   <script src="/ai-scan-core.js"></script>
   <script src="/ai-conversation.js"></script>
+  <script src="/ai-task-store.js"></script>
   <script src="/ai-context.js"></script>
   <script src="/ai-connection.js"></script>
   <script src="/ai-scan-store.js"></script>

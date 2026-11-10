@@ -71,6 +71,20 @@ test('AI authoring runs through the local provider, review and shared document h
     await page.click('#aiButton'); await page.waitForFunction(() => document.getElementById('aiProvider').textContent.includes('test-model'));
     assert.equal(await page.locator('#aiScope').inputValue(), 'selection');
   }
+  async function reloadTask(page, target = 'a.dita') {
+    await page.reload(); await page.waitForFunction(() => window.DitaApp?.state.root);
+    await page.evaluate(target => window.DitaApp.openFile(target), target);
+    if (/\.ditamap$/.test(target)) await page.locator('.map-topic-surface').first().waitFor();
+    await page.click('#aiButton'); await page.waitForFunction(() => document.getElementById('aiProvider').textContent.includes('test-model'));
+  }
+  async function proposeManual(page) {
+    await page.evaluate(() => window.DitaApp.openFile('main.ditamap')); await page.locator('.map-topic-surface').first().waitFor();
+    await page.click('#aiButton'); await page.fill('#aiReply', '将发送请求改为发起请求'); await page.click('#aiSend');
+    await page.waitForFunction(() => document.querySelector('.ai-candidate,.ai-change'));
+    const candidate = page.locator('.ai-candidate').filter({ hasText: 'a.dita' });
+    if (await candidate.count()) await candidate.first().click();
+    await page.locator('#aiApply:enabled').waitFor();
+  }
   await t.test('selection proposal preserves XML, applies without saving, and uses undo/redo', async st => {
     const page = await fresh(st); await select(page); await page.fill('#aiReply', '润色'); await page.click('#aiSend');
     await page.waitForSelector('.ai-change', {state:'attached'}); assert.equal(await page.locator('.ai-after pre').textContent(), '发起请求');
@@ -109,6 +123,74 @@ test('AI authoring runs through the local provider, review and shared document h
     await page.click('#saveButton'); await page.waitForFunction(() => !window.DitaApp.state.filesMap.get('real-https.dita').dirty);
     assert.equal(await fs.readFile(path.join(temporary, 'real-https.dita'), 'utf8'), expected);
     assert.equal(await fs.readFile(realHttpsPath, 'utf8'), realHttps, 'the supplied manual itself stays unchanged');
+  });
+  await t.test('reload restores dialogue, pending proposal and unsent input without sending or applying', async st => {
+    const page = await fresh(st); await select(page); await page.fill('#aiReply', '润色'); await page.click('#aiSend'); await page.locator('#aiApply:enabled').waitFor();
+    await page.fill('#aiReply', '继续保留这条未发送的要求'); const requests = received.length;
+    await reloadTask(page);
+    assert.equal(await page.locator('.ai-turn').count(), 2);
+    assert.equal(await page.locator('#aiReply').inputValue(), '继续保留这条未发送的要求');
+    assert.equal(await page.locator('#aiApply').isEnabled(), true); assert.match(await page.locator('#aiRecoveryStatus').innerText(), /已恢复/);
+    assert.equal(received.length, requests); assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.get('a.dita').current), original);
+    assert.doesNotMatch(await page.evaluate(() => JSON.stringify(localStorage)), /browser-test-secret/);
+    await page.fill('#aiReply', '继续简短'); await page.click('#aiSend'); await page.locator('#aiApply:enabled').waitFor();
+    assert.deepEqual(received.at(-1).conversation.instructions, ['润色']);
+    assert.ok(received.at(-1).conversation.previousResult.edits.some(edit => edit.after.includes('发起')));
+  });
+  await t.test('an unsent task draft survives reload before its first model call', async st => {
+    const page = await fresh(st); const requests = received.length;
+    await page.click('#aiButton'); await page.fill('#aiReply', '只核对 HTTP 表述，暂不修改');
+    await reloadTask(page);
+    assert.equal(await page.locator('#aiReply').inputValue(), '只核对 HTTP 表述，暂不修改');
+    assert.equal(await page.locator('.ai-turn').count(), 0); assert.equal(received.length, requests); assert.equal(await page.locator('#aiApply').isDisabled(), true);
+  });
+  await t.test('applied and explicitly saved edits restore their conversation without resurrecting a proposal', async st => {
+    const page = await fresh(st); st.after(() => fs.writeFile(path.join(temporary, 'a.dita'), original));
+    await select(page); await page.fill('#aiReply', '润色'); await page.click('#aiSend'); await page.locator('#aiApply:enabled').waitFor();
+    await page.click('#aiApply'); await page.waitForFunction(() => document.getElementById('aiReplyStatus').textContent.includes('已应用'));
+    await page.click('#aiClose'); await page.click('#saveButton'); await page.waitForFunction(() => !window.DitaApp.state.filesMap.get('a.dita').dirty);
+    const requests = received.length; await reloadTask(page);
+    assert.equal(await page.locator('.ai-applied').count(), 1); assert.equal(await page.locator('.ai-turn').count(), 2);
+    assert.equal(await page.locator('#aiApply').isDisabled(), true); assert.equal(await page.locator('#aiReview').isVisible(), false);
+    assert.equal(received.length, requests); assert.equal(await fs.readFile(path.join(temporary, 'a.dita'), 'utf8'), original.replace('发送', '发起'));
+  });
+  await t.test('changed disk source restores a read-only proposal and a new task uses the latest text', async st => {
+    const page = await fresh(st); st.after(() => fs.writeFile(path.join(temporary, 'a.dita'), original));
+    await select(page); await page.fill('#aiReply', '润色'); await page.click('#aiSend'); await page.locator('#aiApply:enabled').waitFor();
+    await page.fill('#aiReply', '保留新的待办要求'); await page.click('#aiClose');
+    const newer = original.replace('然后检查返回值', '先核实状态再检查返回值'); await fs.writeFile(path.join(temporary, 'a.dita'), newer);
+    await reloadTask(page);
+    assert.match(await page.locator('#aiRecoveryStatus').innerText(), /原文已变化/); assert.equal(await page.locator('#aiApply').isDisabled(), true);
+    assert.equal(await page.locator('#aiReply').inputValue(), '保留新的待办要求'); assert.equal(await page.locator('.ai-turn').count(), 2);
+    await page.locator('#aiApply').evaluate(button => button.dispatchEvent(new Event('click')));
+    assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.get('a.dita').current), newer);
+    await page.click('#aiNewTask'); assert.equal(await page.locator('.ai-turn').count(), 0);
+    assert.equal(await page.locator('#aiReply').inputValue(), '保留新的待办要求'); assert.equal(await page.locator('#aiScope').inputValue(), 'topic');
+  });
+  await t.test('in-flight generation is not restarted automatically after reload', async st => {
+    const page = await fresh(st); await select(page);
+    const sent = page.waitForRequest(request => request.url().endsWith('/api/ai/propose'));
+    await page.fill('#aiReply', '慢速润色'); await page.click('#aiSend'); await sent; const requests = received.length;
+    await reloadTask(page);
+    assert.equal(await page.locator('#aiReply').inputValue(), '慢速润色'); assert.equal(await page.locator('#aiApply').isDisabled(), true);
+    assert.equal(await page.locator('.ai-turn').count(), 0); assert.ok(received.length <= requests + 1, 'only the original in-flight request may have reached the provider');
+    assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.get('a.dita').current), original);
+  });
+  await t.test('a manual task restores its child proposal without navigating away from the manual', async st => {
+    const page = await fresh(st); await proposeManual(page); const requests = received.length;
+    await reloadTask(page, 'main.ditamap');
+    assert.equal(await page.evaluate(() => window.DitaApp.state.activePath), 'main.ditamap'); assert.equal(await page.locator('#aiApply').isEnabled(), true);
+    assert.equal(received.length, requests); await page.click('#aiApply');
+    await page.waitForFunction(() => window.DitaApp.state.filesMap.get('a.dita').current.includes('发起请求'));
+    assert.equal(await fs.readFile(path.join(temporary, 'a.dita'), 'utf8'), original);
+  });
+  await t.test('changed related manual content prevents replay even if the edited Topic is unchanged', async st => {
+    const page = await fresh(st); st.after(() => fs.writeFile(path.join(temporary, 'b.dita'), second));
+    await proposeManual(page); await page.click('#aiClose');
+    await fs.writeFile(path.join(temporary, 'b.dita'), second.replace('配置证书', '重新配置证书'));
+    await reloadTask(page, 'main.ditamap');
+    assert.match(await page.locator('#aiRecoveryStatus').innerText(), /关联手册/); assert.equal(await page.locator('#aiApply').isDisabled(), true);
+    assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.get('a.dita').current), original);
   });
   await t.test('visual selection maps exactly to source and preserves the rest of its paragraph', async st => {
     const page = await fresh(st);
