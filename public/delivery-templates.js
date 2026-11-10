@@ -45,7 +45,7 @@
       if (requested && available.some(item => core.key(item.package) === requested)) select.value = requested;
       else if (requested) {
         select.add(new Option('缺少模板 · ' + requested, requested)); select.value = requested;
-        warn('当前格式绑定的模板不可用，请导入原版本或明确选择其他版式。');
+        warn('原绑定模板不可用（当前格式不支持），请导入原版本或明确选择其他版式。');
       } else if (loadError) {
         select.add(new Option('模板不可用 · 请重新选择', '__unavailable__')); select.value = '__unavailable__';
         warn('模板库读取失败：' + loadError);
