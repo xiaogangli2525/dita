@@ -102,9 +102,9 @@
     const color = header ? '4B5E68' : '61717B';
     const children = [
       ...slotRuns(D, config.left, fields, pack.typography.bodyFont, color),
-      new D.Tab(),
+      new D.TextRun({ text: '\t' }),
       ...slotRuns(D, config.center, fields, pack.typography.bodyFont, color),
-      new D.Tab(),
+      new D.TextRun({ text: '\t' }),
       ...slotRuns(D, config.right, fields, pack.typography.bodyFont, color)
     ];
     const paragraph = {
