@@ -14,8 +14,8 @@ const templateCore = require('../public/template-core');
 const { renderHtmlDocument } = require('../public/delivery-document');
 
 async function inspectWord(page, bytes) {
-  const parts = Object.fromEntries(Object.entries(unzipSync(bytes)).filter(([name]) => name.endsWith('.xml') || name.endsWith('.rels')).map(([name, value]) => [name, strFromU8(value)]));
-  return page.evaluate(parts => {
+  const zip = unzipSync(bytes), parts = Object.fromEntries(Object.entries(zip).filter(([name]) => name.endsWith('.xml') || name.endsWith('.rels')).map(([name, value]) => [name, strFromU8(value)]));
+  const result = await page.evaluate(parts => {
     const parse = name => new DOMParser().parseFromString(parts[name], 'application/xml');
     const doc = parse('word/document.xml'), relationships = parse('word/_rels/document.xml.rels');
     const elements = (node, name) => [...node.getElementsByTagName(name)];
@@ -28,12 +28,13 @@ async function inspectWord(page, bytes) {
       return {
         id: reference.getAttribute('r:id'), text: text(content),
         anchors: elements(content, 'wp:anchor').map(anchor => {
-          const extent = elements(anchor, 'wp:extent')[0], position = elements(anchor, 'wp:positionV')[0];
+          const extent = elements(anchor, 'wp:extent')[0], position = elements(anchor, 'wp:positionV')[0], crop = elements(anchor, 'a:srcRect')[0];
           return {
             topMm: Number(elements(position, 'wp:posOffset')[0].textContent) / 36000,
             widthMm: Number(extent.getAttribute('cx')) / 36000,
             heightMm: Number(extent.getAttribute('cy')) / 36000,
-            rotation: Number(elements(anchor, 'a:xfrm')[0].getAttribute('rot') || 0) / 60000
+            rotation: Number(elements(anchor, 'a:xfrm')[0].getAttribute('rot') || 0) / 60000,
+            crop: { left: Number(crop?.getAttribute('l') || 0) / 1000, right: Number(crop?.getAttribute('r') || 0) / 1000, top: Number(crop?.getAttribute('t') || 0) / 1000, bottom: Number(crop?.getAttribute('b') || 0) / 1000 }
           };
         })
       };
@@ -53,6 +54,7 @@ async function inspectWord(page, bytes) {
       })
     };
   }, parts);
+  return { ...result, mediaSha256: Object.entries(zip).filter(([name]) => name.startsWith('word/media/')).map(([, data]) => createHash('sha256').update(data).digest('hex')) };
 }
 
 test('PDF and editable Word delivery', async t => {
@@ -121,15 +123,17 @@ test('PDF and editable Word delivery', async t => {
     context.fillStyle = '#FFFFFF'; context.font = '40px Arial'; context.fillText('WATERMARK', 30, 80);
     const whole = canvas.toDataURL('image/png'); canvas.width = 1000; canvas.height = 200;
     context.fillStyle = '#7DB47B'; context.fillRect(0, 0, 1000, 200); context.fillStyle = '#202B33'; context.font = '32px Arial'; context.fillText('IMAGE EDGES', 30, 80);
-    return { whole, logo: canvas.toDataURL('image/png') };
+    const logo = canvas.toDataURL('image/png'); canvas.width = 200; canvas.height = 600;
+    context.fillStyle = '#145A78'; context.fillRect(0, 0, 200, 600);
+    return { whole, logo, portrait: canvas.toDataURL('image/png') };
   });
-  const renderWord = async (pack, body, name) => {
+  const renderWord = async (pack, body, name, fields = {}) => {
     const html = renderHtmlDocument({ title: 'Word 模板验收', sections: [{ title: '主题标题', body }] });
-    const bytes = Buffer.from(await page.evaluate(async ({ pack, html }) => {
-      const publication = pack ? window.DitaTemplateCore.capture(pack, { 'manual.title': 'Word 模板验收', 'company.name': 'REGION COMPANY', 'manual.documentId': 'REGION DOCUMENT' }) : null;
+    const bytes = Buffer.from(await page.evaluate(async ({ pack, html, fields }) => {
+      const publication = pack ? window.DitaTemplateCore.capture(pack, { 'manual.title': 'Word 模板验收', 'company.name': 'REGION COMPANY', 'manual.documentId': 'REGION DOCUMENT', ...fields }) : null;
       const blob = await window.DitaOfficeExport.word(html, null, publication);
       return Array.from(new Uint8Array(await blob.arrayBuffer()));
-    }, { pack, html }));
+    }, { pack, html, fields }));
     if (process.env.DITA_OFFICE_QA_DIR && name) await fs.writeFile(path.join(process.env.DITA_OFFICE_QA_DIR, name + '.docx'), bytes);
     return inspectWord(page, bytes);
   };
@@ -197,6 +201,34 @@ test('PDF and editable Word delivery', async t => {
     }
     const result = await renderWord(null, `<p><img src="${artwork.logo}"/></p>`);
     assert.ok(Math.abs(result.images[0].widthMm - 165.1) < 0.03);
+  });
+  await t.test('long Word cover titles retain all text, optional model fields stay omitted and oversized metadata is rejected', async () => {
+    const title = '通信模组功能配置与网络协议应用开发指南'.repeat(9).slice(0, 160);
+    for (const size of ['A4', 'Letter']) {
+      const pack = baseTemplate(); pack.page.size = size; pack.cover.fields = ['manual.title'];
+      const result = await renderWord(pack, '<p>正文</p>', 'long-cover-' + size, { 'manual.title': title, 'manual.model': 'COVER_MODEL_OMITTED' });
+      assert.ok(result.runs.some(run => run.text === title && run.sizePt <= 20));
+      assert.ok(result.runs.every(run => !run.text.includes('COVER_MODEL_OMITTED')));
+    }
+    const pack = baseTemplate(); pack.page.size = 'Letter'; pack.page.marginsMm = { top: 40, right: 40, bottom: 40, left: 40 };
+    pack.assets['assets/logo.png'] = artwork.logo; pack.company.logo = 'assets/logo.png';
+    await assert.rejects(renderWord(pack, '<p>正文</p>', null, { 'manual.title': title, 'company.name': '企业名称'.repeat(25), 'manual.model': '型号'.repeat(50), 'manual.version': '版本'.repeat(50), 'manual.documentId': '文档编号'.repeat(25), 'manual.classification': '文档级别'.repeat(25) }), /封面信息超出一页/);
+  });
+  await t.test('Word cover backgrounds crop centrally to fit A4/Letter while preserving source proportions and bytes', async () => {
+    for (const size of ['A4', 'Letter']) for (const direction of ['wide', 'tall']) {
+      const pack = baseTemplate(); pack.page.size = size;
+      const picture = direction === 'wide' ? artwork.logo : artwork.portrait, sourceRatio = direction === 'wide' ? 5 : 1 / 3;
+      pack.assets['assets/cover.png'] = picture; pack.cover.background = 'assets/cover.png';
+      const result = await renderWord(pack, '<p>封面裁剪</p>', 'cover-crop-' + size + '-' + direction);
+      const [image] = result.sections[0].header.anchors, { left, right, top, bottom } = image.crop;
+      const [pageWidth, pageHeight] = templateCore.sizes[size];
+      assert.ok(Math.abs(image.widthMm - pageWidth) < 0.03 && Math.abs(image.heightMm - pageHeight) < 0.03);
+      assert.equal(left, right); assert.equal(top, bottom);
+      const visibleRatio = sourceRatio * (1 - (left + right) / 100) / (1 - (top + bottom) / 100);
+      assert.ok(Math.abs(visibleRatio - pageWidth / pageHeight) < 0.0001, 'visible artwork matches the page ratio without distortion');
+      assert.ok(left > 0 || top > 0);
+      assert.ok(result.mediaSha256.includes(createHash('sha256').update(Buffer.from(picture.split(',')[1], 'base64')).digest('hex')), 'original embedded artwork bytes stay unchanged');
+    }
   });
   await t.test('PDF preview uses generated bytes and HTML preview restores the sandbox', async () => {
     await delivery('pdf'); await page.click('#modelExportForm [value=preview]'); await page.waitForFunction(() => !document.getElementById('modelExportDialog').open);

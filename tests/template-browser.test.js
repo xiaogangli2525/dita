@@ -177,5 +177,26 @@ test('replaceable enterprise delivery templates', async t => {
     await page.selectOption('#exportFormat', 'docx'); assert.equal(await page.locator('#exportTemplate').inputValue(), 'enterprise-blue@1.2.0');
     await page.click('#modelExportCancel');
   });
+  await t.test('template service failure preserves explicit basic layouts through reopening/reload while bound templates still require replacement', async () => {
+    const unavailable = route => route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Template service unavailable' }) });
+    await page.evaluate(() => { for (const key of Object.keys(localStorage)) if (key.startsWith('dita.template-choice.')) localStorage.removeItem(key); });
+    await page.route('**/api/templates', unavailable); await start();
+    for (const format of ['docx', 'pdf']) {
+      await delivery(format); assert.equal(await page.locator('#exportTemplate').inputValue(), '__unavailable__');
+      await page.selectOption('#exportTemplate', ''); await page.click('#modelExportCancel');
+      await delivery(format); assert.equal(await page.locator('#exportTemplate').inputValue(), '');
+      assert.match(await page.locator('#exportTemplateWarning').innerText(), /模板库读取失败.*已确认的基础版式/);
+      const bytes = await download(); assert.equal(bytes.subarray(0, format === 'pdf' ? 5 : 2).toString(), format === 'pdf' ? '%PDF-' : 'PK');
+      assert.equal(await page.evaluate(() => window.DitaApp.lastDeliveryRecord.template), null);
+      await start(); await delivery(format); assert.equal(await page.locator('#exportTemplate').inputValue(), ''); await page.click('#modelExportCancel');
+    }
+    await page.unroute('**/api/templates', unavailable); await start(); await delivery('docx'); await page.selectOption('#exportTemplate', 'enterprise-blue@1.2.0'); await page.click('#modelExportCancel');
+    await page.route('**/api/templates', unavailable); await start(); await delivery('docx');
+    assert.equal(await page.locator('#exportTemplate').inputValue(), 'enterprise-blue@1.2.0');
+    const before = await page.evaluate(() => window.DitaApp.lastDeliveryRecord?.outputSha256);
+    await page.click('#modelExportForm [value=check]'); await page.waitForFunction(() => document.getElementById('modelExportError').textContent.includes('所选模板不可用'));
+    assert.equal(await page.evaluate(() => window.DitaApp.lastDeliveryRecord?.outputSha256), before);
+    await page.click('#modelExportCancel'); await page.unroute('**/api/templates', unavailable);
+  });
   assert.deepEqual(errors, []);
 });

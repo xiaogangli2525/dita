@@ -42,7 +42,7 @@
     function formatHint() {
       const format = get('exportFormat').value;
       templates?.format(format);
-      get('exportFormatHint').textContent = format === 'docx' ? '导出可编辑的 Word 文档，目录包含章节链接和页码字段；首次打开请在 Word/WPS 中更新整个目录。注脚统一附在文末；预览仅供内容核对，最终分页由 Word 决定。' : format === 'pdf' ? nativePdf() ? '生成可搜索文字的 PDF，注脚附在文末。' : '此在线演示将打开打印内容预览。点击预览上方“打印 / 另存 PDF”，在打印窗口选择“另存为 PDF”。打印不写入交付记录。' : '';
+      get('exportFormatHint').textContent = format === 'docx' ? '导出可编辑的 Word 文档，目录包含章节链接和页码字段；首次打开请在 Word/WPS 中更新整个目录。注脚统一附在文末；预览仅供内容核对，最终分页由 Word 决定。' : format === 'pdf' ? nativePdf() ? '生成可搜索文字的 PDF，注脚附在文末。' : '此在线演示将打开打印内容预览。点击预览上方“打印 / 另存 PDF”，在打印窗口选择“另存为 PDF”。打印不写入交付记录。' : format === 'md' ? '适合文字和简单表格。含合并单元格的手册无法无损转为 Markdown，请选择 HTML、Word 或 PDF；发布前检查会明确列出不支持的位置。' : '';
       const option = get('exportFormat').querySelector('option[value="pdf"]'); if (option) option.textContent = nativePdf() ? 'PDF' : 'PDF（打印另存）';
       const button = get('modelExportForm').querySelector('[value="download"]'); if (button) button.textContent = format === 'pdf' && !nativePdf() ? '打开打印预览' : '导出文件';
     }

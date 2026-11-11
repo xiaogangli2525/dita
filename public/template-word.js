@@ -47,9 +47,22 @@
   async function coverChildren(D, pack, fields) {
     const font = pack.typography.bodyFont, primary = pack.colors.primary, accent = pack.colors.accent;
     const titleColor = pack.cover.textColor || primary, children = [];
+    const dense = fields['manual.title'].length > 80 || Object.values(fields).reduce((sum, value) => sum + value.length, 0) > 350;
+    const [pageWidth, pageHeight] = core.sizes[pack.page.size], margins = pack.page.marginsMm;
+    const widthPt = (pageWidth - margins.left - margins.right) * 72 / 25.4;
+    let estimatedHeight = 0;
+    // Reserve full-width glyphs and extra leading: fonts and pagination differ
+    // between Word installations, so this is a conservative capacity check.
+    const textHeight = (text, size, width = widthPt) => Math.max(1, Math.ceil([...text].length * size * 1.1 / width)) * size * 1.25;
+    const addText = (text, options) => {
+      const width = widthPt - ((options.indent?.left || 0) + (options.indent?.right || 0)) / 20;
+      estimatedHeight += textHeight(text, options.size || 11, width) + ((options.before || 0) + (options.after ?? 140)) / 20;
+      children.push(coverText(D, text, options));
+    };
     if (pack.company.logo) {
       const logo = await loadImage(pack.assets[pack.company.logo]);
       const scale = Math.min(1, 180 / logo.width, 72 / logo.height);
+      estimatedHeight += logo.height * scale * 0.75 + 35;
       children.push(new D.Paragraph({
         alignment: D.AlignmentType.LEFT,
         spacing: { before: 280, after: 220 },
@@ -58,20 +71,21 @@
       }));
     }
     if (pack.cover.layout === 'brand-panel') {
-      children.push(coverText(D, fields['company.name'] || 'TECHNICAL DOCUMENTATION', {
-        font, size: 12, color: 'FFFFFF', bold: true, before: 520, after: 520,
+      addText(fields['company.name'] || 'TECHNICAL DOCUMENTATION', {
+        font, size: 12, color: 'FFFFFF', bold: true, before: dense ? 260 : 520, after: dense ? 260 : 520,
         shading: { fill: primary.replace('#', ''), type: 'clear' },
         indent: { left: 280, right: 180 }
-      }));
+      });
     } else if (fields['company.name']) {
-      children.push(coverText(D, fields['company.name'], { font, size: 13, color: primary, bold: true, before: 520, after: 420 }));
+      addText(fields['company.name'], { font, size: 13, color: primary, bold: true, before: dense ? 260 : 520, after: dense ? 240 : 420 });
     }
-    children.push(coverText(D, 'TECHNICAL DOCUMENTATION', { font, size: 9, color: accent, bold: true, before: 760, after: 180, keepNext: true }));
-    children.push(coverText(D, fields['manual.title'], { font, size: 30, color: titleColor, bold: true, before: 0, after: 300, keepNext: true }));
-    if (fields['manual.model']) children.push(coverText(D, '适用型号  ·  ' + fields['manual.model'], { font, size: 13, color: primary, bold: true, after: 220 }));
+    addText('TECHNICAL DOCUMENTATION', { font, size: 9, color: accent, bold: true, before: dense ? 260 : 760, after: 180, keepNext: true });
+    addText(fields['manual.title'], { font, size: dense ? 17 : fields['manual.title'].length > 45 ? 24 : 30, color: titleColor, bold: true, before: 0, after: dense ? 220 : 300, keepNext: true });
+    if (pack.cover.fields.includes('manual.model') && fields['manual.model']) addText('适用型号  ·  ' + fields['manual.model'], { font, size: dense ? 11 : 13, color: primary, bold: true, after: dense ? 160 : 220 });
+    estimatedHeight += dense ? 30 : 40;
     children.push(new D.Paragraph({
       border: { bottom: { style: D.BorderStyle.SINGLE, size: 14, color: accent.replace('#', ''), space: 8 } },
-      spacing: { before: 80, after: 360 },
+      spacing: { before: 80, after: dense ? 220 : 360 },
       children: [new D.TextRun({ text: ' ', font, size: 8 })]
     }));
     for (const field of pack.cover.fields) {
@@ -79,14 +93,17 @@
       const value = fields[field];
       if (!value) continue;
       const label = labels[field] || field;
+      const size = dense ? 9 : 9.5, after = dense ? 100 : 130;
+      estimatedHeight += textHeight(label + '  ' + value, size) + after / 20;
       children.push(new D.Paragraph({
-        spacing: { after: 130, line: 300 },
+        spacing: { after, line: 300 },
         children: [
-          new D.TextRun({ text: label + '  ', font, size: 19, bold: true, color: primary.replace('#', '') }),
-          new D.TextRun({ text: value, font, size: 19, color: pack.colors.text.replace('#', '') })
+          new D.TextRun({ text: label + '  ', font, size: size * 2, bold: true, color: primary.replace('#', '') }),
+          new D.TextRun({ text: value, font, size: size * 2, color: pack.colors.text.replace('#', '') })
         ]
       }));
     }
+    if (estimatedHeight > (pageHeight - margins.top - margins.bottom) * 72 / 25.4 - 12) throw new Error('封面信息超出一页，请缩短标题或交付信息，或减少封面字段后重新检查。');
     return children;
   }
   function slotRuns(D, field, fields, font, color) {
@@ -186,9 +203,15 @@
   async function coverBackgroundHeader(D, pack, pageWidthPx, pageHeightPx) {
     if (!pack.cover.background) return null;
     const image = await loadImage(pack.assets[pack.cover.background]);
+    const sourceRatio = image.width / image.height, pageRatio = pageWidthPx / pageHeightPx;
+    const horizontal = Math.max(0, (1 - pageRatio / sourceRatio) * 50);
+    const vertical = Math.max(0, (1 - sourceRatio / pageRatio) * 50);
     const run = new D.ImageRun({
       data: image.bytes, type: image.type,
       transformation: { width: pageWidthPx, height: pageHeightPx },
+      // Crop the original artwork equally on both sides, matching PDF's
+      // background-size: cover without stretching or recompressing the image.
+      crop: { left: horizontal, right: horizontal, top: vertical, bottom: vertical },
       floating: {
         horizontalPosition: { relative: 'page', offset: 0 },
         verticalPosition: { relative: 'page', offset: 0 },
