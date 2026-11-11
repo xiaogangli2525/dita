@@ -1,5 +1,7 @@
 /** Checked data exchanged by editing, capture, save and delivery boundaries. */
 export type EditorMode = 'editor' | 'visual' | 'preview' | 'review';
+export type ReviewDecision = 'accept' | 'reject';
+export type ReviewKey = number | string;
 export interface DocumentState {
   path: string; current: string; disk: string; baseline: string; gitStatus: string; dirty: boolean;
   history?: DocumentHistory;
@@ -8,7 +10,8 @@ export type DocumentSnapshot = Readonly<Omit<DocumentState, 'history'>>;
 export interface HistoryGroup { key: string; time?: number; composition?: boolean; beforeCursor?: string; afterCursor?: string }
 export interface HistoryMeta {
   selectionBefore?: unknown; selectionAfter?: unknown; mapTitle?: boolean;
-  reviewDecisionsBefore?: ReadonlyMap<number | string, string>; reviewDecisionsAfter?: ReadonlyMap<number | string, string>;
+  reviewDecisionsBefore?: ReadonlyMap<ReviewKey, ReviewDecision>; reviewDecisionsAfter?: ReadonlyMap<ReviewKey, ReviewDecision>;
+  reviewInManual?: boolean;
 }
 export interface HistoryEntry extends HistoryMeta { before: string; after: string; group?: HistoryGroup }
 export interface DocumentHistory { undo: HistoryEntry[]; redo: HistoryEntry[]; openGroup?: HistoryEntry | null }
