@@ -61,7 +61,8 @@ function editor() {
 
 test('editor coordination keeps Map child undo and review decisions on the same document history', () => {
   const { A, controller, topic, other, changes } = editor();
-  controller.setFileContent(topic, '<topic>B</topic>', { render: false, historyMeta: { reviewDecisionsBefore: new Map(), reviewDecisionsAfter: new Map([[0, 'accept']]) } });
+  const key = topic.path + '::0';
+  controller.setFileContent(topic, '<topic>B</topic>', { render: false, historyMeta: { reviewDecisionsBefore: new Map(), reviewDecisionsAfter: new Map([[key, 'accept']]), reviewInManual: true } });
   controller.setFileContent(other, '<topic>background edit</topic>', { render: false });
   assert.equal(A.state.historyTargetPath, topic.path);
   controller.undoFile();
@@ -70,7 +71,7 @@ test('editor coordination keeps Map child undo and review decisions on the same 
   assert.equal(A.state.reviewDecisions.size, 0);
   controller.redoFile();
   assert.equal(topic.current, '<topic>B</topic>'); assert.equal(topic.dirty, true);
-  assert.equal(A.state.reviewDecisions.get(0), 'accept');
+  assert.equal(A.state.reviewDecisions.get(key), 'accept');
   assert.deepEqual(changes, ['a.dita', 'other.dita', 'a.dita', 'a.dita']);
 });
 

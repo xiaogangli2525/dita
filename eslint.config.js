@@ -7,6 +7,16 @@ const importsOnly = names => 'CallExpression[callee.name="require"]' + names
   .flatMap(name => ['./' + name, './' + name + '.js'])
   .map(name => ':not([arguments.0.value=' + JSON.stringify(name) + '])').join('');
 const domainRequire = importsOnly([...documentRules, 'vendor/sax']);
+const sharedMutations = [
+  { selector: 'AssignmentExpression[left.object.name="state"][left.property.name=/^(root|files|maps|selectedMap|selectedMapSourcePath|repositories|branches|currentBranch|capabilities|filesMap|activePath|historyTargetPath|mode|mapAuthorPaths)$/]', message: 'Use the workspace session operation instead of assigning shared state.' },
+  { selector: 'AssignmentExpression[left.object.property.name="state"][left.property.name=/^(root|files|maps|selectedMap|selectedMapSourcePath|repositories|branches|currentBranch|capabilities|filesMap|activePath|historyTargetPath|mode|mapAuthorPaths)$/]', message: 'Use the workspace session operation instead of assigning shared state.' },
+  { selector: 'CallExpression[callee.object.property.name="filesMap"][callee.property.name=/^(set|delete|clear)$/]', message: 'Document membership belongs to the workspace session.' },
+  { selector: 'AssignmentExpression[left.computed!=true][left.property.name=/^(current|disk|dirty|baseline|gitStatus)$/]', message: 'Document content and save acknowledgement belong to document-store operations.' }
+];
+const reviewMutations = [
+  { selector: 'AssignmentExpression[left.property.name=/^(reviewGroups|reviewDecisions|reviewPath|reviewBaseline|reviewCurrent)$/]', message: 'Review state belongs to review-session operations.' },
+  { selector: 'CallExpression[callee.object.property.name=/^(reviewGroups|reviewDecisions)$/][callee.property.name=/^(set|delete|clear)$/]', message: 'Review decisions and groups belong to review-session operations.' }
+];
 const renderingBoundaries = [
   { names: ['template-core'], imports: [] },
   { names: ['template-pdf'], imports: ['template-core', 'template-pdf-v1'] },
@@ -14,6 +24,9 @@ const renderingBoundaries = [
   { names: ['ai-conversation'], imports: ['ai-edit-core'] },
   { names: ['ai-task-store'], imports: ['ai-edit-core', 'ai-conversation'] },
   { names: ['review-view'], imports: [] },
+  { names: ['review-session'], imports: ['diff-core'] },
+  { names: ['review-store'], imports: ['diff-core'] },
+  { names: ['review-locations'], imports: ['review-markup'] },
   { names: ['xml-dom'], imports: ['xml-source'] },
   { names: ['oxygen-core', 'delivery-document'], imports: [] },
   { names: ['author-renderer'], imports: ['xml-dom', 'asset-core', 'document-presentation', 'oxygen-core'] },
@@ -37,10 +50,7 @@ module.exports = [
   {
     files: ['public/*.js'], ignores: ['public/document-store.js'],
     rules: { 'no-restricted-syntax': ['error',
-      { selector: 'AssignmentExpression[left.object.name="state"][left.property.name=/^(root|files|maps|selectedMap|selectedMapSourcePath|repositories|branches|currentBranch|capabilities|filesMap|activePath|historyTargetPath|mode|mapAuthorPaths)$/]', message: 'Use the workspace session operation instead of assigning shared state.' },
-      { selector: 'AssignmentExpression[left.object.property.name="state"][left.property.name=/^(root|files|maps|selectedMap|selectedMapSourcePath|repositories|branches|currentBranch|capabilities|filesMap|activePath|historyTargetPath|mode|mapAuthorPaths)$/]', message: 'Use the workspace session operation instead of assigning shared state.' },
-      { selector: 'CallExpression[callee.object.property.name="filesMap"][callee.property.name=/^(set|delete|clear)$/]', message: 'Document membership belongs to the workspace session.' },
-      { selector: 'AssignmentExpression[left.computed!=true][left.property.name=/^(current|disk|dirty|baseline|gitStatus)$/]', message: 'Document content and save acknowledgement belong to document-store operations.' }
+      ...sharedMutations, ...reviewMutations
     ] }
   },
   ...renderingBoundaries.map(({ names, imports }) => ({
@@ -50,7 +60,7 @@ module.exports = [
       'no-restricted-properties': ['error', ...['window', 'root', 'globalThis'].flatMap(object =>
         ['DitaApp', 'fetch', 'localStorage'].map(property => ({ object, property,
           message: 'Rendering/source adapters receive data or DOM parameters, not application or IO services.' })))],
-      'no-restricted-syntax': ['error', { selector: importsOnly(imports),
+      'no-restricted-syntax': ['error', ...sharedMutations, ...(names.includes('review-session') ? [] : reviewMutations), { selector: importsOnly(imports),
         message: 'Keep rendering dependencies within the declared acyclic layer boundary.' }]
     }
   })),
@@ -66,7 +76,7 @@ module.exports = [
         ['document', 'fetch', 'localStorage', 'DitaApp'].map(property => ({
           object, property, message: 'Shared document rules must not read application, DOM or IO services.'
         })))],
-      'no-restricted-syntax': ['error', {
+      'no-restricted-syntax': ['error', ...sharedMutations, ...reviewMutations, {
         selector: domainRequire,
         message: 'Shared document rules may require only declared domain modules (or vendored SAX).'
       }]

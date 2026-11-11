@@ -50,6 +50,8 @@ test('real browser editing, reading and review workflow', async t => {
   const unifiedSource = '<topic id="unified"><title>统一审阅</title><body>\n<p id="unified-phrase">参数为 <b>30</b> 秒。</p>\n<p>保留中间段落</p>\n<table><tgroup cols="1"><tbody><row><entry id="unified-cell">原始值</entry></row></tbody></tgroup></table>\n</body></topic>';
   await fs.writeFile(path.join(root, 'unified-topic.dita'), unifiedSource);
   await fs.writeFile(path.join(root, 'unified-manual.ditamap'), '<map><title>统一审阅手册</title><topicref href="unified-topic.dita"/></map>');
+  for (const name of ['a', 'b']) await fs.writeFile(path.join(root, 'history-' + name + '.dita'), `<topic><title>History ${name}</title><body>\n<p>${name} original</p>\n</body></topic>`);
+  await fs.writeFile(path.join(root, 'history.ditamap'), '<map><title>History</title><topicref href="history-a.dita"/><topicref href="history-b.dita"/></map>');
   await fs.writeFile(path.join(root, 'oxy.dita'), oxygen);
   await fs.writeFile(path.join(root, 'oxy-second.dita'), oxygen);
   await fs.writeFile(path.join(root, 'oxy-pair-manual.ditamap'), '<map><title>Oxygen 来源定位</title><topicref href="oxy.dita"/><topicref href="oxy-second.dita"/></map>');
@@ -90,7 +92,7 @@ test('real browser editing, reading and review workflow', async t => {
   const open = async file => {
     await page.click('[data-view="search"]');
     await page.fill('#workspaceSearchInput', file);
-    await page.locator('.workspace-result').filter({ hasText: file }).click();
+    await page.locator('.workspace-result').filter({ has: page.getByText(file, { exact: true }) }).click();
     await page.waitForFunction(file => window.DitaApp.state.activePath === file, file);
   };
   const current = () => page.evaluate(() => { const a = window.DitaApp; return a.state.filesMap.get(a.state.activePath).current; });
@@ -446,6 +448,35 @@ test('real browser editing, reading and review workflow', async t => {
     await page.click('#reviewButton'); await page.selectOption('#reviewScope', 'oxygen'); await page.click('#acceptAllButton');
     assert.match(await current(), /Inserted/); assert.doesNotMatch(await current(), /oxy_insert|oxy_delete|deleted content/);
     await undo(); assert.equal(await current(), oxygen);
+  });
+  await t.test('undoing an earlier manual decision preserves a later accepted Topic and its body marks', async () => {
+    await open('history.ditamap'); await page.waitForFunction(() => window.DitaApp.state.filesMap.has('history-b.dita'));
+    await page.evaluate(() => { const app = window.DitaApp; for (const name of ['a', 'b']) { const file = app.state.filesMap.get('history-' + name + '.dita'); app.setFileContent(file, file.current.replace('original', 'changed')); } });
+    await page.click('#reviewButton');
+    const section = name => page.locator('#diff .map-review-topic').filter({ has: page.locator('.map-review-topic-header', { hasText: 'history-' + name + '.dita' }) });
+    await section('a').getByRole('button', { name: '接受此块', exact: true }).click();
+    await section('b').getByRole('button', { name: '接受此块', exact: true }).click();
+    await page.evaluate(() => window.DitaApp.session.setHistoryTarget('history-a.dita'));
+    await page.click('[data-menu=edit]'); await page.getByRole('menuitem', { name: '撤销', exact: true }).click({ timeout: 5000 });
+    assert.equal(await section('a').getByRole('button', { name: '接受此块', exact: true }).count(), 1);
+    assert.equal(await section('b').getByRole('button', { name: '撤销决定', exact: true }).count(), 1);
+    assert.ok(await page.locator('[data-map-topic-path="history-a.dita"] [data-review-text]').count() > 0);
+    assert.equal(await page.locator('[data-map-topic-path="history-b.dita"] [data-review-text]').count(), 0);
+    await page.click('[data-menu=edit]'); await page.getByRole('menuitem', { name: '重做', exact: true }).click({ timeout: 5000 });
+    assert.equal(await section('a').getByRole('button', { name: '撤销决定', exact: true }).count(), 1);
+    assert.equal(await section('b').getByRole('button', { name: '撤销决定', exact: true }).count(), 1);
+    for (const name of ['a', 'b']) assert.match(await fs.readFile(path.join(root, 'history-' + name + '.dita'), 'utf8'), /original/);
+    await page.evaluate(() => { const app = window.DitaApp; for (const name of ['a', 'b']) { const file = app.state.filesMap.get('history-' + name + '.dita'); app.setFileContent(file, file.disk); } });
+  });
+  await t.test('an outdated Oxygen action refreshes review instead of using offsets from the previous source', async () => {
+    await open('oxy.dita'); await page.click('#reviewButton');
+    const accept = await page.locator('#diff .oxy-change button').first().elementHandle();
+    const changed = oxygen.replace('Inserted', 'Late edit');
+    await page.evaluate(changed => { const app = window.DitaApp; app.setFileContent(app.state.filesMap.get('oxy.dita'), changed, { render: false }); }, changed);
+    await accept.click();
+    assert.equal(await current(), changed); assert.match(await page.locator('#status').innerText(), /原文已变化/);
+    assert.match(await current(), /oxy_insert_start/);
+    await source(oxygen);
   });
   await t.test('Map bulk rejection preserves files until explicit Save', async () => {
     await open('a.dita'); await source(initial.replace('Original', 'Map pending change'));

@@ -105,7 +105,7 @@
       if (!file) return;
       const entry = documentStore.travelHistory(file, 'undo');
       if (!entry) return;
-      if (entry.reviewDecisionsBefore) state.reviewDecisions = new Map(entry.reviewDecisionsBefore);
+      if (entry.reviewDecisionsBefore) restoreDecisions(entry.reviewDecisionsBefore, file, entry.reviewInManual);
       refreshHistoryTargetView(file, entry); restoreSelection(file, entry.selectionBefore); events.emit('document:changed', file);
       setStatus('已撤销');
     }
@@ -115,7 +115,7 @@
       if (!file) return;
       const entry = documentStore.travelHistory(file, 'redo');
       if (!entry) return;
-      if (entry.reviewDecisionsAfter) state.reviewDecisions = new Map(entry.reviewDecisionsAfter);
+      if (entry.reviewDecisionsAfter) restoreDecisions(entry.reviewDecisionsAfter, file, entry.reviewInManual);
       refreshHistoryTargetView(file, entry); restoreSelection(file, entry.selectionAfter); events.emit('document:changed', file);
       setStatus('已重做');
     }
@@ -262,7 +262,7 @@
     }
 
 
-    const { resetReviewSnapshot, renderDiff, renderMapReview, reviewAll } = review.createReviewController({
+    const { resetReviewSnapshot, renderDiff, renderMapReview, reviewAll, restoreDecisions } = review.createReviewController({
       state, dom, ditaCore, setFileContent, updateVisual, renderTabs, updateHistoryButtons, setStatus
     });
 
