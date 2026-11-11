@@ -45,6 +45,7 @@
       feature('noteRuleStore', 'DitaNoteRuleStore', 'createController', 'state api events'),
       feature('noteRules', 'DitaNoteRules', 'createController', 'state api events manual noteRuleStore setStatus', ['manual', 'noteRuleStore']),
       feature('project', 'DitaProject', 'createProjectController', 'state api events manual setStatus', ['manual']),
+      feature('knowledgeBase', 'DitaKnowledge', 'createController', 'state api events manual ditaCore project downloadText setStatus', ['manual', 'project']),
       feature('notePresentation', 'DitaFootnotePresentation', 'createController', 'state dom events manual', ['manual']),
       feature('delivery', 'DitaExport', 'createExportController', 'state dom api manual noteRules ditaCore setStatus toast bodyNavigation navigateToSource downloadText showLoading hideLoading', ['manual'], {
         expose: ['openModelExport', 'releaseExportPreview', 'previewMapHtml', 'previewMapMd', 'exportMapToHtmlFile', 'exportMapToMarkdownFile', 'lastDeliveryRecord', 'lastExportReport']

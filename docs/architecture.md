@@ -386,7 +386,7 @@ Appearance detail checks resolve the real inherited/translucent background of re
 
 `ai-provider` implements compatible Chat Completions using the local service connection configuration and the versioned `ai-writing-rules` document on every request. It has no workspace IO and exposes only nonsecret configuration. `ai-routes` sits behind the usual Host/Origin/token guard; it does not hold the workspace lock over upstream latency and verifies the token after completion. Both browser and server validate model results. Provider implementation and boundary fixtures participate in strict type checks.
 
-The feature is opt-in through a separate settings dialog or startup environment defaults; demo mode cannot use inherited model keys. Generation uses only selected text/conditions and the user instruction/model field. Search is local and bounded; a manual snapshot can contain dependency definitions, whose shared impact still needs human review. This is a text revision workflow, not an autonomous repository agent or a technical-fact/DITA-schema validator. See [setup and limits](ai-editing.md). The separate [SDK knowledge-base plan](knowledge-base-plan.md) remains deferred.
+The feature is opt-in through a separate settings dialog or startup environment defaults; demo mode cannot use inherited model keys. Generation uses only selected text/conditions and the user instruction/model field. Search is local and bounded; a manual snapshot can contain dependency definitions, whose shared impact still needs human review. This is a text revision workflow, not an autonomous repository agent or a technical-fact/DITA-schema validator. See [setup and limits](ai-editing.md). Offline customer delivery is implemented separately; see [knowledge delivery](knowledge-base.md). Customer AI question answering remains future work.
 
 
 ### Conversational revision and persistent connection
@@ -417,3 +417,15 @@ Plans and cumulative edits share the conversation. Explicit execution of a plan 
 `manual-v2` adds explicit artwork/text watermark sources, aspect-preserving logo placement and whole-sheet image mode, independent cover ink, page-edge-aware watermark positioning, and header/footer spacing. The original `manual-v1` template identities and renderer output are retained in `template-pdf-v1` with pinned digest regressions. Import preserves a legacy package; upgrading is an explicit editor action that creates a new version. Current built-ins are version 1.1.0; the two 1.0.0 versions stay available for old bindings.
 
 PDF geometry regression tests rasterize actual A4 and Letter output using Poppler and measure a distinctive fixture image's bounds/ratio/center plus footer text bounds. CI installs Poppler; development machines without it skip only this geometry subtest. Production export does not depend on Poppler.
+
+## Offline knowledge delivery
+
+`knowledge.js` owns a page-local collection of sealed publication captures and the publishing UI. A completed capture is independent of later workspace switches; pending capture operations are cancelled on workspace replacement. A batch enters the collection only after all of its captures succeed. Preview/download share a compiled package until the collection or publication fields change.
+
+`knowledge-capture.js` uses the existing manual snapshot, project validation, note rules, explicit prefix policy and HTML renderer. It rejects unsaved buffers, rechecks XML disk sources and note rules, embeds images, and records exact source/output hashes. Explicit other-model body conditions remaining after DITAVAL cause rejection. Unlabelled prose is retained under the existing delivery policy; the tool cannot infer its technical applicability.
+
+`knowledge-document.js` reads only published HTML, namespaces DOM anchors, associates each Topic with its used footnotes and extracts text/toc metadata. `knowledge-search.js` is the shared browser/offline token index and ranking engine; complete AT commands, parameter tokens and numeric error codes stay distinct. Chinese bigrams and a small explicit bilingual alias set support keyword lookup.
+
+`knowledge-package.js` validates the single-model collection and assembles the portal, original per-manual HTML and provenance manifest. `knowledge-zip.js` writes standard CRC32/UTF-8 ZIP STORE archives without a new dependency. `knowledge-reader.js` embeds content/index/runtime in one HTML file, performs no network reads, and owns the standalone responsive navigation/search/highlight/copy UI. Search, packaging and archive boundaries participate in strict type checking and enforce lower-layer dependencies through lint.
+
+The first collection is in memory only: workspace switches preserve sealed captures; refresh clears them. It does not automatically pull repositories, migrate saved publication plans or generate customer AI answers. These are separate extensions, not hidden behavior in an export controller.

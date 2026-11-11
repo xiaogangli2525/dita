@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="/document.css" />
   <link rel="stylesheet" href="/appearance.css" />
   <link rel="stylesheet" href="/ai-authoring.css" />
+  <link rel="stylesheet" href="/knowledge.css" />
 </head>
 <body>
   <header class="app-header">
@@ -33,6 +34,7 @@
     </div>
     <button id="reviewButton" type="button" class="outline-action" title="审阅文档变更" aria-controls="inspector" aria-expanded="false">审阅</button>
     <button id="exportMenuButton" type="button" class="primary-action" title="检查、预览和交付当前功能手册">交付手册 ↗</button>
+    <button id="knowledgeButton" type="button" class="outline-action" title="组合多份手册，发布可离线搜索的知识库">知识库 ↗</button>
     <div id="menuPopup" class="menu-popup" hidden></div>
   </header>
 
@@ -554,6 +556,16 @@
     <p id="resourceMessage" class="muted"></p><p id="resourceError" class="form-error" role="alert"></p>
     <div class="dialog-actions"><button id="resourceClose" type="button">取消</button><button type="submit" class="primary-action">应用到文档</button></div>
   </form></dialog>
+  <dialog id="knowledgeDialog" class="knowledge-dialog" aria-labelledby="knowledgeHeading">
+    <header class="knowledge-heading"><div><span class="knowledge-kicker">离线交付 · 试用版</span><h2 id="knowledgeHeading">发布知识库</h2><p>组合功能手册，为指定型号生成可搜索的离线文档门户。</p></div><button id="knowledgeClose" type="button" aria-label="关闭知识库发布">×</button></header>
+    <div class="knowledge-scroll">
+      <div class="knowledge-fields"><label class="knowledge-wide">知识库名称<input id="knowledgeTitle" maxlength="160" placeholder="如 ML307G 开发者知识库"></label><label>交付型号<input id="knowledgeModel" list="knowledgeModels" maxlength="80" placeholder="如 ML307G"><datalist id="knowledgeModels"></datalist></label><label>SDK 版本<input id="knowledgeSdk" maxlength="80" placeholder="如 V1.0.0"></label></div>
+      <div class="knowledge-columns"><section class="knowledge-source-panel"><div class="knowledge-panel-title"><h3>加入功能手册</h3><span id="knowledgeRepository"></span></div><div id="knowledgeSources" class="knowledge-sources"></div><label class="knowledge-field">文档版本（可选）<input id="knowledgeVersion" maxlength="80" placeholder="本批手册的文档版本"></label><label class="knowledge-field">正文条件过滤<select id="knowledgeFilter"><option value="">不过滤正文</option></select><small>正文按条件文件筛选；未标记适用范围的正文会保留。</small></label><label class="knowledge-prefix"><input id="knowledgePrefixes" type="checkbox"><span>按明确型号前缀筛选注脚<small>仅处理发布副本，原始 DITA 保持不变。</small></span></label><button id="knowledgeAdd" type="button" class="primary-action">＋ 加入／更新手册</button></section>
+      <section class="knowledge-collection-panel"><div class="knowledge-panel-title"><h3>本次发布集合 <span id="knowledgeCount">0 份手册</span></h3><button id="knowledgeClear" type="button">清空</button></div><div id="knowledgeCollection" class="knowledge-collection"></div><p class="knowledge-hint">加入的是已保存内容的快照。可关闭此窗口，切换文档库后继续添加；刷新页面会清空集合。更换型号请先清空。</p></section></div>
+      <p id="knowledgeError" class="knowledge-error" role="alert"></p><p id="knowledgeStatus" class="knowledge-status" role="status">选择手册后加入集合，即可预览阅读与搜索效果。</p>
+    </div><footer class="knowledge-actions"><p>解压 ZIP 后双击 <code>docs/index.html</code>，即可离线使用。</p><button id="knowledgePreview" type="button">预览知识库</button><button id="knowledgeDownload" type="button" class="primary-action">导出离线 ZIP</button></footer>
+  </dialog>
+  <dialog id="knowledgePreviewDialog" class="knowledge-preview-dialog" aria-label="知识库阅读效果预览"><header><div><strong>知识库预览</strong><span>预览和离线包使用同一份发布内容</span></div><button id="knowledgePreviewClose" type="button">关闭预览</button></header><iframe id="knowledgePreviewFrame" title="离线知识库预览" sandbox="allow-scripts"></iframe></dialog>
   <div id="loadingOverlay" class="loading-overlay" role="status" aria-hidden="true"><span>正在准备导出文档…</span></div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <script src="/vendor/sax.js"></script>
@@ -646,6 +658,13 @@
   <script src="/workspace-shell.js"></script>
   <script src="/appearance-controller.js"></script>
   <script src="/remote-libraries.js"></script>
+  <script src="/knowledge-search.js"></script>
+  <script src="/knowledge-document.js"></script>
+  <script src="/knowledge-reader.js"></script>
+  <script src="/knowledge-zip.js"></script>
+  <script src="/knowledge-package.js"></script>
+  <script src="/knowledge-capture.js"></script>
+  <script src="/knowledge.js"></script>
   <script src="/application.js"></script>
   <script src="/footnote-presentation.js"></script>
   <script src="/app-dom.js"></script>
