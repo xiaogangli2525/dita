@@ -203,9 +203,15 @@
   async function coverBackgroundHeader(D, pack, pageWidthPx, pageHeightPx) {
     if (!pack.cover.background) return null;
     const image = await loadImage(pack.assets[pack.cover.background]);
+    const sourceRatio = image.width / image.height, pageRatio = pageWidthPx / pageHeightPx;
+    const horizontal = Math.max(0, (1 - pageRatio / sourceRatio) * 50);
+    const vertical = Math.max(0, (1 - sourceRatio / pageRatio) * 50);
     const run = new D.ImageRun({
       data: image.bytes, type: image.type,
       transformation: { width: pageWidthPx, height: pageHeightPx },
+      // Crop the original artwork equally on both sides, matching PDF's
+      // background-size: cover without stretching or recompressing the image.
+      crop: { left: horizontal, right: horizontal, top: vertical, bottom: vertical },
       floating: {
         horizontalPosition: { relative: 'page', offset: 0 },
         verticalPosition: { relative: 'page', offset: 0 },

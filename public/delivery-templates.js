@@ -43,7 +43,10 @@
       for (const item of available) select.add(new Option(optionLabel(item.package), core.key(item.package)));
       const hasSavedChoice = typeof saved?.key === 'string';
       const requested = hasSavedChoice ? saved.key : (previous && available.some(item => core.key(item.package) === previous) ? previous : '');
-      if (requested && available.some(item => core.key(item.package) === requested)) select.value = requested;
+      if (hasSavedChoice && requested === '') {
+        select.value = '';
+        if (loadError) warn('模板库读取失败：' + loadError + '；当前使用已确认的基础版式。');
+      } else if (requested && available.some(item => core.key(item.package) === requested)) select.value = requested;
       else if (requested) {
         select.add(new Option('缺少模板 · ' + requested, requested)); select.value = requested;
         warn('原绑定模板不可用（当前格式不支持），请导入原版本或明确选择其他版式。');
