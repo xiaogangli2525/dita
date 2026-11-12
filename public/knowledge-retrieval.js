@@ -245,6 +245,11 @@
       var entries = state.entries, postings = state.postings, symbols = state.symbols, suggestions = state.suggestions;
       var symbolNames = Array.from(symbols.keys()).sort();
       var wordNames = Array.from(postings.keys()).filter(function (key) { return key.slice(0, 2) === "w:"; }).map(function (key) { return key.slice(2); });
+      var wordNamesByLength = new Map();
+      wordNames.forEach(function (word) {
+        if (!wordNamesByLength.has(word.length)) wordNamesByLength.set(word.length, []);
+        wordNamesByLength.get(word.length).push(word);
+      });
       var averageFieldLengths = {};
       Object.keys(FIELD_WEIGHTS).forEach(function (field) {
         averageFieldLengths[field] = entries.length ? entries.reduce(function (sum, entry) { return sum + entry.fields[field].words.size; }, 0) / entries.length : 1;
@@ -316,7 +321,11 @@
         var fuzzyByEntry = new Map();
         features.words.forEach(function (term) {
           if (postings.has("w:" + term) || term.length < 2 || term.length > 32) return;
-          wordNames.forEach(function (candidateTerm) {
+          var nearbyTerms = [];
+          for (var length = Math.max(2, term.length - 1); length <= term.length + 1; length++) {
+            nearbyTerms.push.apply(nearbyTerms, wordNamesByLength.get(length) || []);
+          }
+          nearbyTerms.forEach(function (candidateTerm) {
             if (candidateTerm === term || !withinOneEdit(term, candidateTerm)) return;
             (postings.get("w:" + candidateTerm) || []).forEach(function (id) {
               candidates.add(id);
