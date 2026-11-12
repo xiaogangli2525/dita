@@ -8,14 +8,14 @@ export interface SearchRecord { readonly title: string; readonly text: string; r
 export interface SearchIndex { readonly schema: 2; readonly compiled: object }
 export interface EntryOverride { readonly fingerprint: string; readonly kind: string; readonly aliases: readonly string[]; readonly definedSymbols: readonly string[] }
 export interface KnowledgeRecipe {
-  readonly repositoryRoot: string; readonly repository: string; readonly branch: string; readonly path: string; readonly title: string;
+  readonly revision?: string; readonly repositoryRoot: string; readonly repository: string; readonly branch: string; readonly path: string; readonly title: string;
   readonly version: string; readonly filterPath: string; readonly prefixes: boolean; readonly mode: 'OC'|'AT'|'other'; readonly module: string;
   readonly overrides: Readonly<Record<string, EntryOverride>>; readonly previous?: { readonly htmlSha256: string; readonly capturedAt: string };
 }
 export interface KnowledgePlan { readonly schema: 1; readonly id: string; readonly title: string; readonly model: string;
   readonly sdkVersion: string; readonly sources: readonly KnowledgeRecipe[] }
 export interface KnowledgeSource {
-  readonly repository: string; readonly branch: string; readonly commit: string | null; readonly dirty: boolean | null;
+  readonly revision?: string; readonly assets?: readonly {readonly path:string; readonly sha256:string|null}[]; readonly repository: string; readonly branch: string; readonly commit: string | null; readonly dirty: boolean | null;
   readonly manualPath: string; readonly documents: readonly { readonly path: string; readonly sha256: string }[];
   readonly filterPath: string; readonly filterSha256: string | null; readonly projectSha256: string | null;
   readonly noteRulesSha256: string | null; readonly modelNotePolicy: 'explicit-prefix-v1' | 'sidecar-only';
@@ -38,3 +38,10 @@ export interface KnowledgeBook {
 export interface KnowledgeRequest { readonly title: string; readonly model: string; readonly sdkVersion: string;
   readonly manuals: readonly KnowledgeManual[]; readonly generatedAt?: string }
 export interface ArchiveFile { readonly name: string; readonly content: string | Uint8Array<ArrayBuffer> }
+
+export interface KnowledgeReceipt { readonly repositoryRoot: string; readonly branch: string; readonly revision: string; readonly commit: string;
+  readonly files: readonly {readonly path: string; readonly sha256: string|null}[] }
+export interface KnowledgeBundle { readonly schema: 1;
+  readonly snapshot: Omit<import('./data-contracts').ManualSnapshot,'files'|'buffers'> & {readonly files: readonly (readonly [string,import('./data-contracts').FileContent])[];readonly buffers:readonly []};
+  readonly texts: readonly (readonly [string,string])[]; readonly assets: readonly (readonly [string,string])[];
+  readonly provenance: {readonly commit:string;readonly branch:string;readonly dirty:boolean};readonly receipt:KnowledgeReceipt }

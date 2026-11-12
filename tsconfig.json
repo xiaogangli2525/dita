@@ -33,6 +33,7 @@
     "types/knowledge-boundaries.test.ts",
     "public/knowledge-search.js",
     "public/knowledge-plan.js",
+    "public/knowledge-source-data.js",
     "public/knowledge-package.js",
     "public/knowledge-zip.js"
   ]

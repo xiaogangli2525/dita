@@ -44,16 +44,19 @@
     }
     // Maps can be filtered before resolving paths. Topic filtering is applied
     // by publication-core after expansion, keeping original note provenance.
-    function filterSource(source) {
-      const tree = xml.inspectSource(source), ranges = [];
+    function filterSource(source, subtree) {
+      const tree = subtree || xml.inspectSource(source), ranges = [];
       if (!keep(tree)) return null;
       function visit(node) {
         if (!keep(node)) { ranges.push([node.start, node.close?.end ?? node.end]); return; }
         node.children.filter(n => n.kind === 'element').forEach(visit);
       }
       visit(tree);
-      for (const [start, end] of ranges.reverse()) source = source.slice(0, start) + source.slice(end);
-      return source;
+      const kept = [];
+      let cursor = subtree ? tree.start : 0;
+      for (const [start, end] of ranges) { kept.push(source.slice(cursor, start)); cursor = end; }
+      kept.push(source.slice(cursor, subtree ? tree.close?.end ?? tree.end : source.length));
+      return kept.join('');
     }
     const names = { product:'产品标记', audience:'读者', platform:'平台', props:'条件', otherprops:'其他条件', deliveryTarget:'发布目标' };
     const actions = { include:'保留', exclude:'排除', passthrough:'正常保留' };

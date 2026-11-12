@@ -33,11 +33,12 @@
         metadata[name] = { fingerprint: text(meta.fingerprint, 64, 'fingerprint'), kind, aliases: aliases.map(x => text(x, 80, 'alias')),
           definedSymbols: defined.map(x => text(x, 100, 'symbol')) };
       }
+      const revision = text(source.revision || '', 200, 'revision'); if (revision.startsWith('-') || /[\s\0]/.test(revision)) throw new Error('发布方案 Git 版本无效');
       const filterPath = text(source.filterPath, 1000, 'filterPath'); if (filterPath) relative(filterPath);
       let previous;
       if (source.previous) { const old = object(source.previous, 'previous'); previous = { htmlSha256: text(old.htmlSha256, 64, 'htmlSha256'), capturedAt: text(old.capturedAt, 40, 'capturedAt') }; }
       return { repositoryRoot, path, repository: text(source.repository, 200, 'repository'), branch: text(source.branch, 200, 'branch'), title: text(source.title, 200, 'title'),
-        version: text(source.version, 80, 'version'), filterPath, prefixes: source.prefixes, mode: /** @type {'OC'|'AT'|'other'} */ (mode),
+        ...(revision ? { revision } : {}), version: text(source.version, 80, 'version'), filterPath, prefixes: source.prefixes, mode: /** @type {'OC'|'AT'|'other'} */ (mode),
         module: text(source.module || '', 80, 'module'), overrides: metadata, ...(previous ? { previous } : {}) };
     });
     return { schema: 1, id, title: text(value.title, 160, 'title'), model: text(value.model, 80, 'model'), sdkVersion: text(value.sdkVersion, 80, 'sdkVersion'), sources };

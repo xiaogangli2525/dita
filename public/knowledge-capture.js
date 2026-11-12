@@ -15,14 +15,18 @@
       if (prepared.noteReview?.length) throw new Error(prepared.noteReview.some(item => item.kind === 'prefix') ? '有型号注脚需核对：请启用明确型号前缀筛选，或先在“交付手册”中确认独立规则。' : '有型号注脚范围需逐段确认，请先在“交付手册”中处理独立规则。');
       // Model selection scopes footnotes; DITAVAL scopes the body. Refuse a
       // remaining explicitly different model instead of indexing hidden text.
-      for (const entry of A.ditaCore.collectPreviewPaths(snapshot.map.children || [])) {
-        const file = prepared.files.get(entry.path); if (!file || file.excluded) continue;
-        const doc = A.ditaCore.parseXml(file.current);
+      function checkProducts(path, content) {
+        const doc = A.ditaCore.parseXml(content);
         for (const node of doc.querySelectorAll('[product]')) {
           const values = node.getAttribute('product').trim().split(/\s+/), models = values.filter(root.DitaModelDiscovery.isModel);
-          if (models.length && !values.includes(model)) throw new Error(entry.path + '：仍有明确属于其它型号的正文，请选择能排除这些内容的 DITAVAL 后重新加入。');
+          if (models.length && !values.includes(model)) throw new Error(path + '：仍有明确属于其它型号的正文，请选择能排除这些内容的 DITAVAL 后重新加入。');
         }
       }
+      for (const entry of A.ditaCore.collectPreviewPaths(snapshot.map.children || [])) {
+        const file = prepared.files.get(entry.path);
+        if (file && !file.excluded) checkProducts(entry.path, file.current);
+      }
+      for (const note of prepared.noteDefinitions.values()) checkProducts(note.path, note.xml);
       await A.manual.verifyRules(snapshot); check();
       async function loadImageBytes(imagePath) {
         check();
