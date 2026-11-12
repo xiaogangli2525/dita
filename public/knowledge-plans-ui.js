@@ -20,7 +20,7 @@
     }));
     get('knowledgePlanLoad').addEventListener('click', () => guard(() => {
       const selected = get('knowledgePlan').value, item = store.list().find(entry => entry.plan.id === selected);
-      if (!item) throw Error('请先选择已保存的方案'); load(item); status('方案已恢复，请逐份重新加入手册以核对最新内容。');
+      if (!item) throw Error('请先选择已保存的方案'); load(item); status('方案已恢复，点击“核对全部来源”即可按每份手册的设置重新核对。');
     }));
     // The selection itself does not discard a work-in-progress collection.
     get('knowledgePlanNew').addEventListener('click', () => guard(() => {
