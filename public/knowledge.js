@@ -94,7 +94,7 @@
     }
     async function refreshSources() {
       const generation = ++operation, workspace = A.api.token; preferenceKey = workspaceKey();
-      const recipe = [...recipes.values()].find(item => item.repositoryRoot === A.state.root && item.branch === (A.state.currentBranch || ''));
+      const recipe = [...recipes.values()].find(item => !item.revision && item.repositoryRoot === A.state.root && item.branch === (A.state.currentBranch || ''));
       const pref = preferences.get(preferenceKey) || (recipe ? { ...recipe, paths: [...recipes.values()].filter(item => item.repositoryRoot === recipe.repositoryRoot && item.branch === recipe.branch).map(item => item.path) } : {});
       sourceChoices(pref); get('knowledgeVersion').value = pref.version || ''; get('knowledgePrefixes').checked = !!pref.prefixes;
       get('knowledgeMode').value = pref.mode || 'other'; get('knowledgeModule').value = pref.module || '';
@@ -122,6 +122,7 @@
       const paths = [...get('knowledgeSources').querySelectorAll('input:checked')].map(input => input.value);
       if (!/^[\p{L}\p{N}][\p{L}\p{N}._-]{0,79}$/u.test(model)) { error('请填写具体型号，例如 ML307G。'); return; }
       if (!paths.length) { error('请至少选择一份手册。'); return; }
+      if (paths.some(path => recipes.get(sourceKey(A.state.root, path))?.revision)) { error('此入口已指定 Git 版本，请通过卡片“编辑来源”更改读取方式，或直接重新核对指定版本。'); return; }
       if (version.length > 80) { error('文档版本请限制在 80 字以内。'); return; }
       if (chosenModel && model !== chosenModel) { error('本发布集合已固定为 ' + chosenModel + '，请清空后更换型号。'); return; }
       remember(); const settings = { ...preferences.get(workspaceKey()), model, version }, repositoryRoot = A.state.root, branch = A.state.currentBranch || '';

@@ -78,6 +78,16 @@ test('one publication plan captures real HTTP and a separate Git manual without 
     assert.equal(await page.locator('#knowledgeDownload').isDisabled(), true); assert.match(await page.locator('#knowledgeStatus').innerText(), /已取消/);
     await check(); assert.equal(await page.locator('#knowledgeDownload').isDisabled(), false);
   });
+  await stage('quick-add cannot silently replace a pinned Git source with working files', async () => {
+    const card = page.locator('.knowledge-part').filter({ hasText: 'http_httpsusermanual.ditamap' });
+    await card.getByRole('button', { name: '编辑来源' }).click(); await page.waitForFunction(() => !document.getElementById('knowledgeSourceAdd').disabled);
+    await page.selectOption('#knowledgeSourceMode', 'git'); await page.fill('#knowledgeSourceRevision', 'main'); await page.click('#knowledgeSourceReload'); await page.waitForFunction(() => !document.getElementById('knowledgeSourceAdd').disabled); await page.click('#knowledgeSourceAdd');
+    for (const checkbox of await page.locator('#knowledgeSources input').all()) await checkbox.uncheck();
+    await page.locator('#knowledgeSources input[value="http_httpsusermanual.ditamap"]').check(); await page.click('#knowledgeAdd');
+    assert.match(await page.locator('#knowledgeError').innerText(), /已指定 Git 版本/); assert.match(await card.innerText(), /Git 版本：main/);
+    await card.getByRole('button', { name: '编辑来源' }).click(); await page.waitForFunction(() => !document.getElementById('knowledgeSourceAdd').disabled); await page.selectOption('#knowledgeSourceMode', 'saved'); await page.click('#knowledgeSourceReload'); await page.waitForFunction(() => !document.getElementById('knowledgeSourceAdd').disabled); await page.click('#knowledgeSourceAdd'); await check('#knowledgeBatchRetry');
+    assert.equal(await page.locator('#knowledgeDownload').isDisabled(), false);
+  });
   await stage('saved plans restore both sources and recapture all without workspace navigation', async () => {
     await page.click('#knowledgePlanSave'); await page.waitForFunction(() => document.getElementById('knowledgeStatus').textContent.includes('方案已保存'));
     await page.reload(); await page.waitForFunction(() => window.DitaApp?.state.root); await page.click('#knowledgeButton'); await page.locator('.knowledge-part').first().waitFor();

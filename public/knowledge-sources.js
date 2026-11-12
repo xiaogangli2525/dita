@@ -49,7 +49,7 @@
         if (!path) throw Error('此来源没有可选的手册入口');
         if (filter.selectedOptions[0]?.disabled) throw Error('原条件文件不存在，请明确选择替代条件');
         const recipe = { repositoryRoot: catalog.root, repository: get('knowledgeSourceRepo').selectedOptions[0].textContent, branch: catalog.branch, path,
-          title: catalog.maps.find(map => map.path === path)?.title || path, version: get('knowledgeSourceVersion').value.trim(), filterPath: filter.value, prefixes: get('knowledgeSourcePrefixes').checked,
+          title: editing?.repositoryRoot === catalog.root && editing.path === path ? editing.title : catalog.maps.find(map => map.path === path)?.title || path, version: get('knowledgeSourceVersion').value.trim(), filterPath: filter.value, prefixes: get('knowledgeSourcePrefixes').checked,
           mode: get('knowledgeSourceKind').value, module: get('knowledgeSourceModule').value.trim(), overrides: editing?.path === path ? editing.overrides : {}, ...(catalog.revision ? { revision: catalog.revision } : {}) };
         add(recipe, editing); cancel(); get('knowledgeSourceDialog').close(); status('来源配置已加入方案，点击“核对全部来源”统一加载各仓库。');
       } catch (cause) { error(cause.message); get('knowledgeSourceInfo').textContent = cause.message; }
