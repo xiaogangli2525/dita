@@ -42,9 +42,9 @@
     }
 
     /** @param {string} [path]
-     * @param {{resources?:boolean,filterPath?:string}} [options]
+     * @param {{resources?:boolean,filterPath?:string,includeTopic?:(path:string)=>boolean}} [options]
      * @returns {Promise<import('./data-contracts').ManualSnapshot>} */
-    async function capture(path = A.state.activePath, { resources = false, filterPath = '' } = {}) {
+    async function capture(path = A.state.activePath, { resources = false, filterPath = '', includeTopic } = {}) {
       if (!path) throw new Error('请先打开文档或功能手册');
       const workspace = A.api.token;
       await A.project?.ready?.();
@@ -73,6 +73,7 @@
         return content;
       }
 
+      if (includeTopic && !includeTopic(path)) throw new Error('所选主题不在本次发布范围内：' + path);
       const content = await read(path);
       if (filterPath && !/\.ditaval$/i.test(filterPath)) throw new Error('请选择工作区内的 DITAVAL 文件');
       const filter = filterPath ? Object.freeze({ path: filterPath, current: await read(filterPath) }) : null;
@@ -91,6 +92,19 @@
         assertContext();
       } else map = { title: path.split('/').pop(), path, children: [{ type: 'file', path }] };
 
+      if (includeTopic) {
+        /** @param {readonly import('./data-contracts').MapEntry[]} nodes
+         * @returns {import('./data-contracts').MapEntry[]} */
+        function includedEntries(nodes) {
+          return nodes.flatMap(node => {
+            const children = includedEntries(node.children || []);
+            if (node.type === 'file' && !includeTopic?.(node.path)) return children;
+            return [{ ...node, children }];
+          });
+        }
+        map = { ...map, children: includedEntries(map.children || []) };
+        if (!collectPreviewPaths(map.children).length) throw new Error('筛选后没有可发布的正文：' + path);
+      }
       const files = new Map();
       for (const entry of collectPreviewPaths(map.children || [])) files.set(entry.path, { path: entry.path, current: await read(entry.path) });
       if (resources) {

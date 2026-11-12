@@ -35,3 +35,12 @@ test('metadata is bound to published chapter text and never silently applied aft
   assert.deepEqual(stale.staleMetadata, ['a.dita']); assert.deepEqual(stale.entries[0].aliases, []);
   assert.deepEqual(applyMetadata({ ...original, entries: [] }, recipe).staleMetadata, ['a.dita']);
 });
+test('omitted shared support metadata does not block old plans or suppress unrelated stale metadata', () => {
+  const cn = 'contentmodule/topics/reusable_general_cn/g_service_and_support_cn.dita';
+  const en = 'contentmodule/topics/reusable_general_en/g_service_and_support_en.dita';
+  const original = { title: 'HTTP', entries: [] };
+  const overrides = { [cn]: { fingerprint: 'old' }, [en]: { fingerprint: 'old' }, 'topics/removed.dita': { fingerprint: 'old' } };
+  const result = applyMetadata(original, { overrides });
+  assert.deepEqual(result.staleMetadata, ['topics/removed.dita']);
+  assert.equal(Object.keys(overrides).length, 3);
+});

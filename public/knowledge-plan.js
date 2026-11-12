@@ -68,6 +68,10 @@
     }
     return { list, save };
   }
-  const api = { normalizePlan, createPlanStore };
+  /** @param {string} path */
+  function includesTopic(path) {
+    return !/(?:^|\/)contentmodule\/topics\/reusable_general_(cn|en)\/g_service_and_support_\1\.dita$/i.test(path);
+  }
+  const api = { normalizePlan, createPlanStore, includesTopic };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaKnowledgePlan = api;
 })(typeof window === 'undefined' ? globalThis : window);

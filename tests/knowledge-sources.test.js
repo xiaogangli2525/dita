@@ -118,3 +118,37 @@ test('simultaneous catalog requests share the two active source slots', async t 
   const rejected = results.filter(item => item.status === 'rejected'); assert.equal(rejected[0].reason.status, 429);
   assert.equal((await call('catalog', { repositoryRoot: root })).root, root);
 });
+test('knowledge capture skips only the shared support Topics and keeps their published children', async t => {
+  const { roots: [root], call, recipe } = await setup(t);
+  const en = 'contentmodule/topics/reusable_general_en/g_service_and_support_en.dita';
+  const cn = 'contentmodule/topics/reusable_general_cn/g_service_and_support_cn.dita';
+  const similarlyNamed = 'topics/g_service_and_support_cn.dita';
+  await fs.copyFile(path.join(root, 'topics/a.dita'), path.join(root, similarlyNamed));
+  const manual = '<map><topicref href="' + cn + '"><topicref href="topics/a.dita"/></topicref><topicref href="' + en + '"/><topicref href="' + similarlyNamed + '"/></map>';
+  await fs.writeFile(path.join(root, 'manual.ditamap'), manual);
+  const source = await call('capture', recipe(root));
+  assert.deepEqual(source.snapshot.files.map(([name]) => name), ['topics/a.dita', similarlyNamed]);
+  assert.equal(await fs.readFile(path.join(root, 'manual.ditamap'), 'utf8'), manual);
+  await assert.rejects(call('capture', { ...recipe(root), path: cn }), /不在本次发布范围/);
+  await fs.unlink(path.join(root, 'topics/a.dita')); await assert.rejects(call('capture', recipe(root)), /来源文件不存在.*topics\/a\.dita/);
+});
+test('shared Git content follows saved files or the parent gitlink and explains an uninitialized dependency', async t => {
+  const { roots: [root], call, recipe, command } = await setup(t), mount = 'common', child = path.join(root, mount);
+  const file = path.join(child, 'shared.dita'), topic = title => '<topic id="shared"><title>' + title + '</title></topic>';
+  await fs.mkdir(child); command(child, 'init', '-b', 'main');
+  const commit = (repo, message) => { command(repo, 'add', '.'); command(repo, '-c', 'user.name=QA', '-c', 'user.email=qa@example.invalid', 'commit', '-qm', message); };
+  await fs.writeFile(file, topic('pinned')); commit(child, 'shared pin');
+  await fs.writeFile(path.join(root, '.gitmodules'), '[submodule "common"]\n path = common\n url = ../shared.git\n');
+  await fs.writeFile(path.join(root, 'manual.ditamap'), '<map><topicref href="common/shared.dita"/></map>');
+  commit(root, 'pin shared module'); command(root, 'submodule', 'absorbgitdirs', '--', mount);
+  const clean = await call('capture', recipe(root)); assert.equal(clean.provenance.dirty, false);
+  await fs.writeFile(file, topic('next')); commit(child, 'new version');
+  await fs.writeFile(file, topic('working'));
+  const saved = await call('capture', recipe(root)), pinned = await call('capture', { ...recipe(root), revision: 'HEAD' });
+  assert.match(new Map(saved.texts).get('common/shared.dita'), /working/); assert.equal(saved.provenance.dirty, true);
+  assert.match(new Map(pinned.texts).get('common/shared.dita'), /pinned/); assert.equal(pinned.provenance.dirty, false);
+  assert.equal((await call('verify', pinned.receipt)).current, true);
+  await fs.writeFile(file, topic('changed')); await assert.rejects(call('verify', saved.receipt), /已变化/);
+  command(root, 'submodule', 'deinit', '-f', '--', mount);
+  for (const revision of ['', 'HEAD']) await assert.rejects(call('capture', { ...recipe(root), revision }), /尚未初始化.*common/);
+});

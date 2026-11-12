@@ -3,7 +3,7 @@
   function createCapture(A) {
     async function collect(path, { model, version = '', filterPath = '', prefixes = false }, signal) {
       const workspace = A.api.token;
-      const snapshot = await A.manual.capture(path, { filterPath });
+      const snapshot = await A.manual.capture(path, { filterPath, includeTopic: root.DitaKnowledgePlan.includesTopic });
       function check() {
         if (signal?.aborted) throw new Error('已取消加入手册');
         if (workspace !== A.api.token || !A.manual.current(snapshot)) throw new Error('文档或工作区已变化，请重新加入手册');

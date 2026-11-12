@@ -62,6 +62,7 @@ test('real HTTP knowledge delivery works across repositories and from a moved of
     assert.equal(manifest.manuals.length, 2); assert.equal(new Set(manifest.manuals.map(item => item.id)).size, 2);
     const content = strFromU8(files['docs/index.html']); assert.doesNotMatch(content, /ONLY_N_PRIVATE_NOTE|ONLY_N_PRIVATE_BODY/); assert.match(content, /ONLY_G_NOTE/);
     const first = manifest.manuals.find(item => item.source.manualPath === mapPath);
+    assert.equal(first.chapters, 24); assert.doesNotMatch(content, /400-110-0866|服务与支持/);
     assert.equal(first.source.documents.find(item => item.path === 'topics/r_https_example.dita').sha256, hash(original.get('topics/r_https_example.dita')));
     for (const manual of manifest.manuals) assert.equal(manual.htmlSha256, hash(files['docs/' + manual.file]));
     const moved = path.join(temporary, '移动 空格', '离线文档'); await fs.mkdir(moved, { recursive: true });

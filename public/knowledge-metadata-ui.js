@@ -33,7 +33,7 @@
     });
     return { show(key, part, recipe) {
       editing = { key, part, recipe }; get('knowledgeMetadataTitle').textContent = part.title + ' · 检索属性';
-      get('knowledgeEntry').replaceChildren(...part.entries.map(entry => new Option(entry.title + ' · ' + entry.sourcePath, entry.sourcePath)), ...Object.keys(recipe.overrides).filter(path => !part.entries.some(entry => entry.sourcePath === path)).map(path => new Option('已移除 · ' + path, path)));
+      get('knowledgeEntry').replaceChildren(...part.entries.map(entry => new Option(entry.title + ' · ' + entry.sourcePath, entry.sourcePath)), ...Object.keys(recipe.overrides).filter(path => root.DitaKnowledgePlan.includesTopic(path) && !part.entries.some(entry => entry.sourcePath === path)).map(path => new Option('已移除 · ' + path, path)));
       get('knowledgeMetadataStatus').textContent = ''; fields(); get('knowledgeMetadataDialog').showModal();
     } };
   }
