@@ -291,7 +291,8 @@
               });
             });
           });
-          return finalize(direct, limit);
+          if (direct.length) return finalize(direct, limit);
+          // A misspelled code symbol may not have a prefix hit; let it reach fuzzy token matching.
         }
         if (numericQuery) {
           var numeric = [];
