@@ -29,7 +29,7 @@ test('one publication plan captures real HTTP and a separate Git manual without 
   await page.click('#knowledgeButton'); await page.fill('#knowledgeTitle', '多仓库统一交付'); await page.fill('#knowledgeModel', 'ML307G'); await page.fill('#knowledgeSdk', 'V1');
   async function configure(root, entry, profile, module) {
     await page.click('#knowledgeSourcesAdd'); await page.waitForFunction(() => !document.getElementById('knowledgeSourceAdd').disabled);
-    if (await page.locator('#knowledgeSourceRepo').inputValue() !== root) { await page.selectOption('#knowledgeSourceRepo', root); await page.click('#knowledgeSourceReload'); await page.waitForFunction(() => !document.getElementById('knowledgeSourceAdd').disabled); }
+    if (await page.locator('#knowledgeSourceRepo').inputValue() !== root) { await page.selectOption('#knowledgeSourceRepo', root); await page.waitForFunction(() => !document.getElementById('knowledgeSourceAdd').disabled); }
     await page.selectOption('#knowledgeSourceEntry', entry); await page.selectOption('#knowledgeSourceFilter', profile); await page.check('#knowledgeSourcePrefixes'); await page.fill('#knowledgeSourceModule', module); await page.selectOption('#knowledgeSourceKind', 'AT'); await page.click('#knowledgeSourceAdd');
     await page.locator('#knowledgeSourceDialog').waitFor({ state: 'hidden' });
   }
@@ -41,6 +41,60 @@ test('one publication plan captures real HTTP and a separate Git manual without 
     assert.equal((await page.request.post(endpoint, { data: { repositoryRoot: tcp } })).status(), 409);
     assert.equal((await page.request.post(endpoint, { data: { repositoryRoot: tcp }, headers: { 'x-workspace-token': identity.token, origin: 'https://foreign.invalid' } })).status(), 403);
     assert.equal((await page.request.post(endpoint, { data: { repositoryRoot: os.tmpdir() }, headers: { 'x-workspace-token': identity.token } })).status(), 403);
+  });
+  await stage('changing repositories refreshes entries and filters without a manual reload', async () => {
+    const entries = page.locator('#knowledgeSourceEntry'), filters = page.locator('#knowledgeSourceFilter');
+    await page.click('#knowledgeSourcesAdd'); await page.waitForFunction(() => !document.getElementById('knowledgeSourceAdd').disabled);
+    assert.equal(await entries.inputValue(), map);
+    await page.selectOption('#knowledgeSourceRepo', tcp);
+    assert.ok(!(await entries.locator('option').evaluateAll(options => options.map(option => option.value))).includes(map),
+      'switching to TCP must immediately remove the HTTP manual from the entry list');
+    await page.waitForFunction(() => !document.getElementById('knowledgeSourceAdd').disabled);
+    assert.equal(await entries.inputValue(), 'tcp.ditamap');
+    assert.deepEqual(await filters.locator('option').evaluateAll(options => options.map(option => option.value)), ['', 'g.ditaval']);
+    await page.click('#knowledgeSourceClose');
+  });
+  await stage('manual refresh rereads the selected repository and can recover after an error', async () => {
+    const entries = page.locator('#knowledgeSourceEntry'), add = page.locator('#knowledgeSourceAdd');
+    const extra = path.join(tcp, 'new-manual.ditamap'), endpoint = '**/api/knowledge/catalog';
+    await page.click('#knowledgeSourcesAdd'); await page.waitForFunction(() => !document.getElementById('knowledgeSourceAdd').disabled);
+    await page.route(endpoint, route => route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: '目录暂不可用' }) }));
+    await page.selectOption('#knowledgeSourceRepo', tcp);
+    await page.locator('#knowledgeSourceInfo').filter({ hasText: '目录暂不可用' }).waitFor();
+    assert.match(await page.locator('#knowledgeSourceInfo').innerText(), /TCP文档库/);
+    assert.equal(await entries.locator('option').count(), 0); assert.equal(await add.isDisabled(), true);
+    await page.unroute(endpoint);
+    try {
+      await fs.writeFile(extra, '<map><title>新增手册</title></map>');
+      await page.click('#knowledgeSourceReload'); await page.waitForFunction(() => !document.getElementById('knowledgeSourceAdd').disabled);
+      assert.deepEqual(await entries.locator('option').evaluateAll(options => options.map(option => option.value)), ['new-manual.ditamap', 'tcp.ditamap']);
+      assert.match(await page.locator('#knowledgeSourceInfo').innerText(), /TCP文档库.*2 个入口/);
+      await entries.selectOption('tcp.ditamap'); await fs.rm(extra);
+      await page.click('#knowledgeSourceReload'); await page.waitForFunction(() => !document.getElementById('knowledgeSourceAdd').disabled);
+      assert.equal(await entries.locator('option').count(), 1); assert.equal(await entries.inputValue(), 'tcp.ditamap');
+    } finally { await fs.rm(extra, { force: true }); await page.click('#knowledgeSourceClose'); }
+  });
+  await stage('a late TCP catalog cannot replace HTTP after a second switch', async () => {
+    await page.click('#knowledgeSourcesAdd'); await page.waitForFunction(() => !document.getElementById('knowledgeSourceAdd').disabled);
+    const endpoint = '**/api/knowledge/catalog';
+    let release, finish;
+    const hold = new Promise(resolve => { release = resolve; }), finished = new Promise(resolve => { finish = resolve; });
+    await page.route(endpoint, async route => {
+      if (route.request().postDataJSON().repositoryRoot !== tcp) { await route.continue(); return; }
+      try { const response = await route.fetch(); await hold; await route.fulfill({ response }).catch(() => {}); }
+      finally { finish(); }
+    });
+    try {
+      const requested = page.waitForRequest(req => req.url().endsWith('/api/knowledge/catalog') && req.postDataJSON().repositoryRoot === tcp);
+      await page.selectOption('#knowledgeSourceRepo', tcp); await requested;
+      assert.equal(await page.locator('#knowledgeSourceEntry').isDisabled(), true);
+      assert.equal(await page.locator('#knowledgeSourceFilter option').count(), 0);
+      await page.selectOption('#knowledgeSourceRepo', http); await page.waitForFunction(() => !document.getElementById('knowledgeSourceAdd').disabled);
+      release(); await finished;
+      assert.equal(await page.locator('#knowledgeSourceEntry').inputValue(), map);
+      assert.match(await page.locator('#knowledgeSourceInfo').innerText(), /HTTP文档库/);
+      assert.equal(await page.locator('#knowledgeSourceRefs option[value="refs/tags/sdk-v1"]').count(), 0);
+    } finally { release(); await page.unroute(endpoint); await page.click('#knowledgeSourceClose'); }
   });
   await stage('configure both libraries once, check them together, and preserve the active unsaved editor', async () => {
     await configure(http, map, 'filters/filter_tbd.ditaval', 'HTTP'); await configure(tcp, 'tcp.ditamap', 'g.ditaval', 'TCP');
@@ -72,7 +126,7 @@ test('one publication plan captures real HTTP and a separate Git manual without 
   await stage('fixed tag content is captured without overwriting a dirty working directory', async () => {
     await fs.writeFile(path.join(tcp, tcpPath), tcpBody.replace('AT+TCP_G', 'AT+TCP_G WORKTREE_ONLY'));
     await page.locator('.knowledge-part').filter({ hasText: 'TCP手册' }).getByRole('button', { name: '编辑来源' }).click(); await page.waitForFunction(() => !document.getElementById('knowledgeSourceAdd').disabled);
-    await page.selectOption('#knowledgeSourceMode', 'git'); await page.fill('#knowledgeSourceRevision', 'refs/tags/sdk-v1'); await page.click('#knowledgeSourceReload'); await page.waitForFunction(() => !document.getElementById('knowledgeSourceAdd').disabled); await page.click('#knowledgeSourceAdd');
+    await page.selectOption('#knowledgeSourceMode', 'git'); await page.fill('#knowledgeSourceRevision', 'refs/tags/sdk-v1'); await page.waitForFunction(() => !document.getElementById('knowledgeSourceAdd').disabled); await page.click('#knowledgeSourceAdd');
     await check('#knowledgeBatchRetry'); const files = await archive(), html = strFromU8(files['docs/index.html']), manifest = JSON.parse(strFromU8(files['docs/manifest.json']));
     assert.match(html, /RELEASE_ONLY/); assert.doesNotMatch(html, /WORKTREE_ONLY/); assert.equal(manifest.manuals.find(item => item.title === 'TCP手册').source.commit, release);
     assert.equal(git(tcp, 'branch', '--show-current'), 'main'); assert.match(await fs.readFile(path.join(tcp, tcpPath), 'utf8'), /WORKTREE_ONLY/);
@@ -93,7 +147,7 @@ test('one publication plan captures real HTTP and a separate Git manual without 
   await stage('quick-add cannot silently replace a pinned Git source with working files', async () => {
     const card = page.locator('.knowledge-part').filter({ hasText: 'http_httpsusermanual.ditamap' });
     await card.getByRole('button', { name: '编辑来源' }).click(); await page.waitForFunction(() => !document.getElementById('knowledgeSourceAdd').disabled);
-    await page.selectOption('#knowledgeSourceMode', 'git'); await page.fill('#knowledgeSourceRevision', 'main'); await page.click('#knowledgeSourceReload'); await page.waitForFunction(() => !document.getElementById('knowledgeSourceAdd').disabled); await page.click('#knowledgeSourceAdd');
+    await page.selectOption('#knowledgeSourceMode', 'git'); await page.fill('#knowledgeSourceRevision', 'main'); await page.waitForFunction(() => !document.getElementById('knowledgeSourceAdd').disabled); await page.click('#knowledgeSourceAdd');
     for (const checkbox of await page.locator('#knowledgeSources input').all()) await checkbox.uncheck();
     await page.locator('#knowledgeSources input[value="http_httpsusermanual.ditamap"]').check(); await page.click('#knowledgeAdd');
     assert.match(await page.locator('#knowledgeError').innerText(), /已指定 Git 版本/); assert.match(await card.innerText(), /Git 版本：main/);
@@ -102,7 +156,7 @@ test('one publication plan captures real HTTP and a separate Git manual without 
     assert.equal(await page.locator('#knowledgeSourceDialog').isVisible(), true);
     assert.match(await page.locator('#knowledgeSourceInfo').innerText(), /编辑来源/);
     assert.match(await card.innerText(), /Git 版本：main/); await page.click('#knowledgeSourceClose');
-    await card.getByRole('button', { name: '编辑来源' }).click(); await page.waitForFunction(() => !document.getElementById('knowledgeSourceAdd').disabled); await page.selectOption('#knowledgeSourceMode', 'saved'); await page.click('#knowledgeSourceReload'); await page.waitForFunction(() => !document.getElementById('knowledgeSourceAdd').disabled); await page.click('#knowledgeSourceAdd'); await check('#knowledgeBatchRetry');
+    await card.getByRole('button', { name: '编辑来源' }).click(); await page.waitForFunction(() => !document.getElementById('knowledgeSourceAdd').disabled); await page.selectOption('#knowledgeSourceMode', 'saved'); await page.waitForFunction(() => !document.getElementById('knowledgeSourceAdd').disabled); await page.click('#knowledgeSourceAdd'); await check('#knowledgeBatchRetry');
     assert.equal(await page.locator('#knowledgeDownload').isDisabled(), false);
   });
   await stage('saved plans restore both sources and recapture all without workspace navigation', async () => {
@@ -131,7 +185,7 @@ test('one publication plan captures real HTTP and a separate Git manual without 
       const plan = { ...saved, sources: [{ ...tcpSource, revision: '', branch: 'main', repositoryRoot: 'E:/old-machine/TCP', path: entry, filterPath }] };
       await page.setInputFiles('#knowledgePlanImport', { name: 'moved.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(plan)) });
       await page.locator('.knowledge-part').filter({ hasText: entry }).getByRole('button', { name: '编辑来源' }).click();
-      await page.selectOption('#knowledgeSourceRepo', tcp); await page.click('#knowledgeSourceReload');
+      await page.selectOption('#knowledgeSourceRepo', tcp);
       await page.waitForFunction(() => !document.getElementById('knowledgeSourceAdd').disabled);
       assert.equal(await page.locator('#knowledgeSourceEntry').inputValue(), entry);
       assert.equal(await page.locator('#knowledgeSourceFilter').inputValue(), filterPath);
