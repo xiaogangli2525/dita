@@ -79,3 +79,65 @@ test('SDK retrieval supports aliases, prefix suggestions, definition priority, s
   assert.equal(engine.search(records, index, 'cm_fs_mkdir_nonexistent').length, 0);
   assert.equal(engine.search(records, index, '0', 'oc')[0].position, 1);
 });
+
+
+test('MR380R four-manual benchmark covers natural-language questions, domain synonyms, typos and exact API lookup', () => {
+  const engine = createSearchEngine();
+  // Compact benchmark records distilled from the four supplied manuals.
+  // No full customer manual text is copied into the test fixture.
+  const records = [
+    { manualId: 'sdk', manualTitle: 'SDK开发指导手册', title: '搭建编译环境', text: 'SDK开发包自带编译必需工具，解压至非中文路径完成编译环境搭建。', module: 'SDK开发指导手册' },
+    { manualId: 'sdk', manualTitle: 'SDK开发指导手册', title: '编译SDK', text: 'scons -h 查看帮助，scons target=userapp 编译用户程序。', module: 'SDK开发指导手册' },
+    { manualId: 'sdk', manualTitle: 'SDK开发指导手册', title: '下载固件', text: '下载方式参考对应型号模组的维护诊断工具用户手册。', module: 'SDK开发指导手册' },
+    { manualId: 'sdk', manualTitle: 'SDK开发指导手册', title: '固件下载工具简介', text: '固件下载支持多种工具，不同型号使用适配的下载工具。', module: 'SDK开发指导手册' },
+    { manualId: 'sdk', manualTitle: 'SDK开发指导手册', title: 'LOG抓取', text: '程序调试期间使用USB或UART方式抓取日志，辅助问题分析。', module: 'SDK开发指导手册' },
+    { manualId: 'sdk', manualTitle: 'SDK开发指导手册', title: '死机现场查看', text: '参考维护诊断工具用户手册查看模组死机现场。', module: 'SDK开发指导手册' },
+    { manualId: 'sdk', manualTitle: 'SDK开发指导手册', title: '用户入口函数', text: 'cm_opencpu_entry 系统初始化过程中调用，执行初始化和业务线程创建。', symbols: ['cm_opencpu_entry'], definedSymbols: ['cm_opencpu_entry'], module: 'SDK开发指导手册' },
+    { manualId: 'resource', manualTitle: 'OpenCPU资源综述', title: '内存资源', text: 'RAM最大可用空间可通过cm_mem_get_heap_stats函数查询，包含堆栈空间和文件系统资源。', symbols: ['cm_mem_get_heap_stats'], definedSymbols: ['cm_mem_get_heap_stats'], module: 'OpenCPU资源综述' },
+    { manualId: 'resource', manualTitle: 'OpenCPU资源综述', title: '引脚资源', text: '介绍模组引脚资源、引脚分配、GPIO复用功能和引脚初始电平。', symbols: ['AP_READY', 'SLEEP_IND', 'W_DISABLE'], module: 'OpenCPU资源综述' },
+    { manualId: 'resource', manualTitle: 'OpenCPU资源综述', title: '外设资源', text: 'UART、IIC、GPIO、PWM、SPI接口数量及复用说明。', module: 'OpenCPU资源综述' },
+    { manualId: 'resource', manualTitle: 'OpenCPU资源综述', title: '其他使用说明', text: '驻网时间常规情况约7s到12s，信号差时驻网时间会变长。', module: 'OpenCPU资源综述' },
+    { manualId: 'dialup', manualTitle: '拨号上网开发指导手册', title: '功能介绍', text: '数据拨号模块用于移动网络激活拨号和网络设备管理，提供cm_modem_call、PDP上下文、APN和自动联网功能。', symbols: ['cm_modem_call', 'cm_modem_set_pdp_context', 'cm_modem_set_default_apn'], definedSymbols: ['cm_modem_call', 'cm_modem_set_pdp_context', 'cm_modem_set_default_apn'], module: '拨号上网开发指导手册' },
+    { manualId: 'dialup', manualTitle: '拨号上网开发指导手册', title: 'API说明', text: '具体接口定义查阅cm_modem.h及cm_dialup.h，包含APN和PDP上下文结构体。', symbols: ['cm_modem', 'cm_dialup', 'cm_default_apn_t'], definedSymbols: ['cm_default_apn_t'], module: '拨号上网开发指导手册' },
+    { manualId: 'dialup', manualTitle: '拨号上网开发指导手册', title: '使用示例', text: 'SDK示例程序cm_demo_modem包含pdp_set、call_get和拨号状态回调。', symbols: ['cm_demo_modem'], module: '拨号上网开发指导手册' },
+    { manualId: 'dialup', manualTitle: '拨号上网开发指导手册', title: '调试方法', text: '通过modem pdp_get、pdp_set、call_get、call和discall命令测试数据连接。', module: '拨号上网开发指导手册' },
+    { manualId: 'dialup', manualTitle: '拨号上网开发指导手册', title: '注意事项', text: '默认自动连接，修改APN前建议关闭自动联网，设置PDP上下文后建立数据连接。', module: '拨号上网开发指导手册' },
+    { manualId: 'webui', manualTitle: 'WebUI开发指导手册', title: '前端UI', text: '前端网页视觉展示和基本操作，使用HTML、CSS和JavaScript实现。', module: 'WebUI开发指导手册' },
+    { manualId: 'webui', manualTitle: 'WebUI开发指导手册', title: '后端WebServer', text: '模组后端Web Server使用Mongoose，负责服务端运行逻辑。', module: 'WebUI开发指导手册' },
+    { manualId: 'webui', manualTitle: 'WebUI开发指导手册', title: '前后端交互', text: '前端和后端采用HTTP socket通讯，使用AJAX和XML数据格式交互。', module: 'WebUI开发指导手册' },
+    { manualId: 'webui', manualTitle: 'WebUI开发指导手册', title: '前端定制开发', text: '在xml/ui_mifi.xml添加条目，创建HTML、XML和JS文件完成前端定制。', module: 'WebUI开发指导手册' },
+    { manualId: 'webui', manualTitle: 'WebUI开发指导手册', title: '后端定制开发', text: '在kernel webserver目录和applet_array.c中添加后端模块。', module: 'WebUI开发指导手册' },
+    { manualId: 'webui', manualTitle: 'WebUI开发指导手册', title: '开发示例', text: '通过添加SIM卡管理功能示例展示WebUI开发流程。', module: 'WebUI开发指导手册' }
+  ];
+  const index = engine.build(records);
+  const cases = [
+    ['模块上不了网', '功能介绍'],
+    ['怎么烧录固件', '下载固件'],
+    ['编译环景', '搭建编译环境'],
+    ['抓取日志', 'LOG抓取'],
+    ['死机现场怎么查', '死机现场查看'],
+    ['查看剩余内存', '内存资源'],
+    ['可用内存', '内存资源'],
+    ['网页怎么定制', '前端定制开发'],
+    ['后台服务在哪', '后端WebServer'],
+    ['前后端怎么通信', '前后端交互'],
+    ['网络注册要多久', '其他使用说明'],
+    ['cm_modem_call', '功能介绍'],
+    ['cm_modem_cali', '功能介绍'],
+    ['cm_mem_get_heap_stats', '内存资源'],
+    ['APN怎么设置', '功能介绍'],
+    ['PDP数据连接如何激活', '功能介绍'],
+    ['怎么查看有哪些GPIO引脚', '引脚资源'],
+    ['串口和SPI接口有多少', '外设资源'],
+    ['如何添加SIM卡管理页面', '开发示例'],
+    ['如何关闭自动联网', '注意事项']
+  ];
+  const misses = [];
+  for (const [query, expectedTitle] of cases) {
+    const hits = engine.search(records, index, query, '', 5);
+    if (hits[0]?.position == null || records[hits[0].position]?.title !== expectedTitle) {
+      misses.push({ query, expectedTitle, actual: hits.slice(0, 3).map(hit => records[hit.position]?.title) });
+    }
+  }
+  assert.deepEqual(misses, [], 'Every natural-language benchmark query should rank its expected chapter first');
+});
