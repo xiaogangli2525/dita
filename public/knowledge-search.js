@@ -4,7 +4,26 @@
   const retrieval = typeof module !== 'undefined' ? require('./knowledge-retrieval') : root.DitaKnowledgeRetrieval;
   /** @param {ReturnType<typeof retrieval.createSdkSearch>} [sdk] */
   function createSearchEngine(sdk = retrieval.createSdkSearch()) {
-    const options = {};
+    const options = {
+      dictionary: [
+        '数据拨号', 'PDP', 'APN', '自动联网', '引脚分配', '引脚资源', '外设资源', '内存资源',
+        'WebUI', 'WebServer', '前端定制开发', '后端定制开发', '前后端交互', '编译环境',
+        '固件下载', '下载固件', 'LOG抓取', '死机现场查看', '驻网时间', '用户入口函数',
+        'cm_modem_call', 'cm_modem_set_pdp_context', 'cm_mem_get_heap_stats'
+      ],
+      synonyms: {
+        '模块上不了网': '数据拨号', '为什么不能上网': '数据拨号', '无法上网': '数据拨号',
+        '上不了网': '数据拨号', '不能上网': '数据拨号',
+        '怎么烧录固件': '下载固件', '烧录固件': '下载固件', '怎么刷机': '下载固件',
+        '固件下栽': '下载固件', '编译环景': '编译环境', '引脚分佩': '引脚分配',
+        '抓取日志': 'LOG抓取', '抓日志': 'LOG抓取',
+        '死机现场怎么查': '死机现场查看', '死机后怎么看现场': '死机现场查看',
+        '查看剩余内存': '内存资源', '可用内存': '内存资源',
+        '网页怎么定制': '前端定制开发', '怎么定制网页': '前端定制开发',
+        '后台服务在哪': '后端WebServer', '前后端怎么通信': '前后端交互',
+        '网络注册要多久': '驻网时间'
+      }
+    };
     /** @type {WeakMap<object, {records: readonly import('./knowledge-contracts').SearchRecord[], api: import('./knowledge-retrieval').SdkEngine}>} */
     const cached = new WeakMap();
     /** @param {string} text @param {boolean} [_question] */
