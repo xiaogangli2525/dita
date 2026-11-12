@@ -7,9 +7,33 @@
     "target": "ES2023",
     "module": "Node16",
     "moduleResolution": "Node16",
-    "lib": ["ES2023", "DOM"],
-    "types": ["node"],
+    "lib": [
+      "ES2023",
+      "DOM"
+    ],
+    "types": [
+      "node"
+    ],
     "skipLibCheck": false
   },
-  "files": ["types/browser.d.ts", "types/boundaries.test.ts", "types/ai-boundaries.test.ts", "types/review-boundaries.test.ts", "public/ai-conversation.js", "lib/ai-provider.js", "public/document-store.js", "public/save.js", "public/snapshot-data.js", "public/manual-service.js", "public/delivery-data.js", "public/review-session.js", "public/review-store.js"]
+  "files": [
+    "types/browser.d.ts",
+    "types/boundaries.test.ts",
+    "types/ai-boundaries.test.ts",
+    "types/review-boundaries.test.ts",
+    "public/ai-conversation.js",
+    "lib/ai-provider.js",
+    "public/document-store.js",
+    "public/save.js",
+    "public/snapshot-data.js",
+    "public/manual-service.js",
+    "public/delivery-data.js",
+    "public/review-session.js",
+    "public/review-store.js",
+    "types/knowledge-boundaries.test.ts",
+    "public/knowledge-search.js",
+    "public/knowledge-plan.js",
+    "public/knowledge-package.js",
+    "public/knowledge-zip.js"
+  ]
 }

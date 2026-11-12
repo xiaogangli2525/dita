@@ -10,7 +10,7 @@ A lightweight local web client for reading, editing, reviewing, and exporting DI
 - [AI 辅助写作](docs/ai-editing.md)：模型配置、粘贴问题定位、选区修订、审核与撤销。
 - [AI 文字修订规则](docs/ai-writing-rules.md)：每轮默认发送给模型的执行与保留规则。
 - [真实 HTTP 手册 AI 验收](docs/ai-acceptance.md)：13 项用例预检、已配置模型的实测和报告判读。
-- [随 SDK 交付知识库计划](docs/knowledge-base-plan.md)：已记录的后续方向，暂缓实施。
+- [离线知识库发布](docs/knowledge-base.md)：组合多仓库手册，按型号生成可搜索的 SDK 离线文档包。
 - [企业 PDF 模板](docs/enterprise-template-plan.md)：可替换模板包、封面、页眉页脚、水印、导入分享与交付追溯；Word 企业版式待接入。
 
 ## Writing workflow
