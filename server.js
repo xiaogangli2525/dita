@@ -113,41 +113,8 @@ function resolveHref(mapPath, href) {
   return relative;
 }
 
-function mapRefTitle(node, fallback) {
-  const title = childElement(node, 'title');
-  const topicmeta = childElement(node, 'topicmeta');
-  const navtitle = topicmeta ? childElement(topicmeta, 'navtitle') : null;
-  return (navtitle && textOf(navtitle).trim()) || (title && textOf(title).trim()) || node.attrs.navtitle || fallback;
-}
-
-function mapNodeToTree(node, mapPath, sourcePath = '', processingRole = 'normal') {
-  processingRole = node.attrs['processing-role'] || processingRole;
-  const tree = [];
-  let childIndex = -1;
-  for (const child of node.children) {
-    if (child.type === 'element') {
-      childIndex++;
-      const refNames = ['topicref', 'topichead', 'topicgroup', 'chapter', 'appendix', 'notices', 'preface', 'part', 'frontmatter', 'backmatter', 'booklists'];
-      if (refNames.includes(child.name)) {
-        const childSourcePath = sourcePath ? `${sourcePath}.${childIndex}` : String(childIndex);
-        const childRole = child.attrs['processing-role'] || processingRole;
-        const children = mapNodeToTree(child, mapPath, childSourcePath, childRole);
-        const href = child.attrs.href ? resolveHref(mapPath, child.attrs.href) : null;
-        const fallback = href ? path.basename(href) : (children.length ? child.name : child.name);
-        const entry = {
-          type: href ? 'file' : 'container',
-          title: mapRefTitle(child, fallback),
-          path: href || child.attrs.href || '',
-          sourcePath: childSourcePath,
-          processingRole: childRole,
-          children
-        };
-        if (href || children.length || !child.attrs.href) tree.push(entry);
-      }
-    }
-  }
-  return tree;
-}
+const mapReader = require('./lib/map-reader').createMapReader(resolveHref);
+const mapRefTitle = mapReader.title, mapNodeToTree = mapReader.children;
 
 function locateMapNode(root, sourcePath) {
   if (sourcePath === '' || sourcePath == null) return root;
@@ -370,10 +337,10 @@ const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
     if (url.pathname.startsWith('/api/')) {
-      // AI works only on the submitted immutable source, performs no workspace
-      // IO, and verifies its token again on completion. Do not hold a workspace
-      // read/write lock during a potentially slow upstream model request.
-      if (['/api/ai/propose', '/api/ai/scan', '/api/ai/config'].includes(url.pathname)) {
+      // AI input is immutable; knowledge reads bind their own repository and
+      // source version. Neither operation needs the active workspace IO lock.
+      // Both still pass the shared origin/token guard in handleApi.
+      if (url.pathname.startsWith('/api/knowledge/') || ['/api/ai/propose', '/api/ai/scan', '/api/ai/config'].includes(url.pathname)) {
         await handleApi(req, res, url.pathname, url.searchParams); return;
       }
       await workspaceLock(req.method !== 'GET' && url.pathname !== '/api/export/pdf', () => handleApi(req, res, url.pathname, url.searchParams));

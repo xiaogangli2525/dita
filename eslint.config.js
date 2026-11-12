@@ -19,6 +19,7 @@ const reviewMutations = [
 ];
 const renderingBoundaries = [
   { names: ['knowledge-retrieval', 'knowledge-plan', 'knowledge-metadata', 'knowledge-zip'], imports: [] },
+  { names: ['knowledge-source-data'], imports: ['snapshot-data'] },
   { names: ['knowledge-search'], imports: ['knowledge-retrieval'] },
   { names: ['knowledge-package'], imports: ['knowledge-reader', 'knowledge-search', 'knowledge-zip'] },
   { names: ['knowledge-document'], imports: [] },

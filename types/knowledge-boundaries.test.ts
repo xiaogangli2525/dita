@@ -23,3 +23,12 @@ declare const plan: KnowledgePlan;
 plan.sources[0].filterPath = 'other.ditaval';
 // @ts-expect-error A persisted plan cannot contain a mutable HTML snapshot.
 createPlanStore(null).save({ ...plan, html: '<html>' });
+
+import { hydrate } from '../public/knowledge-source-data';
+import type { KnowledgeBundle } from '../public/knowledge-contracts';
+declare const bundle: KnowledgeBundle;
+hydrate(bundle);
+// @ts-expect-error A captured source hash is immutable.
+bundle.receipt.files[0].sha256 = 'changed';
+// @ts-expect-error A Git revision is text, not an options object.
+createPlanStore(null).save({ ...plan, sources: [{ ...plan.sources[0], revision: { branch: 'main' } }] });

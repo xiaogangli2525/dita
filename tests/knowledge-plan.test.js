@@ -9,6 +9,7 @@ function memory() {
 }
 test('publication plans round-trip only validated settings, including Windows roots and metadata', () => {
   const value = plan(); value.sources[0].overrides = { 'topics/a.dita': { fingerprint: 'sha', kind: 'reference', aliases: ['配置连接'], definedSymbols: ['AT+CONFIG'] } };
+  const fixed = normalizePlan({ ...value, sources: [{ ...source(), revision: 'refs/tags/sdk-v1' }] }); assert.equal(fixed.sources[0].revision, 'refs/tags/sdk-v1');
   const clean = normalizePlan({ ...value, html: 'private raw content', apiKey: 'secret' });
   assert.deepEqual(JSON.parse(JSON.stringify(clean)), value); assert.doesNotMatch(JSON.stringify(clean), /secret|raw content/);
   for (const bad of [{ sources: [{ ...source(), path: '../private' }] }, { sources: [{ ...source(), filterPath: 'C:/private' }] }, { sources: [{ ...source(), mode: 'invented' }] }, { sources: [source(), source()] }, { id: '../bad' }, { schema: 99 }]) assert.throws(() => normalizePlan({ ...value, ...bad }));

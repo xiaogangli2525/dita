@@ -1,8 +1,9 @@
 'use strict';
 (function (root) {
   function createController(A) {
-    const get = id => document.getElementById(id), parts = new Map(), recipes = new Map(), preferences = new Map(), capture = root.DitaKnowledgeCapture.createCapture(A);
+    const get = id => document.getElementById(id), parts = new Map(), recipes = new Map(), preferences = new Map(), sourceStates = new Map(), capture = root.DitaKnowledgeCapture.createCapture(A);
     let busy = false, loading = false, filterFailed = false, operation = 0, abort, compiled = null, chosenModel = '', preferenceKey = '';
+    const batchCapture = root.DitaKnowledgeBatch.createBatchCapture(A);
     const workspaceKey = () => JSON.stringify([A.state.root, A.state.currentBranch || '']);
     const sourceKey = (root, path) => JSON.stringify([root, path]);
     const error = text => { get('knowledgeError').textContent = text; }, status = text => { get('knowledgeStatus').textContent = text; };
@@ -16,7 +17,7 @@
     function read() { return { title: get('knowledgeTitle').value, model: chosenModel || get('knowledgeModel').value.trim(), sdkVersion: get('knowledgeSdk').value, sources: [...recipes.values()] }; }
     function restore(plan) {
       if (busy) throw Error('请等待当前加入操作完成');
-      parts.clear(); recipes.clear(); preferences.clear(); for (const recipe of plan.sources) recipes.set(sourceKey(recipe.repositoryRoot, recipe.path), recipe);
+      parts.clear(); recipes.clear(); preferences.clear(); sourceStates.clear(); for (const recipe of plan.sources) recipes.set(sourceKey(recipe.repositoryRoot, recipe.path), recipe);
       chosenModel = plan.sources.length ? plan.model : ''; get('knowledgeModel').value = plan.model; get('knowledgeTitle').value = plan.title; get('knowledgeSdk').value = plan.sdkVersion;
       invalidate(); renderCollection(); if (get('knowledgeDialog').open) void refreshSources();
     }
@@ -24,10 +25,23 @@
     const metadata = root.DitaKnowledgeMetadataUI.createMetadataUI({ get, error, save(key, overrides) {
       const recipe = recipes.get(key); recipe.overrides = overrides; invalidate(); renderCollection();
     } });
+    const sources = root.DitaKnowledgeSources.createSourcesUI({ A, get, error, status, add(recipe, old) {
+      if (busy) throw Error('请等待当前核对完成');
+      const model = chosenModel || get('knowledgeModel').value.trim();
+      if (!/^[\p{L}\p{N}][\p{L}\p{N}._-]{0,79}$/u.test(model)) throw Error('请先在发布窗口填写具体交付型号');
+      const clean = root.DitaKnowledgePlan.normalizePlan({ schema: 1, id: 'draft', title: get('knowledgeTitle').value, model, sdkVersion: get('knowledgeSdk').value, sources: [recipe] }).sources[0];
+      const key = sourceKey(clean.repositoryRoot, clean.path), previous = old && sourceKey(old.repositoryRoot, old.path);
+      if (previous && previous !== key && recipes.has(key)) throw Error('方案中已有此仓库的相同入口，请先移除重复项');
+      if (!recipes.has(key) && recipes.size - (previous ? 1 : 0) >= 30) throw Error('最多组合 30 份手册');
+      if (previous && previous !== key) { recipes.delete(previous); parts.delete(previous); sourceStates.delete(previous); }
+      const existing = recipes.get(key); recipes.set(key, { ...clean, overrides: old?.overrides || existing?.overrides || clean.overrides });
+      parts.delete(key); sourceStates.delete(key); chosenModel = model; invalidate(); renderCollection();
+    } });
     function readyParts() { return [...recipes].map(([key, recipe]) => parts.has(key) ? root.DitaKnowledgeMetadata.applyMetadata(parts.get(key), recipe) : null); }
     function controls() {
-      for (const id of ['knowledgeTitle', 'knowledgeSdk', 'knowledgeVersion', 'knowledgeFilter', 'knowledgePrefixes', 'knowledgeMode', 'knowledgeModule', 'knowledgePlan', 'knowledgePlanSave', 'knowledgePlanLoad', 'knowledgePlanNew', 'knowledgePlanExport', 'knowledgePlanImport']) get(id).disabled = busy;
+      for (const id of ['knowledgeTitle', 'knowledgeSdk', 'knowledgeVersion', 'knowledgeFilter', 'knowledgePrefixes', 'knowledgeMode', 'knowledgeModule', 'knowledgePlan', 'knowledgePlanSave', 'knowledgePlanLoad', 'knowledgePlanNew', 'knowledgePlanExport', 'knowledgePlanImport', 'knowledgeSourcesAdd', 'knowledgeBatchCheck', 'knowledgeBatchRetry']) get(id).disabled = busy;
       get('knowledgeAdd').disabled = busy || loading || filterFailed; get('knowledgeFilter').disabled = busy || loading;
+      get('knowledgeBatchCheck').disabled = busy || loading || !recipes.size; get('knowledgeBatchRetry').disabled = busy || loading || ![...recipes.keys()].some(key => !parts.has(key)); get('knowledgeBatchCancel').hidden = !busy;
       get('knowledgeModel').disabled = busy || recipes.size > 0;
       const ready = recipes.size > 0 && readyParts().every(part => part && !part.staleMetadata.length);
       get('knowledgePreview').disabled = busy || !ready; get('knowledgeDownload').disabled = busy || !ready; get('knowledgeClear').disabled = busy || !recipes.size;
@@ -41,18 +55,16 @@
       for (const [key, recipe] of recipes) {
         const raw = parts.get(key), part = raw && root.DitaKnowledgeMetadata.applyMetadata(raw, recipe);
         const card = document.createElement('article'), title = document.createElement('strong'), source = document.createElement('small'), details = document.createElement('p'), actions = document.createElement('div');
-        card.className = 'knowledge-part'; title.textContent = recipe.title;
+        card.className = 'knowledge-part'; card.dataset.sourceState = sourceStates.get(key)?.state || (part ? 'success' : 'pending'); title.textContent = recipe.title;
         source.textContent = recipe.repository + (recipe.branch ? ' @ ' + recipe.branch : '') + ' · ' + recipe.path;
         details.textContent = (part ? '已核对 · ' + part.entries.length + ' 章节 · ' + part.report.included + ' 注脚' : '待重新核对来源') + ' · ' + (recipe.version || '未填文档版本') + ' · ' + (recipe.mode === 'other' ? '通用' : recipe.mode) + ' / ' + (recipe.module || recipe.title);
-        const policy = document.createElement('small'); policy.textContent = '正文：' + (recipe.filterPath || '不过滤') + '；注脚：' + (recipe.prefixes ? '明确型号前缀筛选' : '独立规则') + (part ? '；核对于 ' + new Date(part.capturedAt).toLocaleString('zh-CN', { hour12: false }) : '');
+        const policy = document.createElement('small'); policy.textContent = (recipe.revision ? 'Git 版本：' + recipe.revision + '；' : '来源：已保存文件；') + '正文：' + (recipe.filterPath || '不过滤') + '；注脚：' + (recipe.prefixes ? '明确型号前缀筛选' : '独立规则') + (part ? '；核对于 ' + new Date(part.capturedAt).toLocaleString('zh-CN', { hour12: false }) : '');
         if (part?.staleMetadata.length) details.textContent += ' · 检索属性已过期，需核对';
         if (part?.report.unmarked) details.textContent += ' · ' + part.report.unmarked + ' 条未标适用范围（按交付策略保留）';
         if (part?.report.oxygenRevisions) details.textContent += ' · 含 ' + part.report.oxygenRevisions + ' 处 Oxygen 修订，请核对发布内容';
         function action(label, handler) { const button = document.createElement('button'); button.type = 'button'; button.textContent = label; button.addEventListener('click', handler); actions.append(button); }
-        action('核对来源', () => {
-          if (workspaceKey() !== JSON.stringify([recipe.repositoryRoot, recipe.branch])) { status('请关闭发布窗口，切换至文档库“' + recipe.repository + '”' + (recipe.branch ? '的 ' + recipe.branch + ' 分支' : '') + '，再打开本方案核对。'); return; }
-          preferences.set(workspaceKey(), { ...recipe, paths: [recipe.path] }); void refreshSources(); status('已载入此手册的发布条件，点击“加入／更新手册”重新核对。');
-        });
+        action(part ? '重新核对' : '核对来源', () => batch([key]));
+        action('编辑来源', () => sources.show(recipe));
         if (workspaceKey() !== JSON.stringify([recipe.repositoryRoot, recipe.branch])) action('关联当前库', () => {
           const next = sourceKey(A.state.root, recipe.path);
           if (next !== key && recipes.has(next)) { error('当前库已有相同入口，请先移除重复项再关联。'); return; }
@@ -61,8 +73,9 @@
           preferences.delete(workspaceKey()); invalidate(); renderCollection(); void refreshSources(); status('来源已关联当前文档库，请核对路径和过滤条件后重新加入。');
         });
         if (part) action('检索属性', () => metadata.show(key, raw, recipe));
-        action('移除', () => { parts.delete(key); recipes.delete(key); if (!recipes.size) chosenModel = ''; invalidate(); renderCollection(); });
-        actions.className = 'knowledge-part-actions'; card.append(title, source, details, policy, actions); list.append(card);
+        action('移除', () => { parts.delete(key); recipes.delete(key); sourceStates.delete(key); if (!recipes.size) chosenModel = ''; invalidate(); renderCollection(); });
+        const progress = document.createElement('p'); progress.className = 'knowledge-source-state'; progress.textContent = sourceStates.get(key)?.message || '';
+        actions.className = 'knowledge-part-actions'; card.append(title, source, details, policy, progress, actions); list.append(card);
       }
       controls();
     }
@@ -102,7 +115,7 @@
       get('knowledgeModels').replaceChildren(...[...models].map(value => new Option(value, value)));
       get('knowledgeDialog').showModal(); renderCollection(); await refreshSources();
     }
-    function cancel() { remember(); abort?.abort(); operation++; busy = false; loading = false; controls(); }
+    function cancel() { remember(); abort?.abort(); operation++; for (const [key, value] of sourceStates) if (!parts.has(key) && value.state !== 'error') sourceStates.set(key, { state: 'pending', message: '已取消，需重新核对' }); busy = false; loading = false; controls(); }
     async function add() {
       if (busy || loading || filterFailed) return;
       const model = get('knowledgeModel').value.trim(), version = get('knowledgeVersion').value.trim();
@@ -127,11 +140,44 @@
           const key = sourceKey(repositoryRoot, path), old = recipes.get(key);
           recipes.set(key, { repositoryRoot, branch, repository: part.source.repository, path, title: part.title, version, filterPath: settings.filterPath, prefixes: settings.prefixes,
             mode: settings.mode, module: settings.module, overrides: old?.overrides || {}, previous: { htmlSha256: part.htmlSha256, capturedAt: part.capturedAt } });
-          parts.set(key, part);
+          parts.set(key, part); sourceStates.delete(key);
         }
         chosenModel = model; invalidate(); renderCollection(); status('已加入 ' + staged.length + ' 份手册快照，可预览或继续添加。');
       } catch (cause) { if (generation === operation) { error(cause.message); status('加入未完成，已添加的其它手册仍保留。'); } }
       finally { if (generation === operation) { busy = false; controls(); } }
+    }
+    async function batch(keys = [...recipes.keys()]) {
+      if (busy || !keys.length) return;
+      if (loading) { status('来源列表正在读取，请稍后核对。'); return; }
+      const generation = ++operation, workspace = A.api.token, staged = new Map(); abort = new AbortController(); const signal = abort.signal;
+      busy = true; error(''); invalidate();
+      for (const key of keys) { parts.delete(key); sourceStates.set(key, { state: 'pending', message: '等待核对' }); }
+      renderCollection();
+      const active = () => generation === operation && workspace === A.api.token && !signal.aborted;
+      try {
+        for (const [index, key] of keys.entries()) {
+          if (!active()) return;
+          const recipe = recipes.get(key); sourceStates.set(key, { state: 'running', message: '正在读取与检查来源…' }); renderCollection();
+          status('正在核对 ' + (index + 1) + '/' + keys.length + ' · ' + recipe.repository + ' / ' + recipe.title);
+          try {
+            const result = await batchCapture.collect(recipe, chosenModel, signal); if (!active()) return;
+            staged.set(key, result); sourceStates.set(key, { state: 'success', message: '内容检查通过，等待整批来源复核' });
+          } catch (cause) { if (!active()) return; sourceStates.set(key, { state: 'error', message: cause.message }); }
+          renderCollection();
+        }
+        for (const [key, result] of staged) {
+          if (!active()) return;
+          try { await result.verify(); if (!active()) return; }
+          catch (cause) { if (!active()) return; sourceStates.set(key, { state: 'error', message: cause.message }); staged.delete(key); }
+        }
+        if (!active()) return;
+        for (const [key, { part }] of staged) {
+          parts.set(key, part); const recipe = recipes.get(key); recipes.set(key, { ...recipe, title: part.title, previous: { htmlSha256: part.htmlSha256, capturedAt: part.capturedAt } });
+          sourceStates.set(key, { state: 'success', message: '已核对 · ' + (part.source.commit?.slice(0, 8) || '无提交信息') + (part.source.dirty ? ' · 含已保存但未提交内容' : '') });
+        }
+        const failures = keys.length - staged.size;
+        status('核对完成：' + staged.size + '/' + keys.length + ' 份通过' + (failures ? '，' + failures + ' 份需处理，可编辑来源后重试未完成项。' : '。所有来源就绪后，可预览并统一导出。'));
+      } finally { if (generation === operation) { busy = false; invalidate(); renderCollection(); } }
     }
     function build() {
       const manuals = readyParts(); if (!manuals.length || manuals.some(part => !part)) throw Error('请先重新核对所有手册来源');
@@ -147,12 +193,16 @@
       try { error(''); const output = build(); A.downloadText(output.zip, output.filename, 'application/zip'); status('已发起下载：' + output.filename + '；解压后打开 docs/index.html。'); A.setStatus('离线知识库已生成：' + output.filename); }
       catch (cause) { error(cause.message); }
     }
+    get('knowledgeSourcesAdd').addEventListener('click', () => sources.show());
+    get('knowledgeBatchCheck').addEventListener('click', () => batch());
+    get('knowledgeBatchRetry').addEventListener('click', () => batch([...recipes.keys()].filter(key => !parts.has(key))));
+    get('knowledgeBatchCancel').addEventListener('click', () => { cancel(); renderCollection(); status('已取消核对，未完成来源需重新核对后发布。'); });
     get('knowledgeButton').addEventListener('click', show); get('knowledgeAdd').addEventListener('click', add);
     get('knowledgeClose').addEventListener('click', () => { cancel(); get('knowledgeDialog').close(); }); get('knowledgeDialog').addEventListener('cancel', cancel);
     get('knowledgePreview').addEventListener('click', preview); get('knowledgeDownload').addEventListener('click', download);
     get('knowledgePreviewClose').addEventListener('click', () => get('knowledgePreviewDialog').close());
     get('knowledgePreviewDialog').addEventListener('close', () => { get('knowledgePreviewFrame').srcdoc = ''; });
-    get('knowledgeClear').addEventListener('click', () => { parts.clear(); recipes.clear(); chosenModel = ''; invalidate(); renderCollection(); status('发布集合已清空。'); });
+    get('knowledgeClear').addEventListener('click', () => { parts.clear(); recipes.clear(); sourceStates.clear(); chosenModel = ''; invalidate(); renderCollection(); status('发布集合已清空。'); });
     for (const id of ['knowledgeTitle', 'knowledgeSdk']) get(id).addEventListener('input', invalidate);
     for (const id of ['knowledgeVersion', 'knowledgePrefixes', 'knowledgeMode', 'knowledgeModule']) get(id).addEventListener('change', remember);
     get('knowledgeFilter').addEventListener('change', () => { if (busy || loading || !get('knowledgeFilter').options.length || get('knowledgeFilter').selectedOptions[0]?.disabled) return; filterFailed = false; remember(); controls(); error(''); });
