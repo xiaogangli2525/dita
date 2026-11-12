@@ -7,6 +7,8 @@
     const workspaceKey = () => JSON.stringify([A.state.root, A.state.currentBranch || '']);
     const sourceKey = (root, path) => JSON.stringify([root, path]);
     const error = text => { get('knowledgeError').textContent = text; }, status = text => { get('knowledgeStatus').textContent = text; };
+    const validModel = model => /^[\p{L}\p{N}][\p{L}\p{N}._-]{0,79}$/u.test(model);
+    const sameQuickSettings = (left, right) => ['filterPath', 'prefixes', 'version', 'mode', 'module'].every(field => left[field] === right[field]);
     function invalidate() { compiled = null; }
     function remember() {
       if (!preferenceKey || loading || filterFailed) return;
@@ -17,6 +19,8 @@
     function read() { return { title: get('knowledgeTitle').value, model: chosenModel || get('knowledgeModel').value.trim(), sdkVersion: get('knowledgeSdk').value, sources: [...recipes.values()] }; }
     function restore(plan) {
       if (busy) throw Error('请等待当前加入操作完成');
+      if (plan.sources.length && !validModel(plan.model)) throw Error('包含手册来源的方案须填写有效的交付型号，例如 ML307G。');
+      error('');
       parts.clear(); recipes.clear(); preferences.clear(); sourceStates.clear(); for (const recipe of plan.sources) recipes.set(sourceKey(recipe.repositoryRoot, recipe.path), recipe);
       chosenModel = plan.sources.length ? plan.model : ''; get('knowledgeModel').value = plan.model; get('knowledgeTitle').value = plan.title; get('knowledgeSdk').value = plan.sdkVersion;
       invalidate(); renderCollection(); if (get('knowledgeDialog').open) void refreshSources();
@@ -28,7 +32,7 @@
     const sources = root.DitaKnowledgeSources.createSourcesUI({ A, get, error, status, add(recipe, old) {
       if (busy) throw Error('请等待当前核对完成');
       const model = chosenModel || get('knowledgeModel').value.trim();
-      if (!/^[\p{L}\p{N}][\p{L}\p{N}._-]{0,79}$/u.test(model)) throw Error('请先在发布窗口填写具体交付型号');
+      if (!validModel(model)) throw Error('请先在发布窗口填写具体交付型号');
       const clean = root.DitaKnowledgePlan.normalizePlan({ schema: 1, id: 'draft', title: get('knowledgeTitle').value, model, sdkVersion: get('knowledgeSdk').value, sources: [recipe] }).sources[0];
       const key = sourceKey(clean.repositoryRoot, clean.path), previous = old && sourceKey(old.repositoryRoot, old.path);
       if (key !== previous && recipes.has(key)) throw Error('方案中已有此仓库的相同入口，请通过已有卡片“编辑来源”。');
@@ -45,7 +49,7 @@
       get('knowledgeModel').disabled = busy || recipes.size > 0;
       const ready = recipes.size > 0 && readyParts().every(part => part && !part.staleMetadata.length);
       get('knowledgePreview').disabled = busy || !ready; get('knowledgeDownload').disabled = busy || !ready; get('knowledgeClear').disabled = busy || !recipes.size;
-      for (const input of get('knowledgeSources').querySelectorAll('input')) input.disabled = busy;
+      for (const input of get('knowledgeSources').querySelectorAll('input')) input.disabled = busy || loading;
       for (const button of get('knowledgeCollection').querySelectorAll('button')) button.disabled = busy;
     }
     function renderCollection() {
@@ -79,6 +83,28 @@
       }
       controls();
     }
+    function quickFields(pref) {
+      get('knowledgeVersion').value = pref.version || ''; get('knowledgePrefixes').checked = !!pref.prefixes;
+      get('knowledgeMode').value = pref.mode || 'other'; get('knowledgeModule').value = pref.module || '';
+    }
+    function quickFilter(path = '') {
+      const select = get('knowledgeFilter');
+      for (const option of [...select.options]) if (option.disabled) option.remove();
+      filterFailed = ![...select.options].some(option => option.value === path);
+      if (filterFailed) {
+        const missing = new Option('原条件文件不存在 · ' + path, path); missing.disabled = true; select.add(missing);
+        error('原方案条件文件不存在：' + path + '。请明确选择新条件后再加入。');
+      }
+      select.value = path;
+    }
+    function onQuickSelection() {
+      const checked = get('knowledgeSources').querySelectorAll('input:checked');
+      const recipe = checked.length === 1 && recipes.get(sourceKey(A.state.root, checked[0].value));
+      if (recipe && !recipe.revision && recipe.branch === (A.state.currentBranch || '') && get('knowledgeFilter').options.length && !loading) {
+        error(''); quickFields(recipe); quickFilter(recipe.filterPath); controls();
+      }
+      remember();
+    }
     function sourceChoices(pref) {
       const list = get('knowledgeSources'); list.replaceChildren();
       get('knowledgeRepository').textContent = A.state.root.split(/[\\/]/).filter(Boolean).pop() || '当前文档库';
@@ -88,25 +114,24 @@
       for (const entry of paths) {
         const label = document.createElement('label'), input = document.createElement('input'), text = document.createElement('span'), small = document.createElement('small');
         input.type = 'checkbox'; input.value = entry.path; input.checked = pref.paths ? pref.paths.includes(entry.path) : entry.path === A.manual.scopePath();
-        input.addEventListener('change', remember); text.textContent = entry.title; small.textContent = entry.path; text.append(small); label.append(input, text); list.append(label);
+        input.addEventListener('change', onQuickSelection); text.textContent = entry.title; small.textContent = entry.path; text.append(small); label.append(input, text); list.append(label);
       }
       if (!paths.length) list.textContent = '请先加载文档库或打开一个主题。';
     }
     async function refreshSources() {
       const generation = ++operation, workspace = A.api.token; preferenceKey = workspaceKey();
-      const recipe = [...recipes.values()].find(item => !item.revision && item.repositoryRoot === A.state.root && item.branch === (A.state.currentBranch || ''));
-      const pref = preferences.get(preferenceKey) || (recipe ? { ...recipe, paths: [...recipes.values()].filter(item => !item.revision && item.repositoryRoot === recipe.repositoryRoot && item.branch === recipe.branch).map(item => item.path) } : {});
-      sourceChoices(pref); get('knowledgeVersion').value = pref.version || ''; get('knowledgePrefixes').checked = !!pref.prefixes;
-      get('knowledgeMode').value = pref.mode || 'other'; get('knowledgeModule').value = pref.module || '';
+      const local = [...recipes.values()].filter(item => !item.revision && item.repositoryRoot === A.state.root && item.branch === (A.state.currentBranch || ''));
+      const recipe = local[0];
+      const pref = preferences.get(preferenceKey) || (recipe ? { ...recipe, paths: local.filter(item => sameQuickSettings(item, recipe)).map(item => item.path) } : {});
+      sourceChoices(pref); quickFields(pref);
       get('knowledgeFilter').replaceChildren(new Option('正在加载条件文件…', '')); loading = true; filterFailed = false; controls();
       const current = () => generation === operation && workspace === A.api.token && get('knowledgeDialog').open;
       try {
         const filters = await A.manual.listFilters(); if (!current()) return;
         get('knowledgeFilter').replaceChildren(new Option('不过滤正文', ''));
         for (const path of filters.files) get('knowledgeFilter').add(new Option((filters.descriptions?.[path] || '条件文件') + ' · ' + path, path));
-        if (pref.filterPath && !filters.files.includes(pref.filterPath)) { get('knowledgeFilter').add(new Option('原条件文件不存在 · ' + pref.filterPath, pref.filterPath)); get('knowledgeFilter').value = pref.filterPath; get('knowledgeFilter').selectedOptions[0].disabled = true; throw Error('原方案条件文件不存在：' + pref.filterPath + '。请明确选择新条件后再加入。'); }
-        get('knowledgeFilter').value = pref.filterPath || ''; loading = false; controls();
-      } catch (cause) { if (current()) { error('条件文件读取失败，暂不能加入手册：' + cause.message); loading = false; filterFailed = true; controls(); } }
+        quickFilter(pref.filterPath); loading = false; controls();
+      } catch (cause) { if (current()) { get('knowledgeFilter').replaceChildren(); error('条件文件读取失败，暂不能加入手册：' + cause.message); loading = false; filterFailed = true; controls(); } }
     }
     async function show() {
       if (busy) return;
@@ -120,9 +145,12 @@
       if (busy || loading || filterFailed) return;
       const model = get('knowledgeModel').value.trim(), version = get('knowledgeVersion').value.trim();
       const paths = [...get('knowledgeSources').querySelectorAll('input:checked')].map(input => input.value);
-      if (!/^[\p{L}\p{N}][\p{L}\p{N}._-]{0,79}$/u.test(model)) { error('请填写具体型号，例如 ML307G。'); return; }
+      if (!validModel(model)) { error('请填写具体型号，例如 ML307G。'); return; }
       if (!paths.length) { error('请至少选择一份手册。'); return; }
-      if (paths.some(path => recipes.get(sourceKey(A.state.root, path))?.revision)) { error('此入口已指定 Git 版本，请通过卡片“编辑来源”更改读取方式，或直接重新核对指定版本。'); return; }
+      const existing = paths.map(path => recipes.get(sourceKey(A.state.root, path))).filter(Boolean);
+      if (existing.some(recipe => recipe.revision)) { error('此入口已指定 Git 版本，请通过卡片“编辑来源”更改读取方式，或直接重新核对指定版本。'); return; }
+      if (existing.some(recipe => recipe.branch !== (A.state.currentBranch || ''))) { error('此入口已绑定其它分支，请通过卡片“编辑来源”确认分支后再加入。'); return; }
+      if (existing.some(recipe => !sameQuickSettings(recipe, existing[0]))) { error('所选手册的发布设置不同，请点“核对全部来源”保留各自的条件和版本，或逐份修改。'); return; }
       if (version.length > 80) { error('文档版本请限制在 80 字以内。'); return; }
       if (chosenModel && model !== chosenModel) { error('本发布集合已固定为 ' + chosenModel + '，请清空后更换型号。'); return; }
       remember(); const settings = { ...preferences.get(workspaceKey()), model, version }, repositoryRoot = A.state.root, branch = A.state.currentBranch || '';

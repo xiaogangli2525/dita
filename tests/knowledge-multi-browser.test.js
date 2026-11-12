@@ -203,4 +203,39 @@ test('one publication plan captures real HTTP and a separate Git manual without 
     await page.click('#knowledgeSourceAdd'); await check(); assert.equal(await page.locator('#knowledgeDownload').isDisabled(), false);
   });
 
+  await stage('quick add preserves per-manual settings and branch bindings after importing a plan', async () => {
+    const plan = await page.evaluate(() => JSON.parse(localStorage.getItem('dita.knowledge.plan.v1:' + localStorage.getItem('dita.knowledge.lastPlan'))));
+    const first = plan.sources.find(source => source.repositoryRoot === http), second = {
+      ...first, path: 'topics/r_https_example.dita', filterPath: 'filters/telecomversion.ditaval',
+      module: 'HTTPS 示例', version: 'V2', overrides: {}
+    };
+    const importPlan = value => page.setInputFiles('#knowledgePlanImport', { name: 'settings.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(value)) });
+    await importPlan({ ...plan, sources: [first, second] });
+    await page.waitForFunction(() => document.querySelectorAll('.knowledge-part').length === 2 && !document.getElementById('knowledgeAdd').disabled);
+    const checkbox = page.locator('#knowledgeSources input');
+    const selected = () => checkbox.evaluateAll(inputs => inputs.filter(input => input.checked).map(input => input.value));
+    assert.deepEqual(await selected(), [first.path]);
+    await page.locator('#knowledgeSources input[value="topics/r_https_example.dita"]').check();
+    await page.click('#knowledgeAdd');
+    assert.match(await page.locator('#knowledgeError').innerText(), /不同.*核对全部来源/);
+    await page.locator('#knowledgeSources input[value="http_httpsusermanual.ditamap"]').uncheck();
+    assert.equal(await page.locator('#knowledgeFilter').inputValue(), second.filterPath);
+    assert.equal(await page.locator('#knowledgeVersion').inputValue(), second.version);
+    assert.equal(await page.locator('#knowledgeModule').inputValue(), second.module);
+    await check();
+    const files = await archive(), manifest = JSON.parse(strFromU8(files['docs/manifest.json']));
+    for (const recipe of [first, second]) {
+      const item = manifest.manuals.find(result => result.source.manualPath === recipe.path);
+      assert.equal(item.source.filterPath, recipe.filterPath); assert.equal(item.version, recipe.version); assert.equal(item.module, recipe.module);
+    }
+    await importPlan({ ...plan, model: '', sources: [first] });
+    await page.locator('#knowledgeError').filter({ hasText: '型号' }).waitFor();
+    assert.equal(await page.locator('.knowledge-part').count(), 2); assert.equal(await page.locator('#knowledgeDownload').isDisabled(), false);
+    await importPlan({ ...plan, sources: [{ ...first, branch: 'another-branch' }] });
+    await page.waitForFunction(() => document.querySelectorAll('.knowledge-part').length === 1 && !document.getElementById('knowledgeAdd').disabled);
+    await page.locator('#knowledgeSources input[value="http_httpsusermanual.ditamap"]').check(); await page.click('#knowledgeAdd');
+    assert.match(await page.locator('#knowledgeError').innerText(), /分支.*编辑来源/);
+    assert.match(await page.locator('#knowledgeCollection').innerText(), /another-branch/);
+  });
+
 });
