@@ -1,17 +1,23 @@
 'use strict';
 (function (root) {
   function createSourcesUI({ A, get, add, error, status }) {
-    let generation = 0, abort, catalog = null, editing = null, draft = null, loading = false;
+    let generation = 0, abort, revisionTimer, refsRoot = '', catalog = null, editing = null, draft = null, loading = false;
     function revision() { return get('knowledgeSourceMode').value === 'git' ? get('knowledgeSourceRevision').value.trim() : ''; }
     function selection() { return { repositoryRoot: get('knowledgeSourceRepo').value, revision: revision() }; }
-    function lock(value) { loading = value; get('knowledgeSourceAdd').disabled = value || !catalog; get('knowledgeSourceReload').disabled = value; }
-    function cancel() { generation++; abort?.abort(); catalog = null; loading = false; }
+    function lock(value) {
+      loading = value;
+      get('knowledgeSourceReload').disabled = value;
+      get('knowledgeSourceEntry').disabled = value || !catalog || !get('knowledgeSourceEntry').value;
+      get('knowledgeSourceFilter').disabled = value || !catalog;
+      get('knowledgeSourceAdd').disabled = get('knowledgeSourceEntry').disabled;
+    }
+    function cancel() {
+      generation++; abort?.abort(); clearTimeout(revisionTimer); catalog = null;
+      get('knowledgeSourceEntry').replaceChildren(); get('knowledgeSourceFilter').replaceChildren();
+      lock(false);
+    }
     function rememberSelection() {
       if (catalog) draft = { repositoryRoot: catalog.root, path: get('knowledgeSourceEntry').value, filterPath: get('knowledgeSourceFilter').value };
-    }
-    function changed() {
-      get('knowledgeSourceRevision').disabled = get('knowledgeSourceMode').value !== 'git';
-      rememberSelection(); cancel(); lock(false); get('knowledgeSourceInfo').textContent = '来源已变化，请点击“读取此来源”。';
     }
     function restoreOption(select, value, missingLabel) {
       if (!value) return;
@@ -21,22 +27,34 @@
       }
       select.value = value;
     }
-    async function load(pref = {}) {
-      const ticket = ++generation, workspace = A.api.token; abort?.abort(); abort = new AbortController(); catalog = null; lock(true);
-      get('knowledgeSourceInfo').textContent = '正在读取仓库目录…';
+    async function load() {
+      rememberSelection(); cancel();
+      const source = selection(), ticket = generation, workspace = A.api.token;
+      const pref = editing || draft?.repositoryRoot === source.repositoryRoot ? draft || {} : {};
+      const requestedName = get('knowledgeSourceRepo').selectedOptions[0].textContent;
+      const needsRevision = get('knowledgeSourceMode').value === 'git' && !source.revision;
+      const hint = '请填写分支、标签或提交，选择版本后会自动读取手册入口。';
+      get('knowledgeSourceRevision').disabled = get('knowledgeSourceMode').value !== 'git';
+      if (refsRoot !== source.repositoryRoot) { get('knowledgeSourceRefs').replaceChildren(); refsRoot = ''; }
+      if (needsRevision && refsRoot) { get('knowledgeSourceInfo').textContent = hint; return; }
+      abort = new AbortController(); const signal = abort.signal;
+      const current = () => ticket === generation && workspace === A.api.token && get('knowledgeSourceDialog').open;
+      lock(true); get('knowledgeSourceInfo').textContent = '正在读取「' + requestedName + '」…';
       try {
-        if (get('knowledgeSourceMode').value === 'git' && !revision()) throw Error('请填写分支、标签或提交，例如 master、v1.0 或提交 SHA');
-        const response = await A.api.request('/api/knowledge/catalog', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ ...selection(), entryPath: pref.path }), signal: abort.signal });
+        const response = await A.api.request('/api/knowledge/catalog', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ ...source, entryPath: pref.path }), signal });
         if (!response.ok) throw Error(await A.api.error(response)); const data = await response.json();
-        if (ticket !== generation || workspace !== A.api.token || !get('knowledgeSourceDialog').open) return;
+        if (!current()) return;
+        get('knowledgeSourceRefs').replaceChildren(...(data.refs || []).map(ref => new Option(ref.label, ref.value)));
+        refsRoot = source.repositoryRoot;
+        if (needsRevision) { get('knowledgeSourceInfo').textContent = hint; return; }
         catalog = data;
         get('knowledgeSourceEntry').replaceChildren(...data.maps.map(map => new Option(map.title + ' · ' + map.path, map.path)));
         restoreOption(get('knowledgeSourceEntry'), pref.path, '原手册入口不存在');
         get('knowledgeSourceFilter').replaceChildren(new Option('不过滤正文', ''), ...data.filters.map(path => new Option(path, path)));
         restoreOption(get('knowledgeSourceFilter'), pref.filterPath, '原条件文件不存在');
-        get('knowledgeSourceRefs').replaceChildren(...(data.refs || []).map(ref => new Option(ref.label, ref.value)));
-        get('knowledgeSourceInfo').textContent = (data.revision ? 'Git 版本 ' + data.revision + ' · ' : '已保存文件 · ' + (data.branch || '游离 HEAD') + ' · ') + data.commit.slice(0, 8) + (data.dirty ? ' · 含已保存但未提交的文件' : '') + ' · ' + data.maps.length + ' 个入口';
-      } catch (cause) { if (ticket === generation && !abort.signal.aborted) get('knowledgeSourceInfo').textContent = cause.message; }
+        const repository = data.root.split(/[\\/]/).filter(Boolean).pop();
+        get('knowledgeSourceInfo').textContent = '已读取「' + repository + '」 · ' + (data.revision ? 'Git 版本 ' + data.revision + ' · ' : '已保存文件 · ' + (data.branch || '游离 HEAD') + ' · ') + data.commit.slice(0, 8) + (data.dirty ? ' · 含已保存但未提交的文件' : '') + ' · ' + data.maps.length + ' 个入口';
+      } catch (cause) { if (current() && !signal.aborted) get('knowledgeSourceInfo').textContent = '读取「' + requestedName + '」失败：' + cause.message; }
       finally { if (ticket === generation) lock(false); }
     }
     function show(recipe = null) {
@@ -48,15 +66,17 @@
       get('knowledgeSourceMode').value = recipe?.revision ? 'git' : 'saved'; get('knowledgeSourceRevision').disabled = !recipe?.revision; get('knowledgeSourceRevision').value = recipe?.revision || '';
       get('knowledgeSourceVersion').value = recipe?.version || ''; get('knowledgeSourceModule').value = recipe?.module || '';
       get('knowledgeSourceKind').value = recipe?.mode || 'other'; get('knowledgeSourcePrefixes').checked = !!recipe?.prefixes;
-      get('knowledgeSourceDialog').showModal(); void load(recipe || {});
+      get('knowledgeSourceDialog').showModal(); void load();
     }
     get('knowledgeSourceClose').addEventListener('click', () => { cancel(); get('knowledgeSourceDialog').close(); });
     get('knowledgeSourceDialog').addEventListener('cancel', cancel);
-    for (const id of ['knowledgeSourceRepo', 'knowledgeSourceMode', 'knowledgeSourceRevision']) get(id).addEventListener('change', changed);
-    get('knowledgeSourceReload').addEventListener('click', () => {
-      rememberSelection();
-      const retainSelection = editing || draft?.repositoryRoot === get('knowledgeSourceRepo').value;
-      void load(retainSelection && draft ? draft : {});
+    get('knowledgeSourceRepo').addEventListener('change', load);
+    get('knowledgeSourceMode').addEventListener('change', load);
+    get('knowledgeSourceReload').addEventListener('click', load);
+    get('knowledgeSourceRevision').addEventListener('input', () => {
+      rememberSelection(); cancel();
+      get('knowledgeSourceInfo').textContent = '正在等待读取指定版本…';
+      revisionTimer = setTimeout(load, 300);
     });
     get('knowledgeSourceAdd').addEventListener('click', () => {
       try {
