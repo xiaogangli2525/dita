@@ -66,3 +66,5 @@ require('./ai-task-store.test');
 require('./template.test');
 
 require('./knowledge.test.js');
+
+require('./knowledge-plan.test');

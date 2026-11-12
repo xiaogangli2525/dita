@@ -57,6 +57,14 @@
       } catch (error) { check(); console.warn('知识库来源信息不可用：', error.name); }
       const id = 'm-' + (await hash(snapshot.root + '\n' + snapshot.path)).slice(0, 16);
       const extracted = root.DitaKnowledgeDocument.extractManual(html, id);
+      const visible = A.ditaCore.collectPreviewPaths(snapshot.map.children || []).filter(entry => !prepared.files.get(entry.path)?.excluded);
+      if (visible.length !== extracted.entries.length) throw new Error('发布章节与来源映射不一致');
+      const engine = root.DitaKnowledgeSearch.createSearchEngine();
+      for (const [index, entry] of extracted.entries.entries()) {
+        entry.sourcePath = visible[index].path; entry.fingerprint = await hash(entry.title + '\n' + entry.text);
+        entry.kind = /示例|example/i.test(entry.title) ? 'example' : /AT\+|参数|命令|接口/i.test(entry.title) ? 'reference' : 'guide';
+        Object.assign(entry, engine.metadata({ ...entry, manualId: id }));
+      }
       const documents = await Promise.all([...sources].map(async ([name, content]) => ({ path: name, sha256: await hash(content) })));
       check();
       const source = { repository: snapshot.root.split(/[\\/]/).filter(Boolean).pop(), branch: snapshot.branch, commit: provenance.commit || null, dirty: provenance.dirty,

@@ -1,5 +1,7 @@
 export {};
 declare global {
+  var DitaKnowledgeRetrieval: typeof import('../public/knowledge-retrieval');
+  var DitaKnowledgePlan: typeof import('../public/knowledge-plan');
   var DitaKnowledgeSearch: typeof import('../public/knowledge-search');
   var DitaKnowledgePackage: typeof import('../public/knowledge-package');
   var DitaKnowledgeReader: typeof import('../public/knowledge-reader');

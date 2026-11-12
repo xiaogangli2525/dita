@@ -12,6 +12,7 @@
     const ids = new Set(); let size = 0;
     for (const manual of manuals) {
       if (!/^m-[a-f0-9]{12,64}$/.test(manual.id) || ids.has(manual.id) || manual.model !== model || !manual.entries?.length || !manual.body || !manual.html) throw new Error('手册型号、内容或标识不一致，请重新加入');
+      if (manual.staleMetadata?.length) throw new Error('检索属性已过期，请在集合中核对：' + manual.title);
       ids.add(manual.id); size += new TextEncoder().encode(manual.html + manual.body + JSON.stringify(manual.entries)).length;
     }
     if (size > 40 * 1024 * 1024) throw new Error('本版知识库内容超过 40 MB，请减少手册后重试');
@@ -21,14 +22,15 @@
       if (value && typeof value === 'object' && !Object.isFrozen(value)) { Object.values(value).forEach(freeze); Object.freeze(value); }
       return value;
     }
-    const manifest = { schema: 1, title, model, sdkVersion, generatedAt, renderer: 'offline-knowledge-v1',
+    const manifest = { schema: 1, title, model, sdkVersion, generatedAt, renderer: 'offline-knowledge-v1', search: { schema: 2, engine: 'sdk-search-1.1.0' },
       manuals: manuals.map(manual => ({ id: manual.id, title: manual.title, version: manual.version, model, capturedAt: manual.capturedAt,
+        mode: manual.mode || 'other', module: manual.module || manual.title, searchEntries: manual.entries.map(entry => ({ sourcePath: entry.sourcePath || '', fingerprint: entry.fingerprint || '', kind: entry.kind || 'guide', aliases: entry.aliases || [], definedSymbols: entry.definedSymbols || [] })),
         file: 'manuals/' + manual.id + '.html', chapters: manual.entries.length, source: manual.source, report: manual.report, htmlSha256: manual.htmlSha256 })) };
     /** @type {import('./knowledge-contracts').KnowledgeBook} */
-    const book = { schema: 1, title, model, sdkVersion, generatedAt, index: { schema: 1, postings: {} }, manuals: manuals.map(manual => ({ id: manual.id, title: manual.title,
-      version: manual.version, body: manual.body, toc: manual.toc, entries: manual.entries,
+    const book = { schema: 1, title, model, sdkVersion, generatedAt, index: { schema: 2, compiled: {} }, manuals: manuals.map(manual => ({ id: manual.id, title: manual.title,
+      version: manual.version, mode: manual.mode || 'other', module: manual.module || manual.title, body: manual.body, toc: manual.toc, entries: manual.entries,
       source: { repository: manual.source.repository, commit: manual.source.commit, dirty: manual.source.dirty } })) };
-    const records = book.manuals.flatMap(manual => manual.entries.map(entry => ({ ...entry, manualId: manual.id, manualTitle: manual.title })));
+    const records = book.manuals.flatMap(manual => manual.entries.map(entry => ({ ...entry, manualId: manual.id, manualTitle: manual.title, mode: manual.mode, module: manual.module })));
     book.index = search.createSearchEngine().build(records);
     freeze(book); freeze(manifest);
     const html = reader.renderPage(book);

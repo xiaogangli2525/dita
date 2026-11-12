@@ -18,7 +18,8 @@ const reviewMutations = [
   { selector: 'CallExpression[callee.object.property.name=/^(reviewGroups|reviewDecisions)$/][callee.property.name=/^(set|delete|clear)$/]', message: 'Review decisions and groups belong to review-session operations.' }
 ];
 const renderingBoundaries = [
-  { names: ['knowledge-search', 'knowledge-zip'], imports: [] },
+  { names: ['knowledge-retrieval', 'knowledge-plan', 'knowledge-metadata', 'knowledge-zip'], imports: [] },
+  { names: ['knowledge-search'], imports: ['knowledge-retrieval'] },
   { names: ['knowledge-package'], imports: ['knowledge-reader', 'knowledge-search', 'knowledge-zip'] },
   { names: ['knowledge-document'], imports: [] },
   { names: ['template-core'], imports: [] },

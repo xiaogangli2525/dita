@@ -15,3 +15,11 @@ createZip([{ name: 'docs/index.html', content: { html: true } }]);
 declare const index: SearchIndex;
 // @ts-expect-error Search records require the owning manual identity.
 createSearchEngine().search([{ title: 'AT+OPEN', text: 'Example' }], index, 'AT+OPEN');
+
+import { createPlanStore } from '../public/knowledge-plan';
+import type { KnowledgePlan } from '../public/knowledge-contracts';
+declare const plan: KnowledgePlan;
+// @ts-expect-error Source recipes retain the original publication condition.
+plan.sources[0].filterPath = 'other.ditaval';
+// @ts-expect-error A persisted plan cannot contain a mutable HTML snapshot.
+createPlanStore(null).save({ ...plan, html: '<html>' });

@@ -62,3 +62,20 @@ test('compiled reader and provenance are detached and frozen independently of ca
   assert.throws(() => { result.manifest.manuals[0].source.documents[0].sha256 = 'overwrite'; }, TypeError);
   assert.throws(() => { result.book.manuals[0].entries.push({}); }, TypeError);
 });
+
+test('SDK retrieval supports aliases, prefix suggestions, definition priority, scoped filters and compiled-index fallback', () => {
+  const engine = createSearchEngine(), records = [
+    { manualId: 'oc', mode: 'OC', module: '文件系统', title: '文件系统示例', text: '调用 cm_fs_mkdir、cm_fs_open', symbols: ['cm_fs_mkdir', 'cm_fs_open'] },
+    { manualId: 'oc', mode: 'OC', module: '文件系统', kind: 'reference', title: 'cm_fs_mkdir', text: '创建目录 返回 0 表示成功', definedSymbols: ['cm_fs_mkdir'], aliases: ['新建文件夹'] },
+    { manualId: 'oc', mode: 'OC', module: '文件系统', title: 'cm_fs_open', text: '打开文件', definedSymbols: ['cm_fs_open'] },
+    { manualId: 'at', mode: 'AT', module: 'HTTP', title: 'AT+MHTTPCFG', text: 'ssl_id 582', definedSymbols: ['AT+MHTTPCFG'] }
+  ], index = engine.build(records);
+  for (const query of ['创建目录', '新建文件夹', '如何新建文件夹', 'cm_fs_mkdir']) assert.equal(engine.search(records, index, query)[0].position, 1, query);
+  assert.deepEqual(engine.search(records, index, 'cm_fs_mkdir', '', 40, { mode: 'AT' }), []);
+  assert.deepEqual(engine.suggest(records, index, 'cm_fs_'), ['cm_fs_open', 'cm_fs_mkdir']);
+  assert.deepEqual(engine.suggest(records, index, 'cm_fs_', { manualId: 'at' }), []);
+  assert.deepEqual(engine.suggest(records, index, 'cm_fs_', { mode: 'AT' }), []);
+  assert.equal(engine.search(records, { schema: 2, compiled: { format: 'broken' } }, 'cm_fs_mkdir')[0].position, 1);
+  assert.equal(engine.search(records, index, 'cm_fs_mkdir_nonexistent').length, 0);
+  assert.equal(engine.search(records, index, '0', 'oc')[0].position, 1);
+});
