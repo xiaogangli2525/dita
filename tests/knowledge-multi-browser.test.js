@@ -9,7 +9,8 @@ test('one publication plan captures real HTTP and a separate Git manual without 
   for (const [name, bytes] of original) { await fs.mkdir(path.dirname(path.join(http, name)), { recursive: true }); await fs.writeFile(path.join(http, name), bytes); }
   await fs.writeFile(path.join(http, 'scratch.dita'), '<topic id="scratch"><title>独立草稿</title><body><p>BUFFER_ORIGINAL</p></body></topic>');
   await fs.mkdir(path.join(tcp, 'topics'), { recursive: true });
-  const tcpPath = 'topics/r_at_mhttpcfg.dita', tcpBody = '<topic id="tcp"><title>TCP功能验收</title><body><p>AT+TCP_G<fn product="ML307G">TCP_G_NOTE</fn><fn product="ML307N">PRIVATE_TCP_N</fn></p><p product="ML307N">PRIVATE_TCP_N_BODY</p></body></topic>';
+  const tcpPath = 'topics/r_at_mhttpcfg.dita', tcpBody = '<topic id="tcp"><title>TCP功能验收</title><body><p>AT+TCP_G<fn product="ML307G">TCP_G_NOTE</fn><fn product="ML307N">PRIVATE_TCP_N</fn></p><p product="ML307N">PRIVATE_TCP_N_BODY</p><p><xref type="fn" href="../shared.dita#defs/n"/></p></body></topic>';
+  await fs.writeFile(path.join(tcp, 'shared.dita'), '<topic id="defs"><title>定义</title><body><p><fn id="n" product="ML307G">TCP_SHARED_G<ph product="ML307N">PRIVATE_TCP_N_FOOTNOTE</ph></fn></p></body></topic>');
   const filter = '<val><prop att="product" val="ML307N" action="exclude"/></val>';
   await fs.writeFile(path.join(tcp, tcpPath), tcpBody); await fs.writeFile(path.join(tcp, 'tcp.ditamap'), '<map><title>TCP手册</title><topicref href="' + tcpPath + '"/></map>'); await fs.writeFile(path.join(tcp, 'g.ditaval'), filter);
   const git = (root, ...args) => execFileSync('git', args, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
@@ -48,7 +49,9 @@ test('one publication plan captures real HTTP and a separate Git manual without 
     assert.deepEqual(await page.evaluate(() => ({ root: window.DitaApp.state.root, branch: window.DitaApp.state.currentBranch, token: window.DitaApp.api.token, content: window.DitaApp.state.filesMap.get('scratch.dita').current })), identity);
     assert.equal(git(tcp, 'branch', '--show-current'), 'main');
     const files = await archive(), manifest = JSON.parse(strFromU8(files['docs/manifest.json'])); assert.equal(manifest.manuals.length, 2);
-    const html = strFromU8(files['docs/index.html']); assert.match(html, /TCP_G_NOTE/); assert.doesNotMatch(html, /PRIVATE_TCP_N|UNSAVED_BUFFER_KEPT/);
+    const html = strFromU8(files['docs/index.html']); assert.match(html, /TCP_G_NOTE/); assert.match(html, /TCP_SHARED_G/);
+    const manual = manifest.manuals.find(item => item.source.repository === 'TCP文档库');
+    const standalone = strFromU8(files['docs/' + manual.file]); assert.match(standalone, /TCP_SHARED_G/); assert.doesNotMatch(standalone, /PRIVATE_TCP_N/); assert.doesNotMatch(html, /PRIVATE_TCP_N|UNSAVED_BUFFER_KEPT/);
     assert.equal(manifest.manuals.find(item => item.source.repository === 'HTTP文档库').report.included, 25);
     await page.click('#knowledgePreview'); const frame = page.frameLocator('#knowledgePreviewFrame'); await frame.locator('#kbSearch').fill('AT+TCP_G'); await frame.locator('#kbSearch').press('Enter'); assert.equal(await frame.locator('.search-result').count(), 1); await page.click('#knowledgePreviewClose');
     if (process.env.DITA_KNOWLEDGE_QA_DIR) { await fs.mkdir(process.env.DITA_KNOWLEDGE_QA_DIR, { recursive: true }); await page.screenshot({ path: path.join(process.env.DITA_KNOWLEDGE_QA_DIR, 'multi-repository-plan.png') }); }
@@ -56,6 +59,15 @@ test('one publication plan captures real HTTP and a separate Git manual without 
   await stage('a failed source blocks delivery and retry only recaptures that source', async () => {
     await fs.rm(path.join(tcp, 'g.ditaval')); await check(); assert.match(await page.locator('#knowledgeStatus').innerText(), /1\/2/); assert.equal(await page.locator('.knowledge-part[data-source-state="error"]').count(), 1); assert.equal(await page.locator('#knowledgeDownload').isDisabled(), true);
     await fs.writeFile(path.join(tcp, 'g.ditaval'), filter); const previous = requests.length; await check('#knowledgeBatchRetry'); assert.deepEqual(requests.slice(previous), [tcp]); assert.equal(await page.locator('#knowledgeDownload').isDisabled(), false);
+  });
+  await stage('an unfiltered foreign-model span inside a referenced footnote blocks packaging', async () => {
+    const selected = path.join(tcp, tcpPath);
+    const bodyWithoutForeignParagraph = tcpBody.replace('<p product="ML307N">PRIVATE_TCP_N_BODY</p>', '');
+    await fs.writeFile(selected, bodyWithoutForeignParagraph); await fs.writeFile(path.join(tcp, 'g.ditaval'), '<val/>');
+    await check(); assert.equal(await page.locator('#knowledgeDownload').isDisabled(), true);
+    assert.match(await page.locator('.knowledge-part[data-source-state="error"]').innerText(), /shared\.dita.*其它型号/);
+    await fs.writeFile(selected, tcpBody); await fs.writeFile(path.join(tcp, 'g.ditaval'), filter);
+    await check('#knowledgeBatchRetry'); assert.equal(await page.locator('#knowledgeDownload').isDisabled(), false);
   });
   await stage('fixed tag content is captured without overwriting a dirty working directory', async () => {
     await fs.writeFile(path.join(tcp, tcpPath), tcpBody.replace('AT+TCP_G', 'AT+TCP_G WORKTREE_ONLY'));
@@ -85,6 +97,11 @@ test('one publication plan captures real HTTP and a separate Git manual without 
     for (const checkbox of await page.locator('#knowledgeSources input').all()) await checkbox.uncheck();
     await page.locator('#knowledgeSources input[value="http_httpsusermanual.ditamap"]').check(); await page.click('#knowledgeAdd');
     assert.match(await page.locator('#knowledgeError').innerText(), /已指定 Git 版本/); assert.match(await card.innerText(), /Git 版本：main/);
+    await page.click('#knowledgeSourcesAdd'); await page.waitForFunction(() => !document.getElementById('knowledgeSourceAdd').disabled);
+    await page.selectOption('#knowledgeSourceEntry', map); await page.click('#knowledgeSourceAdd');
+    assert.equal(await page.locator('#knowledgeSourceDialog').isVisible(), true);
+    assert.match(await page.locator('#knowledgeSourceInfo').innerText(), /编辑来源/);
+    assert.match(await card.innerText(), /Git 版本：main/); await page.click('#knowledgeSourceClose');
     await card.getByRole('button', { name: '编辑来源' }).click(); await page.waitForFunction(() => !document.getElementById('knowledgeSourceAdd').disabled); await page.selectOption('#knowledgeSourceMode', 'saved'); await page.click('#knowledgeSourceReload'); await page.waitForFunction(() => !document.getElementById('knowledgeSourceAdd').disabled); await page.click('#knowledgeSourceAdd'); await check('#knowledgeBatchRetry');
     assert.equal(await page.locator('#knowledgeDownload').isDisabled(), false);
   });
@@ -104,6 +121,32 @@ test('one publication plan captures real HTTP and a separate Git manual without 
     if (process.env.DITA_KNOWLEDGE_QA_DIR) await page.screenshot({ path: path.join(process.env.DITA_KNOWLEDGE_QA_DIR, 'multi-source-mobile.png') });
     await page.click('#knowledgeSourceClose'); await page.locator('#knowledgeBatchCheck').scrollIntoViewIfNeeded(); assert.equal(await page.locator('#knowledgeBatchCheck').isVisible(), true);
     assert.deepEqual(errors, []);
+  });
+
+  await stage('remapping an imported plan retains its topic and filter and requires explicit replacements for missing paths', async () => {
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dita.knowledge.plan.v1:' + localStorage.getItem('dita.knowledge.lastPlan'))));
+    const tcpSource = saved.sources.find(source => source.repositoryRoot === tcp);
+    async function remap(entry, filterPath) {
+      const plan = { ...saved, sources: [{ ...tcpSource, revision: '', branch: 'main', repositoryRoot: 'E:/old-machine/TCP', path: entry, filterPath }] };
+      await page.setInputFiles('#knowledgePlanImport', { name: 'moved.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(plan)) });
+      await page.locator('.knowledge-part').filter({ hasText: entry }).getByRole('button', { name: '编辑来源' }).click();
+      await page.selectOption('#knowledgeSourceRepo', tcp); await page.click('#knowledgeSourceReload');
+      await page.waitForFunction(() => !document.getElementById('knowledgeSourceAdd').disabled);
+      assert.equal(await page.locator('#knowledgeSourceEntry').inputValue(), entry);
+      assert.equal(await page.locator('#knowledgeSourceFilter').inputValue(), filterPath);
+    }
+    await remap(tcpPath, 'g.ditaval'); await page.click('#knowledgeSourceAdd');
+    await check(); assert.equal(await page.locator('#knowledgeDownload').isDisabled(), false);
+    await remap('old.ditamap', 'old.ditaval');
+    await page.click('#knowledgeSourceAdd'); assert.match(await page.locator('#knowledgeSourceInfo').innerText(), /原手册入口不存在/);
+    await page.selectOption('#knowledgeSourceEntry', 'tcp.ditamap'); await page.click('#knowledgeSourceAdd');
+    assert.match(await page.locator('#knowledgeSourceInfo').innerText(), /原条件文件不存在/);
+    await page.selectOption('#knowledgeSourceFilter', 'g.ditaval'); await page.click('#knowledgeSourceReload');
+    await page.waitForFunction(() => !document.getElementById('knowledgeSourceAdd').disabled);
+    assert.equal(await page.locator('#knowledgeSourceEntry').inputValue(), 'tcp.ditamap');
+    assert.equal(await page.locator('#knowledgeSourceFilter').inputValue(), 'g.ditaval');
+    await page.click('#knowledgeSourceAdd'); await check(); assert.equal(await page.locator('#knowledgeDownload').isDisabled(), false);
   });
 
 });

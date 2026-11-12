@@ -31,10 +31,10 @@
       if (!/^[\p{L}\p{N}][\p{L}\p{N}._-]{0,79}$/u.test(model)) throw Error('请先在发布窗口填写具体交付型号');
       const clean = root.DitaKnowledgePlan.normalizePlan({ schema: 1, id: 'draft', title: get('knowledgeTitle').value, model, sdkVersion: get('knowledgeSdk').value, sources: [recipe] }).sources[0];
       const key = sourceKey(clean.repositoryRoot, clean.path), previous = old && sourceKey(old.repositoryRoot, old.path);
-      if (previous && previous !== key && recipes.has(key)) throw Error('方案中已有此仓库的相同入口，请先移除重复项');
+      if (key !== previous && recipes.has(key)) throw Error('方案中已有此仓库的相同入口，请通过已有卡片“编辑来源”。');
       if (!recipes.has(key) && recipes.size - (previous ? 1 : 0) >= 30) throw Error('最多组合 30 份手册');
       if (previous && previous !== key) { recipes.delete(previous); parts.delete(previous); sourceStates.delete(previous); }
-      const existing = recipes.get(key); recipes.set(key, { ...clean, overrides: old?.overrides || existing?.overrides || clean.overrides });
+      recipes.set(key, clean);
       parts.delete(key); sourceStates.delete(key); chosenModel = model; invalidate(); renderCollection();
     } });
     function readyParts() { return [...recipes].map(([key, recipe]) => parts.has(key) ? root.DitaKnowledgeMetadata.applyMetadata(parts.get(key), recipe) : null); }
@@ -65,10 +65,10 @@
         function action(label, handler) { const button = document.createElement('button'); button.type = 'button'; button.textContent = label; button.addEventListener('click', handler); actions.append(button); }
         action(part ? '重新核对' : '核对来源', () => batch([key]));
         action('编辑来源', () => sources.show(recipe));
-        if (workspaceKey() !== JSON.stringify([recipe.repositoryRoot, recipe.branch])) action('关联当前库', () => {
+        if (recipe.repositoryRoot !== A.state.root || (!recipe.revision && recipe.branch !== (A.state.currentBranch || ''))) action('关联当前库', () => {
           const next = sourceKey(A.state.root, recipe.path);
           if (next !== key && recipes.has(next)) { error('当前库已有相同入口，请先移除重复项再关联。'); return; }
-          recipes.delete(key); parts.delete(key); parts.delete(next);
+          recipes.delete(key); parts.delete(key); sourceStates.delete(key);
           recipes.set(next, { ...recipe, repositoryRoot: A.state.root, repository: A.state.root.split(/[\\/]/).filter(Boolean).pop(), branch: A.state.currentBranch || '' });
           preferences.delete(workspaceKey()); invalidate(); renderCollection(); void refreshSources(); status('来源已关联当前文档库，请核对路径和过滤条件后重新加入。');
         });
@@ -95,7 +95,7 @@
     async function refreshSources() {
       const generation = ++operation, workspace = A.api.token; preferenceKey = workspaceKey();
       const recipe = [...recipes.values()].find(item => !item.revision && item.repositoryRoot === A.state.root && item.branch === (A.state.currentBranch || ''));
-      const pref = preferences.get(preferenceKey) || (recipe ? { ...recipe, paths: [...recipes.values()].filter(item => item.repositoryRoot === recipe.repositoryRoot && item.branch === recipe.branch).map(item => item.path) } : {});
+      const pref = preferences.get(preferenceKey) || (recipe ? { ...recipe, paths: [...recipes.values()].filter(item => !item.revision && item.repositoryRoot === recipe.repositoryRoot && item.branch === recipe.branch).map(item => item.path) } : {});
       sourceChoices(pref); get('knowledgeVersion').value = pref.version || ''; get('knowledgePrefixes').checked = !!pref.prefixes;
       get('knowledgeMode').value = pref.mode || 'other'; get('knowledgeModule').value = pref.module || '';
       get('knowledgeFilter').replaceChildren(new Option('正在加载条件文件…', '')); loading = true; filterFailed = false; controls();

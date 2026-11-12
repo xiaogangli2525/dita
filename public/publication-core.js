@@ -79,8 +79,9 @@
         else if (note.key && !used.has(note.key)) { remove(record, note.node); if (visible) report.unused++; }
         else if (visible || used.has(note.key)) {
           report.included++; if (note.unmarked) report.unmarked++;
-          publicationNotes.set(note, { path, origin: note.origin, conditions: note.conditions, common: note.common, unmarked: note.unmarked, key: note.key, xml: record.source.slice(note.node.start, note.node.close?.end ?? note.node.end) });
-          if (note.key) noteDefinitions.set(note.key, { path, xml: record.source.slice(note.node.start, note.node.close?.end ?? note.node.end) });
+          const noteXml = profile ? profile.filterSource(record.source, note.node) : record.source.slice(note.node.start, note.node.close?.end ?? note.node.end);
+          publicationNotes.set(note, { path, origin: note.origin, conditions: note.conditions, common: note.common, unmarked: note.unmarked, key: note.key, xml: noteXml });
+          if (note.key) noteDefinitions.set(note.key, { path, xml: noteXml });
         }
       }
       let content = record.source;

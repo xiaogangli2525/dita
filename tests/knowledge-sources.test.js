@@ -75,8 +75,46 @@ test('image bytes and sidecar absence participate in source verification', async
   await fs.writeFile(path.join(root, 'topics/test.svg'), '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><rect width="10" height="10"/></svg>');
   const bundle = await call('capture', recipe(root)); assert.equal(bundle.assets.length, 1);
   await fs.writeFile(source, '<topic id="a"><title>引用注脚图片</title><body><p><xref href="../defs.dita#D/n" type="fn"/></p></body></topic>');
-  await fs.writeFile(path.join(root, 'defs.dita'), '<topic id="D"><title>定义</title><body><p><fn id="n" product="ML307G"><image href="topics/test.svg"/></fn></p></body></topic>');
+  await fs.writeFile(path.join(root, 'defs.dita'), '<topic id="D"><title>定义</title><body><p><fn id="n" product="ML307G"><image href="topics/test.svg?v=1"/></fn></p></body></topic>');
   const note = await call('capture', recipe(root)); assert.equal(note.assets.length, 1);
   assert.equal(note.assets[0][0], 'topics/test.svg');
   await fs.appendFile(path.join(root, 'topics/test.svg'), '<!-- change -->'); await assert.rejects(call('verify', bundle.receipt), /已变化/);
+});
+test('nested repositories and unsupported config files cannot silently supply publication content or rules', async t => {
+  const { roots: [root], call, recipe, command } = await setup(t);
+  const nested = path.join(root, 'vendor'); await fs.mkdir(nested);
+  command(nested, 'init', '-q'); await fs.writeFile(path.join(nested, 'nested.ditamap'), '<map/>');
+  const catalog = await call('catalog', { repositoryRoot: root });
+  assert.ok(!catalog.maps.some(item => item.path === 'vendor/nested.ditamap'));
+  const before = await call('capture', recipe(root));
+  const settings = '.dita-note-rules.json';
+  await fs.symlink('absent-rules.json', path.join(root, settings));
+  await assert.rejects(call('verify', before.receipt), /来源配置已变化/);
+  await assert.rejects(call('capture', recipe(root)), /配置须为普通文件/);
+  command(root, 'add', settings); command(root, '-c', 'user.name=QA', '-c', 'user.email=qa@example.invalid', 'commit', '-qm', 'linked rules');
+  await assert.rejects(call('capture', { ...recipe(root), revision: 'HEAD' }), /配置须为普通文件/);
+});
+test('saved sources guard detached checkouts even when the commit stays the same', async t => {
+  const { roots: [root], call, recipe, command } = await setup(t);
+  command(root, 'checkout', '--detach', 'HEAD');
+  const catalog = await call('catalog', { repositoryRoot: root }); assert.equal(catalog.branch, '(detached)');
+  const capture = await call('capture', { ...recipe(root), branch: catalog.branch });
+  command(root, 'switch', 'main');
+  await assert.rejects(call('verify', capture.receipt), /与方案/);
+  await assert.rejects(call('capture', { ...recipe(root), branch: '' }), /与方案/);
+});
+test('saved source provenance flags an ignored input used in an otherwise clean Git repository', async t => {
+  const { roots: [root], call, recipe, command } = await setup(t);
+  await fs.appendFile(path.join(root, '.git/info/exclude'), '\nlocal.ditaval\n');
+  await fs.writeFile(path.join(root, 'local.ditaval'), '<val/>');
+  assert.equal(command(root, 'status', '--porcelain'), '');
+  const ordinary = await call('capture', recipe(root)); assert.equal(ordinary.provenance.dirty, false);
+  const local = await call('capture', { ...recipe(root), filterPath: 'local.ditaval' }); assert.equal(local.provenance.dirty, true);
+});
+test('simultaneous catalog requests share the two active source slots', async t => {
+  const { roots: [root], call } = await setup(t);
+  const results = await Promise.allSettled(Array.from({ length: 3 }, () => call('catalog', { repositoryRoot: root })));
+  assert.equal(results.filter(item => item.status === 'fulfilled').length, 2);
+  const rejected = results.filter(item => item.status === 'rejected'); assert.equal(rejected[0].reason.status, 429);
+  assert.equal((await call('catalog', { repositoryRoot: root })).root, root);
 });
