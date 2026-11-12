@@ -14,7 +14,11 @@ test('one publication plan captures real HTTP and a separate Git manual without 
   const filter = '<val><prop att="product" val="ML307N" action="exclude"/></val>';
   await fs.writeFile(path.join(tcp, tcpPath), tcpBody); await fs.writeFile(path.join(tcp, 'tcp.ditamap'), '<map><title>TCP手册</title><topicref href="' + tcpPath + '"/></map>'); await fs.writeFile(path.join(tcp, 'g.ditaval'), filter);
   const git = (root, ...args) => execFileSync('git', args, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
+  const common = path.join(http, 'contentmodule');
+  git(common, 'init', '-b', 'main'); git(common, 'add', '.'); git(common, '-c', 'user.name=QA', '-c', 'user.email=qa@example.invalid', 'commit', '-qm', 'shared content');
+  await fs.writeFile(path.join(http, '.gitmodules'), '[submodule "contentmodule"]\n\tpath = contentmodule\n\turl = ../shared.git\n');
   for (const root of [http, tcp]) { git(root, 'init', '-b', 'main'); git(root, 'add', '.'); git(root, '-c', 'user.name=QA', '-c', 'user.email=qa@example.invalid', 'commit', '-qm', 'initial'); }
+  git(http, 'submodule', 'absorbgitdirs', '--', 'contentmodule');
   git(tcp, 'switch', '-c', 'release'); await fs.writeFile(path.join(tcp, tcpPath), tcpBody.replace('AT+TCP_G', 'AT+TCP_G RELEASE_ONLY')); git(tcp, 'add', '.'); git(tcp, '-c', 'user.name=QA', '-c', 'user.email=qa@example.invalid', 'commit', '-qm', 'release'); git(tcp, 'tag', 'sdk-v1'); const release = git(tcp, 'rev-parse', 'HEAD'); git(tcp, 'switch', 'main');
   const port = await new Promise(resolve => { const server = net.createServer(); server.listen(0, '127.0.0.1', () => { const n = server.address().port; server.close(() => resolve(n)); }); });
   const server = spawn(process.execPath, ['server.js'], { cwd: path.join(__dirname, '..'), env: { ...process.env, DOCS_ROOT: http, REPOSITORIES_ROOT: temporary, PORT: String(port) }, stdio: ['ignore', 'pipe', 'pipe'] });
@@ -106,9 +110,30 @@ test('one publication plan captures real HTTP and a separate Git manual without 
     const html = strFromU8(files['docs/index.html']); assert.match(html, /TCP_G_NOTE/); assert.match(html, /TCP_SHARED_G/);
     const manual = manifest.manuals.find(item => item.source.repository === 'TCP文档库');
     const standalone = strFromU8(files['docs/' + manual.file]); assert.match(standalone, /TCP_SHARED_G/); assert.doesNotMatch(standalone, /PRIVATE_TCP_N/); assert.doesNotMatch(html, /PRIVATE_TCP_N|UNSAVED_BUFFER_KEPT/);
-    assert.equal(manifest.manuals.find(item => item.source.repository === 'HTTP文档库').report.included, 25);
+    const httpManual = manifest.manuals.find(item => item.source.repository === 'HTTP文档库');
+    assert.equal(httpManual.report.included, 25); assert.equal(httpManual.chapters, 24);
+    assert.doesNotMatch(html + strFromU8(files['docs/' + httpManual.file]), /400-110-0866|服务与支持/);
+    assert.ok(httpManual.source.documents.some(file => file.path.endsWith('/c_at_command_syntax_format_cn.dita')));
+    assert.ok(httpManual.source.assets.some(file => file.path.endsWith('/logo_color_cn.png')));
     await page.click('#knowledgePreview'); const frame = page.frameLocator('#knowledgePreviewFrame'); await frame.locator('#kbSearch').fill('AT+TCP_G'); await frame.locator('#kbSearch').press('Enter'); assert.equal(await frame.locator('.search-result').count(), 1); await page.click('#knowledgePreviewClose');
     if (process.env.DITA_KNOWLEDGE_QA_DIR) { await fs.mkdir(process.env.DITA_KNOWLEDGE_QA_DIR, { recursive: true }); await page.screenshot({ path: path.join(process.env.DITA_KNOWLEDGE_QA_DIR, 'multi-repository-plan.png') }); }
+  });
+  await stage('standalone delivery keeps service and support, while the knowledge package tolerates its absence', async () => {
+    const support = 'contentmodule/topics/reusable_general_cn/g_service_and_support_cn.dita';
+    const standalone = await page.evaluate(async map => {
+      const app = window.DitaApp, snapshot = await app.manual.capture(map, { filterPath: 'filters/filter_tbd.ditaval' });
+      return app.ditaCore.exportMapToHtml({ map: snapshot.map, files: snapshot.files, title: 'HTTP', model: 'ML307G',
+        publicationData: app.manual.prepare(snapshot, 'ML307G', true, { prefixes: true }) });
+    }, map);
+    assert.match(standalone, /400-110-0866/);
+    await fs.unlink(path.join(http, support));
+    try {
+      await check();
+      const contents = await archive(), manifest = JSON.parse(strFromU8(contents['docs/manifest.json']));
+      const manual = manifest.manuals.find(item => item.source.repository === 'HTTP文档库');
+      assert.equal(manual.chapters, 24); assert.ok(!manual.source.documents.some(record => record.path === support));
+      assert.doesNotMatch(strFromU8(contents['docs/index.html']), /服务与支持|400-110-0866/);
+    } finally { await fs.writeFile(path.join(http, support), original.get(support)); }
   });
   await stage('a failed source blocks delivery and retry only recaptures that source', async () => {
     await fs.rm(path.join(tcp, 'g.ditaval')); await check(); assert.match(await page.locator('#knowledgeStatus').innerText(), /1\/2/); assert.equal(await page.locator('.knowledge-part[data-source-state="error"]').count(), 1); assert.equal(await page.locator('#knowledgeDownload').isDisabled(), true);

@@ -1,7 +1,8 @@
 'use strict';
 (function (root) {
+  const plan = typeof module !== 'undefined' ? require('./knowledge-plan') : root.DitaKnowledgePlan;
   function applyMetadata(part, recipe) {
-    const staleMetadata = Object.keys(recipe.overrides || {}).filter(path => !part.entries.some(entry => entry.sourcePath === path));
+    const staleMetadata = Object.keys(recipe.overrides || {}).filter(path => plan.includesTopic(path) && !part.entries.some(entry => entry.sourcePath === path));
     const entries = part.entries.map(entry => {
       const meta = recipe.overrides?.[entry.sourcePath];
       const valid = meta?.fingerprint === entry.fingerprint && meta.definedSymbols.every(symbol => (entry.symbols || []).includes(symbol));
