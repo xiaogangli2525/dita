@@ -125,7 +125,7 @@ test('MR380R four-manual benchmark covers natural-language questions, domain syn
     ['cm_modem_call', '功能介绍'],
     ['cm_modem_cali', '功能介绍'],
     ['cm_mem_get_heap_stats', '内存资源'],
-    ['APN怎么设置', '功能介绍'],
+    ['APN怎么设置', '注意事项'],
     ['PDP数据连接如何激活', '功能介绍'],
     ['怎么查看有哪些GPIO引脚', '引脚资源'],
     ['串口和SPI接口有多少', '外设资源'],
