@@ -140,7 +140,7 @@ test('uploaded ML307G knowledge ZIP benchmark covers all 26 real chapter entries
     ['哪些模组型号支持', '适用型号'],
     ['HTTP连接参数配置在哪里', 'AT+MHTTPCFG 参数设置'],
     ['HTTP相关命令有哪些', 'HTTP/HTTPS协议AT命令'],
-    ['AT+MHTTPCONFG', 'AT+MHTTPCFG 参数设置'],
+    ['AT+MHTTPCFGG', 'AT+MHTTPCFG 参数设置'],
     ['AT+MHTTPREAD', 'AT+MHTTPREAD 读取HTTP数据']
   ];
   const misses = [];
