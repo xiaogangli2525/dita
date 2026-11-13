@@ -37,7 +37,7 @@ test('blink-cli searches an exported ZIP and returns traceable JSON', async t =>
   t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
   const value = fixture(), zipPath = path.join(dir, 'knowledge.zip');
   fs.writeFileSync(zipPath, Buffer.from(await value.zip.arrayBuffer()));
-  const archive = unzipSync(value.zip);
+  const archive = unzipSync(new Uint8Array(await value.zip.arrayBuffer()));
   assert.ok(archive['docs/knowledge.json']);
   const result = run(['--kb', zipPath, '服务器连不上怎么办', '--json']);
   assert.equal(result.status, 0, result.stderr);
@@ -53,7 +53,7 @@ test('blink-cli reads full chapter text and lists manuals', async t => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'blink-cli-'));
   t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
   const value = fixture(), zipPath = path.join(dir, 'knowledge.zip');
-  fs.writeFileSync(zipPath, value.zip);
+  fs.writeFileSync(zipPath, Buffer.from(await value.zip.arrayBuffer()));
   const ref = 'm-0123456789abcdef#m-0123456789abcdef--sec-0';
   const get = run(['--kb', zipPath, '--get', ref, '--json']);
   assert.equal(get.status, 0, get.stderr);
