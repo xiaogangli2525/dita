@@ -34,8 +34,15 @@
     book.index = search.createSearchEngine().build(records);
     freeze(book); freeze(manifest);
     const html = reader.renderPage(book);
+    // CLI data omits rendered body/TOC HTML and reuses the same chapter text and compiled index.
+    const cliBook = { schema: book.schema, title: book.title, model: book.model, sdkVersion: book.sdkVersion,
+      generatedAt: book.generatedAt, index: book.index, manuals: book.manuals.map(manual => ({
+        id: manual.id, title: manual.title, version: manual.version, mode: manual.mode, module: manual.module,
+        entries: manual.entries, source: manual.source
+      })) };
     const files = [{ name: 'docs/index.html', content: html }, { name: 'docs/manifest.json', content: JSON.stringify(manifest, null, 2) },
-      { name: 'docs/README.txt', content: '打开 index.html 即可离线阅读和搜索。请整体移动 docs 文件夹。\n型号：' + model + '\nSDK：' + sdkVersion + '\n本包不自动更新。来源和版本见 manifest.json。\n' },
+      { name: 'docs/knowledge.json', content: JSON.stringify(cliBook) },
+      { name: 'docs/README.txt', content: '打开 index.html 即可离线阅读和搜索。CLI 可直接读取本包 ZIP 或解压目录。请整体移动 docs 文件夹。\\n型号：' + model + '\\nSDK：' + sdkVersion + '\\n本包不自动更新。来源和版本见 manifest.json。\\n' },
       ...manuals.map(manual => ({ name: 'docs/manuals/' + manual.id + '.html', content: manual.html }))];
     /** @param {string} value */
     const safe = value => value.replace(/[^\p{L}\p{N}._-]/gu, '-');
