@@ -14,15 +14,18 @@
       "用户 源文件 头文件 数据 保存 读写 性能 注意 设计 开发 接口 挂载 " +
       "目录项 操作 同一 同一个 线程安全 互斥 主动 被动 模式 状态 查询 " +
       "发送 接收 通信 端口 资源 应用 电源 唤醒 休眠 定位 解析 蓝牙 音频 " +
-      "响应 结果 覆盖 追加 更新 烧录 版本 工具 空闲 分配 释放 锁 缓冲区"
+      "响应 结果 覆盖 追加 更新 烧录 版本 工具 空闲 分配 释放 锁 缓冲区 " +
+      "数据拨号 PDP APN 激活 拨号 自动联网 网络注册 引脚分配 引脚资源 外设资源 内存资源 " +
+      "WebUI 前端 后端 WebServer 交互 定制 开发示例 编译SDK 编译环境 固件下载 下载固件 " +
+      "LOG抓取 死机现场 用户调试 入口函数 烧录 上网 证书 配置 查询 环境 分配"
     ).split(/\s+/);
     var STOP_WORDS = (
       "如何 怎样 怎么 为什么 请问 一下 是否 可以 能够 需要 进行 使用 " +
       "处理 问题 这个 那个 里面 相关 关于 时候 一个 什么 的 了 和 与 及 " +
-      "或 呢 么 吗 在 把 将 有 时 中 到 为 对 从 下 上 是 要 不 都"
+      "或 呢 么 吗 在 把 将 有 时 中 到 为 对 从 下 上 是 要 不 都 不能 无法 为什么 怎么 模块 模组 一直 总是 怎么办 查看 有哪些 多少 哪些 已经 适合 意思 是什么 在哪里 加"
     ).split(/\s+/);
     var FIELD_WEIGHTS = { title: 9, aliases: 7, symbols: 7, docTitle: 2, text: 1 };
-    var INDEX_FORMAT = "sdk-search/1.1.0";
+    var INDEX_FORMAT = "sdk-search/1.2.0";
     var TASK_TERMS = new Set(("创建 删除 打开 读取 写入 关闭 移动 重命名 上传 下载 " +
       "初始化 同步 刷新 挂载 分配 释放 失败 超时 阻塞").split(/\s+/));
   
@@ -241,6 +244,16 @@
       if (!state) state = buildIndex(records, options, tokenizer);
       var entries = state.entries, postings = state.postings, symbols = state.symbols, suggestions = state.suggestions;
       var symbolNames = Array.from(symbols.keys()).sort();
+      var wordNames = Array.from(postings.keys()).filter(function (key) { return key.slice(0, 2) === "w:"; }).map(function (key) { return key.slice(2); });
+      var wordNamesByLength = new Map();
+      wordNames.forEach(function (word) {
+        if (!wordNamesByLength.has(word.length)) wordNamesByLength.set(word.length, []);
+        wordNamesByLength.get(word.length).push(word);
+      });
+      var averageFieldLengths = {};
+      Object.keys(FIELD_WEIGHTS).forEach(function (field) {
+        averageFieldLengths[field] = entries.length ? entries.reduce(function (sum, entry) { return sum + entry.fields[field].words.size; }, 0) / entries.length : 1;
+      });
   
       function accepts(entry, settings) {
         var requestedModule = normalize(settings.module), requestedMode = mode(settings.mode);
@@ -283,7 +296,8 @@
               });
             });
           });
-          return finalize(direct, limit);
+          if (direct.length) return finalize(direct, limit);
+          // A misspelled code symbol may not have a prefix hit; let it reach fuzzy token matching.
         }
         if (numericQuery) {
           var numeric = [];
@@ -302,6 +316,24 @@
           (postings.get("g:" + term) || []).forEach(function (id) { candidates.add(id); });
         });
         if (!features.words.size) return [];
+        // Lightweight typo tolerance: match a missing query token to indexed terms
+        // within one edit. Exact terms always win; short single-character noise is ignored.
+        var fuzzyByEntry = new Map();
+        features.words.forEach(function (term) {
+          if (postings.has("w:" + term) || term.length < 2 || term.length > 32) return;
+          var nearbyTerms = [];
+          for (var length = Math.max(2, term.length - 1); length <= term.length + 1; length++) {
+            nearbyTerms.push.apply(nearbyTerms, wordNamesByLength.get(length) || []);
+          }
+          nearbyTerms.forEach(function (candidateTerm) {
+            if (candidateTerm === term || !withinOneEdit(term, candidateTerm)) return;
+            (postings.get("w:" + candidateTerm) || []).forEach(function (id) {
+              candidates.add(id);
+              if (!fuzzyByEntry.has(id)) fuzzyByEntry.set(id, []);
+              fuzzyByEntry.get(id).push({ queryTerm: term, matchedTerm: candidateTerm });
+            });
+          });
+        });
         var results = [], minCoverage = typeof options.minCoverage === "number" ? options.minCoverage : 2 / 3;
         var requiredTasks = Array.from(features.words).filter(function (term) { return TASK_TERMS.has(term); });
         // Long queries must retain their distinctive topic. Otherwise common words
@@ -310,9 +342,10 @@
         if (features.words.size >= 3) {
           var leastCount = Infinity;
           features.words.forEach(function (term) {
-            leastCount = Math.min(leastCount, (postings.get("w:" + term) || new Set()).size);
+            var count = (postings.get("w:" + term) || new Set()).size;
+            if (count > 0) leastCount = Math.min(leastCount, count);
           });
-          if (leastCount <= Math.max(2, entries.length * 0.1)) {
+          if (leastCount !== Infinity && leastCount <= Math.max(2, entries.length * 0.1)) {
             features.words.forEach(function (term) {
               if ((postings.get("w:" + term) || new Set()).size === leastCount) rareAnchors.push(term);
             });
@@ -322,30 +355,36 @@
           var entry = entries[id];
           if (!accepts(entry, settings)) return;
           var matched = Array.from(features.words).filter(function (term) { return entry.words.has(term); });
-          var coverage = matched.length / features.words.size;
+          var fuzzyMatches = fuzzyByEntry.get(id) || [];
+          var fuzzyQueryTerms = new Set(fuzzyMatches.map(function (item) { return item.queryTerm; }));
+          var coverage = (matched.length + fuzzyQueryTerms.size) / features.words.size;
           var aliasExact = entry.aliases.has(features.text);
           var titleExact = entry.fields.title.text === features.text;
           var titlePhrase = features.text.length >= 2 && entry.fields.title.text.indexOf(features.text) >= 0;
           var needed = features.words.size <= 2 ? 1 : minCoverage;
-          if (!aliasExact && !titleExact && (coverage + 1e-9 < needed || !matched.length)) return;
+          if (!aliasExact && !titleExact && (coverage + 1e-9 < needed || (!matched.length && !fuzzyMatches.length))) return;
           if (!aliasExact && !titleExact && !requiredTasks.every(function (term) { return entry.words.has(term); })) return;
           if (!aliasExact && !titleExact && rareAnchors.length && !rareAnchors.some(function (term) { return entry.words.has(term); })) return;
           var score = aliasExact ? 5000 : titleExact ? 6000 : titlePhrase ? 1500 : 0;
           Object.keys(FIELD_WEIGHTS).forEach(function (field) {
-            var set = entry.fields[field].words;
-            matched.forEach(function (term) {
+            var set = entry.fields[field].words, averageLength = averageFieldLengths[field] || 1;
+            var documentLength = set.size, lengthNorm = 1.2 * (0.25 + 0.75 * documentLength / averageLength);
+            function addBm25(term, boost) {
               if (!set.has(term)) return;
-              var count = (postings.get("w:" + term) || new Set()).size;
-              var idf = 1 + Math.log(1 + entries.length / (1 + count));
-              score += FIELD_WEIGHTS[field] * idf;
-            });
+              var documentFrequency = (postings.get("w:" + term) || new Set()).size;
+              var idf = Math.log(1 + (entries.length - documentFrequency + 0.5) / (documentFrequency + 0.5));
+              score += FIELD_WEIGHTS[field] * idf * (2.2 / (1 + lengthNorm)) * boost;
+            }
+            matched.forEach(function (term) { addBm25(term, 1); });
+            fuzzyMatches.forEach(function (item) { addBm25(item.matchedTerm, 0.55); });
           });
           var gramHits = 0;
           features.grams.forEach(function (term) { if (entry.grams.has(term)) gramHits++; });
           score += 30 * coverage + Math.min(6, gramHits * 0.3);
+          var matchedTerms = matched.concat(fuzzyMatches.map(function (item) { return item.queryTerm + "≈" + item.matchedTerm; }));
           results.push({ record: entry.record, score: score, _index: entry.index,
-            reason: aliasExact ? "检索别名匹配" : titleExact || titlePhrase ? "章节标题匹配" : "章节关键词匹配",
-            matchedTerms: matched });
+            reason: aliasExact ? "检索别名匹配" : titleExact || titlePhrase ? "章节标题匹配" : fuzzyMatches.length ? "模糊匹配" : "章节关键词匹配",
+            matchedTerms: matchedTerms });
         });
         return finalize(results, limit);
       }
@@ -386,7 +425,7 @@
   
       return { search: search, suggest: suggest, count: entries.length, indexStatus: restored ? "restored" : "built" };
     }
-    return { create: create, compile: compile, normalize: normalize, version: "1.1.0" };
+    return { create: create, compile: compile, normalize: normalize, version: "1.2.0" };
   }
   const api = { createSdkSearch };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaKnowledgeRetrieval = api;
