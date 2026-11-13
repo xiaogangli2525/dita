@@ -22,7 +22,7 @@
       if (value && typeof value === 'object' && !Object.isFrozen(value)) { Object.values(value).forEach(freeze); Object.freeze(value); }
       return value;
     }
-    const manifest = { schema: 1, title, model, sdkVersion, generatedAt, renderer: 'offline-knowledge-v1', search: { schema: 2, engine: 'sdk-search-1.2.0' },
+    const manifest = { schema: 1, title, model, sdkVersion, generatedAt, renderer: 'offline-knowledge-v1', search: { schema: 2, engine: 'sdk-search-1.2.1' },
       manuals: manuals.map(manual => ({ id: manual.id, title: manual.title, version: manual.version, model, capturedAt: manual.capturedAt,
         mode: manual.mode || 'other', module: manual.module || manual.title, searchEntries: manual.entries.map(entry => ({ sourcePath: entry.sourcePath || '', fingerprint: entry.fingerprint || '', kind: entry.kind || 'guide', aliases: entry.aliases || [], definedSymbols: entry.definedSymbols || [] })),
         file: 'manuals/' + manual.id + '.html', chapters: manual.entries.length, source: manual.source, report: manual.report, htmlSha256: manual.htmlSha256 })) };
@@ -34,7 +34,7 @@
     book.index = search.createSearchEngine().build(records);
     freeze(book); freeze(manifest);
     const html = reader.renderPage(book);
-    // CLI data omits rendered body/TOC HTML and reuses the same chapter text and compiled index.
+    // CLI data contains chapter text and provenance; its index is built at query time.
     const cliBook = { schema: book.schema, title: book.title, model: book.model, sdkVersion: book.sdkVersion,
       generatedAt: book.generatedAt, manuals: book.manuals.map(manual => ({
         id: manual.id, title: manual.title, version: manual.version, mode: manual.mode, module: manual.module,
@@ -51,3 +51,4 @@
   const api = { buildPackage };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaKnowledgePackage = api;
 })(typeof window === 'undefined' ? globalThis : window);
+
