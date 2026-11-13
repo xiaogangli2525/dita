@@ -3,128 +3,9 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
-const { unzipSync, Unzip, UnzipInflate } = require('fflate');
+const { bookFromPath, flatten, mergeBooks } = require('../lib/knowledge-book');
+const semantic = require('../lib/knowledge-semantic');
 const { createSearchEngine } = require('../public/knowledge-search');
-
-const MAX_ARCHIVE_BYTES = 64 * 1024 * 1024;
-const MAX_UNPACKED_BYTES = 128 * 1024 * 1024;
-
-function decode(value) {
-  return new TextDecoder('utf-8', { fatal: true }).decode(value);
-}
-
-function jsonEnd(source, start) {
-  let depth = 0, quoted = false, escaped = false;
-  for (let i = start; i < source.length; i++) {
-    const char = source[i];
-    if (quoted) {
-      if (escaped) escaped = false;
-      else if (char === '\\') escaped = true;
-      else if (char === '"') quoted = false;
-      continue;
-    }
-    if (char === '"') quoted = true;
-    else if (char === '{' || char === '[') depth++;
-    else if (char === '}' || char === ']') {
-      depth--;
-      if (depth === 0) return i + 1;
-      if (depth < 0) break;
-    }
-  }
-  throw new Error('知识库 HTML 中的结构化数据不完整');
-}
-
-function bookFromHtml(html) {
-  const script = html.indexOf('<script>');
-  const marker = html.indexOf('})({', script < 0 ? 0 : script);
-  if (marker < 0) throw new Error('找不到知识库数据。请使用新版本导出的知识库 ZIP。');
-  const start = marker + 3;
-  return parseBook(html.slice(start, jsonEnd(html, start)), '知识库 HTML');
-}
-
-function parseBook(value, sourceName) {
-  let book;
-  try { book = JSON.parse(value); }
-  catch (error) { throw new Error(sourceName + ' 不是有效的 JSON：' + error.message, { cause: error }); }
-  if (!book || book.schema !== 1 || !Array.isArray(book.manuals)) {
-    throw new Error(sourceName + ' 不是受支持的知识库数据格式');
-  }
-  const entries = book.manuals.reduce((sum, manual) => sum + (Array.isArray(manual.entries) ? manual.entries.length : 0), 0);
-  if (!book.manuals.length || !entries) throw new Error('知识库中没有可检索的章节');
-  return book;
-}
-
-function bookFromArchive(bytes) {
-  if (bytes.byteLength > MAX_ARCHIVE_BYTES) throw new Error('知识库 ZIP 超过 64 MiB 安全读取上限');
-  const candidates = ['docs/knowledge.json', 'knowledge.json', 'docs/index.html', 'index.html'];
-  const files = new Map();
-  try {
-    let count = 0;
-    // Read the directory without decompressing assets or independent manuals.
-    unzipSync(bytes, { filter(file) {
-      if (++count > 2000) throw new Error('知识库 ZIP 文件数量异常');
-      if (candidates.includes(file.name)) {
-        if (files.has(file.name)) throw new Error('知识库 ZIP 中存在重复数据文件：' + file.name);
-        files.set(file.name, file);
-      }
-      return false;
-    } });
-    const selected = candidates.find(name => files.has(name));
-    if (!selected) throw new Error('ZIP 中没有 docs/knowledge.json 或 docs/index.html');
-    if (files.get(selected).originalSize > MAX_UNPACKED_BYTES) throw new Error('知识库数据解压后超过 128 MiB 安全读取上限');
-    const chunks = [];
-    let unpacked = 0, complete = false, started = false;
-    const stream = new Unzip(file => {
-      if (file.name !== selected) return;
-      if (started) throw new Error('知识库 ZIP 中存在重复数据文件：' + selected);
-      started = true;
-      file.ondata = (error, chunk, final) => {
-        if (error) throw error;
-        unpacked += chunk.byteLength;
-        if (unpacked > MAX_UNPACKED_BYTES) throw new Error('知识库数据解压后超过 128 MiB 安全读取上限');
-        chunks.push(Buffer.from(chunk));
-        complete = final;
-      };
-      file.start();
-    });
-    stream.register(UnzipInflate);
-    // Bound each inflater input even when the ZIP's declared size is inaccurate.
-    for (let offset = 0; offset < bytes.byteLength; offset += 1024) {
-      stream.push(bytes.subarray(offset, offset + 1024), offset + 1024 >= bytes.byteLength);
-    }
-    if (!complete) throw new Error('知识库 ZIP 数据不完整');
-    const value = decode(Buffer.concat(chunks, unpacked));
-    return selected.endsWith('.json') ? parseBook(value, selected) : bookFromHtml(value);
-  } catch (error) {
-    throw new Error('无法读取知识库 ZIP：' + error.message, { cause: error });
-  }
-}
-
-function bookFromPath(input) {
-  const target = path.resolve(input);
-  if (!fs.existsSync(target)) throw new Error('知识库路径不存在：' + target);
-  const stat = fs.statSync(target);
-  if (stat.isDirectory()) {
-    const candidates = [
-      path.join(target, 'docs', 'knowledge.json'),
-      path.join(target, 'knowledge.json'),
-      path.join(target, 'docs', 'index.html'),
-      path.join(target, 'index.html')
-    ];
-    const found = candidates.find(candidate => fs.existsSync(candidate) && fs.statSync(candidate).isFile());
-    if (!found) throw new Error('目录中没有 knowledge.json 或 index.html：' + target);
-    if (fs.statSync(found).size > MAX_ARCHIVE_BYTES) throw new Error('知识库文件超过 64 MiB 安全读取上限');
-    const value = fs.readFileSync(found);
-    return found.endsWith('.json') ? parseBook(value.toString('utf8'), found) : bookFromHtml(value.toString('utf8'));
-  }
-  if (!stat.isFile()) throw new Error('知识库路径不是普通文件：' + target);
-  if (stat.size > MAX_ARCHIVE_BYTES) throw new Error('知识库文件超过 64 MiB 安全读取上限');
-  const value = fs.readFileSync(target);
-  if (/\.zip$/i.test(target)) return bookFromArchive(value);
-  if (/\.json$/i.test(target)) return parseBook(value.toString('utf8'), target);
-  if (/\.html?$/i.test(target)) return bookFromHtml(value.toString('utf8'));
-  throw new Error('不支持的知识库文件类型，请使用 ZIP、JSON 或 HTML');
-}
 
 function defaultKnowledgePath() {
   const candidates = [
@@ -141,11 +22,15 @@ function defaultKnowledgePath() {
 }
 
 function parseArgs(args) {
-  const options = { query: [], json: false, limit: 10 };
-  const values = new Set(['--kb', '--limit', '--manual', '--module', '--mode', '--get']);
+  const options = { query: [], json: false, limit: 10, merge: [] };
+  const values = new Set(['--kb', '--limit', '--manual', '--module', '--mode', '--get', '--search', '--build-index']);
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
-    if (arg === '--json') options.json = true;
+    if (arg === '--merge') {
+      if (!args[i + 1] || args[i + 1].startsWith('--')) throw Error('--merge 缺少参数');
+      options.merge.push(args[++i]);
+      if (options.merge.length > 29) throw Error('最多合并 30 个知识库包');
+    } else if (arg === '--json') options.json = true;
     else if (arg === '--list') options.list = true;
     else if (arg === '--info') options.info = true;
     else if (arg === '--help' || arg === '-h') options.help = true;
@@ -160,9 +45,10 @@ function parseArgs(args) {
     options.limit = Number(options.limit);
     if (!Number.isInteger(options.limit) || options.limit < 1 || options.limit > 50) throw new Error('--limit 必须是 1～50 的整数');
   }
-  if ([options.list, options.info, Boolean(options.get)].filter(Boolean).length > 1) throw new Error('--list、--info 和 --get 不能同时使用');
-  if ((options.list || options.info || options.get) && options.query.length) throw new Error('管理命令不能同时带搜索问题');
-  if (!options.list && !options.info && !options.get && !options.query.length && !options.help) throw new Error('请输入搜索内容，或使用 --list / --info');
+  if (options.search && !['auto', 'lexical', 'hybrid', 'semantic'].includes(options.search)) throw Error('--search 须为 auto、lexical、hybrid 或 semantic');
+  if ([options.list, options.info, Boolean(options.get), Boolean(options['build-index'])].filter(Boolean).length > 1) throw new Error('管理命令不能同时使用');
+  if ((options.list || options.info || options.get || options['build-index']) && options.query.length) throw new Error('管理命令不能同时带搜索问题');
+  if (!options.list && !options.info && !options.get && !options['build-index'] && !options.query.length && !options.help) throw new Error('请输入搜索内容，或使用 --list / --info');
   return options;
 }
 
@@ -174,13 +60,6 @@ function resolveManual(book, value) {
   if (matches.length === 1) return matches[0];
   if (matches.length > 1) throw new Error('--manual 匹配到多份手册，请使用完整手册名称或 ID');
   throw new Error('找不到手册：' + value);
-}
-
-function flatten(book) {
-  return book.manuals.flatMap(manual => manual.entries.map(entry => ({
-    ...entry, manualId: manual.id, manualTitle: manual.title, mode: manual.mode || 'other',
-    module: manual.module || manual.title
-  })));
 }
 
 function sourceFor(book, manualId) {
@@ -198,7 +77,7 @@ function shellQuote(value) {
   return "'" + value.replace(/'/g, quote) + "'";
 }
 
-function main() {
+async function main() {
   let options;
   try { options = parseArgs(process.argv.slice(2)); }
   catch (error) { process.stderr.write('错误：' + error.message + '\n'); process.exitCode = 2; return; }
@@ -224,6 +103,9 @@ function main() {
       '  --list            列出手册',
       '  --info            显示知识库版本和来源',
       '  --get <引用>      读取完整章节，引用格式为 manualId#anchor',
+      '  --search <方式>   auto（默认）、lexical、hybrid、semantic；后两项需要离线模型与语义索引',
+      '  --build-index <文件.json>  为发布内容生成离线语义索引，写入新 JSON 文件',
+      '  --merge <路径>    加入其它手册包，可重复指定；产品型号和 SDK 版本须一致',
       '',
       '知识库路径优先级：--kb、BLINK_KB 环境变量、当前目录下 docs/knowledge.json、docs/index.html，或唯一的 *knowledge*.zip。'
     ].join('\n') + '\n');
@@ -234,9 +116,23 @@ function main() {
     const selectedPath = options.kb || defaultKnowledgePath();
     if (!selectedPath) throw new Error('没有找到知识库。请使用 --kb 指定 ZIP/目录，或设置 BLINK_KB 环境变量。');
     const knowledgePath = path.resolve(selectedPath);
-    const book = bookFromPath(knowledgePath);
-    const knowledgeBase = { path: knowledgePath, title: book.title, model: book.model, sdkVersion: book.sdkVersion };
+    const knowledgePaths = [knowledgePath, ...options.merge.map(name => path.resolve(name))];
+    const books = knowledgePaths.map(bookFromPath), book = books.length === 1 ? books[0] : mergeBooks(books);
+    const knowledgeBase = { path: knowledgePath, paths: knowledgePaths, title: book.title, model: book.model, sdkVersion: book.sdkVersion };
     const records = flatten(book);
+    if (options['build-index']) {
+      const target = path.resolve(options['build-index']);
+      if (!target.endsWith('.json')) throw Error('语义知识库请使用 .json 文件名');
+      if (fs.existsSync(target)) throw Error('输出文件已存在，请使用新的文件名：' + target);
+      const index = book.semantic || await semantic.build(records, (done, total) => process.stderr.write('正在离线向量化 ' + done + '/' + total + '\n'));
+      require('../public/knowledge-semantic').validate(records, index);
+      const output = { ...book, index: undefined, semantic: index,
+        manuals: book.manuals.map(({ body: _body, toc: _toc, ...manual }) => manual) };
+      fs.writeFileSync(target, JSON.stringify(output), { flag: 'wx' });
+      if (options.json) outputJson({ schema: 1, path: target, model: book.model, profile: index.profile.id, chunks: index.chunks.length });
+      else process.stdout.write('已生成离线语义知识库：' + target + '\n');
+      return;
+    }
     const engine = createSearchEngine();
     const engineVersion = require('../public/knowledge-retrieval').createSdkSearch().version;
     let searchIndex = book.index?.compiled ? book.index : null;
@@ -245,7 +141,7 @@ function main() {
     if (options.info) {
       const info = { schema: 1, title: book.title, model: book.model, sdkVersion: book.sdkVersion,
         generatedAt: book.generatedAt, manualCount: book.manuals.length, chapterCount: records.length,
-        searchEngine: engineVersion, manuals: book.manuals.map(manual => ({
+        searchEngine: engineVersion, semantic: book.semantic ? { profile: book.semantic.profile.id, chunks: book.semantic.chunks.length } : null, manuals: book.manuals.map(manual => ({
           id: manual.id, title: manual.title, version: manual.version, chapters: manual.entries.length,
           module: manual.module || manual.title, source: sourceFor(book, manual.id)
         })) };
@@ -286,27 +182,40 @@ function main() {
     const query = options.query.join(' ').trim();
     if (query.length > 500) throw new Error('搜索内容不能超过 500 个字符');
     const filters = { module: options.module || '', mode: options.mode || '' };
-    const hits = engine.search(records, ensureSearchIndex(), query, manual?.id || '', options.limit, filters);
+    let searchMode = options.search || 'auto';
+    if (searchMode === 'auto') searchMode = book.semantic ? 'hybrid' : 'lexical';
+    const lexical = engine.search(records, ensureSearchIndex(), query, manual?.id || '', 50, filters);
+    // Exact command names and error codes retain their existing hard constraints.
+    const exactLookup = /^(?:at\+[a-z0-9_]+|[a-z_][a-z0-9_]*_[a-z0-9_]*|-?\d+)$/i.test(query) || /(?:错误|状态码|返回值|结果码|返回).*\d|\d.*(?:错误|状态码)/i.test(query);
+    let hits = lexical.slice(0, options.limit);
+    if (searchMode !== 'lexical' && !exactLookup) {
+      if (!book.semantic) throw Error('此知识库尚无语义索引，请在工作台勾选离线语义索引后重新发布，或由发布人员使用 --build-index 生成');
+      hits = await semantic.search(records, book.semantic, query, lexical, { ...filters, manualId: manual?.id || '', limit: options.limit, semanticOnly: searchMode === 'semantic' });
+    }
     const results = hits.map(hit => {
       const record = records[hit.position], source = sourceFor(book, record.manualId);
+      const entity = query.match(/\b(?:https?|ftp|mqtt|webui|gpio|pdp|apn|ssl|tls|tcp|udp|dns|ntp)\b/i)?.[0];
+      const bodyMention = entity && record.text.toLowerCase().includes(entity.toLowerCase()) && ![record.title, record.manualTitle, record.module].join(' ').toLowerCase().includes(entity.toLowerCase());
       return { id: record.manualId + '#' + record.anchor, title: record.title, manual: record.manualTitle,
         manualId: record.manualId, module: record.module, mode: record.mode, anchor: record.anchor,
-        score: hit.score, reason: hit.reason, matchedTerms: hit.matchedTerms,
+        score: hit.score, reason: hit.reason + (bodyMention ? ' · 正文提及 ' + entity : ''), matchedTerms: hit.matchedTerms,
+        evidence: bodyMention ? 'body-mention' : 'chapter-match',
         sourcePath: record.sourcePath || '', fingerprint: record.fingerprint || '',
-        excerpt: engine.excerpt(record.text, query), source };
+        excerpt: hit.excerpt || engine.excerpt(record.text, query), semanticScore: hit.semanticScore, source };
     });
     if (options.json) outputJson({ schema: 1, query, knowledgeBase,
-      searchEngine: engineVersion, count: results.length, results });
+      searchEngine: engineVersion, searchMode, count: results.length, results });
     else if (!results.length) process.stdout.write('没有找到相关内容：' + query + '\n');
     else {
-      process.stdout.write('知识库：' + book.title + '\n搜索：' + query + '\n找到 ' + results.length + ' 条相关内容\n\n');
+      process.stdout.write('知识库：' + book.title + '\n搜索：' + query + '\n找到 ' + results.length + ' 条相关内容' + (searchMode === 'lexical' ? '' : ' · 离线混合检索，请结合原文核对') + '\n\n');
+      if (results.every(result => result.evidence === 'body-mention')) process.stdout.write('当前命中来自正文提及，请读取原文核对是否包含完整使用步骤。\n\n');
       results.forEach((result, index) => {
         process.stdout.write('[' + (index + 1) + '] ' + result.title + '\n');
         process.stdout.write('    手册：' + result.manual + ' · 模块：' + result.module + '\n');
         process.stdout.write('    匹配：' + result.reason + ' · 相关度：' + result.score + '\n');
         process.stdout.write('    摘要：' + result.excerpt + '\n');
         process.stdout.write('    来源：' + (result.source.repository || '未知') + ' / ' + (result.source.commit || '无提交记录') + '\n');
-        process.stdout.write('    读取：blink-cli --kb ' + shellQuote(knowledgePath) + ' --get ' + shellQuote(result.id) + '\n\n');
+        process.stdout.write('    读取：blink-cli --kb ' + shellQuote(knowledgePath) + options.merge.map(name => ' --merge ' + shellQuote(path.resolve(name))).join('') + ' --get ' + shellQuote(result.id) + '\n\n');
       });
     }
   } catch (error) {

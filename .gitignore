@@ -6,3 +6,6 @@ web/
 *.cjs
 .codex/
 ai-acceptance-report*.json
+
+models/
+dist/

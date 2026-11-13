@@ -25,7 +25,7 @@
       "或 呢 么 吗 在 把 将 有 时 中 到 为 对 从 下 上 是 要 不 都 不能 无法 为什么 怎么 模块 模组 一直 总是 怎么办 查看 有哪些 多少 哪些 已经 适合 意思 是什么 在哪里 加"
     ).split(/\s+/);
     var FIELD_WEIGHTS = { title: 9, aliases: 7, symbols: 7, docTitle: 2, text: 1 };
-    var INDEX_FORMAT = "sdk-search/1.2.1";
+    var INDEX_FORMAT = "sdk-search/1.2.2";
     var TASK_TERMS = new Set(("创建 删除 打开 读取 写入 关闭 移动 重命名 上传 下载 " +
       "初始化 同步 刷新 挂载 分配 释放 失败 超时 阻塞").split(/\s+/));
   
@@ -325,7 +325,7 @@
         // within one edit. Exact terms always win; short single-character noise is ignored.
         var fuzzyByEntry = new Map();
         features.words.forEach(function (term) {
-          if (postings.has("w:" + term) || term.length < 2 || term.length > 32 || /^-?\d/.test(term)) return;
+          if (postings.has("w:" + term) || term.length < 2 || term.length > 32 || /^-?\d/.test(term) || /[\u3400-\u9fff]/.test(term)) return;
           var nearbyTerms = [];
           for (var length = Math.max(2, term.length - 1); length <= term.length + 1; length++) {
             nearbyTerms.push.apply(nearbyTerms, wordNamesByLength.get(length) || []);
@@ -434,7 +434,7 @@
   
       return { search: search, suggest: suggest, count: entries.length, indexStatus: restored ? "restored" : "built" };
     }
-    return { create: create, compile: compile, normalize: normalize, version: "1.2.1" };
+    return { create: create, compile: compile, normalize: normalize, version: "1.2.2" };
   }
   const api = { createSdkSearch };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaKnowledgeRetrieval = api;

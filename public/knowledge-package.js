@@ -4,8 +4,9 @@
   const reader = typeof module !== 'undefined' ? require('./knowledge-reader') : root.DitaKnowledgeReader;
   const search = typeof module !== 'undefined' ? require('./knowledge-search') : root.DitaKnowledgeSearch;
   const zip = typeof module !== 'undefined' ? require('./knowledge-zip') : root.DitaKnowledgeZip;
+  const semanticData = typeof module !== 'undefined' ? require('./knowledge-semantic') : root.DitaKnowledgeSemantic;
   /** @param {import('./knowledge-contracts').KnowledgeRequest} request */
-  function buildPackage({ title, model, sdkVersion, manuals, generatedAt = new Date().toISOString() }) {
+  function buildPackage({ title, model, sdkVersion, manuals, semantic, generatedAt = new Date().toISOString() }) {
     title = String(title || '').trim(); model = String(model || '').trim(); sdkVersion = String(sdkVersion || '').trim();
     if (!title || title.length > 160 || !sdkVersion || sdkVersion.length > 80 || !/^[\p{L}\p{N}][\p{L}\p{N}._-]{0,79}$/u.test(model)) throw new Error('请填写标题、有效型号和 SDK 版本');
     if (!manuals?.length || manuals.length > 30) throw new Error('请加入 1～30 份手册');
@@ -22,7 +23,9 @@
       if (value && typeof value === 'object' && !Object.isFrozen(value)) { Object.values(value).forEach(freeze); Object.freeze(value); }
       return value;
     }
-    const manifest = { schema: 1, title, model, sdkVersion, generatedAt, renderer: 'offline-knowledge-v1', search: { schema: 2, engine: 'sdk-search-1.2.1' },
+    semantic = semantic ? structuredClone(semantic) : undefined;
+    const manifest = { schema: 1, title, model, sdkVersion, generatedAt, renderer: 'offline-knowledge-v1', search: { schema: 2, engine: 'sdk-search-1.2.2' },
+      ...(semantic ? { semantic: { profile: semantic.profile, chunks: semantic.chunks.length } } : {}),
       manuals: manuals.map(manual => ({ id: manual.id, title: manual.title, version: manual.version, model, capturedAt: manual.capturedAt,
         mode: manual.mode || 'other', module: manual.module || manual.title, searchEntries: manual.entries.map(entry => ({ sourcePath: entry.sourcePath || '', fingerprint: entry.fingerprint || '', kind: entry.kind || 'guide', aliases: entry.aliases || [], definedSymbols: entry.definedSymbols || [] })),
         file: 'manuals/' + manual.id + '.html', chapters: manual.entries.length, source: manual.source, report: manual.report, htmlSha256: manual.htmlSha256 })) };
@@ -31,12 +34,13 @@
       version: manual.version, mode: manual.mode || 'other', module: manual.module || manual.title, body: manual.body, toc: manual.toc, entries: manual.entries,
       source: { repository: manual.source.repository, commit: manual.source.commit, dirty: manual.source.dirty } })) };
     const records = book.manuals.flatMap(manual => manual.entries.map(entry => ({ ...entry, manualId: manual.id, manualTitle: manual.title, mode: manual.mode, module: manual.module })));
+    if (semantic) semanticData.validate(records, semantic);
     book.index = search.createSearchEngine().build(records);
     freeze(book); freeze(manifest);
     const html = reader.renderPage(book);
     // CLI data contains chapter text and provenance; its index is built at query time.
     const cliBook = { schema: book.schema, title: book.title, model: book.model, sdkVersion: book.sdkVersion,
-      generatedAt: book.generatedAt, manuals: book.manuals.map(manual => ({
+      generatedAt: book.generatedAt, ...(semantic ? { semantic } : {}), manuals: book.manuals.map(manual => ({
         id: manual.id, title: manual.title, version: manual.version, mode: manual.mode, module: manual.module,
         entries: manual.entries, source: manual.source
       })) };

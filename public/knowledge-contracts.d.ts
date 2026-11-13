@@ -36,7 +36,7 @@ export interface KnowledgeBook {
   index: SearchIndex;
 }
 export interface KnowledgeRequest { readonly title: string; readonly model: string; readonly sdkVersion: string;
-  readonly manuals: readonly KnowledgeManual[]; readonly generatedAt?: string }
+  readonly manuals: readonly KnowledgeManual[]; readonly generatedAt?: string; readonly semantic?: import('./knowledge-semantic').SemanticIndex }
 export interface ArchiveFile { readonly name: string; readonly content: string | Uint8Array<ArrayBuffer> }
 
 export interface KnowledgeReceipt { readonly repositoryRoot: string; readonly branch: string; readonly revision: string; readonly commit: string;

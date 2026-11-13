@@ -32,3 +32,23 @@ jobs:
       - run: npx playwright-core install --with-deps chromium
       - run: sudo apt-get install -y poppler-utils
       - run: npm run test:browser
+  semantic-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run prepare:semantic
+      - run: node scripts/check-semantic.js dist/smoke.json
+      - run: npm run build:blink -- dist/smoke.json
+      - shell: pwsh
+        run: |
+          Expand-Archive dist/blink-cli-windows-x64.zip -DestinationPath dist/unpacked
+          Set-Location dist/unpacked/blink-cli
+          $json = & .\blink-cli.cmd '日志抓取方法' --search semantic --json
+          if ($LASTEXITCODE -ne 0) { throw 'Portable CLI failed' }
+          $result = $json | ConvertFrom-Json
+          if ($result.results[0].title -ne '日志抓取方法') { throw 'Portable search returned an unexpected chapter' }

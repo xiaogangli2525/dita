@@ -157,3 +157,23 @@ test('CLI bounds actual decompressed data even when ZIP size metadata is inaccur
   assert.match(result.stderr, /解压后超过 128 MiB/);
 });
 
+test('CLI merges compatible manual packs and keeps chapter reads bound to every source', t => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'blink-cli-merge-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const first = structuredClone(fixture().book), second = structuredClone(first);
+  second.manuals[0].id = 'm-fedcba9876543210'; second.manuals[0].title = '独立功能';
+  second.manuals[0].entries[0].text = 'SECOND_MANUAL_CONTENT';
+  const a = path.join(dir, 'a.json'), b = path.join(dir, 'b.json');
+  fs.writeFileSync(a, JSON.stringify(first)); fs.writeFileSync(b, JSON.stringify(second));
+  const info = run(['--kb', a, '--merge', b, '--info', '--json']);
+  assert.equal(info.status, 0, info.stderr);
+  assert.equal(JSON.parse(info.stdout).manualCount, 2);
+  const ref = second.manuals[0].id + '#' + second.manuals[0].entries[0].anchor;
+  const get = run(['--kb', a, '--merge', b, '--get', ref, '--json']);
+  assert.equal(get.status, 0, get.stderr);
+  assert.match(JSON.parse(get.stdout).text, /SECOND_MANUAL_CONTENT/);
+  assert.deepEqual(JSON.parse(get.stdout).knowledgeBase.paths, [a, b]);
+  const duplicate = run(['--kb', a, '--merge', a, '--info']);
+  assert.equal(duplicate.status, 1); assert.match(duplicate.stderr, /重复手册/);
+});
+

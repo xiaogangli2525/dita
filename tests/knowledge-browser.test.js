@@ -49,6 +49,17 @@ test('real HTTP knowledge delivery works across repositories and from a moved of
     assert.equal(await frame.locator('#kbArticle .export-footnotes > ol > li').count(), 25);
     await page.click('#knowledgePreviewClose'); await page.click('#knowledgeClose');
   });
+  if (process.env.BLINK_MODELS) await stage('the normal export entry produces a content-bound offline semantic index', async () => {
+    await page.click('#knowledgeButton'); await page.check('#knowledgeSemantic');
+    const result = await download(), archive = unzipSync(new Uint8Array(result.bytes));
+    const book = JSON.parse(strFromU8(archive['docs/knowledge.json']));
+    const { flatten } = require('../lib/knowledge-book'), { validate } = require('../public/knowledge-semantic');
+    assert.ok(book.semantic.chunks.length > 24);
+    assert.equal(validate(flatten(book), book.semantic).length, book.semantic.chunks.length * 512);
+    const manifest = JSON.parse(strFromU8(archive['docs/manifest.json']));
+    assert.equal(manifest.semantic.profile.id, 'bge-small-zh-int8-cls-v1');
+    await page.uncheck('#knowledgeSemantic'); await page.click('#knowledgeClose');
+  });
   await stage('switching repositories preserves the first snapshot, namespaces same-path Topics and excludes other models from the index', async () => {
     await page.selectOption('#repositorySelect', extra); await page.waitForFunction(extra => window.DitaApp.state.root === extra, extra);
     await page.evaluate(() => window.DitaApp.openFile('extra.ditamap')); await page.click('#knowledgeButton');
