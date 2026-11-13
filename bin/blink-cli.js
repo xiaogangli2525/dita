@@ -46,7 +46,7 @@ function parseBook(value, sourceName) {
   let book;
   try { book = JSON.parse(value); }
   catch (error) { throw new Error(sourceName + ' 不是有效的 JSON：' + error.message, { cause: error }); }
-  if (!book || book.schema !== 1 || !Array.isArray(book.manuals) || !book.index || !book.index.compiled) {
+  if (!book || book.schema !== 1 || !Array.isArray(book.manuals)) {
     throw new Error(sourceName + ' 不是受支持的知识库数据格式');
   }
   const entries = book.manuals.reduce((sum, manual) => sum + (Array.isArray(manual.entries) ? manual.entries.length : 0), 0);
@@ -198,6 +198,8 @@ function main() {
     const records = flatten(book);
     const engine = createSearchEngine();
     const engineVersion = require('../public/knowledge-retrieval').createSdkSearch().version;
+    let searchIndex = book.index?.compiled ? book.index : null;
+    function ensureSearchIndex() { if (!searchIndex) searchIndex = engine.build(records); return searchIndex; }
 
     if (options.info) {
       const info = { schema: 1, title: book.title, model: book.model, sdkVersion: book.sdkVersion,
@@ -242,7 +244,7 @@ function main() {
     const manual = options.manual ? resolveManual(book, options.manual) : null;
     const query = options.query.join(' ').trim();
     const filters = { module: options.module || '', mode: options.mode || '' };
-    const hits = engine.search(records, book.index, query, manual?.id || '', options.limit, filters);
+    const hits = engine.search(records, ensureSearchIndex(), query, manual?.id || '', options.limit, filters);
     const results = hits.map(hit => {
       const record = records[hit.position], source = sourceFor(book, record.manualId);
       return { id: record.manualId + '#' + record.anchor, title: record.title, manual: record.manualTitle,
