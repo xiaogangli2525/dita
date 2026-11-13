@@ -58,10 +58,11 @@
 
 ## 命令行检索
 
-安装本项目的 CLI 后，可以直接查询离线知识库：
+在项目根目录安装 Node.js 20+ 后，可用 `npm link` 注册本机命令；也可以直接运行 `node bin/blink-cli.js`。之后可查询离线知识库：
 
 ```bash
-blink-cli "HTTP请求头怎么设置"
+npm link
+blink-cli --kb ./ML307G-SDK-Preview-Knowledge.zip "HTTP请求头怎么设置"
 blink-cli "AT+MHTTPREAD" --json
 blink-cli --list
 blink-cli --info
