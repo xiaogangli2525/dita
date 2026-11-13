@@ -81,56 +81,67 @@ test('SDK retrieval supports aliases, prefix suggestions, definition priority, s
 });
 
 
-test('MR380R four-manual benchmark covers natural-language questions, domain synonyms, typos and exact API lookup', () => {
+test('uploaded ML307G knowledge ZIP benchmark covers all 26 real chapter entries', () => {
   const engine = createSearchEngine();
-  // Compact benchmark records distilled from the four supplied manuals.
-  // No full customer manual text is copied into the test fixture.
-  const records = [
-    { manualId: 'sdk', manualTitle: 'SDK开发指导手册', title: '搭建编译环境', text: 'SDK开发包自带编译必需工具，解压至非中文路径完成编译环境搭建。', module: 'SDK开发指导手册' },
-    { manualId: 'sdk', manualTitle: 'SDK开发指导手册', title: '编译SDK', text: 'scons -h 查看帮助，scons target=userapp 编译用户程序。', module: 'SDK开发指导手册' },
-    { manualId: 'sdk', manualTitle: 'SDK开发指导手册', title: '下载固件', text: '下载方式参考对应型号模组的维护诊断工具用户手册。', module: 'SDK开发指导手册' },
-    { manualId: 'sdk', manualTitle: 'SDK开发指导手册', title: '固件下载工具简介', text: '固件下载支持多种工具，不同型号使用适配的下载工具。', module: 'SDK开发指导手册' },
-    { manualId: 'sdk', manualTitle: 'SDK开发指导手册', title: 'LOG抓取', text: '程序调试期间使用USB或UART方式抓取日志，辅助问题分析。', module: 'SDK开发指导手册' },
-    { manualId: 'sdk', manualTitle: 'SDK开发指导手册', title: '死机现场查看', text: '参考维护诊断工具用户手册查看模组死机现场。', module: 'SDK开发指导手册' },
-    { manualId: 'sdk', manualTitle: 'SDK开发指导手册', title: '用户入口函数', text: 'cm_opencpu_entry 系统初始化过程中调用，执行初始化和业务线程创建。', symbols: ['cm_opencpu_entry'], definedSymbols: ['cm_opencpu_entry'], module: 'SDK开发指导手册' },
-    { manualId: 'resource', manualTitle: 'OpenCPU资源综述', title: '内存资源', text: 'RAM最大可用空间可通过cm_mem_get_heap_stats函数查询，包含堆栈空间和文件系统资源。', symbols: ['cm_mem_get_heap_stats'], definedSymbols: ['cm_mem_get_heap_stats'], module: 'OpenCPU资源综述' },
-    { manualId: 'resource', manualTitle: 'OpenCPU资源综述', title: '引脚资源', text: '介绍模组引脚资源、引脚分配、GPIO复用功能和引脚初始电平。', symbols: ['AP_READY', 'SLEEP_IND', 'W_DISABLE'], module: 'OpenCPU资源综述' },
-    { manualId: 'resource', manualTitle: 'OpenCPU资源综述', title: '外设资源', text: 'UART、IIC、GPIO、PWM、SPI接口数量及复用说明。', module: 'OpenCPU资源综述' },
-    { manualId: 'resource', manualTitle: 'OpenCPU资源综述', title: '其他使用说明', text: '驻网时间常规情况约7s到12s，信号差时驻网时间会变长。', module: 'OpenCPU资源综述' },
-    { manualId: 'dialup', manualTitle: '拨号上网开发指导手册', title: '功能介绍', text: '数据拨号模块用于移动网络激活拨号和网络设备管理，提供cm_modem_call、PDP上下文、APN和自动联网功能。', symbols: ['cm_modem_call', 'cm_modem_set_pdp_context', 'cm_modem_set_default_apn'], definedSymbols: ['cm_modem_call', 'cm_modem_set_pdp_context', 'cm_modem_set_default_apn'], module: '拨号上网开发指导手册' },
-    { manualId: 'dialup', manualTitle: '拨号上网开发指导手册', title: 'API说明', text: '具体接口定义查阅cm_modem.h及cm_dialup.h，包含APN和PDP上下文结构体。', symbols: ['cm_modem', 'cm_dialup', 'cm_default_apn_t'], definedSymbols: ['cm_default_apn_t'], module: '拨号上网开发指导手册' },
-    { manualId: 'dialup', manualTitle: '拨号上网开发指导手册', title: '使用示例', text: 'SDK示例程序cm_demo_modem包含pdp_set、call_get和拨号状态回调。', symbols: ['cm_demo_modem'], module: '拨号上网开发指导手册' },
-    { manualId: 'dialup', manualTitle: '拨号上网开发指导手册', title: '调试方法', text: '通过modem pdp_get、pdp_set、call_get、call和discall命令测试数据连接。', module: '拨号上网开发指导手册' },
-    { manualId: 'dialup', manualTitle: '拨号上网开发指导手册', title: '注意事项', text: '默认自动连接，修改APN前建议关闭自动联网，设置PDP上下文后建立数据连接。', module: '拨号上网开发指导手册' },
-    { manualId: 'webui', manualTitle: 'WebUI开发指导手册', title: '前端UI', text: '前端网页视觉展示和基本操作，使用HTML、CSS和JavaScript实现。', module: 'WebUI开发指导手册' },
-    { manualId: 'webui', manualTitle: 'WebUI开发指导手册', title: '后端WebServer', text: '模组后端Web Server使用Mongoose，负责服务端运行逻辑。', module: 'WebUI开发指导手册' },
-    { manualId: 'webui', manualTitle: 'WebUI开发指导手册', title: '前后端交互', text: '前端和后端采用HTTP socket通讯，使用AJAX和XML数据格式交互。', module: 'WebUI开发指导手册' },
-    { manualId: 'webui', manualTitle: 'WebUI开发指导手册', title: '前端定制开发', text: '在xml/ui_mifi.xml添加条目，创建HTML、XML和JS文件完成前端定制。', module: 'WebUI开发指导手册' },
-    { manualId: 'webui', manualTitle: 'WebUI开发指导手册', title: '后端定制开发', text: '在kernel webserver目录和applet_array.c中添加后端模块。', module: 'WebUI开发指导手册' },
-    { manualId: 'webui', manualTitle: 'WebUI开发指导手册', title: '开发示例', text: '通过添加SIM卡管理功能示例展示WebUI开发流程。', module: 'WebUI开发指导手册' }
+  // Chapter titles and short search-relevant excerpts are distilled from the uploaded
+  // ML307G-SDK-Preview-Knowledge.zip. The customer ZIP itself is not copied into the repo.
+  const manualId = 'http';
+  const manualTitle = 'HTTP/HTTPS用户手册';
+  const rows = [
+    ['服务与支持', '关于模组产品及产品手册的评论、疑问和技术支持联系方式。', 'guide'],
+    ['文档声明', '产品特性取决于当地网络设计、网络性能和预先安装的软件。', 'guide'],
+    ['关于文档', '修订记录、版本描述、参数设置和内容更新。', 'guide'],
+    ['引言', '基于HTTP/HTTPS通信协议定义相关AT命令及其操作流程。', 'guide'],
+    ['适用型号', '适用模组和模组子型号列表，包含ML307G和MR380R-RC。', 'guide'],
+    ['AT命令概述', '介绍AT命令定义及其语法格式，通过AT命令控制模组功能。', 'reference'],
+    ['AT命令语法', 'AT命令必须以AT或at开头，以回车符CR结尾，后面跟随响应。', 'reference'],
+    ['AT命令响应', 'ERROR表示AT命令格式错误或其他错误，OK表示命令执行成功。', 'reference'],
+    ['HTTP/HTTPS协议AT命令', '详细描述HTTP/HTTPS协议相关的AT命令和命令格式。', 'reference'],
+    ['AT+MHTTPCFG 参数设置', '设置客户端实例通用配置参数，包括header、cached和ssl_id。', 'reference', ['AT+MHTTPCFG']],
+    ['AT+MHTTPCREATE 创建HTTP实例', '创建HTTP实例并初始化相关内容，最多可同时建立4个实例。', 'reference', ['AT+MHTTPCREATE']],
+    ['AT+MHTTPHEADER 设置HTTP特定报头', '设置HTTP特定报头header及其长度和内容。', 'reference', ['AT+MHTTPHEADER']],
+    ['AT+MHTTPCONTENT 设置HTTP CONTENT数据', '设置HTTP content数据，提供请求内容和数据长度。', 'reference', ['AT+MHTTPCONTENT']],
+    ['AT+MHTTPREQUEST 发送HTTP请求', '发送HTTP请求，支持GET、PUT和POST请求方法。', 'reference', ['AT+MHTTPREQUEST']],
+    ['AT+MHTTPREAD 读取HTTP数据', '读取缓存模式下的HTTP缓存数据和响应内容。', 'reference', ['AT+MHTTPREAD']],
+    ['AT+MHTTPDEL 删除HTTP实例', '删除已创建的实例，并清空该实例所有配置。', 'reference', ['AT+MHTTPDEL']],
+    ['AT+MHTTPTERM 终止HTTP传输', '终止当前HTTP传输，支持终止指定客户端实例。', 'reference', ['AT+MHTTPTERM']],
+    ['AT+MHTTPDLFILE HTTP下载文件', '下载数据到文件系统，无需创建实例，支持URL和本地路径。', 'reference', ['AT+MHTTPDLFILE']],
+    ['+MHTTPURC URC信息上报', 'HTTP报头接收URC、content接收URC和错误事件URC主动上报。', 'guide', ['+MHTTPURC']],
+    ['示例', 'HTTP/HTTPS命令在相关业务场景中的使用流程。', 'example'],
+    ['HTTP示例', 'HTTP操作流程，包含实例创建、参数配置、GET、PUT和POST请求。', 'example'],
+    ['HTTPS示例', 'HTTPS GET请求流程，包含SSL证书写入和HTTPS配置。', 'example'],
+    ['缓存模式', '介绍缓存模式使用步骤及注意事项，获取大数据时不建议使用缓存模式。', 'guide'],
+    ['HTTP下载文件', '介绍下载数据到文件系统的步骤，重要型号限制说明。', 'guide'],
+    ['错误码', 'HTTP/HTTPS命令相关错误码，包含656连接失败、651无空闲客户端等。', 'guide']
   ];
+  const records = rows.map(([title, text, kind, symbols = []], index) => ({
+    id: String(index), manualId, manualTitle, title, text, kind, mode: 'AT', module: 'HTTP',
+    symbols, definedSymbols: symbols
+  }));
+  records.push({ ...records[21], id: '25', manualId: 'https-sample', manualTitle: 'HTTPS示例', title: 'HTTPS示例' });
   const index = engine.build(records);
+  assert.equal(records.length, 26);
   const cases = [
-    ['模块上不了网', '功能介绍'],
-    ['怎么烧录固件', '下载固件'],
-    ['编译环景', '搭建编译环境'],
-    ['抓取日志', 'LOG抓取'],
-    ['死机现场怎么查', '死机现场查看'],
-    ['查看剩余内存', '内存资源'],
-    ['可用内存', '内存资源'],
-    ['网页怎么定制', '前端定制开发'],
-    ['后台服务在哪', '后端WebServer'],
-    ['前后端怎么通信', '前后端交互'],
-    ['网络注册要多久', '其他使用说明'],
-    ['cm_modem_call', '功能介绍'],
-    ['cm_modem_cali', '功能介绍'],
-    ['cm_mem_get_heap_stats', '内存资源'],
-    ['APN怎么设置', '注意事项'],
-    ['PDP数据连接如何激活', '功能介绍'],
-    ['怎么查看有哪些GPIO引脚', '引脚资源'],
-    ['串口和SPI接口有多少', '外设资源'],
-    ['如何添加SIM卡管理页面', '开发示例'],
-    ['如何关闭自动联网', '注意事项']
+    ['HTTP请求头怎么设置', 'AT+MHTTPHEADER 设置HTTP特定报头'],
+    ['怎么创建HTTP客户端实例', 'AT+MHTTPCREATE 创建HTTP实例'],
+    ['给POST请求添加请求内容', 'AT+MHTTPCONTENT 设置HTTP CONTENT数据'],
+    ['如何发起GET请求', 'AT+MHTTPREQUEST 发送HTTP请求'],
+    ['读取HTTP缓存数据', 'AT+MHTTPREAD 读取HTTP数据'],
+    ['删除已经创建的客户端', 'AT+MHTTPDEL 删除HTTP实例'],
+    ['停止当前HTTP传输', 'AT+MHTTPTERM 终止HTTP传输'],
+    ['把服务器文件下载到模组本地', 'AT+MHTTPDLFILE HTTP下载文件'],
+    ['HTTPS证书怎么写入', 'HTTPS示例'],
+    ['HTTP主动上报事件', '+MHTTPURC URC信息上报'],
+    ['HTTP返回656是什么错误', '错误码'],
+    ['AT指令最后要加什么', 'AT命令语法'],
+    ['AT返回OK和ERROR是什么意思', 'AT命令响应'],
+    ['缓存模式适合下载大文件吗', '缓存模式'],
+    ['GET PUT POST流程示例', 'HTTP示例'],
+    ['哪些模组型号支持', '适用型号'],
+    ['HTTP连接参数配置在哪里', 'AT+MHTTPCFG 参数设置'],
+    ['HTTP相关命令有哪些', 'HTTP/HTTPS协议AT命令'],
+    ['AT+MHTTPCONFG', 'AT+MHTTPCFG 参数设置'],
+    ['AT+MHTTPREAD', 'AT+MHTTPREAD 读取HTTP数据']
   ];
   const misses = [];
   for (const [query, expectedTitle] of cases) {
@@ -139,5 +150,5 @@ test('MR380R four-manual benchmark covers natural-language questions, domain syn
       misses.push({ query, expectedTitle, actual: hits.slice(0, 3).map(hit => records[hit.position]?.title) });
     }
   }
-  assert.deepEqual(misses, [], 'Every natural-language benchmark query should rank its expected chapter first');
+  assert.deepEqual(misses, [], 'Real-manual benchmark queries should rank the expected chapter first');
 });
