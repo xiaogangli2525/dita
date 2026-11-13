@@ -152,3 +152,11 @@ test('shared Git content follows saved files or the parent gitlink and explains 
   command(root, 'submodule', 'deinit', '-f', '--', mount);
   for (const revision of ['', 'HEAD']) await assert.rejects(call('capture', { ...recipe(root), revision }), /尚未初始化.*common/);
 });
+
+
+test('embedding routes reject stale encoding profiles and invalid chunk sources before inference', async t => {
+  const { call } = await setup(t);
+  await assert.rejects(call('embed', { profile: 'bge-small-zh-int8-cls-v1', texts: ['HTTP'] }), /配置已更新/);
+  await assert.rejects(call('chunks', { record: { text: 'HTTP' }, position: 0 }), /来源无效/);
+  await assert.rejects(call('chunks', { record: { text: 'HTTP', title: 'HTTP', manualTitle: '参数', manualId: 'a', anchor: 'b' }, position: -1 }), /来源无效/);
+});

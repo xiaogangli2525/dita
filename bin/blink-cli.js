@@ -5,6 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { bookFromPath, flatten, mergeBooks } = require('../lib/knowledge-book');
 const semantic = require('../lib/knowledge-semantic');
+const semanticData = require('../public/knowledge-semantic');
 const { createSearchEngine } = require('../public/knowledge-search');
 
 function defaultKnowledgePath() {
@@ -117,15 +118,18 @@ async function main() {
     if (!selectedPath) throw new Error('没有找到知识库。请使用 --kb 指定 ZIP/目录，或设置 BLINK_KB 环境变量。');
     const knowledgePath = path.resolve(selectedPath);
     const knowledgePaths = [knowledgePath, ...options.merge.map(name => path.resolve(name))];
-    const books = knowledgePaths.map(bookFromPath), book = books.length === 1 ? books[0] : mergeBooks(books);
+    const books = knowledgePaths.map(bookFromPath);
+    const outdated = books.some(value => value.semantic && !semanticData.compatible(value.semantic));
+    const ignoreSemantic = !!options['build-index'] || options.search === 'lexical' || outdated;
+    const book = books.length === 1 ? books[0] : mergeBooks(books, { ignoreSemantic });
     const knowledgeBase = { path: knowledgePath, paths: knowledgePaths, title: book.title, model: book.model, sdkVersion: book.sdkVersion };
     const records = flatten(book);
     if (options['build-index']) {
       const target = path.resolve(options['build-index']);
       if (!target.endsWith('.json')) throw Error('语义知识库请使用 .json 文件名');
       if (fs.existsSync(target)) throw Error('输出文件已存在，请使用新的文件名：' + target);
-      const index = book.semantic || await semantic.build(records, (done, total) => process.stderr.write('正在离线向量化 ' + done + '/' + total + '\n'));
-      require('../public/knowledge-semantic').validate(records, index);
+      const index = semanticData.compatible(book.semantic) ? book.semantic : await semantic.build(records, (done, total) => process.stderr.write('正在离线向量化 ' + done + '/' + total + '\n'));
+      semanticData.validate(records, index);
       const output = { ...book, index: undefined, semantic: index,
         manuals: book.manuals.map(({ body: _body, toc: _toc, ...manual }) => manual) };
       fs.writeFileSync(target, JSON.stringify(output), { flag: 'wx' });
@@ -141,7 +145,7 @@ async function main() {
     if (options.info) {
       const info = { schema: 1, title: book.title, model: book.model, sdkVersion: book.sdkVersion,
         generatedAt: book.generatedAt, manualCount: book.manuals.length, chapterCount: records.length,
-        searchEngine: engineVersion, semantic: book.semantic ? { profile: book.semantic.profile.id, chunks: book.semantic.chunks.length } : null, manuals: book.manuals.map(manual => ({
+        searchEngine: engineVersion, semantic: book.semantic ? { profile: book.semantic.profile.id, chunks: book.semantic.chunks.length, compatible: semanticData.compatible(book.semantic) } : null, manuals: book.manuals.map(manual => ({
           id: manual.id, title: manual.title, version: manual.version, chapters: manual.entries.length,
           module: manual.module || manual.title, source: sourceFor(book, manual.id)
         })) };
@@ -183,7 +187,9 @@ async function main() {
     if (query.length > 500) throw new Error('搜索内容不能超过 500 个字符');
     const filters = { module: options.module || '', mode: options.mode || '' };
     let searchMode = options.search || 'auto';
-    if (searchMode === 'auto') searchMode = book.semantic ? 'hybrid' : 'lexical';
+    if (searchMode === 'auto') searchMode = semanticData.compatible(book.semantic) ? 'hybrid' : 'lexical';
+    const warnings = outdated && searchMode === 'lexical' ? ['语义索引版本已更新，当前使用关键词检索。请使用 --build-index 重新生成以启用新版语义检索。'] : [];
+    if (searchMode !== 'lexical' && outdated) throw Error('语义索引编码配置已更新，请使用 --build-index 重新生成');
     const lexical = engine.search(records, ensureSearchIndex(), query, manual?.id || '', 50, filters);
     // Exact command names and error codes retain their existing hard constraints.
     const exactLookup = /^(?:at\+[a-z0-9_]+|[a-z_][a-z0-9_]*_[a-z0-9_]*|-?\d+)$/i.test(query) || /(?:错误|状态码|返回值|结果码|返回).*\d|\d.*(?:错误|状态码)/i.test(query);
@@ -204,9 +210,12 @@ async function main() {
         excerpt: hit.excerpt || engine.excerpt(record.text, query), semanticScore: hit.semanticScore, source };
     });
     if (options.json) outputJson({ schema: 1, query, knowledgeBase,
-      searchEngine: engineVersion, searchMode, count: results.length, results });
-    else if (!results.length) process.stdout.write('没有找到相关内容：' + query + '\n');
-    else {
+      searchEngine: engineVersion, searchMode, warnings, count: results.length, results });
+    else if (!results.length) {
+      warnings.forEach(message => process.stderr.write(message + '\n'));
+      process.stdout.write('没有找到相关内容：' + query + '\n');
+    } else {
+      warnings.forEach(message => process.stderr.write(message + '\n'));
       process.stdout.write('知识库：' + book.title + '\n搜索：' + query + '\n找到 ' + results.length + ' 条相关内容' + (searchMode === 'lexical' ? '' : ' · 离线混合检索，请结合原文核对') + '\n\n');
       if (results.every(result => result.evidence === 'body-mention')) process.stdout.write('当前命中来自正文提及，请读取原文核对是否包含完整使用步骤。\n\n');
       results.forEach((result, index) => {

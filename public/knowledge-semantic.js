@@ -1,28 +1,72 @@
 'use strict';
 (function (root) {
-  const PROFILE = Object.freeze({ id: 'bge-small-zh-int8-cls-v1', model: 'Xenova/bge-small-zh-v1.5',
+  const PROFILE = Object.freeze({ id: 'bge-small-zh-int8-cls-v2', model: 'Xenova/bge-small-zh-v1.5',
     revision: '75c43b069aac4d136ba6bc1122f995fedcfd2781', dimensions: 512, dtype: 'q8',
-    pooling: 'cls', normalize: true, chunkSize: 360, overlap: 60,
+    pooling: 'cls', normalize: true, normalization: 'nfkc-ascii-lower-v1', tokenLimit: 512,
+    manualTitleTokens: 32, titleTokens: 64, maxChunkChars: 2048, overlap: 60,
     queryPrefix: '为这个句子生成表示以用于检索相关文章：' });
+  const sourceText = value => String(value || '').replace(/\s+/g, ' ').trim();
+  const normalizeInput = text => text.normalize('NFKC').replace(/[A-Z]/g, char => char.toLowerCase());
+  const compatible = index => !!index && index.schema === 1 && !!index.profile && Object.keys(PROFILE).every(name => index.profile[name] === PROFILE[name]);
+  const chunkText = (context, body) => [...context, body].filter(Boolean).join('\n');
 
-  function chunksFor(records) {
+  // The caller supplies the model's exact tokenizer. Character counts alone cannot
+  // bound WordPiece input, especially when titles contain long technical strings.
+  async function chunksFor(records, countTokens) {
+    if (typeof countTokens !== 'function') throw Error('生成语义片段需要模型分词器');
     const chunks = [];
+    async function prefix(text, budget) {
+      let low = 0, high = Math.min(text.length, 160);
+      while (low < high) {
+        const middle = Math.ceil((low + high) / 2);
+        if (await countTokens(text.slice(0, middle)) <= budget) low = middle; else high = middle - 1;
+      }
+      return text.slice(0, low);
+    }
     for (const [position, record] of records.entries()) {
-      const text = String(record.text || '').replace(/\s+/g, ' ').trim();
+      const text = sourceText(record.text), context = [await prefix(String(record.manualTitle || ''), PROFILE.manualTitleTokens), await prefix(String(record.title || ''), PROFILE.titleTokens)];
       for (let start = 0; start < text.length;) {
-        let end = Math.min(text.length, start + PROFILE.chunkSize);
-        if (end < text.length) {
-          const boundary = Math.max(text.lastIndexOf('。', end), text.lastIndexOf('；', end));
-          if (boundary > start + PROFILE.chunkSize / 2) end = boundary + 1;
+        let low = start + 1, high = Math.min(text.length, start + PROFILE.maxChunkChars);
+        while (low < high) {
+          const middle = Math.ceil((low + high) / 2);
+          if (await countTokens(chunkText(context, text.slice(start, middle))) <= PROFILE.tokenLimit) low = middle; else high = middle - 1;
         }
-        chunks.push({ position, manualId: record.manualId, anchor: record.anchor, start, end,
-          text: [String(record.manualTitle || '').slice(0, 160), String(record.title || '').slice(0, 160), text.slice(start, end)].filter(Boolean).join('\n') });
+        let end = low;
+        if (end < text.length) {
+          const boundary = Math.max(text.lastIndexOf('。', end - 1), text.lastIndexOf('；', end - 1), text.lastIndexOf(';', end - 1));
+          if (boundary > start + (end - start) / 2) end = boundary + 1;
+        }
+        const content = chunkText(context, text.slice(start, end)), tokenCount = await countTokens(content);
+        if (tokenCount > PROFILE.tokenLimit) throw Error('语义片段超出模型 Token 预算');
+        chunks.push({ position, manualId: record.manualId, anchor: record.anchor, start, end, context, tokenCount, text: content });
+        if (chunks.length > 12000) throw Error('语义索引超过 12000 个片段，请减少手册后重试');
         if (end === text.length) break;
-        start = end - PROFILE.overlap;
+        start = end - Math.min(PROFILE.overlap, end - start - 1);
       }
     }
-    if (chunks.length > 12000) throw Error('语义索引超过 12000 个片段，请减少手册后重试');
     return chunks;
+  }
+
+  function validateChunks(records, chunks) {
+    if (!Array.isArray(chunks) || chunks.length > 12000) throw Error('语义片段数据无效');
+    let cursor = 0;
+    for (const [position, record] of records.entries()) {
+      const text = sourceText(record.text);
+      let start = 0, complete = !text.length;
+      while (cursor < chunks.length && chunks[cursor].position === position) {
+        const chunk = chunks[cursor++], context = chunk.context;
+        if (complete || chunk.manualId !== record.manualId || chunk.anchor !== record.anchor || chunk.start !== start ||
+          !Number.isInteger(chunk.end) || chunk.end <= start || chunk.end > text.length || chunk.end - start > PROFILE.maxChunkChars ||
+          !Array.isArray(context) || context.length !== 2 || context.some(value => typeof value !== 'string' || value.length > 160) ||
+          !String(record.manualTitle || '').startsWith(context[0]) || !String(record.title || '').startsWith(context[1]) ||
+          !Number.isInteger(chunk.tokenCount) || chunk.tokenCount < 2 || chunk.tokenCount > PROFILE.tokenLimit ||
+          chunk.text !== chunkText(context, text.slice(start, chunk.end))) throw Error('语义索引与当前正文不一致，请重新生成');
+        complete = chunk.end === text.length;
+        start = chunk.end - Math.min(PROFILE.overlap, chunk.end - start - 1);
+      }
+      if (!complete) throw Error('语义索引与当前正文不一致，请重新生成');
+    }
+    if (cursor !== chunks.length) throw Error('语义索引与当前正文不一致，请重新生成');
   }
 
   function encodeVectors(vectors) {
@@ -40,11 +84,10 @@
   }
 
   function validate(records, index) {
-    if (!index || index.schema !== 1 || !index.profile || !Object.keys(PROFILE).every(name => index.profile[name] === PROFILE[name])) throw Error('语义索引模型或编码配置不兼容，请重新生成');
-    const expected = chunksFor(records);
-    if (JSON.stringify(expected) !== JSON.stringify(index.chunks)) throw Error('语义索引与当前正文不一致，请重新生成');
+    if (!compatible(index)) throw Error('语义索引模型或编码配置不兼容，请使用 --build-index 重新生成');
+    validateChunks(records, index.chunks);
     const binary = atob(index.vectors || '');
-    if (binary.length !== expected.length * PROFILE.dimensions * 4) throw Error('语义向量数据长度无效');
+    if (binary.length !== index.chunks.length * PROFILE.dimensions * 4) throw Error('语义向量数据长度无效');
     const bytes = Uint8Array.from(binary, char => char.charCodeAt(0)), view = new DataView(bytes.buffer);
     const vectors = new Float32Array(binary.length / 4);
     for (let i = 0; i < vectors.length; i++) {
@@ -60,9 +103,10 @@
   }
 
   function createIndex(chunks, vectors) {
+    if (chunks.length > 12000 || vectors.length !== chunks.length) throw Error('语义片段与向量数量无效');
     return { schema: 1, profile: PROFILE, chunks, vectors: encodeVectors(vectors) };
   }
 
-  const api = { PROFILE, chunksFor, createIndex, validate };
+  const api = { PROFILE, sourceText, normalizeInput, compatible, chunksFor, createIndex, validate };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaKnowledgeSemantic = api;
 })(typeof window === 'undefined' ? globalThis : window);

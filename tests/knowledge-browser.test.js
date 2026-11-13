@@ -57,7 +57,7 @@ test('real HTTP knowledge delivery works across repositories and from a moved of
     assert.ok(book.semantic.chunks.length > 24);
     assert.equal(validate(flatten(book), book.semantic).length, book.semantic.chunks.length * 512);
     const manifest = JSON.parse(strFromU8(archive['docs/manifest.json']));
-    assert.equal(manifest.semantic.profile.id, 'bge-small-zh-int8-cls-v1');
+    assert.equal(manifest.semantic.profile.id, 'bge-small-zh-int8-cls-v2');
     await page.uncheck('#knowledgeSemantic'); await page.click('#knowledgeClose');
   });
   await stage('switching repositories preserves the first snapshot, namespaces same-path Topics and excludes other models from the index', async () => {

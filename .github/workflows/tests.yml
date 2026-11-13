@@ -42,6 +42,9 @@ jobs:
           cache: npm
       - run: npm ci --ignore-scripts
       - run: npm run prepare:semantic
+      - run: node --test tests/knowledge-semantic.test.js tests/knowledge-cli.test.js
+        env:
+          BLINK_MODELS: ./models
       - run: node scripts/check-semantic.js dist/smoke.json
       - run: npm run build:blink -- dist/smoke.json dist/blink-cli-windows-x64.zip dist/smoke.zip
       - shell: pwsh

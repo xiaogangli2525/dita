@@ -226,16 +226,27 @@
         if (get('knowledgeSemantic').checked) {
           const request = structuredClone({ title: output.book.title, model: chosenModel, sdkVersion: output.book.sdkVersion, manuals: readyParts() });
           const records = output.book.manuals.flatMap(manual => manual.entries.map(entry => ({ ...entry, manualId: manual.id, manualTitle: manual.title, mode: manual.mode, module: manual.module })));
-          const chunks = root.DitaKnowledgeSemantic.chunksFor(records), vectors = [];
+          const chunks = [], vectors = [], profile = root.DitaKnowledgeSemantic.PROFILE.id;
           abort = new AbortController(); busy = true; controls();
-          for (let start = 0; start < chunks.length; start += 16) {
-            status('正在生成离线语义索引 ' + start + '/' + chunks.length + ' 个片段…');
-            const response = await A.api.request('/api/knowledge/embed', { method: 'POST', headers: { 'content-type': 'application/json' },
-              body: JSON.stringify({ texts: chunks.slice(start, start + 16).map(chunk => chunk.text) }), signal: abort.signal });
+          for (const [position, record] of records.entries()) {
+            status('正在按模型 Token 预算分片 ' + (position + 1) + '/' + records.length + ' 个章节…');
+            const response = await A.api.request('/api/knowledge/chunks', { method: 'POST', headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({ record, position }), signal: abort.signal });
             if (!response.ok) throw Error(await A.api.error(response));
             const value = await response.json();
             if (generation !== operation || workspace !== A.api.token) return;
-            if (!Array.isArray(value.vectors) || value.vectors.length !== Math.min(16, chunks.length - start)) throw Error('向量生成响应不完整，请重试');
+            if (value.profile !== profile || !Array.isArray(value.chunks)) throw Error('语义分片配置不兼容，请刷新工作台后重试');
+            chunks.push(...value.chunks);
+            if (chunks.length > 12000) throw Error('语义索引超过 12000 个片段，请减少手册后重试');
+          }
+          for (let start = 0; start < chunks.length; start += 16) {
+            status('正在生成离线语义索引 ' + start + '/' + chunks.length + ' 个片段…');
+            const response = await A.api.request('/api/knowledge/embed', { method: 'POST', headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({ profile, texts: chunks.slice(start, start + 16).map(chunk => chunk.text) }), signal: abort.signal });
+            if (!response.ok) throw Error(await A.api.error(response));
+            const value = await response.json();
+            if (generation !== operation || workspace !== A.api.token) return;
+            if (value.profile !== profile || !Array.isArray(value.vectors) || value.vectors.length !== Math.min(16, chunks.length - start)) throw Error('向量生成响应不完整，请重试');
             vectors.push(...value.vectors);
           }
           output = root.DitaKnowledgePackage.buildPackage({ ...request, semantic: root.DitaKnowledgeSemantic.createIndex(chunks, vectors) });
