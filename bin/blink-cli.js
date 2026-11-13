@@ -86,6 +86,7 @@ function bookFromPath(input) {
     ];
     const found = candidates.find(candidate => fs.existsSync(candidate) && fs.statSync(candidate).isFile());
     if (!found) throw new Error('目录中没有 knowledge.json 或 index.html：' + target);
+    if (fs.statSync(found).size > MAX_ARCHIVE_BYTES) throw new Error('知识库文件超过 64 MiB 安全读取上限');
     const value = fs.readFileSync(found);
     return found.endsWith('.json') ? parseBook(value.toString('utf8'), found) : bookFromHtml(value.toString('utf8'));
   }
@@ -243,6 +244,7 @@ function main() {
 
     const manual = options.manual ? resolveManual(book, options.manual) : null;
     const query = options.query.join(' ').trim();
+    if (query.length > 500) throw new Error('搜索内容不能超过 500 个字符');
     const filters = { module: options.module || '', mode: options.mode || '' };
     const hits = engine.search(records, ensureSearchIndex(), query, manual?.id || '', options.limit, filters);
     const results = hits.map(hit => {
