@@ -45,7 +45,7 @@ function bookFromHtml(html) {
 function parseBook(value, sourceName) {
   let book;
   try { book = JSON.parse(value); }
-  catch (error) { throw new Error(sourceName + ' 不是有效的 JSON：' + error.message); }
+  catch (error) { throw new Error(sourceName + ' 不是有效的 JSON：' + error.message, { cause: error }); }
   if (!book || book.schema !== 1 || !Array.isArray(book.manuals) || !book.index || !book.index.compiled) {
     throw new Error(sourceName + ' 不是受支持的知识库数据格式');
   }
@@ -58,7 +58,7 @@ function bookFromArchive(bytes) {
   if (bytes.byteLength > MAX_ARCHIVE_BYTES) throw new Error('知识库 ZIP 超过 64 MiB 安全读取上限');
   let files;
   try { files = unzipSync(bytes); }
-  catch (error) { throw new Error('无法读取知识库 ZIP：' + error.message); }
+  catch (error) { throw new Error('无法读取知识库 ZIP：' + error.message, { cause: error }); }
   const names = Object.keys(files);
   if (names.length > 2000) throw new Error('知识库 ZIP 文件数量异常');
   let unpacked = 0;
