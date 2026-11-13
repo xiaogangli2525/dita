@@ -6,6 +6,7 @@ const os = require('node:os');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const { unzipSync } = require('fflate');
+const { createZip } = require('../public/knowledge-zip');
 const { buildPackage } = require('../public/knowledge-package');
 
 function fixture() {
@@ -62,12 +63,13 @@ test('blink-cli reads full chapter text and lists manuals', async t => {
   assert.equal(JSON.parse(list.stdout).manuals[0].title, 'HTTP 用户手册');
 });
 
-test('blink-cli can read legacy offline HTML packages without re-export', t => {
+test('blink-cli can read legacy ZIP packages without knowledge.json or re-export', async t => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'blink-cli-'));
   t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
-  const value = fixture(), htmlPath = path.join(dir, 'index.html');
-  fs.writeFileSync(htmlPath, value.html);
-  const result = run(['--kb', htmlPath, 'HTTP连接失败', '--json']);
+  const value = fixture(), legacyZip = createZip([{ name: 'docs/index.html', content: value.html }]);
+  const zipPath = path.join(dir, 'legacy.zip');
+  fs.writeFileSync(zipPath, Buffer.from(await legacyZip.arrayBuffer()));
+  const result = run(['--kb', zipPath, 'HTTP连接失败', '--json']);
   assert.equal(result.status, 0, result.stderr);
   assert.equal(JSON.parse(result.stdout).results[0].title, 'HTTP连接配置');
 });
