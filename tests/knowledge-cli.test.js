@@ -74,6 +74,16 @@ test('blink-cli can read legacy ZIP packages without knowledge.json or re-export
   assert.equal(JSON.parse(result.stdout).results[0].title, 'HTTP连接配置');
 });
 
+test('blink-cli auto-detects the only knowledge ZIP in the current directory', async t => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'blink-cli-auto-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const value = fixture();
+  fs.writeFileSync(path.join(dir, 'ML307G-knowledge-base.zip'), Buffer.from(await value.zip.arrayBuffer()));
+  const result = run(['HTTP连接失败', '--json'], dir);
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(JSON.parse(result.stdout).results[0].title, 'HTTP连接配置');
+});
+
 test('blink-cli reports a clear error when no knowledge base is configured', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'blink-cli-empty-'));
   try {
