@@ -107,7 +107,10 @@ function defaultKnowledgePath() {
     path.resolve(process.cwd(), 'docs', 'index.html'),
     path.resolve(process.cwd(), 'index.html')
   ].filter(Boolean);
-  return candidates.find(candidate => fs.existsSync(candidate)) || '';
+  const existing = candidates.find(candidate => fs.existsSync(candidate));
+  if (existing) return existing;
+  const archives = fs.readdirSync(process.cwd()).filter(name => /knowledge.*\\.zip$/i.test(name));
+  return archives.length === 1 ? path.resolve(process.cwd(), archives[0]) : '';
 }
 
 function parseArgs(args) {
@@ -187,7 +190,7 @@ function main() {
       '  --info            显示知识库版本和来源',
       '  --get <引用>      读取完整章节，引用格式为 manualId#anchor',
       '',
-      '知识库路径优先级：--kb、BLINK_KB 环境变量、当前目录下 docs/knowledge.json 或 docs/index.html。'
+      '知识库路径优先级：--kb、BLINK_KB 环境变量、当前目录下 docs/knowledge.json、docs/index.html，或唯一的 *knowledge*.zip。'
     ].join('\n') + '\n');
     return;
   }
