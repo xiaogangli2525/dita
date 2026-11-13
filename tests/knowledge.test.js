@@ -27,6 +27,41 @@ test('Chinese questions, bilingual aliases, empty and hostile input remain ordin
   const text = '保留前文。'.repeat(100) + 'AT+MHTTPCFG ssl_id 参数范围';
   assert.match(engine.excerpt(text, 'ssl_id'), /ssl_id/); assert.ok(engine.excerpt(text, 'ssl_id').length <= 192);
 });
+test('error-code questions require exact numeric evidence within the requested scope', () => {
+  const engine = createSearchEngine(), records = [
+    { manualId: 'http', title: '错误码', text: '656 连接失败，6510 其他错误，-2 参数错误，0x2f 协议错误。', module: 'HTTP', mode: 'AT' },
+    { manualId: 'dialup', title: 'API说明', text: '设置 APN，返回值为错误码。', module: '拨号', mode: 'OC' }
+  ], index = engine.build(records);
+  for (const code of ['656', '-2', '0x2F']) {
+    assert.deepEqual(engine.search(records, index, 'HTTP返回' + code + '是什么错误').map(hit => hit.position), [0]);
+  }
+  for (const code of ['651', '99999']) assert.deepEqual(engine.search(records, index, 'HTTP返回' + code + '是什么错误'), []);
+  assert.deepEqual(engine.search(records, index, 'HTTP返回656是什么错误', 'dialup'), []);
+  assert.deepEqual(engine.search(records, index, '错误码656', '', 10, { mode: 'OC' }), []);
+  assert.deepEqual(engine.search(records, index, '错误码656', '', 10, { module: '拨号' }), []);
+});
+
+test('pin allocation questions retain GPIO and allocation intent', () => {
+  const engine = createSearchEngine(), records = [
+    { manualId: 'resources', title: '引言', text: '引脚 分配，介绍开发流程。' },
+    { manualId: 'resources', title: '引脚分配', text: '本节介绍模组引脚分配。' },
+    { manualId: 'resources', title: '引脚资源', text: '引脚号和功能，GPIO0、GPIO1。' },
+    { manualId: 'resources', title: '外设资源', text: 'GPIO 引脚和其他外设。' }
+  ], index = engine.build(records);
+  for (const query of ['引脚分配', '引脚怎么分配', 'GPIO引脚怎么分配', '怎样分配GPIO引脚']) {
+    assert.equal(engine.search(records, index, query)[0]?.position, 1, query);
+  }
+  assert.equal(engine.search(records, index, 'GPIO引脚')[0]?.position, 2);
+});
+
+test('closing or releasing an HTTP instance ranks deletion while stopping a transfer preserves it', () => {
+  const engine = createSearchEngine(), records = [
+    { manualId: 'http', title: 'AT+MHTTPTERM 终止HTTP传输', text: '中断当前请求，保留实例。' },
+    { manualId: 'http', title: 'AT+MHTTPDEL 删除HTTP实例', text: '删除已创建的实例，并清空该实例所有配置。' }
+  ], index = engine.build(records);
+  for (const query of ['关闭HTTP实例', '关闭 HTTP 实例', '释放HTTP实例', '删除HTTP实例']) assert.equal(engine.search(records, index, query)[0]?.position, 1, query);
+  assert.equal(engine.search(records, index, '停止HTTP传输')[0]?.position, 0);
+});
 const manual = () => ({ id: 'm-0123456789abcdef', model: 'ML307G', title: 'HTTP 手册', version: 'V1', capturedAt: '2026-11-11T00:00:00.000Z',
   html: '<!doctype html><html><body>已发布 HTML</body></html>', htmlSha256: 'hash', body: '<h2 id="m-0123456789abcdef--sec-0">AT+MHTTPCFG</h2><p>ssl_id</p>',
   toc: [{ title: 'AT+MHTTPCFG', anchor: 'm-0123456789abcdef--sec-0' }], entries: [{ title: 'AT+MHTTPCFG', anchor: 'm-0123456789abcdef--sec-0', text: 'ssl_id' }],
@@ -152,3 +187,4 @@ test('uploaded ML307G knowledge ZIP benchmark covers all 26 real chapter entries
   }
   assert.deepEqual(misses, [], 'Real-manual benchmark queries should rank the expected chapter first');
 });
+

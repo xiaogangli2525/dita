@@ -25,7 +25,7 @@
       "或 呢 么 吗 在 把 将 有 时 中 到 为 对 从 下 上 是 要 不 都 不能 无法 为什么 怎么 模块 模组 一直 总是 怎么办 查看 有哪些 多少 哪些 已经 适合 意思 是什么 在哪里 加"
     ).split(/\s+/);
     var FIELD_WEIGHTS = { title: 9, aliases: 7, symbols: 7, docTitle: 2, text: 1 };
-    var INDEX_FORMAT = "sdk-search/1.2.0";
+    var INDEX_FORMAT = "sdk-search/1.2.1";
     var TASK_TERMS = new Set(("创建 删除 打开 读取 写入 关闭 移动 重命名 上传 下载 " +
       "初始化 同步 刷新 挂载 分配 释放 失败 超时 阻塞").split(/\s+/));
   
@@ -309,6 +309,11 @@
           });
           return finalize(numeric, limit);
         }
+        // Codes in an error/status question are evidence constraints, including
+        // when the query also contains natural-language words.
+        var requiredCodes = /错误|状态码|返回值|结果码|返回|\berror\b|\bstatus\b|\breturn\b/.test(raw)
+          ? Array.from(features.words).filter(function (term) { return /^-?(?:0x[0-9a-f]+|\d+(?:\.\d+)*)$/.test(term); }) : [];
+        if (requiredCodes.some(function (term) { return !postings.has("w:" + term); })) return [];
         features.words.forEach(function (term) {
           (postings.get("w:" + term) || []).forEach(function (id) { candidates.add(id); });
         });
@@ -320,7 +325,7 @@
         // within one edit. Exact terms always win; short single-character noise is ignored.
         var fuzzyByEntry = new Map();
         features.words.forEach(function (term) {
-          if (postings.has("w:" + term) || term.length < 2 || term.length > 32) return;
+          if (postings.has("w:" + term) || term.length < 2 || term.length > 32 || /^-?\d/.test(term)) return;
           var nearbyTerms = [];
           for (var length = Math.max(2, term.length - 1); length <= term.length + 1; length++) {
             nearbyTerms.push.apply(nearbyTerms, wordNamesByLength.get(length) || []);
@@ -354,13 +359,17 @@
         candidates.forEach(function (id) {
           var entry = entries[id];
           if (!accepts(entry, settings)) return;
+          if (!requiredCodes.every(function (term) { return entry.words.has(term); })) return;
           var matched = Array.from(features.words).filter(function (term) { return entry.words.has(term); });
           var fuzzyMatches = fuzzyByEntry.get(id) || [];
           var fuzzyQueryTerms = new Set(fuzzyMatches.map(function (item) { return item.queryTerm; }));
           var coverage = (matched.length + fuzzyQueryTerms.size) / features.words.size;
           var aliasExact = entry.aliases.has(features.text);
           var titleExact = entry.fields.title.text === features.text;
-          var titlePhrase = features.text.length >= 2 && entry.fields.title.text.indexOf(features.text) >= 0;
+          var titlePhrase = features.text.length >= 2 && (entry.fields.title.text.indexOf(features.text) >= 0 ||
+            Array.from(features.words).every(function (term) {
+              return entry.fields.title.words.has(term) || /^[\u3400-\u9fff]{2,}$/.test(term) && entry.fields.title.text.indexOf(term) >= 0;
+            }));
           var needed = features.words.size <= 2 ? 1 : minCoverage;
           if (!aliasExact && !titleExact && (coverage + 1e-9 < needed || (!matched.length && !fuzzyMatches.length))) return;
           if (!aliasExact && !titleExact && !requiredTasks.every(function (term) { return entry.words.has(term); })) return;
@@ -425,8 +434,9 @@
   
       return { search: search, suggest: suggest, count: entries.length, indexStatus: restored ? "restored" : "built" };
     }
-    return { create: create, compile: compile, normalize: normalize, version: "1.2.0" };
+    return { create: create, compile: compile, normalize: normalize, version: "1.2.1" };
   }
   const api = { createSdkSearch };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaKnowledgeRetrieval = api;
 })(typeof window === 'undefined' ? globalThis : window);
+

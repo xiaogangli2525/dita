@@ -3,7 +3,7 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
-const { unzipSync } = require('fflate');
+const { unzipSync, Unzip, UnzipInflate } = require('fflate');
 const { createSearchEngine } = require('../public/knowledge-search');
 
 const MAX_ARCHIVE_BYTES = 64 * 1024 * 1024;
@@ -39,7 +39,7 @@ function bookFromHtml(html) {
   const marker = html.indexOf('})({', script < 0 ? 0 : script);
   if (marker < 0) throw new Error('找不到知识库数据。请使用新版本导出的知识库 ZIP。');
   const start = marker + 3;
-  return JSON.parse(html.slice(start, jsonEnd(html, start)));
+  return parseBook(html.slice(start, jsonEnd(html, start)), '知识库 HTML');
 }
 
 function parseBook(value, sourceName) {
@@ -56,21 +56,48 @@ function parseBook(value, sourceName) {
 
 function bookFromArchive(bytes) {
   if (bytes.byteLength > MAX_ARCHIVE_BYTES) throw new Error('知识库 ZIP 超过 64 MiB 安全读取上限');
-  let files;
-  try { files = unzipSync(bytes); }
-  catch (error) { throw new Error('无法读取知识库 ZIP：' + error.message, { cause: error }); }
-  const names = Object.keys(files);
-  if (names.length > 2000) throw new Error('知识库 ZIP 文件数量异常');
-  let unpacked = 0;
-  for (const value of Object.values(files)) {
-    unpacked += value.byteLength;
-    if (unpacked > MAX_UNPACKED_BYTES) throw new Error('知识库 ZIP 解压后超过 128 MiB 安全读取上限');
+  const candidates = ['docs/knowledge.json', 'knowledge.json', 'docs/index.html', 'index.html'];
+  const files = new Map();
+  try {
+    let count = 0;
+    // Read the directory without decompressing assets or independent manuals.
+    unzipSync(bytes, { filter(file) {
+      if (++count > 2000) throw new Error('知识库 ZIP 文件数量异常');
+      if (candidates.includes(file.name)) {
+        if (files.has(file.name)) throw new Error('知识库 ZIP 中存在重复数据文件：' + file.name);
+        files.set(file.name, file);
+      }
+      return false;
+    } });
+    const selected = candidates.find(name => files.has(name));
+    if (!selected) throw new Error('ZIP 中没有 docs/knowledge.json 或 docs/index.html');
+    if (files.get(selected).originalSize > MAX_UNPACKED_BYTES) throw new Error('知识库数据解压后超过 128 MiB 安全读取上限');
+    const chunks = [];
+    let unpacked = 0, complete = false, started = false;
+    const stream = new Unzip(file => {
+      if (file.name !== selected) return;
+      if (started) throw new Error('知识库 ZIP 中存在重复数据文件：' + selected);
+      started = true;
+      file.ondata = (error, chunk, final) => {
+        if (error) throw error;
+        unpacked += chunk.byteLength;
+        if (unpacked > MAX_UNPACKED_BYTES) throw new Error('知识库数据解压后超过 128 MiB 安全读取上限');
+        chunks.push(Buffer.from(chunk));
+        complete = final;
+      };
+      file.start();
+    });
+    stream.register(UnzipInflate);
+    // Bound each inflater input even when the ZIP's declared size is inaccurate.
+    for (let offset = 0; offset < bytes.byteLength; offset += 1024) {
+      stream.push(bytes.subarray(offset, offset + 1024), offset + 1024 >= bytes.byteLength);
+    }
+    if (!complete) throw new Error('知识库 ZIP 数据不完整');
+    const value = decode(Buffer.concat(chunks, unpacked));
+    return selected.endsWith('.json') ? parseBook(value, selected) : bookFromHtml(value);
+  } catch (error) {
+    throw new Error('无法读取知识库 ZIP：' + error.message, { cause: error });
   }
-  const data = files['docs/knowledge.json'] || files['knowledge.json'];
-  if (data) return parseBook(decode(data), 'docs/knowledge.json');
-  const html = files['docs/index.html'] || files['index.html'];
-  if (html) return bookFromHtml(decode(html));
-  throw new Error('ZIP 中没有 docs/knowledge.json 或 docs/index.html');
 }
 
 function bookFromPath(input) {
@@ -165,6 +192,12 @@ function outputJson(value) {
   process.stdout.write(JSON.stringify(value, null, 2) + '\n');
 }
 
+function shellQuote(value) {
+  // POSIX shells and Windows PowerShell use single-quoted literal arguments.
+  const quote = process.platform === 'win32' ? "''" : "'\\''";
+  return "'" + value.replace(/'/g, quote) + "'";
+}
+
 function main() {
   let options;
   try { options = parseArgs(process.argv.slice(2)); }
@@ -198,9 +231,11 @@ function main() {
   }
 
   try {
-    const knowledgePath = options.kb || defaultKnowledgePath();
-    if (!knowledgePath) throw new Error('没有找到知识库。请使用 --kb 指定 ZIP/目录，或设置 BLINK_KB 环境变量。');
+    const selectedPath = options.kb || defaultKnowledgePath();
+    if (!selectedPath) throw new Error('没有找到知识库。请使用 --kb 指定 ZIP/目录，或设置 BLINK_KB 环境变量。');
+    const knowledgePath = path.resolve(selectedPath);
     const book = bookFromPath(knowledgePath);
+    const knowledgeBase = { path: knowledgePath, title: book.title, model: book.model, sdkVersion: book.sdkVersion };
     const records = flatten(book);
     const engine = createSearchEngine();
     const engineVersion = require('../public/knowledge-retrieval').createSdkSearch().version;
@@ -240,7 +275,7 @@ function main() {
       if (!entry) throw new Error('找不到章节锚点：' + anchor);
       const result = { schema: 1, id: manual.id + '#' + entry.anchor, title: entry.title,
         manual: manual.title, module: manual.module || manual.title, text: entry.text,
-        sourcePath: entry.sourcePath || '', fingerprint: entry.fingerprint || '', source: sourceFor(book, manual.id) };
+        sourcePath: entry.sourcePath || '', fingerprint: entry.fingerprint || '', source: sourceFor(book, manual.id), knowledgeBase };
       if (options.json) outputJson(result);
       else process.stdout.write(result.title + '\n手册：' + result.manual + '\n来源：' + (result.source.repository || '未知') +
         ' / ' + (result.source.commit || '无提交记录') + '\n\n' + result.text + '\n');
@@ -260,7 +295,7 @@ function main() {
         sourcePath: record.sourcePath || '', fingerprint: record.fingerprint || '',
         excerpt: engine.excerpt(record.text, query), source };
     });
-    if (options.json) outputJson({ schema: 1, query, knowledgeBase: { title: book.title, model: book.model, sdkVersion: book.sdkVersion },
+    if (options.json) outputJson({ schema: 1, query, knowledgeBase,
       searchEngine: engineVersion, count: results.length, results });
     else if (!results.length) process.stdout.write('没有找到相关内容：' + query + '\n');
     else {
@@ -271,7 +306,7 @@ function main() {
         process.stdout.write('    匹配：' + result.reason + ' · 相关度：' + result.score + '\n');
         process.stdout.write('    摘要：' + result.excerpt + '\n');
         process.stdout.write('    来源：' + (result.source.repository || '未知') + ' / ' + (result.source.commit || '无提交记录') + '\n');
-        process.stdout.write('    读取：blink-cli --get "' + result.id + '"\n\n');
+        process.stdout.write('    读取：blink-cli --kb ' + shellQuote(knowledgePath) + ' --get ' + shellQuote(result.id) + '\n\n');
       });
     }
   } catch (error) {
@@ -281,3 +316,4 @@ function main() {
 }
 
 main();
+

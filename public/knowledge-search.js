@@ -16,7 +16,7 @@
         'content', 'header', '下载', '大数据', '配置参数', '写入'
       ],
       synonyms: {
-        '模块上不了网': '数据拨号', '为什么不能上网': '数据拨号', '无法上网': '数据拨号', 'PDP数据连接': 'PDP上下文', 'GPIO引脚': '引脚资源',
+        '模块上不了网': '数据拨号', '为什么不能上网': '数据拨号', '无法上网': '数据拨号', 'PDP数据连接': 'PDP上下文',
         '上不了网': '数据拨号', '不能上网': '数据拨号',
         '怎么烧录固件': '下载固件', '烧录固件': '下载固件', '怎么刷机': '下载固件',
         '固件下栽': '下载固件', '编译环景': '编译环境', '引脚分佩': '引脚分配',
@@ -38,7 +38,6 @@
         '请求体': 'content', '请求正文': 'content', 'POST数据': 'content',
         '给POST请求添加请求内容': 'HTTP content数据', 'HTTPS证书怎么写入': 'SSL证书写入', '请求内容': 'HTTP content数据',
         '发起HTTP请求': '发送HTTP请求', '执行GET请求': 'HTTP示例',
-        '关闭HTTP实例': '终止HTTP传输',
         '停止传输': '终止HTTP传输', '结束传输': '终止HTTP传输',
         '文件保存到模组': 'HTTP下载文件', '下载到本地': 'HTTP下载文件',
         '服务器主动上报': 'URC信息上报', '异步上报': 'URC信息上报',
@@ -67,6 +66,11 @@
         const aliases = [...(record.aliases || [])], content = record.title + ' ' + record.text;
         if (/\btimeout\b/i.test(content)) aliases.push('超时'); if (content.includes('超时')) aliases.push('timeout');
         if (/\bcertificate\b/i.test(content)) aliases.push('证书'); if (content.includes('证书')) aliases.push('certificate');
+        // Supplement pin chapters with alternate wording while preserving the
+        // original GPIO/pin/allocation terms in the user's query.
+        if (record.title.includes('引脚分配')) aliases.push('GPIO 引脚 分配');
+        if (record.title.includes('引脚资源')) aliases.push('GPIO 引脚 资源', 'GPIO引脚');
+        if (/\bAT\+MHTTPDEL\b/i.test(record.title)) aliases.push('关闭HTTP实例', '释放HTTP实例');
         return { id: String(index), manualId: record.manualId, url: record.manualId + '#' + (record.anchor || index), title: record.title, text: record.text,
         docTitle: record.manualTitle || '', module: record.module || record.manualTitle || '', mode: record.mode || 'other',
         aliases, kind: record.kind || 'guide', ...metadata(record) }; });
@@ -101,3 +105,4 @@
   const api = { createSearchEngine, runtimeSource };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaKnowledgeSearch = api;
 })(typeof window === 'undefined' ? globalThis : window);
+

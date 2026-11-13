@@ -5,7 +5,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
-const { unzipSync } = require('fflate');
+const { unzipSync, zipSync, Zip, ZipDeflate } = require('fflate');
 const { createZip } = require('../public/knowledge-zip');
 const { buildPackage } = require('../public/knowledge-package');
 
@@ -95,3 +95,65 @@ test('blink-cli reports a clear error when no knowledge base is configured', () 
     assert.match(result.stderr, /没有找到知识库/);
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
+
+test('search-to-chapter handoff stays bound to the selected knowledge base', async t => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "blink-cli-' $(literal) "));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const value = fixture(), zipPath = path.join(dir, 'selected knowledge.zip');
+  fs.writeFileSync(zipPath, Buffer.from(await value.zip.arrayBuffer()));
+  const other = structuredClone(value.book);
+  other.model = 'MR380R'; other.manuals[0].entries[0].text = 'WRONG_BOOK_CONTENT';
+  fs.writeFileSync(path.join(dir, 'knowledge.json'), JSON.stringify(other));
+  const searched = run(['--kb', zipPath, 'HTTP连接失败', '--json'], dir);
+  assert.equal(searched.status, 0, searched.stderr);
+  const output = JSON.parse(searched.stdout);
+  assert.equal(output.knowledgeBase.path, zipPath);
+  const get = run(['--kb', output.knowledgeBase.path, '--get', output.results[0].id, '--json'], dir);
+  assert.equal(get.status, 0, get.stderr);
+  const chapter = JSON.parse(get.stdout);
+  assert.equal(chapter.knowledgeBase.model, 'ML307G');
+  assert.equal(chapter.knowledgeBase.path, zipPath);
+  assert.match(chapter.text, /超时参数/);
+  const plain = run(['--kb', zipPath, 'HTTP连接失败'], dir);
+  assert.equal(plain.status, 0, plain.stderr);
+  const command = plain.stdout.split('\n').find(line => line.includes('读取：')).trim().slice(3);
+  assert.ok(command.includes('--kb'));
+  if (process.platform !== 'win32') {
+    const executable = "'" + process.execPath.replace(/'/g, "'\\''") + "' '" + path.resolve(__dirname, '../bin/blink-cli.js').replace(/'/g, "'\\''") + "'";
+    const copied = spawnSync('sh', ['-c', command.replace(/^blink-cli/, executable) + ' --json'], { cwd: dir, encoding: 'utf8' });
+    assert.equal(copied.status, 0, copied.stderr);
+    assert.equal(JSON.parse(copied.stdout).knowledgeBase.model, 'ML307G');
+  }
+});
+
+test('CLI skips unrelated ZIP assets before decompression', t => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'blink-cli-selective-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const data = Buffer.from(JSON.stringify(fixture().book));
+  const bytes = Buffer.from(zipSync({ 'unrelated.bin': new Uint8Array([1]), 'docs/knowledge.json': data }));
+  // An unsupported, oversized unrelated asset must never be decompressed.
+  bytes.writeUInt16LE(99, 8); bytes.writeUInt32LE(129 * 1024 * 1024, 22);
+  const central = bytes.indexOf(Buffer.from([0x50, 0x4b, 0x01, 0x02]));
+  bytes.writeUInt16LE(99, central + 10); bytes.writeUInt32LE(129 * 1024 * 1024, central + 24);
+  const zipPath = path.join(dir, 'knowledge.zip'); fs.writeFileSync(zipPath, bytes);
+  const result = run(['--kb', zipPath, '--info', '--json']);
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(JSON.parse(result.stdout).model, 'ML307G');
+});
+
+test('CLI bounds actual decompressed data even when ZIP size metadata is inaccurate', t => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'blink-cli-bounded-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const parts = [], archive = new Zip((error, chunk) => { if (error) throw error; parts.push(Buffer.from(chunk)); });
+  const entry = new ZipDeflate('docs/knowledge.json', { level: 1 }); archive.add(entry);
+  const chunk = new Uint8Array(1024 * 1024);
+  for (let i = 0; i < 129; i++) entry.push(chunk);
+  entry.push(new Uint8Array(), true); archive.end();
+  const bytes = Buffer.concat(parts), central = bytes.lastIndexOf(Buffer.from([0x50, 0x4b, 0x01, 0x02]));
+  bytes.writeUInt32LE(1, central + 24);
+  const zipPath = path.join(dir, 'knowledge.zip'); fs.writeFileSync(zipPath, bytes);
+  const result = run(['--kb', zipPath, '--info']);
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /解压后超过 128 MiB/);
+});
+

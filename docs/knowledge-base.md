@@ -52,9 +52,9 @@
 - “命令 / API 索引”列出当前范围的符号，可按前缀筛选并定位正式定义或出现位置。
 - 代码可复制，图片已内嵌；相对锚点与注脚返回链接在离线环境工作。不同手册的同名 ID 不会相互覆盖。
 
-首版以 Topic 章节为检索条目，保留完整上下文和所引用的注脚，不按固定字数切片。检索引擎 1.2.0 在原有精确命令/数字匹配和倒排索引上，增加通信领域词典、查询同义表达归一、单词编辑距离容错，以及按标题/别名/符号/正文分字段的 BM25 风格排序；模糊命中会在结果原因和命中词中标明。检索仍是确定性本地算法，不在每次查询时调用 AI，也不需要 Embedding 模型或网络。精确 AT/API 符号命中仍优先于模糊结果。
+首版以 Topic 章节为检索条目，保留完整上下文和所引用的注脚，不按固定字数切片。检索引擎 1.2.1 在原有精确命令/数字匹配和倒排索引上，增加通信领域词典、查询同义表达归一、单词编辑距离容错，以及按标题/别名/符号/正文分字段的 BM25 风格排序；模糊命中会在结果原因和命中词中标明。检索仍是确定性本地算法，不在每次查询时调用 AI，也不需要 Embedding 模型或网络。精确 AT/API 符号命中仍优先于模糊结果。错误码问题中的数字必须在候选章节中精确出现，未收录的错误码返回零结果。引脚章节增加 GPIO、引脚、分配的检索别名；关闭或释放 HTTP 实例定位删除实例，停止传输定位保留实例的终止命令。
 
-本轮实际验收文件为用户提供的 `ML307G-SDK-Preview-Knowledge.zip`：包含 2 份手册、26 个章节（HTTP/HTTPS 用户手册 25 章，独立 HTTPS 示例 1 章）。回归测试使用这 26 个真实章节标题和对应的短文本摘录，覆盖 20 条 HTTP/HTTPS 口语化查询、同义表达、AT 命令错字和精确命令查询。当前基准集 20/20 通过（Node.js 20/22）。这不是 4 份手册或 64 章的测试；如需验收另一份 MR380R 四手册知识库，应提供该 ZIP 后再补充对应测试。当前基准是定向回归，不代表所有用户问题的召回率保证；后续应继续根据实际搜索日志扩充。关键词检索不会生成技术答案；未命中时建议改用完整命令或更短关键词。
+检索基准使用 `ML307G-SDK-Preview-Knowledge.zip` 的 2 份手册、26 个章节标题和短文本摘录，覆盖 20 条 HTTP/HTTPS 口语化、同义表达、命令错字和精确命令查询。本轮也直接读取该真实 ZIP 验证 20 条查询，预期章节均排在首位。另以用户提供的 `MR380R-SDK-v1-knowledge-base.zip`（4 份手册、64 个章节）验证 13 条引脚、固件、内存、日志、WebUI 等问题，预期章节均排在首位，并验证未收录错误码返回零结果。回归测试另外覆盖带符号/十六进制错误码、范围筛选、跨知识库读取和 ZIP 解压限制。基准集随实际问题持续扩充，用户问题的召回效果仍取决于手册内容和查询表达。未命中时可使用完整命令或更短关键词。
 
 ## 命令行检索
 
@@ -64,15 +64,15 @@
 npm ci
 npm link
 blink-cli --kb ./ML307G-SDK-Preview-Knowledge.zip "HTTP请求头怎么设置"
-blink-cli "AT+MHTTPREAD" --json
-blink-cli --list
-blink-cli --info
-blink-cli --get "手册ID#章节锚点" --json
+blink-cli --kb ./ML307G-SDK-Preview-Knowledge.zip "AT+MHTTPREAD" --json
+blink-cli --kb ./ML307G-SDK-Preview-Knowledge.zip --list
+blink-cli --kb ./ML307G-SDK-Preview-Knowledge.zip --info
+blink-cli --kb ./ML307G-SDK-Preview-Knowledge.zip --get "手册ID#章节锚点" --json
 ```
 
-CLI 可直接读取知识库 ZIP、解压目录、`knowledge.json` 或旧版 `index.html`。知识库位置通过 `--kb <路径>` 指定，也可设置 `BLINK_KB` 环境变量；未指定时会查找当前目录下的 `docs/knowledge.json`、`docs/index.html`；若当前目录只有一个文件名包含 `knowledge` 的 ZIP，也会自动使用它。搜索复用网页端同一检索引擎，不生成答案、不访问网络。AI Agent 可用 `--json` 获取结果，再通过 `--get` 读取命中章节原文和来源。
+CLI 可直接读取知识库 ZIP、解压目录、`knowledge.json` 或旧版 `index.html`。知识库位置通过 `--kb <路径>` 指定，也可设置 `BLINK_KB` 环境变量；未指定时会查找当前目录下的 `docs/knowledge.json`、`docs/index.html`；若当前目录只有一个文件名包含 `knowledge` 的 ZIP，也会自动使用它。搜索复用网页端同一检索引擎，不生成答案、不访问网络。AI Agent 可用 `--json` 获取结果，再通过 `--get` 读取命中章节原文和来源。JSON 的 `knowledgeBase.path` 是本次使用的绝对路径，继续读取时将该路径传给 `--kb`。文本结果给出的读取命令已携带该路径，可在 PowerShell、macOS 或 Linux shell 中复制执行。单次 `--kb` 参数只作用于当前命令。
 
-新导出的 ZIP 增加轻量的 `docs/knowledge.json`，只包含章节文本和来源，不重复打包渲染后的完整 HTML 正文或网页编译索引；CLI 首次搜索时按当前检索引擎构建内存索引。旧版 ZIP 没有该文件时，CLI 会从受支持的离线入口 HTML 中读取嵌入的结构化数据，无需为了 CLI 单独重新导出旧包。
+新导出的 ZIP 增加轻量的 `docs/knowledge.json`，只包含章节文本和来源，不重复打包渲染后的完整 HTML 正文或网页编译索引；CLI 首次搜索时按当前检索引擎构建内存索引。旧版 ZIP 没有该文件时，CLI 会从受支持的离线入口 HTML 中读取嵌入的结构化数据，无需为了 CLI 单独重新导出旧包。读取 ZIP 时只解压选定的机器可读文件或旧版入口 HTML；压缩包上限为 64 MiB，选定文件实际解压数据上限为 128 MiB。
 
 ## 输出与验收
 
@@ -81,10 +81,12 @@ CLI 可直接读取知识库 ZIP、解压目录、`knowledge.json` 或旧版 `in
 | 单文件离线门户，包含正文、索引、脚本和样式 | `docs/index.html` |
 | 独立功能手册 HTML | `docs/manuals/<手册标识>.html` |
 | 型号、SDK、各手册版本、Git 状态、来源路径/哈希、过滤策略、指定 Git 版本、图片哈希、开发方式/模块和章节检索属性 | `docs/manifest.json` |
-| CLI/AI 机器可读章节、来源和检索索引 | `docs/knowledge.json`（新版本导出） |\n| 使用说明 | `docs/README.txt` |
+| CLI/AI 机器可读章节和来源 | `docs/knowledge.json`（新版本导出） |
+| 使用说明 | `docs/README.txt` |
 
 每包固定一个型号和一个 SDK 版本，不自动切换到新内容。本版上限为 30 份手册、40 MB 源内容；ZIP 使用无压缩方式打包。PDF/Word 可使用现有手册交付功能单独生成，不自动加入知识库包。
 
 自动化使用真实 HTTP 库验证知识库保留 24 个 Topic、25 条 ML307G 注脚，普通手册保留 25 个 Topic；另用独立临时库验证同一方案无切换批量捕获、指定分支/标签/提交、失败重试、取消、草稿保留和跨仓库同名路径、正文条件与注脚排除、来源哈希、取消/未保存保护。解压包在中文和空格目录移动后，用 Chromium 的 `file://` 和断网模式验证搜索、阅读、复制和窄屏布局。实际 Windows Edge/Chrome 仍需现场核对。
 
 预览样本由真实 HTTP 手册和其中的 HTTPS 示例组成。合成的隔离测试库不进入提供给用户的样本。
+
