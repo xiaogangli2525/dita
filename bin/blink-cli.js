@@ -109,7 +109,7 @@ function defaultKnowledgePath() {
   ].filter(Boolean);
   const existing = candidates.find(candidate => fs.existsSync(candidate));
   if (existing) return existing;
-  const archives = fs.readdirSync(process.cwd()).filter(name => /knowledge.*\\.zip$/i.test(name));
+  const archives = fs.readdirSync(process.cwd()).filter(name => /knowledge.*\.zip$/i.test(name));
   return archives.length === 1 ? path.resolve(process.cwd(), archives[0]) : '';
 }
 
