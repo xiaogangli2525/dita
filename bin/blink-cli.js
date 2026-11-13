@@ -232,7 +232,7 @@ function main() {
       if (!entry) throw new Error('找不到章节锚点：' + anchor);
       const result = { schema: 1, id: manual.id + '#' + entry.anchor, title: entry.title,
         manual: manual.title, module: manual.module || manual.title, text: entry.text,
-        sourcePath: entry.sourcePath || '', source: sourceFor(book, manual.id) };
+        sourcePath: entry.sourcePath || '', fingerprint: entry.fingerprint || '', source: sourceFor(book, manual.id) };
       if (options.json) outputJson(result);
       else process.stdout.write(result.title + '\n手册：' + result.manual + '\n来源：' + (result.source.repository || '未知') +
         ' / ' + (result.source.commit || '无提交记录') + '\n\n' + result.text + '\n');
@@ -248,6 +248,7 @@ function main() {
       return { id: record.manualId + '#' + record.anchor, title: record.title, manual: record.manualTitle,
         manualId: record.manualId, module: record.module, mode: record.mode, anchor: record.anchor,
         score: hit.score, reason: hit.reason, matchedTerms: hit.matchedTerms,
+        sourcePath: record.sourcePath || '', fingerprint: record.fingerprint || '',
         excerpt: engine.excerpt(record.text, query), source };
     });
     if (options.json) outputJson({ schema: 1, query, knowledgeBase: { title: book.title, model: book.model, sdkVersion: book.sdkVersion },
