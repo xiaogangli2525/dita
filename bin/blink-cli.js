@@ -128,6 +128,7 @@ function parseArgs(args) {
     } else if (arg.startsWith('-')) throw new Error('未知参数：' + arg);
     else options.query.push(arg);
   }
+  if (options.query.length > 1 && /^kb$/i.test(options.query[0])) options.query.shift();
   if (options.limit !== undefined) {
     options.limit = Number(options.limit);
     if (!Number.isInteger(options.limit) || options.limit < 1 || options.limit > 50) throw new Error('--limit 必须是 1～50 的整数');
@@ -174,6 +175,7 @@ function main() {
       '',
       '用法：',
       '  blink-cli "搜索问题" [--json] [--limit 10]',
+      '  blink-cli KB "搜索问题" [--json]',
       '  blink-cli "搜索问题" --manual "HTTP/HTTPS用户手册"',
       '  blink-cli --list [--json]',
       '  blink-cli --info [--json]',
