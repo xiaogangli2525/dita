@@ -69,7 +69,7 @@ blink-cli --info
 blink-cli --get "手册ID#章节锚点" --json
 ```
 
-CLI 可直接读取知识库 ZIP、解压目录、`knowledge.json` 或旧版 `index.html`。知识库位置通过 `--kb <路径>` 指定，也可设置 `BLINK_KB` 环境变量；未指定时会查找当前目录下的 `docs/knowledge.json`、`docs/index.html` 等默认位置。搜索复用网页端同一检索引擎，不生成答案、不访问网络。AI Agent 可用 `--json` 获取结果，再通过 `--get` 读取命中章节原文和来源。
+CLI 可直接读取知识库 ZIP、解压目录、`knowledge.json` 或旧版 `index.html`。知识库位置通过 `--kb <路径>` 指定，也可设置 `BLINK_KB` 环境变量；未指定时会查找当前目录下的 `docs/knowledge.json`、`docs/index.html`；若当前目录只有一个文件名包含 `knowledge` 的 ZIP，也会自动使用它。搜索复用网页端同一检索引擎，不生成答案、不访问网络。AI Agent 可用 `--json` 获取结果，再通过 `--get` 读取命中章节原文和来源。
 
 新导出的 ZIP 增加轻量的 `docs/knowledge.json`，只包含章节文本和来源，不重复打包渲染后的完整 HTML 正文或网页编译索引；CLI 首次搜索时按当前检索引擎构建内存索引。旧版 ZIP 没有该文件时，CLI 会从受支持的离线入口 HTML 中读取嵌入的结构化数据，无需为了 CLI 单独重新导出旧包。
 
