@@ -36,7 +36,7 @@
     const html = reader.renderPage(book);
     // CLI data omits rendered body/TOC HTML and reuses the same chapter text and compiled index.
     const cliBook = { schema: book.schema, title: book.title, model: book.model, sdkVersion: book.sdkVersion,
-      generatedAt: book.generatedAt, index: book.index, manuals: book.manuals.map(manual => ({
+      generatedAt: book.generatedAt, manuals: book.manuals.map(manual => ({
         id: manual.id, title: manual.title, version: manual.version, mode: manual.mode, module: manual.module,
         entries: manual.entries, source: manual.source
       })) };
