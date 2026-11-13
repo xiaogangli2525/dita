@@ -47,6 +47,9 @@ test('blink-cli searches an exported ZIP and returns traceable JSON', async t =>
   assert.equal(output.results[0].source.repository, 'http-docs');
   assert.equal(output.results[0].source.commit, 'abc123');
   assert.equal(output.results[0].id, 'm-0123456789abcdef#m-0123456789abcdef--sec-0');
+  const kbPrefix = run(['--kb', zipPath, 'KB', '服务器连不上怎么办', '--json']);
+  assert.equal(kbPrefix.status, 0, kbPrefix.stderr);
+  assert.equal(JSON.parse(kbPrefix.stdout).results[0].title, 'HTTP连接配置');
 });
 
 test('blink-cli reads full chapter text and lists manuals', async t => {
