@@ -4,6 +4,7 @@ const path = require('node:path');
 const assert = require('node:assert/strict');
 const { flatten } = require('../lib/knowledge-book');
 const { build, search } = require('../lib/knowledge-semantic');
+const { buildPackage } = require('../public/knowledge-package');
 
 async function main() {
   const destination = process.argv[2];
@@ -17,6 +18,10 @@ async function main() {
   const hits = await search(records, book.semantic, '日志抓取方法', [], { semanticOnly: true });
   assert.equal(hits[0]?.position, 0);
   await fs.mkdir(path.dirname(destination), { recursive: true }); await fs.writeFile(destination, JSON.stringify(book));
+  const manual = book.manuals[0], html = '<!doctype html><html><body><h2 id="log">日志抓取方法</h2><p>' + manual.entries[0].text + '</p></body></html>';
+  const output = buildPackage({ title: book.title, model: book.model, sdkVersion: book.sdkVersion,
+    manuals: [{ ...manual, model: book.model, html, body: html, toc: [{ title: '日志抓取方法', anchor: 'log' }], report: { included: 0 } }] });
+  await fs.writeFile(destination.replace(/\.json$/, '.zip'), new Uint8Array(await output.zip.arrayBuffer()));
   console.log('断网语义检索验证通过：512 维向量，首条命中日志抓取方法');
 }
 main().catch(error => { console.error(error); process.exitCode = 1; });

@@ -43,11 +43,14 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm run prepare:semantic
       - run: node scripts/check-semantic.js dist/smoke.json
-      - run: npm run build:blink -- dist/smoke.json
+      - run: npm run build:blink -- dist/smoke.json dist/blink-cli-windows-x64.zip dist/smoke.zip
       - shell: pwsh
         run: |
           Expand-Archive dist/blink-cli-windows-x64.zip -DestinationPath dist/unpacked
           Set-Location dist/unpacked/blink-cli
+          if (Test-Path node_modules) { throw 'Runtime dependencies leaked into the public root' }
+          if (!(Test-Path docs/index.html)) { throw 'HTML reader missing from the portable package' }
+          if (!(Test-Path runtime/app/node_modules)) { throw 'Bundled runtime dependencies missing' }
           $json = & .\blink-cli.cmd '日志抓取方法' --search semantic --json
           if ($LASTEXITCODE -ne 0) { throw 'Portable CLI failed' }
           $result = $json | ConvertFrom-Json

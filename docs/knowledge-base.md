@@ -101,10 +101,10 @@ Windows 便携包将 Node 运行程序、CPU 推理库、分词器、约 24 MB �
 
 ```bash
 node bin/blink-cli.js --kb ./MR380R-SDK-v1-knowledge-base.zip --build-index ./MR380R-semantic-knowledge.json
-npm run build:blink -- ./MR380R-semantic-knowledge.json
+npm run build:blink -- ./MR380R-semantic-knowledge.json ./dist/blink-cli-windows-x64.zip ./MR380R-SDK-v1-knowledge-base.zip
 ```
 
-默认输出为 `dist/blink-cli-windows-x64.zip`。构建过程需要网络安装固定版本运行依赖、下载并校验 Windows Node；用户使用已构建的包时从本地加载资源。包中包含模型与运行库的许可说明。量化权重的 24 MB 不包含运行库和知识库，最终包体积应以生成的 ZIP 为准。
+默认输出为 `dist/blink-cli-windows-x64.zip`。输入本身是完整语义知识库 ZIP 时会自动保留原 HTML；语义 JSON 可通过第三参数传入原知识库 ZIP，构建时校验型号、SDK 版本及各章节正文一致后复制 HTML。构建过程需要网络安装固定版本运行依赖、下载并校验 Windows Node；用户使用已构建的包时从本地加载资源。包中包含模型与运行库的许可说明。量化权重的 24 MB 不包含运行库和知识库，最终包体积应以生成的 ZIP 为准。
 
 不同功能的手册可分别生成语义 JSON，再通过重复的 `--merge` 组合查询。合并要求产品型号、SDK 版本和完整 Embedding 配置一致，拒绝重复手册 ID。兼容向量直接复用，保留每份手册的独立 Git 来源。
 
@@ -116,3 +116,5 @@ blink-cli --kb ./http-semantic.json --merge ./webui-semantic.json --build-index 
 CLI 默认为 `--search auto`，带语义索引时启用混合检索。`--search lexical` 可单独使用关键词，`--search semantic` 用于对照验证。完整 AT/API 名称和错误码保留精确约束；明确标题及别名保留排序优先级。自然问句综合关键词与达到最低相似度的语义片段，跨模块的显式协议名参与范围约束。中文未知片段不再通过单字编辑距离凑足命中覆盖率。只在正文提及协议名时，结果会提示读取原文核对使用步骤。
 
 该版本返回检索线索与原文，尚未增加问答生成。轻量模型的语义覆盖仍有漏检，固定相似度阈值也不能证明章节包含完整答案。验收须同时覆盖有答案、仅提及和无相关内容的问题。
+
+便携包根目录提供 `blink-cli.cmd`、`README.txt`、`docs/` 和 `runtime/`。阅读入口位于 `docs/index.html`，独立手册位于 `docs/manuals/`。运行依赖收在 `runtime/app/node_modules/`，模型位于 `runtime/models/`。向量仍保存在 `docs/knowledge.json` 的 `semantic` 字段，`chunks` 对应正文片段，`vectors` 为 Base64 编码的 Float32 小端二进制矩阵，`profile` 记录 512 维模型与编码配置。
