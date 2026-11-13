@@ -21,7 +21,17 @@
         '查看剩余内存': '内存资源', '可用内存': '内存资源',
         '网页怎么定制': '前端定制开发', '怎么定制网页': '前端定制开发',
         '后台服务在哪': '后端WebServer', '前后端怎么通信': '前后端交互',
-        '网络注册要多久': '驻网时间'
+        '网络注册要多久': '驻网时间',
+        '请求头': '报头 header', 'HTTP头': '报头 header', '请求头内容': '报头设置',
+        '请求体': 'content', '请求正文': 'content', 'POST数据': 'content',
+        '发起HTTP请求': '发送HTTP请求', '执行GET请求': 'HTTP示例',
+        '删除客户端': '删除HTTP实例', '关闭HTTP实例': '终止HTTP传输',
+        '停止传输': '终止HTTP传输', '结束传输': '终止HTTP传输',
+        '文件保存到模组': 'HTTP下载文件', '下载到本地': 'HTTP下载文件',
+        '服务器主动上报': 'URC信息上报', '异步上报': 'URC信息上报',
+        'HTTP状态码': '错误码', 'HTTP错误代码': '错误码',
+        '证书写入': 'SSL证书', 'HTTPS证书': 'SSL证书',
+        '大文件': '缓存模式', '缓存响应': '缓存模式'
       }
     };
     /** @type {WeakMap<object, {records: readonly import('./knowledge-contracts').SearchRecord[], api: import('./knowledge-retrieval').SdkEngine}>} */
