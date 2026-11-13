@@ -36,6 +36,7 @@
         'HTTPS证书': 'SSL证书', '证书写入': 'SSL证书写入',
         '下载大文件': '获取大数据', '大文件': '大数据', '发起GET请求': '发送HTTP请求', 'GET请求': 'HTTP请求',
         '请求体': 'content', '请求正文': 'content', 'POST数据': 'content',
+        '给POST请求添加请求内容': 'HTTP content数据', 'HTTPS证书怎么写入': 'SSL证书写入', '请求内容': 'HTTP content数据',
         '发起HTTP请求': '发送HTTP请求', '执行GET请求': 'HTTP示例',
         '关闭HTTP实例': '终止HTTP传输',
         '停止传输': '终止HTTP传输', '结束传输': '终止HTTP传输',
