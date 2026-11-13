@@ -34,7 +34,7 @@ const manual = () => ({ id: 'm-0123456789abcdef', model: 'ML307G', title: 'HTTP 
 test('offline ZIP preserves UTF-8 bytes, provenance and per-manual downloads with valid CRC records', async () => {
   const result = buildPackage({ title: 'ML307G 知识库', model: 'ML307G', sdkVersion: 'V1', manuals: [manual()] });
   const files = unzipSync(new Uint8Array(await result.zip.arrayBuffer()));
-  assert.deepEqual(Object.keys(files), ['docs/index.html', 'docs/manifest.json', 'docs/README.txt', 'docs/manuals/m-0123456789abcdef.html']);
+  assert.deepEqual(Object.keys(files), ['docs/index.html', 'docs/manifest.json', 'docs/knowledge.json', 'docs/README.txt', 'docs/manuals/m-0123456789abcdef.html']);
   assert.equal(strFromU8(files['docs/index.html']), result.html);
   assert.deepEqual(JSON.parse(strFromU8(files['docs/manifest.json'])), result.manifest);
   assert.equal(result.manifest.manuals[0].source.documents[0].sha256, 'source-hash');
