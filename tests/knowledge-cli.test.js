@@ -157,3 +157,53 @@ test('CLI bounds actual decompressed data even when ZIP size metadata is inaccur
   assert.match(result.stderr, /解压后超过 128 MiB/);
 });
 
+test('CLI merges compatible manual packs and keeps chapter reads bound to every source', t => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'blink-cli-merge-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const first = structuredClone(fixture().book), second = structuredClone(first);
+  second.manuals[0].id = 'm-fedcba9876543210'; second.manuals[0].title = '独立功能';
+  second.manuals[0].entries[0].text = 'SECOND_MANUAL_CONTENT';
+  const a = path.join(dir, 'a.json'), b = path.join(dir, 'b.json');
+  fs.writeFileSync(a, JSON.stringify(first)); fs.writeFileSync(b, JSON.stringify(second));
+  const info = run(['--kb', a, '--merge', b, '--info', '--json']);
+  assert.equal(info.status, 0, info.stderr);
+  assert.equal(JSON.parse(info.stdout).manualCount, 2);
+  const ref = second.manuals[0].id + '#' + second.manuals[0].entries[0].anchor;
+  const get = run(['--kb', a, '--merge', b, '--get', ref, '--json']);
+  assert.equal(get.status, 0, get.stderr);
+  assert.match(JSON.parse(get.stdout).text, /SECOND_MANUAL_CONTENT/);
+  assert.deepEqual(JSON.parse(get.stdout).knowledgeBase.paths, [a, b]);
+  const duplicate = run(['--kb', a, '--merge', a, '--info']);
+  assert.equal(duplicate.status, 1); assert.match(duplicate.stderr, /重复手册/);
+});
+
+
+
+test('older semantic profiles remain readable and auto falls back without mixing vector spaces', t => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'blink-profile-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const book = structuredClone(fixture().book), target = path.join(dir, 'old.json');
+  book.semantic = { schema: 1, profile: { id: 'bge-small-zh-int8-cls-v1' }, chunks: [], vectors: '' };
+  fs.writeFileSync(target, JSON.stringify(book));
+  const result = run(['--kb', target, 'HTTP连接失败', '--json']);
+  assert.equal(result.status, 0, result.stderr);
+  const value = JSON.parse(result.stdout);
+  assert.equal(value.searchMode, 'lexical'); assert.equal(value.results[0].title, 'HTTP连接配置');
+  assert.match(value.warnings[0], /重新生成/);
+  for (const mode of ['semantic', 'hybrid']) {
+    const explicit = run(['--kb', target, 'HTTP连接失败', '--search', mode]);
+    assert.equal(explicit.status, 1); assert.match(explicit.stderr, /--build-index/);
+  }
+  const info = run(['--kb', target, '--info', '--json']);
+  assert.equal(JSON.parse(info.stdout).semantic.compatible, false);
+  const get = run(['--kb', target, '--get', book.manuals[0].id + '#' + book.manuals[0].entries[0].anchor, '--json']);
+  assert.match(JSON.parse(get.stdout).text, /超时参数/);
+  if (process.env.BLINK_MODELS) {
+    const next = path.join(dir, 'new.json'), built = run(['--kb', target, '--build-index', next, '--json']);
+    assert.equal(built.status, 0, built.stderr);
+    const updated = JSON.parse(fs.readFileSync(next));
+    assert.equal(updated.semantic.profile.id, require('../public/knowledge-semantic').PROFILE.id);
+    require('../public/knowledge-semantic').validate(require('../lib/knowledge-book').flatten(updated), updated.semantic);
+    assert.equal(updated.manuals[0].entries[0].text, book.manuals[0].entries[0].text);
+  }
+});

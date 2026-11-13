@@ -7,6 +7,7 @@
     const options = {
       dictionary: [
         '数据拨号', 'PDP', 'PDP上下文', 'APN', '自动联网', 'GPIO', '引脚分配', '引脚资源', '外设资源', '内存资源',
+        '网页', '外观', '样式', '界面', '主题', '皮肤', '修改', '上报', '事件', '通知',
         'WebUI', 'WebServer', '前端定制开发', '后端定制开发', '前后端交互', '编译环境',
         '固件下载', '下载固件', 'LOG抓取', '死机现场查看', '驻网时间', '用户入口函数',
         'cm_modem_call', 'cm_modem_set_pdp_context', 'cm_mem_get_heap_stats',
@@ -15,6 +16,7 @@
         'HTTP实例', 'HTTP命令', 'HTTP/HTTPS协议', 'AT命令', 'AT指令', 'GET', 'POST', 'PUT',
         'content', 'header', '下载', '大数据', '配置参数', '写入'
       ],
+      stopWords: ['我要', '我想', '帮我', '请帮我'],
       synonyms: {
         '模块上不了网': '数据拨号', '为什么不能上网': '数据拨号', '无法上网': '数据拨号', 'PDP数据连接': 'PDP上下文',
         '上不了网': '数据拨号', '不能上网': '数据拨号',
@@ -60,17 +62,24 @@
       });
       return { symbols, definedSymbols };
     }
+    /** @param {import('./knowledge-contracts').SearchRecord} record */
+    function aliasesFor(record) {
+      const aliases = [...(record.aliases || [])], content = record.title + ' ' + record.text;
+      if (/\btimeout\b/i.test(content)) aliases.push('超时'); if (content.includes('超时')) aliases.push('timeout');
+      if (/\bcertificate\b/i.test(content)) aliases.push('证书'); if (content.includes('证书')) aliases.push('certificate');
+      // Supplement pin chapters with alternate wording while preserving the
+      // original GPIO/pin/allocation terms in the user's query.
+      if (record.title.includes('引脚分配')) aliases.push('GPIO 引脚 分配');
+      if (record.title.includes('引脚资源')) aliases.push('GPIO 引脚 资源', 'GPIO引脚');
+      if (/前端.*定制/.test(record.title)) aliases.push('网页 外观 样式 界面 主题 皮肤 修改');
+      if (/URC.*上报/i.test(record.title)) aliases.push('主动上报 事件 通知 异步上报');
+      if (/\bAT\+MHTTPDEL\b/i.test(record.title)) aliases.push('关闭HTTP实例', '释放HTTP实例');
+      return aliases;
+    }
     /** @param {readonly import('./knowledge-contracts').SearchRecord[]} records */
     function rows(records) {
       return records.map((record, index) => {
-        const aliases = [...(record.aliases || [])], content = record.title + ' ' + record.text;
-        if (/\btimeout\b/i.test(content)) aliases.push('超时'); if (content.includes('超时')) aliases.push('timeout');
-        if (/\bcertificate\b/i.test(content)) aliases.push('证书'); if (content.includes('证书')) aliases.push('certificate');
-        // Supplement pin chapters with alternate wording while preserving the
-        // original GPIO/pin/allocation terms in the user's query.
-        if (record.title.includes('引脚分配')) aliases.push('GPIO 引脚 分配');
-        if (record.title.includes('引脚资源')) aliases.push('GPIO 引脚 资源', 'GPIO引脚');
-        if (/\bAT\+MHTTPDEL\b/i.test(record.title)) aliases.push('关闭HTTP实例', '释放HTTP实例');
+        const aliases = aliasesFor(record);
         return { id: String(index), manualId: record.manualId, url: record.manualId + '#' + (record.anchor || index), title: record.title, text: record.text,
         docTitle: record.manualTitle || '', module: record.module || record.manualTitle || '', mode: record.mode || 'other',
         aliases, kind: record.kind || 'guide', ...metadata(record) }; });
@@ -99,7 +108,7 @@
       const start = Math.max(0, (positions.length ? Math.min(...positions) : 0) - 45);
       return (start ? '…' : '') + value.slice(start, start + length) + (value.length > start + length ? '…' : '');
     }
-    return { tokens, metadata, build, search, suggest, excerpt };
+    return { tokens, metadata, aliasesFor, build, search, suggest, excerpt };
   }
   function runtimeSource() { return '(' + createSearchEngine.toString() + ')((' + retrieval.createSdkSearch.toString() + ')())'; }
   const api = { createSearchEngine, runtimeSource };

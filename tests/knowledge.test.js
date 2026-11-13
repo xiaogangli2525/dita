@@ -188,3 +188,14 @@ test('uploaded ML307G knowledge ZIP benchmark covers all 26 real chapter entries
   assert.deepEqual(misses, [], 'Real-manual benchmark queries should rank the expected chapter first');
 });
 
+
+
+test('front-end appearance and URC event aliases preserve intent without inventing login evidence', () => {
+  const engine = createSearchEngine(), records = [
+    { manualId: 'webui', manualTitle: 'WebUI开发指导', title: '前端定制开发', text: '介绍 WebUI 前端开发步骤。' },
+    { manualId: 'http', manualTitle: 'HTTP用户手册', title: '+MHTTPURC URC信息上报', text: '请求过程中的数据接收和错误事件上报。' }
+  ], index = engine.build(records);
+  for (const query of ['我要改网页的外观', '我想修改网页样式', '帮我改界面主题']) assert.equal(engine.search(records, index, query)[0]?.position, 0, query);
+  for (const query of ['HTTP主动上报事件', 'HTTP异步上报通知']) assert.equal(engine.search(records, index, query)[0]?.position, 1, query);
+  for (const query of ['webui二次认证', '网页登录怎么验证身份']) assert.deepEqual(engine.search(records, index, query), []);
+});

@@ -32,3 +32,29 @@ jobs:
       - run: npx playwright-core install --with-deps chromium
       - run: sudo apt-get install -y poppler-utils
       - run: npm run test:browser
+  semantic-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run prepare:semantic
+      - run: node --test tests/knowledge-semantic.test.js tests/knowledge-cli.test.js
+        env:
+          BLINK_MODELS: ./models
+      - run: node scripts/check-semantic.js dist/smoke.json
+      - run: npm run build:blink -- dist/smoke.json dist/blink-cli-windows-x64.zip dist/smoke.zip
+      - shell: pwsh
+        run: |
+          Expand-Archive dist/blink-cli-windows-x64.zip -DestinationPath dist/unpacked
+          Set-Location dist/unpacked/blink-cli
+          if (Test-Path node_modules) { throw 'Runtime dependencies leaked into the public root' }
+          if (!(Test-Path docs/index.html)) { throw 'HTML reader missing from the portable package' }
+          if (!(Test-Path runtime/app/node_modules)) { throw 'Bundled runtime dependencies missing' }
+          $json = & .\blink-cli.cmd '日志抓取方法' --search semantic --json
+          if ($LASTEXITCODE -ne 0) { throw 'Portable CLI failed' }
+          $result = $json | ConvertFrom-Json
+          if ($result.results[0].title -ne '日志抓取方法') { throw 'Portable search returned an unexpected chapter' }
