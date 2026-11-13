@@ -31,11 +31,11 @@ function run(args, cwd) {
   });
 }
 
-test('blink-cli searches an exported ZIP and returns traceable JSON', t => {
+test('blink-cli searches an exported ZIP and returns traceable JSON', async t => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'blink-cli-'));
   t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
   const value = fixture(), zipPath = path.join(dir, 'knowledge.zip');
-  fs.writeFileSync(zipPath, value.zip);
+  fs.writeFileSync(zipPath, Buffer.from(await value.zip.arrayBuffer()));
   const archive = unzipSync(value.zip);
   assert.ok(archive['docs/knowledge.json']);
   const result = run(['--kb', zipPath, '服务器连不上怎么办', '--json']);
@@ -48,7 +48,7 @@ test('blink-cli searches an exported ZIP and returns traceable JSON', t => {
   assert.equal(output.results[0].id, 'm-0123456789abcdef#m-0123456789abcdef--sec-0');
 });
 
-test('blink-cli reads full chapter text and lists manuals', t => {
+test('blink-cli reads full chapter text and lists manuals', async t => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'blink-cli-'));
   t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
   const value = fixture(), zipPath = path.join(dir, 'knowledge.zip');
