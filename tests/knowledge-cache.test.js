@@ -92,6 +92,27 @@ test('bounded cache evicts its own oldest entries and leaves unrelated files alo
   assert.equal(await fs.readFile(path.join(ctx.directory, 'notes.json'), 'utf8'), 'keep');
   assert.equal((await ctx.builder.book(b)).stats.reusedManuals, 1); assert.equal((await ctx.builder.book(a)).stats.rebuiltManuals, 1);
 });
+test('a cache hit refreshes LRU time and protects the recently read manual from eviction', async t => {
+  const ctx = await setup(t, { maxEntries: 2 }), a = book(manual('a')), b = book(manual('b')), c = book(manual('c'));
+  const file = value => path.join(ctx.directory, 'manual-' + ctx.cache.key(flatten(value), value.model, data.PROFILE) + '.json');
+  await ctx.builder.book(a); await ctx.builder.book(b);
+  const oldest = new Date(Date.now() - 30000), middle = new Date(Date.now() - 20000);
+  await fs.utimes(file(a), oldest, oldest); await fs.utimes(file(b), middle, middle);
+  assert.equal((await ctx.builder.book(a)).stats.reusedManuals, 1);
+  assert.ok((await fs.stat(file(a))).mtimeMs > middle.getTime());
+  assert.equal(ctx.logs.length, 0, 'a writable cache hit must not fail to refresh its access time');
+  await ctx.builder.book(c);
+  assert.ok((await ctx.cache.get(flatten(a), a.model, data.PROFILE)).index);
+  assert.equal((await ctx.cache.get(flatten(b), b.model, data.PROFILE)).index, null);
+});
+test('a deliberately read-only cache remains readable without requiring inference', async t => {
+  const ctx = await setup(t), value = book(manual('readonly'));
+  await ctx.builder.book(value);
+  const file = path.join(ctx.directory, 'manual-' + ctx.cache.key(flatten(value), value.model, data.PROFILE) + '.json');
+  await fs.chmod(file, 0o400);
+  try { assert.equal((await ctx.builder.book(value)).stats.reusedManuals, 1); assert.equal(ctx.calls(), 1); }
+  finally { await fs.chmod(file, 0o600); }
+});
 test('concurrent same-manual exports share inference; one cancellation does not stop the other', async t => {
   const ctx = await setup(t); let calls = 0, release; const gate = new Promise(resolve => { release = resolve; });
   const builder = createIndexBuilder({ cache: ctx.cache, generate: async (...args) => { calls++; await gate; return generate(...args); } });
