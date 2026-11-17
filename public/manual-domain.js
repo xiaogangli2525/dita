@@ -1,5 +1,6 @@
 'use strict';
 (function (root) {
+  const oxygen = typeof module !== 'undefined' ? require('./oxygen-core') : root.DitaOxygenCore;
   const resolver = typeof module !== 'undefined' ? require('./publication-resolver') : root.DitaPublicationResolver;
   const publication = typeof module !== 'undefined' ? require('./publication-core') : root.DitaPublication;
   const notesCore = typeof module !== 'undefined' ? require('./footnotes-core') : root.DitaFootnotesCore;
@@ -30,8 +31,11 @@
     if (model && snapshot.project.models.length && !snapshot.project.models.includes(model)) {
       issues.push({ path: snapshot.path, message: '型号不在项目清单中：' + model });
     }
-    for (const [path, file] of snapshot.files) {
+    const inputs = new Map(snapshot.files);
+    if (typeof snapshot.content === 'string') inputs.set(snapshot.path, { current: snapshot.content });
+    for (const [path, file] of inputs) {
       try {
+        if (oxygen.collectOxyTrackedChanges(file.current).some(change => change.type !== 'comment' && change.id?.startsWith('dita-'))) issues.push({ path, message: '尚有未处理的 Oxygen 修订，请先接受或拒绝后再交付或发布知识库' });
         resolver.walk(xml.inspectSource(file.current), (node, ancestors) => {
           if (profile && [...ancestors, node].some(parent => !profile.keep(parent))) return;
           const value = domain.decode(node.attrs.product);

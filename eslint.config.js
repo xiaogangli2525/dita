@@ -2,7 +2,7 @@
 const js = require('@eslint/js');
 const globals = require('globals');
 const documentRules = ['manual-core', 'manual-domain', 'publication-core', 'publication-resolver',
-  'model-discovery', 'model-note-text', 'note-rules-core', 'footnotes-core', 'profiling-core', 'xml-source', 'map-context'];
+  'oxygen-core', 'model-discovery', 'model-note-text', 'note-rules-core', 'footnotes-core', 'profiling-core', 'xml-source', 'map-context'];
 const importsOnly = names => 'CallExpression[callee.name="require"]' + names
   .flatMap(name => ['./' + name, './' + name + '.js'])
   .map(name => ':not([arguments.0.value=' + JSON.stringify(name) + '])').join('');
@@ -35,7 +35,9 @@ const renderingBoundaries = [
   { names: ['review-store'], imports: ['diff-core'] },
   { names: ['review-locations'], imports: ['review-markup'] },
   { names: ['xml-dom'], imports: ['xml-source'] },
-  { names: ['oxygen-core', 'delivery-document'], imports: [] },
+  { names: ['delivery-document'], imports: [] },
+  { names: ['oxygen-core'], imports: ['xml-source'] },
+  { names: ['oxygen-tracking'], imports: ['xml-source', 'oxygen-core', 'diff-core'] },
   { names: ['author-renderer'], imports: ['xml-dom', 'asset-core', 'document-presentation', 'oxygen-core'] },
   { names: ['author-source'], imports: ['xml-dom', 'author-renderer', 'document-presentation', 'manual-core'] },
   { names: ['markdown-preview'], imports: ['asset-core'] },

@@ -101,6 +101,7 @@
         <div><div id="documentLocation" class="document-location">选择一个文档，开始专注写作</div><h1 id="documentTitle">你的文档工作台</h1><button id="returnWritingPosition" type="button" class="return-writing-position" hidden>← 返回编写位置</button></div>
         <div class="document-actions">
           <span id="documentSaveState" class="save-badge" data-state="saved" role="status">本地工作区</span>
+          <button id="trackingButton" type="button" class="outline-action" aria-pressed="false" title="设置 Oxygen 兼容修订跟踪及作者">跟踪修订：关</button>
           <button id="saveButton" type="button" class="outline-action" title="保存当前文档 (Ctrl+S)">保存</button>
       <details class="editing-tools">
         <summary>XML 工具 <span aria-hidden="true">⌄</span></summary>
@@ -208,7 +209,7 @@
       <div id="reviewPane" class="review-pane" aria-label="审阅变更">
         <div class="review-toolbar">
           <span class="review-title">审阅变更</span>
-          <label>全部操作范围 <select id="reviewScope"><option value="git">Git 工作区变更</option><optgroup label="高级：导入的修订"><option value="oxygen">Oxygen 修订标记</option></optgroup></select></label>
+          <label>全部操作范围 <select id="reviewScope"><option value="git">Git 工作区变更</option><option value="oxygen">Oxygen 跟踪修订</option></select></label>
           <button id="acceptAllButton" type="button" title="接受所有修订">接受全部</button>
           <button id="rejectAllButton" type="button" title="拒绝所有修订">拒绝全部</button>
           <button id="closeReviewButton" type="button" title="关闭审阅面板">关闭审阅</button>
@@ -240,6 +241,16 @@
     <span id="status" class="status">就绪</span>
     <span class="statusbar-hint">Ctrl/Cmd+S 保存 · Ctrl/Cmd+F 查找</span>
   </footer>
+
+  <dialog id="trackingDialog" class="workspace-dialog" aria-labelledby="trackingHeading"><form id="trackingForm">
+    <h2 id="trackingHeading">Oxygen 兼容跟踪修订</h2>
+    <label><input id="trackingEnabled" type="checkbox"> 跟踪后续文字修改</label>
+    <label>修订作者<input id="trackingAuthor" maxlength="80" autocomplete="name" placeholder="填写姓名或团队名称"></label>
+    <p>支持正文、参数单元格和代码文字，保留代码换行与缩进。当前手册开启后，也会跟踪其中章节的文字修改。已有 Git 差异不会自动转换。</p>
+    <p>结构、属性及跨批注边界的编辑暂未支持。跟踪开启时源码只读；保存保留修订，关闭跟踪也不会接受已有修订。</p>
+    <p id="trackingError" class="error" role="alert"></p>
+    <div class="dialog-actions"><button id="trackingCancel" type="button">取消</button><button type="submit" class="primary-action">应用设置</button></div>
+  </form></dialog>
 
   <dialog id="aiDialog" class="workspace-dialog ai-dialog" aria-labelledby="aiHeading" aria-describedby="aiIntro">
     <header class="ai-heading"><div><span class="ai-eyebrow">写作助手</span><h2 id="aiHeading">一起把这段文档改好</h2></div><div class="ai-heading-actions"><button id="aiSettingsButton" type="button" aria-haspopup="dialog" aria-controls="aiConnectionDialog" title="模型连接设置">模型设置</button><button id="aiClose" type="button" aria-label="关闭 AI 辅助写作">关闭</button></div></header>
@@ -607,6 +618,8 @@
   <script src="/publication-core.js"></script>
   <script src="/xml-dom.js"></script>
   <script src="/oxygen-core.js"></script>
+  <script src="/oxygen-tracking.js"></script>
+  <script src="/tracking.js"></script>
   <script src="/author-renderer.js"></script>
   <script src="/author-source.js"></script>
   <script src="/markdown-preview.js"></script>
