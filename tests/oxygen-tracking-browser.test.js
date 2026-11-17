@@ -81,5 +81,16 @@ test('Oxygen tracking persists real code edits and supports review, history and 
     await configure(false); await select('#other-code', 6); await page.keyboard.type('!'); const off = await current('b.dita');
     assert.equal(tracking.resolve(off, false).includes('OPEN!'), true);
   });
+  await t.test('Map bulk rejection validates every restored file before changing any buffer', async () => {
+    await page.evaluate(() => {
+      const A = window.DitaApp, file = A.state.filesMap.get('b.dita');
+      A.setFileContent(file, file.current.replace('</body>', '<?oxy_delete author="QA" content="&lt;p&gt;unfinished"?></body>'), { origin: 'restore' });
+    });
+    await page.click('#reviewButton'); await page.selectOption('#reviewScope', 'oxygen');
+    const before = await page.evaluate(() => [...window.DitaApp.state.filesMap].map(([path, file]) => [path, file.current]));
+    await page.click('#rejectAllButton');
+    assert.match(await page.locator('#status').textContent(), /无法批量应用修订/);
+    assert.deepEqual(await page.evaluate(() => [...window.DitaApp.state.filesMap].map(([path, file]) => [path, file.current])), before);
+  });
   assert.deepEqual(errors, []);
 });

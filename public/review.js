@@ -1,5 +1,6 @@
 'use strict';
 (function (root) {
+  const nativeTracking = typeof module !== 'undefined' ? require('./oxygen-tracking') : root.DitaOxygenTracking;
   const sessions = typeof module !== 'undefined' ? require('./review-session') : root.DitaReviewSession;
   const bodyLocations = typeof module !== 'undefined' ? require('./review-locations') : root.DitaReviewLocations;
   const views = typeof module !== 'undefined' ? require('./review-view') : root.DitaReviewView;
@@ -59,6 +60,8 @@
       const source = file.current;
       const replacement = getOxyReplacement(change, accept);
       const next = source.slice(0, change.index) + replacement + source.slice(change.index + change.matchLength);
+      try { ditaCore.parseXml(next); }
+      catch (error) { setStatus('无法应用该修订：' + error.message, true); return; }
       setFileContent(file, next, { origin: 'review' });
       setStatus(accept ? '已接受修订' : '已拒绝修订');
       if (state.mode === 'review') {
@@ -274,26 +277,15 @@
       if (scope === 'git' && files.some(file => !session.isCurrent(reviewFrame(file, /\.ditamap$/i.test(state.activePath))))) {
         renderActiveReview(true); setStatus('原文已变化，已更新审阅，请重新核对后再批量处理。'); return;
       }
+      const prepared = new Map();
       if (scope === 'oxygen') {
-        oxygenError = ''; for (const file of files) collectOxygen(file);
-        if (oxygenError) { setStatus(oxygenError, true); return; }
+        // Validate every restored document before changing any buffer in a Map.
+        try { for (const file of files) prepared.set(file, nativeTracking.resolveForReview(file.current, accept)); }
+        catch (error) { setStatus('无法批量应用修订：' + error.message, true); return; }
       }
       for (const file of files) {
         if (scope === 'oxygen') {
-          let next = file.current;
-          // Work backwards so offsets remain valid; nested insertions are resolved
-          // in later passes rather than applying overlapping ranges.
-          for (let pass = 0; pass < 100; pass++) {
-            const changes = ditaCore.collectOxyTrackedChanges(next);
-            if (!changes.length) break;
-            let right = next.length;
-            for (const change of changes.reverse()) {
-              if (change.index + change.matchLength > right) continue;
-              next = next.slice(0, change.index) + getOxyReplacement(change, accept) + next.slice(change.index + change.matchLength);
-              right = change.index;
-            }
-          }
-          setFileContent(file, next, { origin: 'review' });
+          setFileContent(file, prepared.get(file), { origin: 'review' });
         } else {
           const frame = reviewFrame(file, /\.ditamap$/i.test(state.activePath));
           const decisions = new Map();

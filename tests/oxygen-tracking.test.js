@@ -138,3 +138,12 @@ test('editing enriched Oxygen records cannot discard comments, flags, or reply a
   assert.equal(oxygen.hasUnsupportedChanges(threaded), true);
   assert.throws(() => tracking.trackEdit(threaded, threaded.replace('<title>HTTP', '<title>New'), meta), /第一版/);
 });
+test('review restores only valid complete XML and preserves legacy comment acceptance behavior', () => {
+  const bad = '<topic><title>T</title><body><?oxy_delete author="A" content="&lt;p&gt;unfinished"?></body></topic>';
+  assert.throws(() => tracking.resolveForReview(bad, false), /Unclosed|Unexpected|Mismatched/);
+  assert.equal(tracking.resolveForReview(bad, true), '<topic><title>T</title><body></body></topic>');
+  const comment = '<topic><title>T</title><body><p><?oxy_comment_start author="A" comment="Review"?>正文<?oxy_comment_end?></p></body></topic>';
+  assert.equal(tracking.resolveForReview(comment, true), '<topic><title>T</title><body><p>正文</p></body></topic>');
+  assert.equal(tracking.resolveForReview(comment, false), '<topic><title>T</title><body><p>正文</p></body></topic>');
+  assert.throws(() => tracking.resolveForReview('<topic><title>T</title><?oxy_attributes a="x"?></topic>', true), /尚不支持/);
+});

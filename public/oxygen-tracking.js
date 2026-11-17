@@ -25,20 +25,25 @@
   }
   // Resolve only insertion/deletion instructions. Comments and unknown Oxygen
   // metadata remain exact; unsupported records must never disappear in bulk review.
-  function resolve(source, accept) {
+  function resolve(source, accept, includeComments = false) {
     for (let pass = 0; pass < 100; pass++) {
-      const changes = oxygen.collectOxyTrackedChanges(source).filter(c => c.type !== 'comment');
+      const changes = oxygen.collectOxyTrackedChanges(source).filter(c => includeComments || c.type !== 'comment');
       if (!changes.length) return source;
       let right = source.length, changed = false;
       for (const c of changes.reverse()) {
         if (c.index + c.matchLength > right) continue;
-        const value = c.type === 'insert' ? accept ? c.keepContent : '' : accept ? '' : c.deletedContent;
+        const value = c.type === 'comment' ? c.keepContent : c.type === 'insert' ? accept ? c.keepContent : '' : accept ? '' : c.deletedContent;
         source = source.slice(0, c.index) + value + source.slice(c.index + c.matchLength);
         right = c.index; changed = true;
       }
       if (!changed) break;
     }
     throw new Error('修订嵌套过深，请在 Oxygen 中处理');
+  }
+  function resolveForReview(source, accept) {
+    if (oxygen.hasUnsupportedChanges(source)) throw new Error('含尚不支持的 Oxygen 属性、CDATA 修订或批注回复，请在 Oxygen 中处理');
+    const next = resolve(source, accept, true);
+    xml.validateXml(next); return next;
   }
   function units(source) {
     const values = []; let at = 0;
@@ -124,6 +129,6 @@
     xml.validateXml(output);
     return output;
   }
-  const api = { enabled, setting, setEnabled, trackEdit, resolve };
+  const api = { enabled, setting, setEnabled, trackEdit, resolve, resolveForReview };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaOxygenTracking = api;
 })(typeof window === 'undefined' ? globalThis : window);
