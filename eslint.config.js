@@ -44,7 +44,12 @@ const renderingBoundaries = [
 ];
 
 module.exports = [
-  { ignores: ['node_modules/**', 'public/vendor/**', 'examples/**', 'docs/assets/**'] },
+  { ignores: [
+    'node_modules/**', 'public/vendor/**', 'examples/**', 'docs/assets/**',
+    // Local build outputs, downloaded runtimes and unpacked delivery previews.
+    // Keep first-party .cjs files and tests covered rather than importing every Git ignore.
+    'dist/**', 'models/**', 'oxygen-sdk/**', 'web/**', 'blink-cli-*/**', '.tmp_*/**'
+  ] },
   {
     files: ['**/*.js', '**/*.cjs'],
     ...js.configs.recommended,
