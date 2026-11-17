@@ -163,8 +163,9 @@
     if (index.profile.id === LEGACY_PROFILE.id) validateLegacyChunks(records, index.chunks); else validateStructuredChunks(records, index.chunks);
     const binary = atob(index.vectors || '');
     if (binary.length !== index.chunks.length * PROFILE.dimensions * 4) throw Error('语义向量数据长度无效');
-    const bytes = Uint8Array.from(binary, char => char.charCodeAt(0)), view = new DataView(bytes.buffer);
     const vectors = new Float32Array(binary.length / 4);
+    const bytes = new Uint8Array(vectors.buffer), view = new DataView(vectors.buffer);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
     for (let i = 0; i < vectors.length; i++) {
       vectors[i] = view.getFloat32(i * 4, true);
       if (!Number.isFinite(vectors[i])) throw Error('语义向量数据含无效数值');
@@ -185,19 +186,23 @@
   function combineIndexes(groups, indexes) {
     if (!groups.length || groups.length !== indexes.length || groups.length > 30) throw Error('组合向量的手册数量无效');
     const profile = indexes[0]?.profile?.id === LEGACY_PROFILE.id ? LEGACY_PROFILE : PROFILE;
-    let count = 0, recordsOffset = 0;
-    const chunks = [], rows = [];
+    const count = indexes.reduce((sum, index) => sum + (index?.chunks?.length || 0), 0);
+    if (count > 12000) throw Error('语义索引超过 12000 个片段，请减少手册后重试');
+    let recordsOffset = 0, offset = 0;
+    // Legacy input may omit padding or contain whitespace accepted by atob.
+    // Normalize that case so capacity estimates still match canonical base64.
+    const single = indexes.length === 1 && typeof indexes[0].vectors === 'string' &&
+      indexes[0].vectors.length === 4 * Math.ceil(count * profile.dimensions * 4 / 3) && !/\s/.test(indexes[0].vectors);
+    const chunks = [], bytes = single ? null : new Uint8Array(count * profile.dimensions * 4), view = bytes && new DataView(bytes.buffer);
     for (const [i, records] of groups.entries()) {
       const index = indexes[i];
       if (index?.profile?.id !== profile.id) throw Error('合并包的分片配置不一致，请统一重建');
-      if (count + index.chunks.length > 12000) throw Error('语义索引超过 12000 个片段，请减少手册后重试');
-      rows.push(validate(records, index)); count += index.chunks.length;
+      const values = validate(records, index);
+      if (view) for (let j = 0; j < values.length; j++) { view.setFloat32(offset, values[j], true); offset += 4; }
       chunks.push(...index.chunks.map(chunk => ({ ...chunk, position: chunk.position + recordsOffset })));
       recordsOffset += records.length;
     }
-    const bytes = new Uint8Array(count * profile.dimensions * 4), view = new DataView(bytes.buffer); let offset = 0;
-    for (const values of rows) for (const value of values) { view.setFloat32(offset, value, true); offset += 4; }
-    return { schema: 1, profile, chunks, vectors: encodeBytes(bytes) };
+    return { schema: 1, profile, chunks, vectors: bytes ? encodeBytes(bytes) : indexes[0].vectors };
   }
 
   const api = { PROFILE, LEGACY_PROFILE, sourceText, normalizeInput, compatible, chunksFor, legacyChunksFor, unitsFor, createIndex, validate, combineIndexes };

@@ -45,3 +45,9 @@ declare const vectorResult: Awaited<ReturnType<typeof builder.book>>;
 // @ts-expect-error Reuse statistics are immutable publication results.
 vectorResult.stats.reusedManuals = 100;
 combineIndexes([builder.recordsFor(manual)], [vectorResult.index]);
+
+builder.publish({ model: 'ML307G', manuals: [manual] }, { archiveOverhead: 1000, onManual: result => { result.index.chunks.length; } });
+// @ts-expect-error Publication needs the archive budget before it may infer.
+builder.publish({ model: 'ML307G', manuals: [manual] }, { onManual: () => {} });
+// @ts-expect-error Clients cannot inject their own prepared chunks into publication.
+builder.publish({ model: 'ML307G', manuals: [manual] }, { archiveOverhead: 1000, onManual: () => {}, chunks: [] });

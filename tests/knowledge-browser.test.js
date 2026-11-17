@@ -23,6 +23,7 @@ test('real HTTP knowledge delivery works across repositories and from a moved of
   await new Promise((resolve, reject) => { const timer = setTimeout(() => reject(Error('server timeout')), 10000); server.stdout.once('data', () => { clearTimeout(timer); resolve(); }); server.once('error', reject); });
   browser = await chromium.launch({ headless: true, ...(process.env.DITA_CHROMIUM_EXECUTABLE ? { executablePath: process.env.DITA_CHROMIUM_EXECUTABLE } : {}) });
   const page = await browser.newPage({ viewport: { width: 1440, height: 1020 } }), errors = [];
+  const context = page.context();
   page.setDefaultTimeout(15000); page.on('pageerror', error => errors.push(error.message));
   await page.goto('http://127.0.0.1:' + port); await page.waitForFunction(() => window.DitaApp?.state.root);
   await page.evaluate(mapPath => window.DitaApp.openFile(mapPath), mapPath);
@@ -48,6 +49,56 @@ test('real HTTP knowledge delivery works across repositories and from a moved of
     assert.match(await frame.locator('#kbArticle').innerText(), /AT\+MHTTPCFG/);
     assert.ok(await frame.locator('#kbArticle mark').count() > 0);
     assert.equal(await frame.locator('#kbArticle .export-footnotes > ol > li').count(), 25);
+    await page.click('#knowledgePreviewClose'); await page.click('#knowledgeClose');
+  });
+  await stage('closing during filter loading cannot erase remembered publication conditions on a workspace change', async () => {
+    const initial = await page.evaluate(() => window.DitaApp.state.currentBranch), endpoint = '**/api/filters'; let release;
+    const hold = new Promise(resolve => { release = resolve; });
+    await context.route(endpoint, async route => { await hold; await route.continue().catch(() => {}); });
+    const pending = context.waitForEvent('request', request => request.url().endsWith('/api/filters'));
+    await page.click('#knowledgeButton'); await pending;
+    assert.equal(await page.locator('#knowledgePreview').isDisabled(), true);
+    assert.equal(await page.locator('#knowledgeDownload').isDisabled(), true);
+    await page.click('#knowledgeClose'); release(); await context.unroute(endpoint);
+    await page.selectOption('#branchSelect', 'alternate'); await page.waitForFunction(() => window.DitaApp.state.currentBranch === 'alternate');
+    await page.selectOption('#branchSelect', initial); await page.waitForFunction(initial => window.DitaApp.state.currentBranch === initial, initial);
+    await page.click('#knowledgeButton'); await page.locator('#knowledgeAdd:not([disabled])').waitFor();
+    assert.equal(await page.locator('#knowledgeFilter').inputValue(), 'filters/filter_tbd.ditaval');
+    assert.equal(await page.locator('#knowledgePrefixes').isChecked(), true);
+    await page.click('#knowledgeClose');
+  });
+  await stage('oversized semantic delivery stops before inference and the captured HTTP manual remains usable', async () => {
+    await page.click('#knowledgeButton'); await page.check('#knowledgeSemantic');
+    const endpoint = '**/api/knowledge/publish', requests = [], downloads = [];
+    const requested = request => { if (request.url().endsWith('/api/knowledge/publish')) requests.push(request.url()); };
+    const downloaded = download => downloads.push(download);
+    context.on('request', requested); page.on('download', downloaded);
+    const profile = await page.evaluate(() => window.DitaKnowledgeSemantic.PROFILE);
+    await context.route(endpoint, route => route.fulfill({ status: 200, contentType: 'application/x-ndjson', body: JSON.stringify({ type: 'estimate', profile, chunks: 12000, bytes: 64 * 1024 * 1024 }) + '\n' }));
+    try {
+      await page.click('#knowledgeDownload'); await page.waitForFunction(() => document.getElementById('knowledgeError').textContent.includes('64 MiB'));
+      assert.equal(requests.length, 1); assert.equal(downloads.length, 0);
+      assert.match(await page.locator('#knowledgeCapacity').innerText(), /MiB/);
+      assert.equal(await page.locator('.knowledge-part').count(), 1);
+    } finally { await context.unroute(endpoint); context.removeListener('request', requested); page.removeListener('download', downloaded); }
+    await page.uncheck('#knowledgeSemantic'); await page.click('#knowledgePreview');
+    await page.frameLocator('#knowledgePreviewFrame').locator('#kbManualCards .manual-card').waitFor();
+    assert.equal(await page.locator('#knowledgeError').innerText(), '');
+    await page.click('#knowledgePreviewClose'); await page.click('#knowledgeClose');
+  });
+  await stage('cancelling a starting Worker prevents a late preview and allows a fresh publication', async () => {
+    await page.click('#knowledgeButton');
+    const endpoint = '**/knowledge-publish-worker.js'; let release;
+    const hold = new Promise(resolve => { release = resolve; });
+    await context.route(endpoint, async route => { await hold; await route.abort().catch(() => {}); });
+    const pending = context.waitForEvent('request', request => request.url().endsWith('/knowledge-publish-worker.js'));
+    await page.click('#knowledgePreview'); await pending;
+    assert.equal(await page.locator('#knowledgeBatchCancel').innerText(), '取消发布');
+    await page.click('#knowledgeBatchCancel'); release(); await context.unroute(endpoint);
+    assert.equal(await page.locator('#knowledgePreviewDialog').evaluate(node => node.open), false);
+    assert.match(await page.locator('#knowledgeStatus').innerText(), /手册来源仍可用于重新导出/);
+    await page.click('#knowledgePreview'); await page.frameLocator('#knowledgePreviewFrame').locator('#kbManualCards .manual-card').waitFor();
+    assert.equal(await page.locator('#knowledgeError').innerText(), '');
     await page.click('#knowledgePreviewClose'); await page.click('#knowledgeClose');
   });
   if (process.env.BLINK_MODELS) await stage('structured chunk preview preserves parameter notes, source positioning and the legacy comparison', async () => {
@@ -106,15 +157,13 @@ test('real HTTP knowledge delivery works across repositories and from a moved of
     await page.click('#knowledgeButton'); await page.check('#knowledgeSemantic');
     if (!await page.locator('.knowledge-vector-options').evaluate(node => node.open)) await page.locator('.knowledge-vector-options summary').click();
     await page.check('#knowledgeRebuild');
-    const endpoint = '**/api/knowledge/semantic'; let release;
-    const hold = new Promise(resolve => { release = resolve; }), downloads = [];
+    const downloads = [];
     const listener = download => downloads.push(download); page.on('download', listener);
-    await page.route(endpoint, async route => { await hold; try { await route.fulfill({ status: 200, contentType: 'application/x-ndjson', body: JSON.stringify({ type: 'error', message: 'LATE_VECTOR_ERROR' }) + '\n' }); } catch (cause) { if (!/closed|handled|cancel|abort/i.test(cause.message)) throw cause; } });
-    const request = page.waitForRequest(request => request.url().endsWith('/api/knowledge/semantic'));
-    await page.click('#knowledgeDownload'); await request; assert.equal(await page.locator('#knowledgeBatchCancel').innerText(), '取消向量生成');
-    await page.click('#knowledgeBatchCancel'); assert.match(await page.locator('#knowledgeStatus').innerText(), /手册来源仍可用于重新导出/); await page.click('#knowledgeClose'); release();
-    await page.unroute(endpoint); await page.click('#knowledgeButton'); await page.locator('#knowledgeDownload:not([disabled])').waitFor();
-    assert.equal(downloads.length, 0); assert.doesNotMatch(await page.locator('#knowledgeError').innerText(), /LATE_VECTOR_ERROR/);
+    await page.click('#knowledgeDownload');
+    await page.waitForFunction(() => document.getElementById('knowledgeBatchCancel').textContent === '取消向量生成', null, { timeout: 60000 });
+    await page.click('#knowledgeBatchCancel'); assert.match(await page.locator('#knowledgeStatus').innerText(), /手册来源仍可用于重新导出/); await page.click('#knowledgeClose');
+    await page.click('#knowledgeButton'); await page.locator('#knowledgeDownload:not([disabled])').waitFor();
+    assert.equal(downloads.length, 0); assert.equal(await page.locator('#knowledgeError').innerText(), '');
     assert.equal(await page.locator('#knowledgeRebuild').isChecked(), true);
     page.removeListener('download', listener); await page.uncheck('#knowledgeRebuild'); await page.uncheck('#knowledgeSemantic'); await page.click('#knowledgeClose');
   });

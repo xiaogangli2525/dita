@@ -89,6 +89,7 @@ module.exports = [
       }]
     }
   },
+  { files: ['public/knowledge-publish-worker.js'], languageOptions: { globals: globals.worker } },
   // This backend file includes functions serialized by Playwright into Chromium.
   { files: ['lib/pdf-export.js'], languageOptions: { globals: { document: 'readonly' } } }
 ];

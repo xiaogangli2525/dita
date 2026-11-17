@@ -2,7 +2,9 @@
 (function (root) {
   function createController(A) {
     const get = id => document.getElementById(id), parts = new Map(), recipes = new Map(), preferences = new Map(), sourceStates = new Map(), capture = root.DitaKnowledgeCapture.createCapture(A);
-    let busy = false, generatingVectors = false, loading = false, filterFailed = false, operation = 0, abort, compiled = null, chosenModel = '', preferenceKey = '';
+    let busy = false, publishing = false, generatingVectors = false, loading = false, filtersReady = false, filterFailed = false, operation = 0, abort, compiled = null, chosenModel = '', preferenceKey = '';
+    const publisher = root.DitaKnowledgePublisher.createPublisher();
+    let lastManifest = null;
     const batchCapture = root.DitaKnowledgeBatch.createBatchCapture(A);
     const workspaceKey = () => JSON.stringify([A.state.root, A.state.currentBranch || '']);
     const sourceKey = (root, path) => JSON.stringify([root, path]);
@@ -10,9 +12,9 @@
     const chunkPreview = root.DitaKnowledgeChunkPreview.createController({ A, parts: readyParts, error });
     const validModel = model => /^[\p{L}\p{N}][\p{L}\p{N}._-]{0,79}$/u.test(model);
     const sameQuickSettings = (left, right) => ['filterPath', 'prefixes', 'version', 'mode', 'module'].every(field => left[field] === right[field]);
-    function invalidate() { compiled = null; get('knowledgeVectorStatus').textContent = ''; }
+    function invalidate() { publisher.dispose(); compiled = null; lastManifest = null; get('knowledgeVectorStatus').textContent = ''; get('knowledgeCapacity').textContent = ''; }
     function remember() {
-      if (!preferenceKey || loading || filterFailed) return;
+      if (!preferenceKey || loading || !filtersReady || filterFailed) return;
       preferences.set(preferenceKey, { version: get('knowledgeVersion').value, filterPath: get('knowledgeFilter').value,
         prefixes: get('knowledgePrefixes').checked, mode: get('knowledgeMode').value, module: get('knowledgeModule').value,
         paths: [...get('knowledgeSources').querySelectorAll('input:checked')].map(input => input.value) });
@@ -49,9 +51,9 @@
       for (const id of ['knowledgeTitle', 'knowledgeSdk', 'knowledgeVersion', 'knowledgeFilter', 'knowledgePrefixes', 'knowledgeMode', 'knowledgeModule', 'knowledgePlan', 'knowledgePlanSave', 'knowledgePlanLoad', 'knowledgePlanNew', 'knowledgePlanExport', 'knowledgePlanImport', 'knowledgeSourcesAdd', 'knowledgeBatchCheck', 'knowledgeBatchRetry']) get(id).disabled = busy;
       get('knowledgeAdd').disabled = busy || loading || filterFailed; get('knowledgeFilter').disabled = busy || loading;
       get('knowledgeBatchCheck').disabled = busy || loading || !recipes.size; get('knowledgeBatchRetry').disabled = busy || loading || ![...recipes.keys()].some(key => !parts.has(key)); get('knowledgeBatchCancel').hidden = !busy;
-      get('knowledgeBatchCancel').textContent = generatingVectors ? '取消向量生成' : '取消核对';
+      get('knowledgeBatchCancel').textContent = generatingVectors ? '取消向量生成' : publishing ? '取消发布' : '取消核对';
       get('knowledgeModel').disabled = busy || recipes.size > 0;
-      const ready = recipes.size > 0 && readyParts().every(part => part && !part.staleMetadata.length);
+      const ready = !busy && !loading && recipes.size > 0 && readyParts().every(part => part && !part.staleMetadata.length);
       get('knowledgePreview').disabled = busy || !ready; get('knowledgeChunkPreview').disabled = busy || !ready; get('knowledgeDownload').disabled = busy || !ready; get('knowledgeClear').disabled = busy || !recipes.size;
       for (const input of get('knowledgeSources').querySelectorAll('input')) input.disabled = busy || loading;
       for (const button of get('knowledgeCollection').querySelectorAll('button')) button.disabled = busy;
@@ -128,13 +130,13 @@
       const recipe = local[0];
       const pref = preferences.get(preferenceKey) || (recipe ? { ...recipe, paths: local.filter(item => sameQuickSettings(item, recipe)).map(item => item.path) } : {});
       sourceChoices(pref); quickFields(pref);
-      get('knowledgeFilter').replaceChildren(new Option('正在加载条件文件…', '')); loading = true; filterFailed = false; controls();
+      get('knowledgeFilter').replaceChildren(new Option('正在加载条件文件…', '')); loading = true; filtersReady = false; filterFailed = false; controls();
       const current = () => generation === operation && workspace === A.api.token && get('knowledgeDialog').open;
       try {
         const filters = await A.manual.listFilters(); if (!current()) return;
         get('knowledgeFilter').replaceChildren(new Option('不过滤正文', ''));
         for (const path of filters.files) get('knowledgeFilter').add(new Option((filters.descriptions?.[path] || '条件文件') + ' · ' + path, path));
-        quickFilter(pref.filterPath); loading = false; controls();
+        quickFilter(pref.filterPath); loading = false; filtersReady = true; controls();
       } catch (cause) { if (current()) { get('knowledgeFilter').replaceChildren(); error('条件文件读取失败，暂不能加入手册：' + cause.message); loading = false; filterFailed = true; controls(); } }
     }
     async function show() {
@@ -144,7 +146,7 @@
       get('knowledgeModels').replaceChildren(...[...models].map(value => new Option(value, value)));
       get('knowledgeDialog').showModal(); renderCollection(); await refreshSources();
     }
-    function cancel() { remember(); abort?.abort(); operation++; for (const [key, value] of sourceStates) if (!parts.has(key) && value.state !== 'error') sourceStates.set(key, { state: 'pending', message: '已取消，需重新核对' }); busy = false; generatingVectors = false; loading = false; controls(); }
+    function cancel() { remember(); abort?.abort(); publisher.dispose(); compiled = null; operation++; for (const [key, value] of sourceStates) if (!parts.has(key) && value.state !== 'error') sourceStates.set(key, { state: 'pending', message: '已取消，需重新核对' }); busy = false; publishing = false; generatingVectors = false; loading = false; get('knowledgePublishProgress').hidden = true; controls(); }
     async function add() {
       if (busy || loading || filterFailed) return;
       const model = get('knowledgeModel').value.trim(), version = get('knowledgeVersion').value.trim();
@@ -212,47 +214,67 @@
         status('核对完成：' + staged.size + '/' + keys.length + ' 份通过' + (failures ? '，' + failures + ' 份需处理，可编辑来源后重试未完成项。' : '。所有来源就绪后，可预览并统一导出。'));
       } finally { if (generation === operation) { busy = false; invalidate(); renderCollection(); } }
     }
-    function build() {
-      const manuals = readyParts(); if (!manuals.length || manuals.some(part => !part)) throw Error('请先重新核对所有手册来源');
-      if (!compiled) compiled = root.DitaKnowledgePackage.preparePackage({ title: get('knowledgeTitle').value, model: chosenModel, sdkVersion: get('knowledgeSdk').value, manuals });
+    function showProgress(value) {
+      const labels = { validate: '检查发布内容', index: '建立检索索引', render: '生成阅读页面', capacity: '核对交付大小',
+        estimate: '核算语义片段', vectors: '生成离线语义索引', verify: '校验发布内容', archive: '打包离线文件' };
+      get('knowledgePublishProgress').hidden = false;
+      get('knowledgePublishPhase').textContent = labels[value.stage] || '正在准备发布';
+      const bar = get('knowledgePublishBar');
+      if (value.total && Number.isFinite(value.done)) { bar.max = value.total; bar.value = value.done; }
+      else bar.removeAttribute('value');
+      const detail = value.manual ? value.manual + ' · ' + value.position + '/' + value.totalManuals + ' 份手册' : value.total ? value.done + '/' + value.total : '';
+      get('knowledgePublishDetail').textContent = detail;
+      if (Number.isFinite(value.bytes)) get('knowledgeCapacity').textContent = '预计交付 ' + (value.bytes / 1048576).toFixed(2) + ' MiB / 上限 64 MiB';
+      const vectors = value.stage === 'vectors';
+      if (vectors !== generatingVectors) { generatingVectors = vectors; controls(); }
+      if (vectors && Number.isFinite(value.reusedManuals)) get('knowledgeVectorStatus').textContent = '向量：复用 ' + value.reusedManuals + ' 份，重新生成 ' + value.rebuiltManuals + ' 份';
+      status((labels[value.stage] || '正在准备发布') + (detail ? ' · ' + detail : '') + '…');
+    }
+    async function build(options) {
+      if (!compiled) {
+        const manuals = readyParts(); if (!manuals.length || manuals.some(part => !part)) throw Error('请先重新核对所有手册来源');
+        compiled = await publisher.prepare({ title: get('knowledgeTitle').value, model: chosenModel, sdkVersion: get('knowledgeSdk').value, manuals }, options);
+      }
       return compiled;
     }
-    function preview() {
-      try { error(''); const output = build(); get('knowledgePreviewFrame').srcdoc = output.html; get('knowledgePreviewDialog').showModal(); }
-      catch (cause) { error(cause.message); }
-    }
-    async function download() {
+    async function publish(previewOnly) {
       if (busy) return;
-      const generation = ++operation, workspace = A.api.token;
+      const generation = ++operation, workspace = A.api.token, semantic = !previewOnly && get('knowledgeSemantic').checked;
+      abort = new AbortController(); busy = true; publishing = true; controls();
+      const current = () => generation === operation && workspace === A.api.token;
+      const options = { signal: abort.signal, onProgress: value => { if (current()) showProgress(value); } };
+      showProgress({ stage: 'validate' });
       try {
-        error(''); const prepared = build(); let output;
-        if (get('knowledgeSemantic').checked) {
-          const request = { manuals: prepared.manuals, model: prepared.book.model };
-          abort = new AbortController(); busy = true; generatingVectors = true; controls();
-          const result = await root.DitaKnowledgeIndex.generate({ api: A.api, manuals: request.manuals, model: request.model, force: get('knowledgeRebuild').checked,
-            signal: abort.signal, current: () => generation === operation && workspace === A.api.token,
-            onProgress: progress => {
-              const text = progress.manual + ' · ' + (progress.source ? progress.source === 'generated' ? '已重新生成' : '已复用向量' : progress.total ? '正在生成 ' + progress.done + '/' + progress.total + ' 个片段' : '正在检查可复用向量…');
-              status('手册 ' + progress.position + '/' + progress.totalManuals + ' · ' + text);
-              get('knowledgeVectorStatus').textContent = '向量：复用 ' + progress.reusedManuals + ' 份，重新生成 ' + progress.rebuiltManuals + ' 份';
-            } });
-          if (generation !== operation || workspace !== A.api.token) return;
-          output = prepared.build(result.index);
-          get('knowledgeVectorStatus').textContent = '向量：复用 ' + result.stats.reusedManuals + ' 份，重新生成 ' + result.stats.rebuiltManuals + ' 份 · ' + result.stats.totalChunks + ' 个片段' + (result.warnings.length ? '。' + result.warnings.join(' ') : '');
-          get('knowledgeRebuild').checked = false;
-        } else output = prepared.build();
-        if (generation !== operation || workspace !== A.api.token) return;
-        A.downloadText(output.zip, output.filename, 'application/zip');
-        status('已发起下载：' + output.filename + (get('knowledgeSemantic').checked ? '；已附带 CLI 离线语义索引，网页提供章节阅读与关键词检索。' : '；解压后打开 docs/index.html。'));
-        A.setStatus('离线知识库已生成：' + output.filename);
-      } catch (cause) { if (generation === operation) error(cause.message); }
-      finally { if (generation === operation) { busy = false; generatingVectors = false; controls(); } }
+        error(''); await build(options); if (!current()) return;
+        if (previewOnly) {
+          const output = await publisher.preview(options); if (!current()) return;
+          get('knowledgePreviewFrame').srcdoc = output.html; get('knowledgePreviewDialog').showModal();
+          status('阅读页面已准备好，预览和导出使用同一份发布内容。');
+        } else {
+          const output = await publisher.download({ semantic, force: get('knowledgeRebuild').checked, token: workspace }, options);
+          if (!current()) return;
+          lastManifest = output.manifest;
+          if (semantic) {
+            get('knowledgeVectorStatus').textContent = '向量：复用 ' + output.stats.reusedManuals + ' 份，重新生成 ' + output.stats.rebuiltManuals + ' 份 · ' + output.stats.totalChunks + ' 个片段' + (output.warnings.length ? '。' + output.warnings.join(' ') : '');
+            get('knowledgeRebuild').checked = false;
+          }
+          get('knowledgeCapacity').textContent = '离线包 ' + (output.zip.size / 1048576).toFixed(2) + ' MiB / 上限 64 MiB';
+          A.downloadText(output.zip, output.filename, 'application/zip');
+          status('已发起下载：' + output.filename + (semantic ? '；已附带 CLI 离线语义索引，网页提供章节阅读与关键词检索。' : '；解压后打开 docs/index.html。'));
+          A.setStatus('离线知识库已生成：' + output.filename);
+        }
+      } catch (cause) {
+        if (current()) { publisher.dispose(); compiled = null; if (cause.name !== 'AbortError') error(cause.message); }
+      } finally {
+        if (current()) { busy = false; publishing = false; generatingVectors = false; get('knowledgePublishProgress').hidden = true; controls(); }
+      }
     }
+    const preview = () => publish(true), download = () => publish(false);
     get('knowledgeSemantic').addEventListener('change', controls);
     get('knowledgeSourcesAdd').addEventListener('click', () => sources.show());
     get('knowledgeBatchCheck').addEventListener('click', () => batch());
     get('knowledgeBatchRetry').addEventListener('click', () => batch([...recipes.keys()].filter(key => !parts.has(key))));
-    get('knowledgeBatchCancel').addEventListener('click', () => { const vectors = generatingVectors; cancel(); renderCollection(); if (vectors) get('knowledgeVectorStatus').textContent = '向量生成已取消，可重新导出。'; status(vectors ? '已取消向量生成，手册来源仍可用于重新导出。' : '已取消核对，未完成来源需重新核对后发布。'); });
+    get('knowledgeBatchCancel').addEventListener('click', () => { const vectors = generatingVectors, wasPublishing = publishing; cancel(); renderCollection(); if (vectors) get('knowledgeVectorStatus').textContent = '向量生成已取消，可重新导出。'; status(vectors ? '已取消向量生成，手册来源仍可用于重新导出。' : wasPublishing ? '已取消发布，手册来源仍可用于重新导出。' : '已取消核对，未完成来源需重新核对后发布。'); });
     get('knowledgeButton').addEventListener('click', show); get('knowledgeAdd').addEventListener('click', add);
     get('knowledgeClose').addEventListener('click', () => { cancel(); get('knowledgeDialog').close(); }); get('knowledgeDialog').addEventListener('cancel', cancel);
     get('knowledgeChunkPreview').addEventListener('click', () => chunkPreview.show());
@@ -264,7 +286,7 @@
     for (const id of ['knowledgeVersion', 'knowledgePrefixes', 'knowledgeMode', 'knowledgeModule']) get(id).addEventListener('change', remember);
     get('knowledgeFilter').addEventListener('change', () => { if (busy || loading || !get('knowledgeFilter').options.length || get('knowledgeFilter').selectedOptions[0]?.disabled) return; filterFailed = false; remember(); controls(); error(''); });
     A.events.on('workspace:willChange', () => { cancel(); chunkPreview.close(); get('knowledgeMetadataDialog').close(); get('knowledgePreviewDialog').close(); get('knowledgeDialog').close(); });
-    return { show, get lastManifest() { return compiled?.manifest || null; } };
+    return { show, get lastManifest() { return lastManifest; } };
   }
   root.DitaKnowledge = { createController };
 })(window);

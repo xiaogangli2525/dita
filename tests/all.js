@@ -79,3 +79,4 @@ require('./knowledge-sources.test');
 
 
 require('./knowledge-cache.test');
+require('./knowledge-publish.test');

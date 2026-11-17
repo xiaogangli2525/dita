@@ -45,3 +45,8 @@ export interface KnowledgeBundle { readonly schema: 1;
   readonly snapshot: Omit<import('./data-contracts').ManualSnapshot,'files'|'buffers'> & {readonly files: readonly (readonly [string,import('./data-contracts').FileContent])[];readonly buffers:readonly []};
   readonly texts: readonly (readonly [string,string])[]; readonly assets: readonly (readonly [string,string])[];
   readonly provenance: {readonly commit:string;readonly branch:string;readonly dirty:boolean};readonly receipt:KnowledgeReceipt }
+
+export interface PublishProgress {
+  readonly stage: string; readonly done?: number; readonly total?: number;
+  readonly bytes?: number; readonly limit?: number;
+}
