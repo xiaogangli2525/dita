@@ -248,7 +248,9 @@
         error(''); await build(options); if (!current()) return;
         if (previewOnly) {
           const output = await publisher.preview(options); if (!current()) return;
-          get('knowledgePreviewFrame').srcdoc = output.html; get('knowledgePreviewDialog').showModal();
+          // Navigate the frame after its dialog is visible. Replacing srcdoc
+          // while the reopened dialog is hidden can leave Chromium unpainted.
+          get('knowledgePreviewDialog').showModal(); get('knowledgePreviewFrame').srcdoc = output.html;
           status('阅读页面已准备好，预览和导出使用同一份发布内容。');
         } else {
           const output = await publisher.download({ semantic, force: get('knowledgeRebuild').checked, token: workspace }, options);
@@ -280,7 +282,7 @@
     get('knowledgeChunkPreview').addEventListener('click', () => chunkPreview.show());
     get('knowledgePreview').addEventListener('click', preview); get('knowledgeDownload').addEventListener('click', download);
     get('knowledgePreviewClose').addEventListener('click', () => get('knowledgePreviewDialog').close());
-    get('knowledgePreviewDialog').addEventListener('close', () => { get('knowledgePreviewFrame').srcdoc = ''; });
+    get('knowledgePreviewDialog').addEventListener('close', () => { if (!get('knowledgePreviewDialog').open) get('knowledgePreviewFrame').srcdoc = ''; });
     get('knowledgeClear').addEventListener('click', () => { parts.clear(); recipes.clear(); sourceStates.clear(); chosenModel = ''; invalidate(); renderCollection(); status('发布集合已清空。'); });
     for (const id of ['knowledgeTitle', 'knowledgeSdk']) get(id).addEventListener('input', invalidate);
     for (const id of ['knowledgeVersion', 'knowledgePrefixes', 'knowledgeMode', 'knowledgeModule']) get(id).addEventListener('change', remember);

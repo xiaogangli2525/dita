@@ -9,8 +9,10 @@ test('Oxygen tracking persists real code edits and supports review, history and 
   const temp = await fs.mkdtemp(path.join(os.tmpdir(), 'dita-oxygen-')), repo = path.join(temp, 'docs'); await fs.mkdir(repo);
   const original = '<?xml version="1.0" encoding="GBK"?>\r\n<!--keep-->\r\n<topic id="a"><title>HTTP</title><body><p id="plain">原始说明</p><codeblock id="code">AT+OPEN\r\n    TIMEOUT=30\r\n    AT+SEND &amp; OK</codeblock><table><tgroup cols="1"><tbody><row><entry id="param">范围 30</entry></row></tbody></tgroup></table></body></topic>\r\n<?tail keep?>';
   const other = '<topic id="b"><title>TCP</title><body><codeblock id="other-code">OPEN</codeblock></body></topic>';
+  const prose = '<topic id="typing"><title>Typing</title><body><p id="typing-p">Old prose with a rejection baseline.</p></body></topic>';
   const map = '<map><title>功能手册</title><topicref href="a.dita"/><topicref href="b.dita"/></map>';
   await fs.writeFile(path.join(repo, 'a.dita'), iconv.encode(original, 'gbk')); await fs.writeFile(path.join(repo, 'b.dita'), other); await fs.writeFile(path.join(repo, 'main.ditamap'), map);
+  await fs.writeFile(path.join(repo, 'typing.dita'), prose);
   for (const args of [['init'], ['add', '.'], ['-c', 'user.name=Test', '-c', 'user.email=test@example.invalid', 'commit', '-m', 'fixture']]) execFileSync('git', args, { cwd: repo, stdio: 'ignore' });
   const port = await new Promise(resolve => { const socket = net.createServer(); socket.listen(0, '127.0.0.1', () => { const number = socket.address().port; socket.close(() => resolve(number)); }); });
   const server = spawn(process.execPath, ['server.js'], { cwd: path.join(__dirname, '..'), env: { ...process.env, DOCS_ROOT: repo, REPOSITORIES_ROOT: temp, PORT: String(port) }, stdio: ['ignore', 'pipe', 'pipe'] });
@@ -91,6 +93,21 @@ test('Oxygen tracking persists real code edits and supports review, history and 
     await page.click('#rejectAllButton');
     assert.match(await page.locator('#status').textContent(), /无法批量应用修订/);
     assert.deepEqual(await page.evaluate(() => [...window.DitaApp.state.filesMap].map(([path, file]) => [path, file.current])), before);
+  });
+  await t.test('prose keeps synchronizing after real keyboard spaces, Unicode, save and reload', async () => {
+    await page.click('#closeReviewButton'); await open('typing.dita'); await configure(true);
+    await select('#typing-p', 0, 'Old prose with a rejection baseline.'.length);
+    await page.keyboard.type('HTTP request timeout 60 seconds ');
+    await page.keyboard.insertText('中文 😀');
+    const revision = await current('typing.dita');
+    assert.equal(tracking.resolve(revision, false), tracking.setEnabled(prose, true));
+    assert.match(tracking.resolve(revision, true).replace(/\u00a0/g, ' '), /HTTP request timeout 60 seconds 中文 😀/);
+    assert.doesNotMatch(await page.locator('#status').textContent(), /同步失败|空白结构较复杂/);
+    await page.click('#saveButton'); await page.waitForFunction(() => !window.DitaApp.state.filesMap.get('typing.dita').dirty);
+    assert.equal(await fs.readFile(path.join(repo, 'typing.dita'), 'utf8'), revision);
+    await page.reload(); await page.waitForFunction(() => window.DitaApp?.state.root); await open('typing.dita');
+    assert.equal(await current('typing.dita'), revision);
+    assert.equal((await page.locator('#typing-p').textContent()).replace(/\u00a0/g, ' '), 'HTTP request timeout 60 seconds 中文 😀');
   });
   assert.deepEqual(errors, []);
 });

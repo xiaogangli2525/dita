@@ -238,7 +238,7 @@
       // Retain annotations at their original source positions. A minimal text
       // edit must not move both ends of an Oxygen comment behind the new text.
       if (tokens.some(token => token.kind === 'cdata')) throw new Error('文字同时包含 CDATA 和批注标记，请使用源码修改');
-      const chars = [];
+      let chars = [];
       for (const token of tokens.filter(token => token.kind === 'text')) {
         for (let offset = token.start; offset < token.end;) {
           const begin = offset;
@@ -253,7 +253,22 @@
           chars.push({ text, start: begin, end: offset });
         }
       }
-      if (chars.map(char => char.text).join('') !== normalizeText(previous)) throw new Error('批注文本的空白结构较复杂，请使用源码修改');
+      if (chars.map(char => char.text).join('') !== normalizeText(previous)) {
+        // Prose rendering collapses whitespace in each source text node. A
+        // browser also inserts NBSP while typing a trailing space. Keep the
+        // original source ranges when mapping that visible space back to XML.
+        // Exact code whitespace takes the matching fast path above.
+        const projected = [];
+        for (const char of chars) {
+          if (/^\s$/.test(char.text)) {
+            const last = projected.at(-1);
+            if (last?.text === ' ' && last.end === char.start) last.end = char.end;
+            else projected.push({ ...char, text: ' ' });
+          } else projected.push({ ...char });
+        }
+        if (projected.map(char => char.text).join('') !== normalizeText(previous)) throw new Error('批注文本的空白结构较复杂，请使用源码修改');
+        chars = projected;
+      }
       const changed = Array.from(normalizeText(next));
       let first = 0, tail = 0;
       while (first < chars.length && first < changed.length && chars[first].text === changed[first]) first++;
