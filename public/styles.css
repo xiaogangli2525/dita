@@ -393,3 +393,9 @@ textarea:focus-visible, [tabindex]:focus-visible {
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+
+/* Preserve the original code/command layout in native revision previews. */
+.oxy-change .oxy-content, .oxy-change .oxy-context { white-space: pre-wrap; tab-size: 4; overflow-wrap: anywhere; }
+#trackingButton[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: var(--accent-soft, var(--surface)); }
+#trackingDialog label { display: block; margin-block: 12px; }
+#trackingAuthor { display: block; width: 100%; margin-top: 6px; }

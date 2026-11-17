@@ -90,6 +90,7 @@ The browser and server share a vendored copy of **sax 1.6.1** for XML validation
 - Export includes current working buffers; local images are embedded in HTML and Markdown
 - Map structure operations are undoable edits; use Save to write them to disk
 - Manual saves show an explicit selection of changed Topics and referenced resources
+- Oxygen-compatible text tracking with author/time, code whitespace, native review and persistent DITA revision records; see the first-version scope in the authoring guide
 - Recoverable browser drafts with repository/branch isolation and disk-base conflict checks
 - Project model registry, explicit confirmed-common notes, and source editing for reused notes
 - Cross-Topic plaintext search including unsaved buffers, plus image/Topic-link pickers

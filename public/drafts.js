@@ -70,7 +70,7 @@
               if (workspace !== A.api.token) throw new Error('工作区已切换');
               if (freshDisk !== draft.base || file.disk !== draft.base || file.dirty && file.current !== draft.current) throw new Error('磁盘或编辑内容已变化。请下载草稿，与当前文档比较后合并。');
               store.adopt(scope(), draft);
-              A.setFileContent(file, draft.current); get('draftDialog').close();
+              A.setFileContent(file, draft.current, { origin: 'restore' }); get('draftDialog').close();
               A.setStatus('草稿已恢复到编辑区，可撤销；点击保存后写入磁盘');
             } catch (error) { get('draftError').textContent = draft.path + '：' + error.message; }
           });

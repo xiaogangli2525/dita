@@ -1,5 +1,6 @@
 'use strict';
 (function (root) {
+  const nativeTracking = typeof module !== 'undefined' ? require('./oxygen-tracking') : root.DitaOxygenTracking;
   const sessions = typeof module !== 'undefined' ? require('./review-session') : root.DitaReviewSession;
   const bodyLocations = typeof module !== 'undefined' ? require('./review-locations') : root.DitaReviewLocations;
   const views = typeof module !== 'undefined' ? require('./review-view') : root.DitaReviewView;
@@ -12,7 +13,13 @@
     try { storage = root.localStorage; }
     catch (error) { console.warn('无法读取审阅进度存储', error); }
     const reviewStore = progress.createReviewStore(storage);
-    let reviewSurface = null, reviewingMap = false;
+    let reviewSurface = null, reviewingMap = false, oxygenError = '';
+    function collectOxygen(file) {
+      try {
+        if (root.DitaOxygenCore?.hasUnsupportedChanges(file.current)) oxygenError = '含尚不支持的 Oxygen 属性或 CDATA 修订，请在 Oxygen 中处理';
+        return ditaCore.collectOxyTrackedChanges?.(file.current) || [];
+      } catch (error) { oxygenError = file.path + '：' + error.message; return []; }
+    }
     const session = sessions.createReviewSession({ state, progress: reviewStore });
     const resetReviewSnapshot = session.resetTopic, decisionsFor = session.decisionsFor, saveFrame = session.save;
     const reviewFrame = (file, inManual = reviewingMap) => session.frame(file, inManual);
@@ -42,6 +49,11 @@
       return changed;
     }
 
+    function nativeMarks(file, count) {
+      const active = state.filesMap.get(state.activePath);
+      return dom.reviewScope?.value === 'oxygen' && (count > 0 || nativeTracking.enabled(file.current) || active && nativeTracking.enabled(active.current));
+    }
+
     function getOxyReplacement(change, accept) {
       if (change.type === 'insert') return accept ? (change.keepContent || '') : '';
       if (change.type === 'delete') return accept ? '' : (change.deletedContent ?? change.content ?? '');
@@ -53,7 +65,9 @@
       const source = file.current;
       const replacement = getOxyReplacement(change, accept);
       const next = source.slice(0, change.index) + replacement + source.slice(change.index + change.matchLength);
-      setFileContent(file, next, {});
+      try { ditaCore.parseXml(next); }
+      catch (error) { setStatus('无法应用该修订：' + error.message, true); return; }
+      setFileContent(file, next, { origin: 'review' });
       setStatus(accept ? '已接受修订' : '已拒绝修订');
       if (state.mode === 'review') {
         const activeFile = state.filesMap.get(state.activePath);
@@ -96,7 +110,7 @@
       });
     }
     function renderDiff(file, resetSnapshot = false) {
-      clearReviewLocations();
+      clearReviewLocations(); oxygenError = '';
       if (!file) {
         resetReviewSnapshot(null);
         showReviewEmpty('请先从左侧打开一个 Topic 或 Map，再审阅文档变更。');
@@ -111,7 +125,7 @@
       session.clearGroups();
       const fragment = document.createDocumentFragment();
       let oxyCount = 0;
-      const oxyChanges = ditaCore.collectOxyTrackedChanges ? ditaCore.collectOxyTrackedChanges(file.current) : [];
+      const oxyChanges = collectOxygen(file);
       if (oxyChanges.length) {
         const oxyHeader = document.createElement('div');
         oxyHeader.className = 'diff-section-header';
@@ -125,7 +139,7 @@
       const frame = reviewFrame(file, false);
       const groups = session.groups(frame, REVIEW_CONTEXT_SIZE);
       const hasGitDiff = groups.some(g => g.type !== 'same');
-      markReviewLocations(file, dom.visualEditor, groups, frame.keyFor, frame.baseline);
+      if (hasGitDiff && !nativeMarks(file, oxyCount)) markReviewLocations(file, dom.visualEditor, groups, frame.keyFor, frame.baseline);
       if (oxyChanges.length && hasGitDiff) {
         const gitHeader = document.createElement('div');
         gitHeader.className = 'diff-section-header';
@@ -135,7 +149,7 @@
       const changed = appendGitGroups(fragment, frame, hasGitDiff ? groups : []);
 
       if (hasGitDiff || oxyCount) dom.diff.replaceChildren(fragment);
-      else showReviewEmpty('当前 Topic 没有待审阅的变更。修改正文或应用 AI 提案后，可在这里查看差异。');
+      else showReviewEmpty(oxygenError || '当前 Topic 没有待审阅的变更。修改正文或应用 AI 提案后，可在这里查看差异。');
       const decided = decisionsFor(frame).size;
       const pending = Math.max(0, session.groupCount - decided);
       updateBulkButtons(changed > 0, oxyCount > 0);
@@ -146,7 +160,7 @@
       dom.reviewMeta.textContent = combinedSummary;
       saveFrame(frame);
       if (reviewStore.warning) dom.reviewMeta.textContent += ' · ' + reviewStore.warning;
-      setStatus(combinedSummary);
+      setStatus(oxygenError || combinedSummary, Boolean(oxygenError));
     }
 
     function showReviewEmpty(message) {
@@ -157,7 +171,7 @@
     }
 
     function renderMapReview(file) {
-      clearReviewLocations();
+      clearReviewLocations(); oxygenError = '';
       const restoreAll = reviewSurface !== file || !reviewingMap;
       reviewSurface = file; reviewingMap = true;
       const topicFiles = Array.from(state.mapAuthorPaths || []).map(path => state.filesMap.get(path)).filter(Boolean);
@@ -166,8 +180,10 @@
       const changedFiles = allFiles.filter(topic => { const frame = reviewFrame(topic, true); return frame.baseline !== frame.current; });
       const fragment = document.createDocumentFragment();
       let totalOxy = 0;
+      const nativeCounts = new Map();
       for (const topic of allFiles) {
-        const changes = ditaCore.collectOxyTrackedChanges ? ditaCore.collectOxyTrackedChanges(topic.current) : [];
+        const changes = collectOxygen(topic);
+        nativeCounts.set(topic, changes.length);
         if (changes.length) {
           totalOxy += changes.length;
           const section = document.createElement('section');
@@ -187,11 +203,11 @@
         }
       }
       if (!changedFiles.length && !totalOxy) {
-        showReviewEmpty('当前手册没有待审阅的变更。修改正文或应用 AI 提案后，可在这里查看差异。');
+        showReviewEmpty(oxygenError || '当前手册没有待审阅的变更。修改正文或应用 AI 提案后，可在这里查看差异。');
         dom.reviewMeta.textContent = '无变更';
         dom.acceptAllButton.disabled = true;
         dom.rejectAllButton.disabled = true;
-        setStatus('完整 Map 无变更');
+        setStatus(oxygenError || '完整 Map 无变更', Boolean(oxygenError));
         return;
       }
       for (const topic of changedFiles) {
@@ -204,7 +220,7 @@
         const frame = reviewFrame(topic, true);
         const groups = session.groups(frame, REVIEW_CONTEXT_SIZE);
         const surface = surfaceFor(topic);
-        markReviewLocations(topic, surface, groups, frame.keyFor, frame.baseline);
+        if (!nativeMarks(topic, nativeCounts.get(topic))) markReviewLocations(topic, surface, groups, frame.keyFor, frame.baseline);
         appendGitGroups(section, frame, groups);
         fragment.append(section);
       }
@@ -219,12 +235,12 @@
         saveFrame(reviewFrame(topic, true));
       }
       if (reviewStore.warning) dom.reviewMeta.textContent += ' · ' + reviewStore.warning;
-      setStatus(combinedSummary);
+      setStatus(oxygenError || combinedSummary, Boolean(oxygenError));
     }
 
     // Single-block actions and bulk Git review use the same history transaction.
     function writeReviewDecisions(frame, updates) {
-      return session.decide(frame, updates, setFileContent);
+      return session.decide(frame, updates, (file, content, options) => setFileContent(file, content, { ...options, origin: 'review' }));
     }
 
     function renderActiveReview(refreshSurface = false) {
@@ -268,22 +284,15 @@
       if (scope === 'git' && files.some(file => !session.isCurrent(reviewFrame(file, /\.ditamap$/i.test(state.activePath))))) {
         renderActiveReview(true); setStatus('原文已变化，已更新审阅，请重新核对后再批量处理。'); return;
       }
+      const prepared = new Map();
+      if (scope === 'oxygen') {
+        // Validate every restored document before changing any buffer in a Map.
+        try { for (const file of files) prepared.set(file, nativeTracking.resolveForReview(file.current, accept)); }
+        catch (error) { setStatus('无法批量应用修订：' + error.message, true); return; }
+      }
       for (const file of files) {
         if (scope === 'oxygen') {
-          let next = file.current;
-          // Work backwards so offsets remain valid; nested insertions are resolved
-          // in later passes rather than applying overlapping ranges.
-          for (let pass = 0; pass < 100; pass++) {
-            const changes = ditaCore.collectOxyTrackedChanges(next);
-            if (!changes.length) break;
-            let right = next.length;
-            for (const change of changes.reverse()) {
-              if (change.index + change.matchLength > right) continue;
-              next = next.slice(0, change.index) + getOxyReplacement(change, accept) + next.slice(change.index + change.matchLength);
-              right = change.index;
-            }
-          }
-          setFileContent(file, next);
+          setFileContent(file, prepared.get(file), { origin: 'review' });
         } else {
           const frame = reviewFrame(file, /\.ditamap$/i.test(state.activePath));
           const decisions = new Map();

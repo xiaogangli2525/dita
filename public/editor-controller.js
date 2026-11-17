@@ -89,8 +89,9 @@
       refreshFileViews(file);
     }
 
-    function setFileContent(file, content, { record = true, updateEditor = true, historyMeta, group, render = true } = {}) {
+    function setFileContent(file, content, { record = true, updateEditor = true, historyMeta, group, render = true, origin = 'edit' } = {}) {
       if (!file) return false;
+      if (origin === 'edit') content = A.tracking?.prepare(file, content) ?? content;
       if (!documentStore.editDocument(file, content, { record, historyMeta, group })) return false;
       if (file.path === state.activePath || (/\.ditamap$/i.test(state.activePath) && state.mapAuthorPaths?.has(file.path))) {
         session.setHistoryTarget(file.path);
@@ -324,8 +325,9 @@
       validateXml(content);
       const before = selectionBefore ? { mode: 'visual', path: file.path, bookmark: selectionBefore } : captureSelection(file);
       if (content === file.current) { if (selectionAfter) A.authorSelection?.restore(surface, selectionAfter); return; }
-      const rendered = ditaCore.createAuthorTopic(content, document, false, file.path);
-      if (!setFileContent(file, content, { render: false, historyMeta: { selectionBefore: before } })) return;
+      const prepared = A.tracking?.prepare(file, content) ?? content;
+      const rendered = ditaCore.createAuthorTopic(prepared, document, false, file.path);
+      if (!setFileContent(file, prepared, { origin: 'prepared', render: false, historyMeta: { selectionBefore: before } })) return;
       renderAuthorSurface(file, surface, rendered);
       if (selectionAfter) A.authorSelection?.restore(surface, selectionAfter);
       ensureHistory(file).undo.at(-1).selectionAfter = captureSelection(file);

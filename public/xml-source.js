@@ -128,7 +128,7 @@
     const end = rootNode.close ? rootNode.close.end : rootNode.end;
     return source.slice(0, rootNode.start) + render(rootNode, 0) + source.slice(end);
   }
-  const api = { validateXml, formatXml, inspectSource: analyze };
+  const api = { validateXml, formatXml, inspectSource: analyze, scan };
   if (typeof module !== 'undefined') module.exports = api;
   else root.DitaXmlSource = api;
 })(typeof window === 'undefined' ? globalThis : window);
