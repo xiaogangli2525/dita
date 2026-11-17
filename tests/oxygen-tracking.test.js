@@ -147,3 +147,15 @@ test('review restores only valid complete XML and preserves legacy comment accep
   assert.equal(tracking.resolveForReview(comment, false), '<topic><title>T</title><body><p>正文</p></body></topic>');
   assert.throws(() => tracking.resolveForReview('<topic><title>T</title><?oxy_attributes a="x"?></topic>', true), /尚不支持/);
 });
+test('one multi-block edit generates distinct native revision IDs across titles, paragraphs and code', () => {
+  const before = '<topic><title>Old</title><body><p>Old</p><codeblock>Old</codeblock><codeblock/></body></topic>';
+  const after = '<topic><title>New</title><body><p>New</p><codeblock>New</codeblock><codeblock>First</codeblock></body></topic>';
+  const result = tracking.trackEdit(before, after, meta), records = oxygen.collectOxyTrackedChanges(result);
+  assert.equal(records.length, 7); assert.equal(new Set(records.map(c => c.id)).size, records.length);
+  assert.equal(tracking.resolve(result, true), after);
+  assert.equal(tracking.resolve(result, false), before.replace('<codeblock/>', '<codeblock></codeblock>'));
+});
+test('restoring deleted content cannot silently leave unsupported native attribute records behind', () => {
+  const before = '<topic><title>T</title><body><?oxy_delete content="&lt;p&gt;&lt;?oxy_attributes a=&quot;x&quot;?&gt;text&lt;/p&gt;"?></body></topic>';
+  assert.throws(() => tracking.resolveForReview(before, false), /尚不支持/);
+});

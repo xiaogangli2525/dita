@@ -43,6 +43,7 @@
   function resolveForReview(source, accept) {
     if (oxygen.hasUnsupportedChanges(source)) throw new Error('含尚不支持的 Oxygen 属性、CDATA 修订或批注回复，请在 Oxygen 中处理');
     const next = resolve(source, accept, true);
+    if (oxygen.hasUnsupportedChanges(next)) throw new Error('恢复内容包含尚不支持的 Oxygen 修订，请在 Oxygen 中处理');
     xml.validateXml(next); return next;
   }
   function units(source) {
@@ -103,7 +104,7 @@
       if (a.name === b.name && !a.close && b.close && !a.children.length && !b.children.some(c => c.kind === 'element') &&
           before.slice(a.start, a.end).replace(/\/\s*>$/, '>') === after.slice(b.start, b.end) && !a.attrs.conref && !a.attrs.conkeyref && !['foreign', 'unknown'].includes(a.name)) {
         if (protectedContent || revisions.some(c => c.index < a.end && c.index + c.matchLength > a.start)) unsupported();
-        const value = trackGap('', after.slice(b.end, b.close.start), meta);
+        const value = trackGap('', after.slice(b.end, b.close.start), { ...meta, id: meta.id + '-' + patches.length });
         patches.push({ start: a.start, end: a.end, value: after.slice(b.start, b.end) + value + after.slice(b.close.start, b.close.end) });
         return;
       }
@@ -118,7 +119,7 @@
         const previous = before.slice(ap, ae), next = after.slice(bp, be);
         if (previous !== next) {
           if (revisions.some(c => (c.type === 'comment' || c.author !== meta.author || !c.id?.startsWith('dita-')) && c.index < ae && c.index + c.matchLength > ap)) unsupported();
-          patches.push({ start: ap, end: ae, value: trackGap(previous, next, meta) });
+          patches.push({ start: ap, end: ae, value: trackGap(previous, next, { ...meta, id: meta.id + '-' + patches.length }) });
         }
         if (i < ac.length) { visit(ac[i], bc[i], protectedContent); ap = end(ac[i]); bp = end(bc[i]); }
       }

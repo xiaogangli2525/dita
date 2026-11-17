@@ -57,7 +57,7 @@ test('Oxygen tracking persists real code edits and supports review, history and 
     await page.click('#reviewButton'); await page.selectOption('#reviewScope', 'oxygen');
     assert.equal(await page.locator('#code .oxy-delete').textContent(), '3'); assert.equal(await page.locator('#code .oxy-insert').textContent(), '6');
     assert.equal(await page.locator('#code').textContent(), 'AT+OPEN\n    TIMEOUT=360\n    AT+SEND & OK');
-    assert.equal(await page.locator('.review-decoration').count(), 0);
+    assert.equal(await page.locator('#code [data-review-decoration]').count(), 0);
     const error = await page.evaluate(async () => { const A = window.DitaApp, snapshot = await A.manual.capture('a.dita'); try { A.manual.prepare(snapshot); return ''; } catch (error) { return error.message; } });
     assert.match(error, /Oxygen 修订/);
   });

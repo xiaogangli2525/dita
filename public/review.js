@@ -49,6 +49,11 @@
       return changed;
     }
 
+    function nativeMarks(file, count) {
+      const active = state.filesMap.get(state.activePath);
+      return dom.reviewScope?.value === 'oxygen' && (count > 0 || nativeTracking.enabled(file.current) || active && nativeTracking.enabled(active.current));
+    }
+
     function getOxyReplacement(change, accept) {
       if (change.type === 'insert') return accept ? (change.keepContent || '') : '';
       if (change.type === 'delete') return accept ? '' : (change.deletedContent ?? change.content ?? '');
@@ -133,8 +138,8 @@
       }
       const frame = reviewFrame(file, false);
       const groups = session.groups(frame, REVIEW_CONTEXT_SIZE);
-      const hasGitDiff = dom.reviewScope?.value !== 'oxygen' && groups.some(g => g.type !== 'same');
-      if (hasGitDiff) markReviewLocations(file, dom.visualEditor, groups, frame.keyFor, frame.baseline);
+      const hasGitDiff = groups.some(g => g.type !== 'same');
+      if (hasGitDiff && !nativeMarks(file, oxyCount)) markReviewLocations(file, dom.visualEditor, groups, frame.keyFor, frame.baseline);
       if (oxyChanges.length && hasGitDiff) {
         const gitHeader = document.createElement('div');
         gitHeader.className = 'diff-section-header';
@@ -175,8 +180,10 @@
       const changedFiles = allFiles.filter(topic => { const frame = reviewFrame(topic, true); return frame.baseline !== frame.current; });
       const fragment = document.createDocumentFragment();
       let totalOxy = 0;
+      const nativeCounts = new Map();
       for (const topic of allFiles) {
         const changes = collectOxygen(topic);
+        nativeCounts.set(topic, changes.length);
         if (changes.length) {
           totalOxy += changes.length;
           const section = document.createElement('section');
@@ -203,7 +210,7 @@
         setStatus(oxygenError || '完整 Map 无变更', Boolean(oxygenError));
         return;
       }
-      for (const topic of dom.reviewScope?.value === 'oxygen' ? [] : changedFiles) {
+      for (const topic of changedFiles) {
         const section = document.createElement('section');
         section.className = 'map-review-topic';
         const header = document.createElement('div');
@@ -213,7 +220,7 @@
         const frame = reviewFrame(topic, true);
         const groups = session.groups(frame, REVIEW_CONTEXT_SIZE);
         const surface = surfaceFor(topic);
-        markReviewLocations(topic, surface, groups, frame.keyFor, frame.baseline);
+        if (!nativeMarks(topic, nativeCounts.get(topic))) markReviewLocations(topic, surface, groups, frame.keyFor, frame.baseline);
         appendGitGroups(section, frame, groups);
         fragment.append(section);
       }
