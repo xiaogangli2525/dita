@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="advanced"><title>HTTP 参数与代码修订验收</title><body>
+<p id="overview">HTTP 请求默认超时为 30 秒，支持中文与 Unicode。</p>
+<ul id="items"><li id="item-a">连接地址：http://example.invalid</li><li id="item-b">失败后重试 3 次</li></ul>
+<table id="params"><tgroup cols="2"><tbody><row><entry>timeout</entry><entry id="timeout">30</entry></row><row><entry>retry</entry><entry id="retry">3</entry></row></tbody></tgroup></table>
+<p id="note-text">型号差异<fn id="model-note">仅型号 A 支持此参数。</fn></p>
+<codeblock id="code-main">AT+OPEN
+    <?oxy_delete author="Anonymous" timestamp="20261117T084031+0000" content="TIMEOUT=30"?><?oxy_insert_start author="Anonymous" timestamp="20261117T084031+0000"?>TIMEOUT=90<?oxy_insert_end?>
+    RETRY=3
+
+    DELETE_A
+    DELETE_B
+    AT+SEND &amp; &lt;OK&gt;
+    END
+</codeblock>
+<codeblock id="code-empty"/>
+<codeblock id="code-second">function request() {
+	return &quot;<?oxy_delete author="Anonymous" timestamp="20261117T084056+0000" content="旧值"?><?oxy_insert_start author="Anonymous" timestamp="20261117T084056+0000"?>新版 &amp; &lt;OK> <?oxy_insert_end?>&quot;;
+}
+</codeblock>
+</body></topic>
+<?oxy_options track_changes="on"?>

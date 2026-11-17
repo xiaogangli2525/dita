@@ -12,6 +12,20 @@
   const sameProfile = (index, profile) => !!index && index.schema === 1 && !!index.profile && Object.keys(profile).every(name => index.profile[name] === profile[name]);
   const compatible = index => sameProfile(index, PROFILE) || sameProfile(index, LEGACY_PROFILE);
   const chunkText = (context, body) => [...context, body].filter(Boolean).join('\n');
+  const splitsCharacter = (text, at) => at > 0 && at < text.length &&
+    text.charCodeAt(at - 1) >= 0xd800 && text.charCodeAt(at - 1) <= 0xdbff &&
+    text.charCodeAt(at) >= 0xdc00 && text.charCodeAt(at) <= 0xdfff;
+  const characterEnd = (text, at) => splitsCharacter(text, at) ? at - 1 : at;
+  const overlapStart = (text, start, end) => {
+    const at = end - Math.min(PROFILE.overlap, end - start - 1);
+    return splitsCharacter(text, at) ? at + 1 : at;
+  };
+  // Previously exported indexes may use a UTF-16 overlap boundary. Continue
+  // accepting their exact source binding while new indexes use whole characters.
+  const compatibleOverlap = (text, start, end, next) => {
+    const old = end - Math.min(PROFILE.overlap, end - start - 1);
+    return next?.start === old ? old : overlapStart(text, start, end);
+  };
 
   // The caller supplies the model's exact tokenizer. Character counts alone cannot
   // bound WordPiece input, especially when titles contain long technical strings.
@@ -24,7 +38,7 @@
         const middle = Math.ceil((low + high) / 2);
         if (await countTokens(text.slice(0, middle)) <= budget) low = middle; else high = middle - 1;
       }
-      return text.slice(0, low);
+      return text.slice(0, characterEnd(text, low));
     }
     for (const [position, record] of records.entries()) {
       const text = sourceText(record.text), context = [await prefix(String(record.manualTitle || ''), PROFILE.manualTitleTokens), await prefix(String(record.title || ''), PROFILE.titleTokens)];
@@ -39,12 +53,14 @@
           const boundary = Math.max(text.lastIndexOf('。', end - 1), text.lastIndexOf('；', end - 1), text.lastIndexOf(';', end - 1));
           if (boundary > start + (end - start) / 2) end = boundary + 1;
         }
+        end = characterEnd(text, end);
+        if (end <= start) throw Error('语义片段无法容纳完整字符，请缩短标题或上下文');
         const content = chunkText(context, text.slice(start, end)), tokenCount = await countTokens(content);
         if (tokenCount > PROFILE.tokenLimit) throw Error('语义片段超出模型 Token 预算');
         chunks.push({ position, manualId: record.manualId, anchor: record.anchor, start, end, context, tokenCount, text: content });
         if (chunks.length > 12000) throw Error('语义索引超过 12000 个片段，请减少手册后重试');
         if (end === text.length) break;
-        start = end - Math.min(PROFILE.overlap, end - start - 1);
+        start = overlapStart(text, start, end);
       }
     }
     return chunks;
@@ -65,7 +81,7 @@
           !Number.isInteger(chunk.tokenCount) || chunk.tokenCount < 2 || chunk.tokenCount > PROFILE.tokenLimit ||
           chunk.text !== chunkText(context, text.slice(start, chunk.end))) throw Error('语义索引与当前正文不一致，请重新生成');
         complete = chunk.end === text.length;
-        start = chunk.end - Math.min(PROFILE.overlap, chunk.end - start - 1);
+        start = compatibleOverlap(text, start, chunk.end, chunks[cursor]);
       }
       if (!complete) throw Error('语义索引与当前正文不一致，请重新生成');
     }
@@ -86,7 +102,7 @@
     async function prefix(text, budget) {
       let end = Math.min(text.length, 160);
       while (end && await countTokens(text.slice(0, end)) > budget) end--;
-      return text.slice(0, end);
+      return text.slice(0, characterEnd(text, end));
     }
     for (const [position, record] of records.entries()) {
       const titles = [await prefix(String(record.manualTitle || ''), PROFILE.manualTitleTokens), await prefix(String(record.title || ''), PROFILE.titleTokens)];
@@ -104,6 +120,8 @@
             const boundary = Math.max(unit.text.lastIndexOf('\n', end - 1), unit.text.lastIndexOf('。', end - 1), unit.text.lastIndexOf('；', end - 1));
             if (boundary >= start + (end - start) / 2) end = boundary + 1;
           }
+          end = characterEnd(unit.text, end);
+          if (end <= start) throw Error(record.title + '：结构片段无法容纳完整字符，请缩短标题或关联注脚');
           const text = unitText(context, unit.text.slice(start, end), notes), tokenCount = await countTokens(text);
           if (tokenCount > PROFILE.tokenLimit || text.length > PROFILE.maxInputChars) throw Error(record.title + '：结构片段超出模型预算');
           chunks.push({ position, manualId: record.manualId, anchor: record.anchor, unitId: unit.id, unitFingerprint: unit.fingerprint,
@@ -111,7 +129,7 @@
             start, end, context, tokenCount, text, split: start > 0 || end < unit.text.length });
           if (chunks.length > 12000) throw Error('语义索引超过 12000 个片段，请减少手册后重试');
           if (end === unit.text.length) break;
-          start = unit.kind === 'legacy' ? end - Math.min(PROFILE.overlap, end - start - 1) : end;
+          start = unit.kind === 'legacy' ? overlapStart(unit.text, start, end) : end;
         }
       }
     }
@@ -135,7 +153,7 @@
           !Number.isInteger(chunk.tokenCount) || chunk.tokenCount < 2 || chunk.tokenCount > PROFILE.tokenLimit || chunk.text.length > PROFILE.maxInputChars ||
           chunk.text !== unitText(context, unit.text.slice(start, chunk.end), unitNotes(unit)) || chunk.split !== (start > 0 || chunk.end < unit.text.length)) throw Error('语义索引与当前结构或正文不一致，请重新生成');
         if (chunk.end === unit.text.length) break;
-        start = unit.kind === 'legacy' ? chunk.end - Math.min(PROFILE.overlap, chunk.end - start - 1) : chunk.end;
+        start = unit.kind === 'legacy' ? compatibleOverlap(unit.text, start, chunk.end, chunks[cursor]) : chunk.end;
       } while (start < unit.text.length);
     }
     if (cursor !== chunks.length) throw Error('语义索引与当前结构或正文不一致，请重新生成');

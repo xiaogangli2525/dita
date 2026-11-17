@@ -41,6 +41,51 @@ test('semantic evidence retains the winning structural block and linked-note anc
   assert.match(hit.excerpt, /参数：timeout/); assert.match(hit.excerpt, /重试前释放连接/);
 });
 
+test('semantic scope filters safely exclude legacy records without module or mode metadata', async t => {
+  const semantic = require('../lib/knowledge-semantic');
+  t.mock.method(semantic.encoder, 'encode', async () => [vector(0)]);
+  const records = [row('连接超时参数说明'), { ...row('连接超时参数说明', 'b'), module: 'HTTP', mode: 'AT' }];
+  const chunks = await chunksFor(records, countTokens), index = createIndex(chunks, chunks.map(() => vector(0)));
+  for (const scope of [{ module: 'HTTP' }, { mode: 'AT' }, { module: 'http', mode: 'at' }]) {
+    const hits = await semantic.search(records, index, '连接等待多久', [], scope);
+    assert.deepEqual(hits.map(hit => hit.position), [1]);
+  }
+  assert.deepEqual(await semantic.search(records, index, '连接等待多久', [], { module: 'MQTT' }), []);
+});
+
+test('semantic chunk and title boundaries retain whole Unicode characters and complete coverage', async () => {
+  const { legacyChunksFor, LEGACY_PROFILE } = require('../public/knowledge-semantic'), structure = require('../public/knowledge-structure');
+  const records = [row('A😀'.repeat(500))];
+  records[0].manualTitle = '😀'.repeat(60); records[0].title = '😀'.repeat(60);
+  for (const structured of [false, true]) {
+    if (structured) {
+      const values = { kind: 'paragraph', section: [], context: [], text: records[0].text, notes: [] };
+      records[0].structure = structure.seal(records[0].title, records[0].text, [{ ...values, id: 'b-unicode', sourceAnchor: 'a-topic', fingerprint: structure.fingerprint(values) }]);
+    }
+    for (const [builder, profile] of [[chunksFor, PROFILE], [legacyChunksFor, LEGACY_PROFILE]]) {
+      const chunks = await builder(records, countTokens);
+      assert.ok(chunks.length > 1);
+      for (const chunk of chunks) {
+        assert.equal(chunk.text.isWellFormed(), true);
+        assert.ok(chunk.context.every(text => text.isWellFormed()));
+        assert.ok(records[0].text.slice(chunk.start, chunk.end).isWellFormed());
+      }
+      validate(records, createIndex(chunks, chunks.map(() => vector(0)), profile));
+      assert.equal(chunks[0].start, 0); assert.equal(chunks.at(-1).end, records[0].text.length);
+    }
+  }
+});
+
+test('previously exported legacy Unicode overlap offsets remain readable', () => {
+  const { LEGACY_PROFILE } = require('../public/knowledge-semantic');
+  const records = [{ ...row('😀'.repeat(400)), manualTitle: 'H' }], context = ['H', '参数'];
+  const chunks = [[0, 503], [443, 800]].map(([start, end]) => {
+    const text = [...context, records[0].text.slice(start, end)].join('\n');
+    return { position: 0, manualId: 'a', anchor: 'a-topic', start, end, context, tokenCount: countTokens(text), text };
+  });
+  assert.ok(validate(records, createIndex(chunks, chunks.map(() => vector(0)), LEGACY_PROFILE)).length);
+});
+
 test('semantic chunks keep exact chapter offsets, overlap and stable content binding', async () => {
   const records = [row('说明内容。'.repeat(180))], chunks = await chunksFor(records, countTokens);
   assert.ok(chunks.length > 1);
@@ -106,14 +151,15 @@ test('local embedding runtime generates usable vectors while all HTTP access is 
     const [upper, lower, other] = await encoder.encode(commands);
     assert.deepEqual(upper, lower);
     assert.ok(Math.max(...upper.map((value, i) => Math.abs(value - other[i]))) > 0.01, 'different command spellings must retain different vectors');
-    const technical = [row('参数 ' + 'AT+MHTTPCFG timeout=120 HTTP说明。'.repeat(100))];
-    technical[0].manualTitle = '超长标题'.repeat(100);
-    technical[0].title = 'AT+MHTTPCFG 参数参考'.repeat(30);
+    const technical = [row('参数 ' + 'AT+MHTTPCFG timeout=120 HTTP说明😀。'.repeat(100))];
+    technical[0].manualTitle = '超长标题😀'.repeat(100);
+    technical[0].title = 'AT+MHTTPCFG 参数参考😀'.repeat(30);
     const budgeted = await encoder.chunksFor(technical);
     assert.ok(budgeted.length > 1);
     for (const chunk of budgeted) {
       assert.equal(chunk.tokenCount, await encoder.countTokens(chunk.text));
       assert.ok(chunk.tokenCount <= PROFILE.tokenLimit);
+      assert.ok(chunk.text.isWellFormed()); assert.ok(chunk.context.every(text => text.isWellFormed()));
     }
     assert.equal(budgeted.at(-1).end, technical[0].text.length);
     assert.equal(validate(technical, createIndex(budgeted, await encoder.encode(budgeted.map(chunk => chunk.text)))).length, budgeted.length * 512);

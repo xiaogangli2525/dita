@@ -5,6 +5,7 @@ require('./visual-core.test.js');
 require('./preview-core.test.js');
 require('./review-core.test.js');
 require('./oxygen-tracking.test.js');
+require('./oxygen-tracking-expanded.test.js');
 require('./tracking-controller.test.js');
 require('./review-session.test.js');
 
