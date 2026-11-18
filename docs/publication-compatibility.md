@@ -29,7 +29,7 @@ The initial fixture milestone passed 105 unit/HTTP tests and 12 Chromium checks;
 | Local Topic/element links | Rewrite HTML and Markdown to explicit anchors; reject missing/out-of-Map targets |
 | CALS/simple tables, list/table footnotes | Preserve content and publication context; HTML retains valid CALS row/column spans |
 | Invalid or unsafe input | Report the file/reason and stop; no partial download |
-| Explicit workspace DITAVAL | Filter Map branches and Topic/inline/image/note elements with standard `prop` include/exclude/passthrough rules; captured profile path/hash included in delivery record |
+| Explicit workspace DITAVAL | Filter Map branches and Topic/inline/image/note elements with `prop` include/exclude/passthrough rules. Repeated group names combine, bare values belong to the group named after the attribute, and empty groups have no effect. The delivery record includes the captured profile path and hash. |
 
 Dependency loading is bounded to 128 files and 8M UTF-16 code units. Expansion is bounded to 24 references in a chain, 1,024 substitutions per publication preparation and 4M UTF-16 code units per expanded document. Paths must remain inside the selected workspace, with the HTTP server still enforcing real-path containment.
 
