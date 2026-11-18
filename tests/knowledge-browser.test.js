@@ -172,6 +172,28 @@ test('real HTTP knowledge delivery works across repositories and from a moved of
     assert.equal(info.semantic.vectorEncoding, 'int8');
     const resultFor = file => JSON.parse(execFileSync(process.execPath, ['bin/blink-cli.js', '--kb', file, '--search', 'semantic', '如何配置请求超时时间', '--json'], { encoding: 'utf8' })).results[0].id;
     assert.equal(resultFor(cliZip), resultFor(compactPath));
+    const extracted = path.join(temporary, 'local-reader');
+    await fs.mkdir(extracted);
+    for (const name of ['index.html', 'knowledge.json']) await fs.writeFile(path.join(extracted, name), compactArchive['docs/' + name]);
+    const { startReader } = require('../lib/knowledge-reader-server');
+    const reader = await startReader(extracted), localPage = await browser.newPage();
+    try {
+      const remote = await fetch(reader.url + '/search', { method: 'POST', headers: { origin: 'https://example.invalid', 'content-type': 'application/json' }, body: JSON.stringify({ query: 'HTTP' }) });
+      assert.equal(remote.status, 403);
+      assert.doesNotMatch(strFromU8(compactArchive['docs/index.html']), /id="kbLocalSemantic"/);
+      await localPage.goto(reader.url);
+      assert.equal(await localPage.locator('#kbLocalSemantic').isChecked(), true);
+      await localPage.fill('#kbSearch', '如何配置请求超时时间');
+      await localPage.press('#kbSearch', 'Enter');
+      await localPage.waitForFunction(() => document.getElementById('kbSearchMeta').textContent.includes('本机混合搜索'), null, { timeout: 60000 });
+      const first = localPage.locator('#kbResultList .search-result').first();
+      assert.match(await first.innerText(), /AT\+MHTTPCFG/);
+      await first.click(); await localPage.locator('#kbBack').click();
+      assert.match(await localPage.locator('#kbSearchMeta').innerText(), /本机混合搜索/);
+    } finally {
+      await localPage.close();
+      await new Promise(resolve => reader.server.close(resolve));
+    }
     t.diagnostic('Real HTTP Int8 ZIP: Float32=' + cached.bytes.length + ' bytes; Int8=' + compact.bytes.length + ' bytes');
     await page.uncheck('#knowledgeCompact');
     await page.check('#knowledgeRebuild');

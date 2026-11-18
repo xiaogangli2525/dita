@@ -26,7 +26,9 @@ declare global {
   var DitaManualCore: typeof import('../public/manual-core');
   var DitaProfiling: typeof import('../public/profiling-core');
   var DitaConditionGroups: typeof import('../public/condition-groups');
+  var DitaThemePreference: typeof import('../public/appearance/theme-preference');
   interface Window {
+    DitaGitCommit: { createController(ports: import('../public/data-contracts').GitCommitPorts): object };
     DitaDocumentStore: typeof DitaDocumentStore; DitaSnapshotData: typeof DitaSnapshotData;
     DitaSave: typeof DitaSave; DitaDeliveryData: typeof DitaDeliveryData; DitaManualService: typeof DitaManualService;
     DitaPublicationResolver: typeof DitaPublicationResolver; DitaManualDomain: typeof DitaManualDomain;

@@ -242,5 +242,28 @@ test('foundation browser workflows', async t => {
     assert.equal(await page.locator('#modelExportDialog').isVisible(), false); assert.match(await current(), /missing.dita/); await source(previous);
     await page.setViewportSize({ width: 390, height: 844 }); assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true);
   });
+  await scenario('the workbench commits selected saved DITA and updates the review base without staging other changes', async () => {
+    await page.setViewportSize({ width: 1440, height: 1100 });
+    git('config', 'user.name', 'Test');
+    git('config', 'user.email', 'test@example.invalid');
+    await open('other.dita');
+    const next = other.replace('OTHER', 'SAVED_FOR_GIT');
+    await source(next);
+    await page.click('#saveButton');
+    await page.waitForFunction(() => !window.DitaApp.state.filesMap.get('other.dita').dirty);
+    const depth = await page.evaluate(() => window.DitaApp.state.filesMap.get('other.dita').history.undo.length);
+    await fs.writeFile(path.join(repo, 'local-note.txt'), 'leave staged');
+    git('add', 'local-note.txt');
+    await page.click('#gitCommitButton');
+    await page.locator('#gitCommitList input[value="other.dita"]').check();
+    await page.fill('#gitCommitMessage', 'Update one checked document');
+    await page.click('#gitCommitSubmit');
+    await page.waitForFunction(() => document.getElementById('gitCommitStatus').textContent.includes('提交 '), null, { timeout: 20000 });
+    const gitRead = (...args) => execFileSync('git', args, { cwd: repo, encoding: 'utf8' }).trim();
+    assert.equal(gitRead('show', 'HEAD:other.dita'), next);
+    assert.equal(gitRead('diff', '--name-only', 'HEAD^', 'HEAD'), 'other.dita');
+    assert.equal(gitRead('diff', '--cached', '--name-only'), 'local-note.txt');
+    assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.get('other.dita').history.undo.length), depth);
+  });
   assert.deepEqual(errors, []);
 });

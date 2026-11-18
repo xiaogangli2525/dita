@@ -374,7 +374,7 @@ The project-model controller clears configuration and comparison bases on `works
 
 ## Appearance preferences
 
-`theme-preference.js` owns validated browser-local preference values and the live system-color-scheme subscription. `theme-init.js` applies the resolved root attribute synchronously in the head, before styles/first paint, preventing a saved dark choice from starting with the light palette. Storage denial falls back to a usable in-memory preference; no workspace identity, document or delivery settings enter this service.
+`public/appearance/theme-preference.js` owns validated browser-local preference values and the live system-color-scheme subscription. `public/appearance/theme-init.js` applies the resolved root attribute synchronously in the head, before styles/first paint, preventing a saved dark choice from starting with the light palette. Storage denial falls back to a usable in-memory preference; no workspace identity, document or delivery settings enter this service.
 
 `appearance-controller.js` receives only the theme service and the existing Author selection service. It builds native radio-card choices, exposes a dialog to the rail/View menu, and restores a still-current Author caret on close through the existing guarded selection boundary. It never edits buffers or remounts Author surfaces. The system choice is a full-width automatic-mode row below the four visual presets; its value remains distinct from the resolved root theme.
 
@@ -448,3 +448,7 @@ Workspace switches preserve sealed captures; refresh clears captures but can res
 The snapshot includes only required XML/profile/conref dependencies, project/rule metadata and images in the prepared publication. Raw byte digests, including sidecar absence, support final verification; source/branch/ref changes fail the item. A bounded second source check after all render operations prevents an early item's later disk/ref change from being silently accepted. The server holds at most two active source operations and stores no long-lived source sessions. These independent read operations bypass the active-workspace IO lock while retaining the common API guard; ordinary editing/save/switch locking is unchanged.
 
 Knowledge publication supplies an explicit Topic predicate to the shared capture service before dependency IO. It currently omits only the canonical Chinese/English shared service-and-support Topics. Normal manual capture uses its default scope. The same predicate ignores obsolete overrides for the omitted Topics while retaining unrelated stale-metadata checks.
+
+`public/workspace/git-commit.js` presents the selected saved document versions. The server validates the workspace token, branch, baseline and Git's actual commit index before writing a commit. Remote push reuses the remote-update check and sends the verified local commit to its configured upstream.
+
+The browser knowledge reader can load from a static export or from `lib/knowledge-reader-server.js`. The loopback reader uses the existing Node semantic index and model. Both modes share the browser navigation and lexical search.

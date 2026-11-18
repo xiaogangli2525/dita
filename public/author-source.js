@@ -276,8 +276,15 @@
       const insertion = first === chars.length ? start + gap.length : first === 0 ? start : chars[first].start;
       const begin = first === chars.length - tail ? insertion : chars[first].start;
       const end = first === chars.length - tail ? begin : chars[chars.length - tail - 1].end;
-      if (trivia.some(token => token.start < end && token.end > begin)) throw new Error('修改跨过批注或修订标记，请分段修改或使用源码');
-      return source.slice(start, begin) + escaped(changed.slice(first, changed.length - tail).join('')) + source.slice(end, start + gap.length);
+      const covered = trivia.filter(token => token.start < end && token.end > begin);
+      const raw = token => source.slice(token.start, token.end);
+      if (covered.some(token => token.kind !== 'comment' && !/^<\?oxy_comment_(?:start|end)(?:\s|\?)/.test(raw(token)))) {
+        throw new Error('修改跨过批注或修订标记，请分段修改或使用源码');
+      }
+      // Anchor the replacement at the start of the edited range. Covered
+      // comment boundaries collapse in source order after the replacement.
+      return source.slice(start, begin) + escaped(changed.slice(first, changed.length - tail).join('')) +
+        covered.map(raw).join('') + source.slice(end, start + gap.length);
     }
 
     function serialize(node, oldNode, span) {

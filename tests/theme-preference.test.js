@@ -1,6 +1,6 @@
 'use strict';
 const test = require('node:test'), assert = require('node:assert/strict');
-const { createPreference, key } = require('../public/theme-preference');
+const { createPreference, key } = require('../public/appearance/theme-preference');
 function fixture(saved, denied = false) {
   const rendered = [], writes = [], system = new EventTarget(); system.matches = false;
   const preference = createPreference({ read: () => { if (denied) throw Error('denied'); return saved; },

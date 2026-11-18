@@ -82,7 +82,7 @@ test('CDATA text renders as inert text in ordinary Author paragraphs and standal
   assert.equal(delivery.ditaToMarkdown(node), 'A < B & C');
 });
 
-test('ordinary annotated text edits preserve PI positions/entities and refuse edits crossing annotation boundaries', () => {
+test('ordinary annotated edits preserve untouched PI positions and entities, and retain crossed comment markers', () => {
   const { document } = buildMockDom();
   const input = '<topic><title><?oxy_comment_start author="A"?>T &amp; X<?oxy_comment_end?></title><body><p>Keep</p></body></topic>';
   const surface = author.createAuthorTopic(input, document);
@@ -95,5 +95,5 @@ test('ordinary annotated text edits preserve PI positions/entities and refuse ed
   const marked = '<topic><title>T</title><body><p>One<?oxy_comment_start author="A"?>Two<?oxy_comment_end?>Three</p></body></topic>';
   const other = author.createAuthorTopic(marked, document);
   other.querySelector('p').textContent = 'Replacement';
-  assert.throws(() => source.updateSource(marked, other), /跨过批注或修订/);
+  assert.equal(source.updateSource(marked, other), '<topic><title>T</title><body><p>Replacement<?oxy_comment_start author="A"?><?oxy_comment_end?></p></body></topic>');
 });

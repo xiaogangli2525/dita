@@ -1,3 +1,4 @@
+// @ts-check
 'use strict';
 (function (root) {
   const key = 'dita-lite:theme';
@@ -9,10 +10,14 @@
     Object.freeze({ id: 'system', label: '跟随系统', description: '随系统自动切换青绿与深色', scheme: 'auto' })
   ]);
   // Browser preference only: no document state, repository or delivery access.
+  /** @param {{read:(key:string)=>string|null, write:(key:string,value:string)=>void,
+   * system:{readonly matches:boolean,addEventListener:(type:'change',listener:()=>void)=>void}, apply:(theme:string)=>void}} ports */
   function createPreference({ read, write, system, apply }) {
+    /** @param {string} value */
     const valid = value => themes.some(theme => theme.id === value);
     let value = 'forest', stored = true;
-    try { const saved = read(key); if (valid(saved)) value = saved; } catch { stored = false; }
+    try { const saved = read(key); if (saved && valid(saved)) value = saved; } catch { stored = false; }
+    /** @type {Set<()=>void>} */
     const listeners = new Set();
     const resolved = () => value === 'system' ? system.matches ? 'dark' : 'forest' : value;
     function render() { apply(resolved()); for (const listener of listeners) listener(); }
@@ -21,12 +26,14 @@
     render();
     return Object.freeze({ themes,
       get value() { return value; }, get resolved() { return resolved(); }, get stored() { return stored; },
+      /** @param {string} next */
       set(next) {
         if (!valid(next)) throw new TypeError('未知的界面风格');
         value = next;
         try { write(key, value); stored = true; } catch { stored = false; }
         render();
       },
+      /** @param {()=>void} listener */
       subscribe(listener) { listeners.add(listener); return () => listeners.delete(listener); }
     });
   }

@@ -24,6 +24,8 @@
     "public/ai-conversation.js",
     "lib/ai-provider.js",
     "public/document-store.js",
+    "public/workspace/git-commit.js",
+    "public/appearance/theme-preference.js",
     "public/save.js",
     "public/snapshot-data.js",
     "public/manual-service.js",

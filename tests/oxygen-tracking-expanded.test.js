@@ -86,6 +86,17 @@ test('continuous code editing across serialized reloads preserves the first reje
   assert.throws(() => authorSource.updateSource(current, view), /跨过批注或修订标记/, '跨已有修订边界仍须明确阻止');
 });
 
+test('regular Author replacement across comment boundaries preserves their exact bytes and order', () => {
+  const { document } = buildMockDom();
+  const start = '<?oxy_comment_start author="QA" comment="保留 &amp; 核对" id="QA-1"?>';
+  const end = '<?oxy_comment_end?>', comment = '<!--结构说明-->';
+  const original = '<topic id="t"><title>批注</title><body><p>开头前' + start + '批注' + comment + '正文' + end + '尾部 &amp; 结束</p></body></topic>';
+  const view = renderer.createAuthorTopic(original, document, false);
+  view.querySelector('p').textContent = '开头替换 😀部 & 结束';
+  const current = authorSource.updateSource(original, view);
+  assert.equal(current, '<topic id="t"><title>批注</title><body><p>开头替换 😀' + start + comment + end + '部 &amp; 结束</p></body></topic>');
+});
+
 test('prose typing after a browser NBSP or collapsed whitespace preserves pending revisions', () => {
   const { document } = buildMockDom();
   const original = '<topic id="t"><title>T</title><body><p id="p">HTTP 请求默认超时为 30 秒。</p></body></topic>';
