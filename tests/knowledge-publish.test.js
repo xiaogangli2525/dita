@@ -118,6 +118,18 @@ test('production Worker streams semantic results over HTTP with the pinned works
   assert.ok(received.every(item => item.token === 'workspace-version-123'));
   assert.ok(phases.some(info => info.stage === 'estimate') && phases.some(info => info.stage === 'vectors'));
   assert.ok(phases.some(info => info.stage === 'capacity' && info.bytes === uncompressedSize(archive)));
+  const compactPhases = [];
+  const compact = await value.download({ semantic: true, compact: true, token: 'workspace-version-123' }, { onProgress: info => compactPhases.push(info) });
+  const compactArchive = unzipSync(new Uint8Array(await compact.zip.arrayBuffer()));
+  const compactBook = JSON.parse(strFromU8(compactArchive['docs/knowledge.json']));
+  assert.equal(compact.manifest.semantic.vectorEncoding, 'int8');
+  assert.equal(compactBook.semantic.schema, data.COMPACT_SCHEMA);
+  assert.equal(compact.stats.reusedManuals, 1);
+  assert.equal(strFromU8(compactArchive['docs/index.html']), strFromU8(archive['docs/index.html']));
+  assert.deepEqual(data.validate(records, compactBook.semantic), data.validate(records, index));
+  const compactBudgets = compactPhases.filter(info => info.stage === 'capacity').map(info => info.bytes);
+  assert.deepEqual(compactBudgets.slice(-2), [uncompressedSize(compactArchive), uncompressedSize(compactArchive)]);
+  assert.equal((await cache.get(records, input.model, data.PROFILE)).index.schema, 1);
 });
 
 test('publication prepares every cold manual once, checks capacity before inference and reuses warm indices', async t => {

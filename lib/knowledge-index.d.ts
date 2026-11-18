@@ -1,13 +1,13 @@
-import type { KnowledgeBookManual, SearchRecord } from '../public/knowledge-contracts';
+import type { KnowledgeBookManual, SearchRecord, SemanticEstimate } from '../public/knowledge-contracts';
 import type { SemanticIndex } from '../public/knowledge-semantic';
 export type IndexManual = Pick<KnowledgeBookManual, 'id'|'title'|'entries'>;
 export interface IndexBook { readonly model:string; readonly manuals:readonly IndexManual[]; readonly semantic?:SemanticIndex }
 export interface IndexProgress { readonly stage?:'estimate'|'vectors'; readonly manual?:string; readonly position?:number; readonly totalManuals?:number; readonly done?:number; readonly total?:number; readonly source?:'generated'|'cache'|'embedded' }
-export interface IndexOptions { readonly model?:string; readonly legacy?:boolean; readonly force?:boolean; readonly signal?:AbortSignal; readonly seed?:SemanticIndex; readonly seeds?:readonly IndexBook[]; readonly onProgress?:(value:IndexProgress)=>void }
+export interface IndexOptions { readonly model?:string; readonly legacy?:boolean; readonly force?:boolean; readonly compact?:boolean; readonly signal?:AbortSignal; readonly seed?:SemanticIndex; readonly seeds?:readonly IndexBook[]; readonly onProgress?:(value:IndexProgress)=>void }
 export interface IndexStats { readonly reusedManuals:number; readonly rebuiltManuals:number; readonly totalManuals:number; readonly totalChunks:number }
 export interface IndexResult { readonly index:SemanticIndex; readonly stats:IndexStats; readonly warnings:readonly string[] }
-export interface IndexEstimate { readonly profile:SemanticIndex['profile']; readonly chunks:number; readonly bytes:number }
-export interface PublishOptions extends Pick<IndexOptions,'force'|'signal'|'onProgress'> {
+export type IndexEstimate = SemanticEstimate;
+export interface PublishOptions extends Pick<IndexOptions,'force'|'signal'|'onProgress'|'compact'> {
   readonly archiveOverhead:number;
   readonly onEstimate?:(estimate:IndexEstimate)=>void|Promise<void>;
   readonly onManual:(manual:{readonly manualId:string;readonly index:SemanticIndex;readonly source:'cache'|'generated'})=>void|Promise<void>;

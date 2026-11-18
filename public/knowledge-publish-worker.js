@@ -33,15 +33,16 @@ self.onmessage = async ({ data }) => {
       else if (data.action === 'download') {
         prepared.measure();
         let generated;
+        const compact = Boolean(data.payload.semantic && data.payload.compact);
         if (data.payload.semantic) {
           self.DitaWorkspaceClient.adopt(data.payload.token);
-          const options = { api: self.DitaWorkspaceClient, manuals: prepared.manuals, model: prepared.book.model, archiveOverhead: prepared.archiveOverhead(),
+          const options = { api: self.DitaWorkspaceClient, manuals: prepared.manuals, model: prepared.book.model, compact, archiveOverhead: prepared.archiveOverhead(compact),
             force: !!data.payload.force, signal: controller.signal };
           progress({ stage: 'estimate' });
           generated = await self.DitaKnowledgeIndex.publish({ ...options, onEstimate: estimate => prepared.measure(estimate), onProgress: progress });
         }
         if (controller.signal.aborted) throw Object.assign(Error('已取消发布'), { name: 'AbortError' });
-        const output = prepared.build(generated?.index);
+        const output = prepared.build(generated?.index, { compact });
         value = { zip: output.zip, filename: output.filename, manifest: output.manifest,
           ...(generated ? { stats: generated.stats, warnings: generated.warnings } : {}) };
       } else throw Error('不支持的发布操作');

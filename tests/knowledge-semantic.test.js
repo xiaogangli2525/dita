@@ -102,6 +102,30 @@ test('semantic chunks keep exact chapter offsets, overlap and stable content bin
   assert.throws(() => validate(records, createIndex(chunks, chunks.map(() => Array(512).fill(0)))), /归一化/);
 });
 
+test('Int8 indexes preserve signed vector direction and source binding, rejecting corrupted rows', async () => {
+  const { compactIndex, COMPACT_SCHEMA, compatible, encodedVectorLength } = require('../public/knowledge-semantic');
+  const records = [row('完整的连接说明。')], chunks = await chunksFor(records, countTokens);
+  const values = [0.3, -0.4, 0.1, ...Array(509).fill(0)], norm = Math.sqrt(values.reduce((sum, value) => sum + value ** 2, 0));
+  const original = createIndex(chunks, [values.map(value => value / norm)]), originalBytes = original.vectors;
+  const compact = compactIndex(records, original);
+  assert.equal(compact.schema, COMPACT_SCHEMA);
+  assert.ok(compatible(compact));
+  assert.equal(compact.vectors.length, encodedVectorLength(chunks.length, COMPACT_SCHEMA));
+  assert.equal(atob(compact.vectors).length * 4, atob(originalBytes).length);
+  assert.equal(original.schema, 1);
+  assert.equal(original.vectors, originalBytes);
+  assert.equal(compactIndex(records, compact), compact);
+  assert.deepEqual(compact.chunks, original.chunks);
+  const decoded = validate(records, compact), source = validate(records, original);
+  assert.ok(decoded[1] < 0);
+  assert.ok(source.reduce((cosine, value, i) => cosine + value * decoded[i], 0) > 0.9999);
+  assert.ok(Math.abs(decoded.reduce((sum, value) => sum + value ** 2, 0) - 1) < 0.000001);
+  assert.throws(() => validate(records, { ...compact, vectors: compact.vectors.slice(4) }), /长度无效/);
+  for (const byte of ['\x00', '\x80']) assert.throws(
+    () => validate(records, { ...compact, vectors: btoa(byte.repeat(512)) }), /未按约定编码/);
+  assert.throws(() => validate([{ ...records[0], text: '原文改变' }], compact), /正文不一致/);
+});
+
 test('token-budget chunks cover long titles and full source while rejecting gaps and altered context', async () => {
   const records = [row('甲'.repeat(1800) + '文末特有内容'), row('', 'empty')];
   records[0].manualTitle = '手册'.repeat(160); records[0].title = '标题'.repeat(160);
@@ -124,6 +148,10 @@ test('semantic manual packs merge without re-embedding and reject mixed profiles
   const a = await book('a'), b = await book('b'), combined = mergeBooks([a, b]);
   const values = validate(flatten(combined), combined.semantic);
   assert.equal(values[0], 1); assert.equal(values[513], 1);
+  const compact = require('../public/knowledge-semantic').compactIndex(flatten(b), b.semantic);
+  const mixed = mergeBooks([a, { ...b, semantic: compact }]);
+  assert.equal(mixed.semantic.schema, 1);
+  assert.deepEqual(validate(flatten(mixed), mixed.semantic), values);
   assert.throws(() => mergeBooks([a, a]), /重复手册/);
   assert.throws(() => mergeBooks([a, { ...b, model: 'ML307G' }]), /型号/);
   assert.throws(() => mergeBooks([a, { ...b, semantic: undefined }]), /同时包含/);

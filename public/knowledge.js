@@ -48,6 +48,7 @@
     function controls() {
       get('knowledgeSemantic').disabled = busy;
       get('knowledgeRebuild').disabled = busy || !get('knowledgeSemantic').checked;
+      get('knowledgeCompact').disabled = busy || !get('knowledgeSemantic').checked;
       for (const id of ['knowledgeTitle', 'knowledgeSdk', 'knowledgeVersion', 'knowledgeFilter', 'knowledgePrefixes', 'knowledgeMode', 'knowledgeModule', 'knowledgePlan', 'knowledgePlanSave', 'knowledgePlanLoad', 'knowledgePlanNew', 'knowledgePlanExport', 'knowledgePlanImport', 'knowledgeSourcesAdd', 'knowledgeBatchCheck', 'knowledgeBatchRetry']) get(id).disabled = busy;
       get('knowledgeAdd').disabled = busy || loading || filterFailed; get('knowledgeFilter').disabled = busy || loading;
       get('knowledgeBatchCheck').disabled = busy || loading || !recipes.size; get('knowledgeBatchRetry').disabled = busy || loading || ![...recipes.keys()].some(key => !parts.has(key)); get('knowledgeBatchCancel').hidden = !busy;
@@ -253,11 +254,11 @@
           get('knowledgePreviewDialog').showModal(); get('knowledgePreviewFrame').srcdoc = output.html;
           status('阅读页面已准备好，预览和导出使用同一份发布内容。');
         } else {
-          const output = await publisher.download({ semantic, force: get('knowledgeRebuild').checked, token: workspace }, options);
+          const output = await publisher.download({ semantic, compact: semantic && get('knowledgeCompact').checked, force: get('knowledgeRebuild').checked, token: workspace }, options);
           if (!current()) return;
           lastManifest = output.manifest;
           if (semantic) {
-            get('knowledgeVectorStatus').textContent = '向量：复用 ' + output.stats.reusedManuals + ' 份，重新生成 ' + output.stats.rebuiltManuals + ' 份 · ' + output.stats.totalChunks + ' 个片段' + (output.warnings.length ? '。' + output.warnings.join(' ') : '');
+            get('knowledgeVectorStatus').textContent = '向量：复用 ' + output.stats.reusedManuals + ' 份，重新生成 ' + output.stats.rebuiltManuals + ' 份 · ' + output.stats.totalChunks + ' 个片段' + (output.manifest.semantic?.vectorEncoding === 'int8' ? ' · Int8' : '') + (output.warnings.length ? '。' + output.warnings.join(' ') : '');
             get('knowledgeRebuild').checked = false;
           }
           get('knowledgeCapacity').textContent = '离线包 ' + (output.zip.size / 1048576).toFixed(2) + ' MiB / 上限 64 MiB';

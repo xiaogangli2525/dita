@@ -162,14 +162,16 @@ async function main() {
     if (options.info) {
       const info = { schema: 1, title: book.title, model: book.model, sdkVersion: book.sdkVersion,
         generatedAt: book.generatedAt, manualCount: book.manuals.length, chapterCount: records.length,
-        searchEngine: engineVersion, semantic: book.semantic ? { profile: book.semantic.profile.id, chunks: book.semantic.chunks.length, compatible: semanticData.compatible(book.semantic) } : null, manuals: book.manuals.map(manual => ({
+        searchEngine: engineVersion, semantic: book.semantic ? { profile: book.semantic.profile.id, chunks: book.semantic.chunks.length,
+          vectorEncoding: semanticData.vectorEncoding(book.semantic.schema), compatible: semanticData.compatible(book.semantic) } : null, manuals: book.manuals.map(manual => ({
           id: manual.id, title: manual.title, version: manual.version, chapters: manual.entries.length,
           module: manual.module || manual.title, source: sourceFor(book, manual.id)
         })) };
       if (options.json) outputJson(info);
       else {
         process.stdout.write(book.title + '\n型号：' + book.model + ' · SDK：' + book.sdkVersion +
-          '\n手册：' + book.manuals.length + ' · 章节：' + records.length + ' · 检索引擎：' + engineVersion + '\n');
+          '\n手册：' + book.manuals.length + ' · 章节：' + records.length + ' · 检索引擎：' + engineVersion +
+          (info.semantic?.compatible ? ' · 向量：' + info.semantic.vectorEncoding : '') + '\n');
       }
       return;
     }

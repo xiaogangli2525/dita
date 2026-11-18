@@ -7,10 +7,14 @@
     manualTitleTokens: 32, titleTokens: 64, maxChunkChars: 2048, overlap: 60,
     queryPrefix: '为这个句子生成表示以用于检索相关文章：' });
   const PROFILE = Object.freeze({ ...LEGACY_PROFILE, id: 'bge-small-zh-int8-cls-v3', structure: 'published-blocks-v1', maxInputChars: 8192 });
+  const COMPACT_SCHEMA = 2;
   const sourceText = value => String(value || '').replace(/\s+/g, ' ').trim();
   const normalizeInput = text => text.normalize('NFKC').replace(/[A-Z]/g, char => char.toLowerCase());
-  const sameProfile = (index, profile) => !!index && index.schema === 1 && !!index.profile && Object.keys(profile).every(name => index.profile[name] === profile[name]);
-  const compatible = index => sameProfile(index, PROFILE) || sameProfile(index, LEGACY_PROFILE);
+  const sameProfile = (index, profile) => !!index?.profile && Object.keys(profile).every(name => index.profile[name] === profile[name]);
+  const compatible = index => (index?.schema === 1 || index?.schema === COMPACT_SCHEMA) && (sameProfile(index, PROFILE) || sameProfile(index, LEGACY_PROFILE));
+  const bytesPerValue = schema => schema === COMPACT_SCHEMA ? 1 : 4;
+  const encodedVectorLength = (chunks, schema = 1) => 4 * Math.ceil(chunks * PROFILE.dimensions * bytesPerValue(schema) / 3);
+  const vectorEncoding = schema => schema === COMPACT_SCHEMA ? 'int8' : 'float32';
   const chunkText = (context, body) => [...context, body].filter(Boolean).join('\n');
   const splitsCharacter = (text, at) => at > 0 && at < text.length &&
     text.charCodeAt(at - 1) >= 0xd800 && text.charCodeAt(at - 1) <= 0xdbff &&
@@ -180,7 +184,8 @@
     if (!compatible(index)) throw Error('语义索引模型或编码配置不兼容，请使用 --build-index 重新生成');
     if (index.profile.id === LEGACY_PROFILE.id) validateLegacyChunks(records, index.chunks); else validateStructuredChunks(records, index.chunks);
     const binary = atob(index.vectors || '');
-    if (binary.length !== index.chunks.length * PROFILE.dimensions * 4) throw Error('语义向量数据长度无效');
+    if (binary.length !== index.chunks.length * PROFILE.dimensions * bytesPerValue(index.schema)) throw Error('语义向量数据长度无效');
+    if (index.schema === COMPACT_SCHEMA) return decodeCompact(binary);
     const vectors = new Float32Array(binary.length / 4);
     const bytes = new Uint8Array(vectors.buffer), view = new DataView(vectors.buffer);
     for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
@@ -196,6 +201,36 @@
     return vectors;
   }
 
+  function decodeCompact(binary) {
+    const vectors = new Float32Array(binary.length), dims = PROFILE.dimensions;
+    for (let offset = 0; offset < vectors.length; offset += dims) {
+      let squareSum = 0, peak = 0;
+      for (let i = offset; i < offset + dims; i++) {
+        const byte = binary.charCodeAt(i), value = byte >= 128 ? byte - 256 : byte;
+        vectors[i] = value; squareSum += value * value; peak = Math.max(peak, Math.abs(value));
+      }
+      if (peak !== 127) throw Error('Int8 向量未按约定编码，请重新生成');
+      const norm = Math.sqrt(squareSum);
+      for (let i = offset; i < offset + dims; i++) vectors[i] /= norm;
+    }
+    return vectors;
+  }
+
+  function compactIndex(records, index) {
+    const vectors = validate(records, index);
+    if (index.schema === COMPACT_SCHEMA) return index;
+    const quantized = new Int8Array(vectors.length), dims = PROFILE.dimensions;
+    for (let offset = 0; offset < vectors.length; offset += dims) {
+      let peak = 0;
+      for (let i = offset; i < offset + dims; i++) peak = Math.max(peak, Math.abs(vectors[i]));
+      const scale = 127 / peak;
+      for (let i = offset; i < offset + dims; i++) quantized[i] = Math.round(vectors[i] * scale);
+    }
+    // Cosine search uses row direction. The decoder normalizes the integer
+    // row, so the original row scale need not be carried in the archive.
+    return { ...index, schema: COMPACT_SCHEMA, vectors: encodeBytes(new Uint8Array(quantized.buffer)) };
+  }
+
   function createIndex(chunks, vectors, profile = PROFILE) {
     if (chunks.length > 12000 || vectors.length !== chunks.length) throw Error('语义片段与向量数量无效');
     return { schema: 1, profile, chunks, vectors: encodeVectors(vectors) };
@@ -209,8 +244,8 @@
     let recordsOffset = 0, offset = 0;
     // Legacy input may omit padding or contain whitespace accepted by atob.
     // Normalize that case so capacity estimates still match canonical base64.
-    const single = indexes.length === 1 && typeof indexes[0].vectors === 'string' &&
-      indexes[0].vectors.length === 4 * Math.ceil(count * profile.dimensions * 4 / 3) && !/\s/.test(indexes[0].vectors);
+    const single = indexes.length === 1 && indexes[0].schema === 1 && typeof indexes[0].vectors === 'string' &&
+      indexes[0].vectors.length === encodedVectorLength(count) && !/\s/.test(indexes[0].vectors);
     const chunks = [], bytes = single ? null : new Uint8Array(count * profile.dimensions * 4), view = bytes && new DataView(bytes.buffer);
     for (const [i, records] of groups.entries()) {
       const index = indexes[i];
@@ -223,6 +258,7 @@
     return { schema: 1, profile, chunks, vectors: bytes ? encodeBytes(bytes) : indexes[0].vectors };
   }
 
-  const api = { PROFILE, LEGACY_PROFILE, sourceText, normalizeInput, compatible, chunksFor, legacyChunksFor, unitsFor, createIndex, validate, combineIndexes };
+  const api = { PROFILE, LEGACY_PROFILE, COMPACT_SCHEMA, sourceText, normalizeInput, compatible, chunksFor, legacyChunksFor, unitsFor,
+    createIndex, validate, compactIndex, encodedVectorLength, vectorEncoding, combineIndexes };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaKnowledgeSemantic = api;
 })(typeof window === 'undefined' ? globalThis : window);

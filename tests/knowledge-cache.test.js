@@ -63,6 +63,20 @@ test('complete compatible manual packs combine with zero model inference and ref
   const cached = await ctx.builder.book(combined); assert.equal(cached.stats.reusedManuals, 2); assert.equal(ctx.calls(), 0);
   const forced = await ctx.builder.book(combined, { seeds: [a, b], force: true }); assert.equal(forced.stats.rebuiltManuals, 2); assert.equal(ctx.calls(), 2);
 });
+test('compact archives are searchable inputs but do not seed the exact Float32 build cache', async t => {
+  const ctx = await setup(t), source = book(manual('a')), records = flatten(source);
+  const original = await generate(records, () => {});
+  source.semantic = data.compactIndex(records, original);
+  assert.ok(data.validate(records, source.semantic).length);
+  await assert.rejects(ctx.cache.put(records, source.model, data.PROFILE, source.semantic), /Float32/);
+  const build = await ctx.builder.book(source);
+  assert.equal(build.stats.rebuiltManuals, 1);
+  assert.equal(ctx.calls(), 1);
+  assert.deepEqual(build.index, original);
+  const repeat = await ctx.builder.book(source);
+  assert.equal(repeat.stats.reusedManuals, 1);
+  assert.equal(ctx.calls(), 1);
+});
 test('corrupt, truncated and symlink cache files are rebuilt, with no partial files left behind', async t => {
   const ctx = await setup(t), current = book(manual('a')), records = flatten(current);
   const file = path.join(ctx.directory, 'manual-' + ctx.cache.key(records, current.model, data.PROFILE) + '.json');

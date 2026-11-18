@@ -41,9 +41,15 @@
     freeze(book); freeze(manifest); freeze(manuals);
     onProgress({ stage: 'render' });
     const html = reader.renderPage(book);
+    /** @param {import('./knowledge-semantic').SemanticIndex['profile']} profile
+     * @param {number} chunks
+     * @param {import('./knowledge-semantic').SemanticIndex['schema']} schema */
+    function manifestIndex(profile, chunks, schema) {
+      return { profile, chunks, ...(schema === semanticData.COMPACT_SCHEMA ? { vectorEncoding: semanticData.vectorEncoding(schema) } : {}) };
+    }
     /** @param {import('./knowledge-semantic').SemanticIndex} [semantic] */
     function filesFor(semantic) {
-      const finalManifest = semantic ? freeze({ ...manifest, semantic: { profile: structuredClone(semantic.profile), chunks: semantic.chunks.length } }) : manifest;
+      const finalManifest = semantic ? freeze({ ...manifest, semantic: manifestIndex(structuredClone(semantic.profile), semantic.chunks.length, semantic.schema) }) : manifest;
       // CLI data contains chapter text and provenance; its index is built at query time.
       const cliBook = { schema: book.schema, title: book.title, model: book.model, sdkVersion: book.sdkVersion,
         generatedAt: book.generatedAt, ...(semantic ? { semantic } : {}), manuals: book.manuals.map(manual => ({
@@ -60,25 +66,30 @@
     const baselineBytes = zip.measureFiles(baseline.files);
     // The uncompressed budget excludes semantic JSON and the decimal chunk count.
     // The server adds these from its prepared chunks before starting inference.
-    function archiveOverhead() {
-      const nextManifest = { ...manifest, semantic: { profile: semanticData.PROFILE, chunks: 0 } };
+    function archiveOverhead(compact = false) {
+      const nextManifest = { ...manifest, semantic: manifestIndex(semanticData.PROFILE, 0, compact ? semanticData.COMPACT_SCHEMA : 1) };
       return baselineBytes + zip.textBytes(JSON.stringify(nextManifest, null, 2)) - zip.textBytes(baseline.files[1].content) + zip.textBytes(',"semantic":') - 1;
     }
-    /** @param {{profile:import('./knowledge-semantic').SemanticIndex['profile'],chunks:number,bytes:number}} [estimate] */
+    /** @param {import('./knowledge-contracts').SemanticEstimate} [estimate] */
     function measure(estimate) {
       let bytes = baselineBytes;
       if (estimate) {
-        if (JSON.stringify(estimate.profile) !== JSON.stringify(semanticData.PROFILE) || !Number.isSafeInteger(estimate.chunks) || estimate.chunks < 0 || estimate.chunks > 12000 || !Number.isSafeInteger(estimate.bytes) || estimate.bytes < 0) throw Error('语义容量核算结果无效');
-        bytes = archiveOverhead() + String(estimate.chunks).length + estimate.bytes;
+        if (JSON.stringify(estimate.profile) !== JSON.stringify(semanticData.PROFILE) ||
+            (estimate.schema !== undefined && estimate.schema !== 1 && estimate.schema !== semanticData.COMPACT_SCHEMA) ||
+            !Number.isSafeInteger(estimate.chunks) || estimate.chunks < 0 || estimate.chunks > 12000 ||
+            !Number.isSafeInteger(estimate.bytes) || estimate.bytes < 0) throw Error('语义容量核算结果无效');
+        bytes = archiveOverhead(estimate.schema === semanticData.COMPACT_SCHEMA) + String(estimate.chunks).length + estimate.bytes;
       }
       onProgress({ stage: 'capacity', bytes, limit: limits.ARCHIVE_BYTES });
       limits.assertReadable(bytes, '知识库 ZIP');
       return { bytes, limit: limits.ARCHIVE_BYTES, sourceBytes: size };
     }
-    /** @param {import('./knowledge-semantic').SemanticIndex} [semantic] */
-    function build(semantic) {
+    /** @param {import('./knowledge-semantic').SemanticIndex} [semantic]
+     * @param {{compact?:boolean}} [options] */
+    function build(semantic, { compact = false } = {}) {
       onProgress({ stage: 'verify' });
-      if (semantic) semanticData.validate(records, semantic);
+      if (semantic && compact) semantic = semanticData.compactIndex(records, semantic);
+      else if (semantic) semanticData.validate(records, semantic);
       const result = semantic ? filesFor(semantic) : baseline;
       const bytes = zip.measureFiles(result.files);
       onProgress({ stage: 'capacity', bytes, limit: limits.ARCHIVE_BYTES });
