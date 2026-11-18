@@ -4,14 +4,21 @@ require('./server-core.test.js');
 require('./visual-core.test.js');
 require('./preview-core.test.js');
 require('./review-core.test.js');
+require('./oxygen-tracking.test.js');
+require('./oxygen-tracking-expanded.test.js');
+require('./tracking-controller.test.js');
+require('./review-session.test.js');
 
 
 require('./workspace.test.js');
 require('./export-flow.test.js');
 require('./api-integration.test.js');
+require('./api-save-acknowledgement.test.js');
 
 require('./xml-source.test.js');
 require('./map-source.test.js');
+require('./map-operations.test.js');
+require('./document-files.test.js');
 require('./map-author-controller.test.js');
 require('./footnotes.test.js');
 require('./publication.test.js');
@@ -44,6 +51,7 @@ require('./demo-workspace.test');
 
 require('./model-discovery.test');
 require('./atomic-write.test');
+require('./document-batch.test');
 require('./export-isolation.test');
 require('./recovery-errors.test');
 require('./note-rules.test');
@@ -63,3 +71,16 @@ require('./ai-scan.test');
 require('./ai-acceptance.test');
 require('./ai-task-store.test');
 require('./template.test');
+
+require('./knowledge.test.js');
+require('./knowledge-cli.test.js');
+require('./knowledge-semantic.test.js');
+require('./knowledge-structure.test.js');
+
+require('./knowledge-plan.test');
+
+require('./knowledge-sources.test');
+
+
+require('./knowledge-cache.test');
+require('./knowledge-publish.test');

@@ -1,5 +1,45 @@
 'use strict';
 (function (root) {
+  // HTML-only clipboards still need useful plaintext in a code block. Keep
+  // visual line/cell boundaries and discard active content before extraction.
+  function plainCode(html) {
+    const input = new DOMParser().parseFromString(html, 'text/html');
+    const blocks = /^(?:p|div|pre|li|ul|ol|table|thead|tbody|tr|h[1-6]|blockquote)$/;
+    function read(node, exact = false) {
+      if (node.nodeType === 3) return node.data;
+      if (node.nodeType !== 1 || /^(?:script|style|meta|link|object|iframe|noscript)$/.test(node.localName)) return '';
+      if (node.localName === 'br') return '\n';
+      if (node.localName === 'img') return node.getAttribute('alt') || '';
+      if (node.localName === 'tr') return Array.from(node.children).map(child => read(child, exact)).join('\t');
+      exact ||= node.localName === 'pre';
+      const children = Array.from(node.childNodes), hasBlocks = children.some(child => blocks.test(child.localName || ''));
+      let value = '', previousBlock = false, previousEmptyBlock = false, hasPiece = false;
+      for (const child of children) {
+        const text = read(child, exact), block = blocks.test(child.localName || '');
+        if (!text && !block || !exact && hasBlocks && child.nodeType === 3 && !text.trim()) continue;
+        if (hasPiece && (block || previousBlock) && (previousEmptyBlock || !value.endsWith('\n') && !text.startsWith('\n'))) value += '\n';
+        value += text; previousBlock = block; previousEmptyBlock = block && !text; hasPiece = true;
+      }
+      return /^(?:p|div|li|h[1-6])$/.test(node.localName) && value === '\n' ? '' : value;
+    }
+    return read(input.body);
+  }
+  // Whole-block selections may use the body positions just before/after a pre.
+  // Canonicalize that one block without admitting selections of other blocks.
+  function codeRange(range, surface, selection) {
+    const first = selection.blockOf(range.startContainer);
+    if (first && first === selection.blockOf(range.endContainer)) return range;
+    const parts = selection.textParts(range, surface), blocks = new Set(parts.map(part => selection.blockOf(part.node)).filter(Boolean));
+    if (blocks.size !== 1) return range;
+    const block = [...blocks][0];
+    if (!block.matches('pre') || parts.some(part => !block.contains(part.node) && part.node.data.slice(part.start, part.end).trim())) return range;
+    const contents = range.cloneContents();
+    if (contents.querySelectorAll(selection.BLOCKS).length > 1 || contents.querySelector('img,' + selection.PROTECTED)) return range;
+    const inside = parts.filter(part => block.contains(part.node));
+    if (!inside.length) return range;
+    const next = range.cloneRange(); next.setStart(inside[0].node, inside[0].start); next.setEnd(inside.at(-1).node, inside.at(-1).end);
+    return next;
+  }
   // Clipboard HTML is parsed inertly and converted from an allowlist. No
   // attributes, IDs, Word metadata or browser HTML tables enter document XML.
   function normalize(html, text, core) {
@@ -56,12 +96,18 @@
         if (html.length + text.length > 1024 * 1024) throw new Error('粘贴内容过大，请分段插入');
         if (!html && !text) throw new Error('请先上传图片，再插入文档');
         const target = selection.capture(), cloned = selection.clone(target), copy = cloned.copy;
-        let range = cloned.range, block;
+        let range = codeRange(cloned.range, copy, selection), block;
         if (selection.blockOf(range.startContainer) !== selection.blockOf(range.endContainer)) {
           selection.paragraphs(range, copy);
           ({ block, range } = selection.deleteRange(range, copy));
         } else block = selection.validateRange(range, copy, { body: true });
-        if (block.matches('pre')) { range.deleteContents(); const node = document.createTextNode(text); range.insertNode(node); selection.commit(target, copy, block, selection.offset(block, node, node.length)); return; }
+        if (block.matches('pre')) {
+          const value = text || plainCode(html);
+          if (!value && html) throw new Error('剪贴板没有可粘贴的代码文字');
+          range.deleteContents(); const node = document.createTextNode(value); range.insertNode(node);
+          selection.commit(target, copy, block, selection.offset(block, node, node.length));
+          status('已粘贴代码，保留换行与缩进；可撤销，保存后写入工作区'); return;
+        }
         const { body, warnings } = normalize(html, text, core), blocks = Array.from(body.children), hasBlocks = blocks.some(node => ['p', 'ul', 'ol', 'table', 'codeblock'].includes(node.localName));
         const fragment = document.createDocumentFragment();
         const inline = blocks.length === 1 && blocks[0].localName === 'p' && body.childNodes.length === 1;

@@ -19,7 +19,7 @@ test('foundation browser workflows', async t => {
   git('init'); git('-c', 'user.name=Test', '-c', 'user.email=test@example.invalid', 'add', '.'); git('-c', 'user.name=Test', '-c', 'user.email=test@example.invalid', 'commit', '-m', 'fixture');
   const commit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: repo, encoding: 'utf8' }).trim();
   const port = await new Promise(resolve => { const s = net.createServer(); s.listen(0, '127.0.0.1', () => { const p = s.address().port; s.close(() => resolve(p)); }); });
-  const server = spawn(process.execPath, ['server.js'], { cwd: path.join(__dirname, '..'), env: { ...process.env, DOCS_ROOT: repo, REPOSITORIES_ROOT: temporary, PORT: String(port) }, stdio: ['ignore', 'pipe', 'pipe'] });
+  const server = spawn(process.execPath, ['server.js'], { cwd: path.join(__dirname, '..'), env: { ...process.env, DOCS_ROOT: repo, REPOSITORIES_ROOT: temporary, DITA_SAVE_JOURNAL_DIR: path.join(temporary, 'save-journal'), PORT: String(port) }, stdio: ['ignore', 'pipe', 'pipe'] });
   let browser;
   t.after(async () => { await browser?.close(); if (server.exitCode == null) { server.kill(); await new Promise(resolve => server.once('exit', resolve)); } await fs.rm(temporary, { recursive: true, force: true }); });
   await new Promise((resolve, reject) => { const timer = setTimeout(() => reject(new Error('Server timeout')), 10000); server.stdout.once('data', () => { clearTimeout(timer); resolve(); }); server.once('error', reject); });
@@ -50,10 +50,40 @@ test('foundation browser workflows', async t => {
     await page.fill('#footnoteContent', 'A_EDITED'); await page.click('#footnoteEditForm button[type=submit]');
     assert.match(await current(), /A_EDITED/); assert.doesNotMatch(await fs.readFile(path.join(repo, 'shared/notes.dita'), 'utf8'), /A_EDITED/);
     await open('other.dita'); await source(other.replace('OTHER', 'OTHER_DIRTY'));
-    await open('main.ditamap'); await page.click('#saveButton'); await page.locator('#saveScopeDialog').waitFor();
+    await open('main.ditamap');
+    const mapName = path.join(repo, 'main.ditamap'), noteName = path.join(repo, 'shared/notes.dita');
+    const originalMap = await current(), originalNote = await fs.readFile(noteName, 'utf8');
+    const editedMap = originalMap + '<!--BATCH-->';
+    await source(editedMap);
+    const openScope = async () => { await page.click('#saveButton'); await page.locator('#saveScopeDialog').waitFor(); };
+    await openScope();
+    assert.match(await page.locator('#saveScopeList').innerText(), /main\.ditamap/);
     assert.match(await page.locator('#saveScopeList').innerText(), /shared\/notes.dita/); assert.doesNotMatch(await page.locator('#saveScopeList').innerText(), /other.dita/);
+    const externalNote = originalNote + '<!--EXTERNAL-->';
+    await fs.writeFile(noteName, externalNote);
+    await page.click('#saveScopeConfirm');
+    await page.waitForFunction(() => /shared\/notes\.dita.*已在磁盘上变化/.test(document.getElementById('status').textContent));
+    assert.equal(await page.locator('#saveScopeDialog').isVisible(), true);
+    assert.match(await page.locator('#saveScopeError').innerText(), /main\.ditamap：未写入/);
+    assert.match(await page.locator('#saveScopeError').innerText(), /shared\/notes\.dita.*已在磁盘上变化/);
+    assert.equal(await fs.readFile(mapName, 'utf8'), originalMap);
+    assert.equal(await fs.readFile(noteName, 'utf8'), externalNote);
+    assert.equal(await page.evaluate(() => ['main.ditamap', 'shared/notes.dita'].every(name => window.DitaApp.state.filesMap.get(name).dirty)), true);
+    await fs.writeFile(noteName, originalNote);
+    await page.route('**/api/file/batch', async route => {
+      const response = await route.fetch();
+      await page.evaluate(() => {
+        const app = window.DitaApp, map = app.state.filesMap.get('main.ditamap');
+        app.setFileContent(map, map.current + '<!--LATER-->');
+      });
+      await route.fulfill({ response });
+    }, { times: 1 });
     await page.click('#saveScopeConfirm'); await page.waitForFunction(() => !window.DitaApp.state.filesMap.get('shared/notes.dita').dirty);
-    assert.match(await fs.readFile(path.join(repo, 'shared/notes.dita'), 'utf8'), /A_EDITED/);
+    assert.match(await fs.readFile(noteName, 'utf8'), /A_EDITED/);
+    assert.equal(await fs.readFile(mapName, 'utf8'), editedMap);
+    assert.equal(await current(), editedMap + '<!--LATER-->');
+    assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.get('main.ditamap').dirty), true);
+    await source(editedMap);
     assert.equal(await fs.readFile(path.join(repo, 'other.dita'), 'utf8'), other);
     assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.get('other.dita').dirty), true);
     await open('other.dita'); await source(other);
@@ -84,7 +114,7 @@ test('foundation browser workflows', async t => {
   await scenario('refresh recovery is undoable and refuses an externally changed disk base', async () => {
     await page.evaluate(() => window.DitaApp.drafts.flush()); await page.reload(); await ready(); await open('topics/connect.dita');
     assert.doesNotMatch(await current(), /临时搜索词/);
-    const draftKey = await page.evaluate(() => 'dita.draft.v1:' + JSON.stringify([window.DitaApp.state.root, window.DitaApp.state.currentBranch, 'topics/connect.dita']));
+    const draftKey = await page.evaluate(() => window.DitaDraftStore.createDraftStore(localStorage).list({ root: window.DitaApp.state.root, branch: window.DitaApp.state.currentBranch }).find(draft => draft.path === 'topics/connect.dita').id);
     const backup = await page.evaluate(key => localStorage.getItem(key), draftKey);
     assert.ok(backup);
     await open('other.dita'); await page.locator('.tab[data-path="topics/connect.dita"] .close').click();
@@ -101,15 +131,16 @@ test('foundation browser workflows', async t => {
     await page.evaluate(() => window.DitaApp.drafts.flush());
     await source(); await page.focus('#editor'); await page.keyboard.press('Control+z'); assert.equal(await current(), originalConnect);
     await page.evaluate(() => window.DitaApp.drafts.flush());
-    assert.equal(await page.evaluate(key => localStorage.getItem(key), draftKey), null, 'undo clears a backup created by this editing session');
+    assert.equal(await page.evaluate(key => localStorage.getItem(key), draftKey), backup, 'undo preserves the older session snapshot');
+    assert.equal(await page.evaluate(() => window.DitaDraftStore.createDraftStore(localStorage).list({ root: window.DitaApp.state.root, branch: window.DitaApp.state.currentBranch }).filter(draft => draft.path === 'topics/connect.dita').length), 1, 'undo clears only the restoring page backup');
     await page.keyboard.press('Control+y'); assert.equal(await current(), working); await page.evaluate(() => window.DitaApp.drafts.flush());
     const external = originalConnect.replace('正文始终保留', 'EXTERNAL_BODY'); await fs.writeFile(path.join(repo, 'topics/connect.dita'), external);
     // Recovery must re-read disk even while the original file remains cached in this tab.
-    await page.click('#draftsButton'); await page.locator('#draftList article').filter({ hasText: 'topics/connect.dita' }).getByRole('button', { name: '恢复到编辑区' }).click();
+    await page.click('#draftsButton'); await page.locator('#draftList article').filter({ hasText: 'topics/connect.dita' }).first().getByRole('button', { name: '恢复到编辑区' }).click();
     await page.waitForFunction(() => document.getElementById('draftError').textContent.includes('磁盘或编辑内容已变化'));
     assert.match(await page.locator('#draftError').innerText(), /磁盘或编辑内容已变化/); assert.equal(await current(), working); await page.click('#draftClose');
     await page.reload(); await ready(); await open('topics/connect.dita'); await page.click('#draftsButton');
-    const row = page.locator('#draftList article').filter({ hasText: 'topics/connect.dita' }); await row.getByRole('button', { name: '恢复到编辑区' }).click();
+    const row = page.locator('#draftList article').filter({ hasText: 'topics/connect.dita' }).first(); await row.getByRole('button', { name: '恢复到编辑区' }).click();
     await page.waitForFunction(() => document.getElementById('draftError').textContent.includes('磁盘或编辑内容已变化'));
     assert.match(await page.locator('#draftError').innerText(), /磁盘或编辑内容已变化/); assert.equal(await current(), external);
     const downloadPromise = page.waitForEvent('download'); await row.getByRole('button', { name: '下载草稿' }).click();
@@ -119,10 +150,10 @@ test('foundation browser workflows', async t => {
   await scenario('only a confirmed dirty close discards the current backup, including pending writes', async () => {
     await open('other.dita'); await source(other.replace('OTHER', 'CLOSE_BACKUP'));
     await page.waitForFunction(() => {
-      const a = window.DitaApp, key = 'dita.draft.v1:' + JSON.stringify([a.state.root, a.state.currentBranch, 'other.dita']);
-      return localStorage.getItem(key)?.includes('CLOSE_BACKUP');
+      const a = window.DitaApp;
+      return window.DitaDraftStore.createDraftStore(localStorage).list({ root: a.state.root, branch: a.state.currentBranch }).some(draft => draft.path === 'other.dita' && draft.current.includes('CLOSE_BACKUP'));
     });
-    const key = await page.evaluate(() => 'dita.draft.v1:' + JSON.stringify([window.DitaApp.state.root, window.DitaApp.state.currentBranch, 'other.dita']));
+    const key = await page.evaluate(() => window.DitaDraftStore.createDraftStore(localStorage).list({ root: window.DitaApp.state.root, branch: window.DitaApp.state.currentBranch }).find(draft => draft.path === 'other.dita').id);
     await source(other.replace('OTHER', 'CLOSE_PENDING'));
     // The suite accepts the native unsaved-change confirmation.
     await page.locator('.tab[data-path="other.dita"] .close').click();

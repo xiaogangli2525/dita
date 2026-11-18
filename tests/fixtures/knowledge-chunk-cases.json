@@ -1,0 +1,178 @@
+{
+  "http": [
+    {
+      "query": "HTTP请求头怎么设置",
+      "expected": "AT+MHTTPHEADER 设置HTTP特定报头"
+    },
+    {
+      "query": "怎么创建HTTP客户端实例",
+      "expected": "AT+MHTTPCREATE 创建HTTP实例"
+    },
+    {
+      "query": "给POST请求添加请求内容",
+      "expected": "AT+MHTTPCONTENT 设置HTTP CONTENT数据"
+    },
+    {
+      "query": "如何发起GET请求",
+      "expected": "AT+MHTTPREQUEST 发送HTTP请求"
+    },
+    {
+      "query": "读取HTTP缓存数据",
+      "expected": "AT+MHTTPREAD 读取HTTP数据"
+    },
+    {
+      "query": "删除已经创建的客户端",
+      "expected": "AT+MHTTPDEL 删除HTTP实例"
+    },
+    {
+      "query": "停止当前HTTP传输",
+      "expected": "AT+MHTTPTERM 终止HTTP传输"
+    },
+    {
+      "query": "把服务器文件下载到模组本地",
+      "expected": "AT+MHTTPDLFILE HTTP下载文件"
+    },
+    {
+      "query": "HTTPS证书怎么写入",
+      "expected": "HTTPS示例"
+    },
+    {
+      "query": "HTTP主动上报事件",
+      "expected": "+MHTTPURC URC信息上报"
+    },
+    {
+      "query": "HTTP返回656是什么错误",
+      "expected": "错误码"
+    },
+    {
+      "query": "AT指令最后要加什么",
+      "expected": "AT命令语法"
+    },
+    {
+      "query": "AT返回OK和ERROR是什么意思",
+      "expected": "AT命令响应"
+    },
+    {
+      "query": "缓存模式适合下载大文件吗",
+      "expected": "缓存模式"
+    },
+    {
+      "query": "GET PUT POST流程示例",
+      "expected": "HTTP示例"
+    },
+    {
+      "query": "哪些模组型号支持",
+      "expected": "适用型号"
+    },
+    {
+      "query": "HTTP连接参数配置在哪里",
+      "expected": "AT+MHTTPCFG 参数设置"
+    },
+    {
+      "query": "HTTP相关命令有哪些",
+      "expected": "HTTP/HTTPS协议AT命令"
+    },
+    {
+      "query": "AT+MHTTPCFGG",
+      "expected": "AT+MHTTPCFG 参数设置"
+    },
+    {
+      "query": "AT+MHTTPREAD",
+      "expected": "AT+MHTTPREAD 读取HTTP数据"
+    },
+    {
+      "query": "HTTP返回99999是什么错误",
+      "expected": null
+    }
+  ],
+  "mr380r": [
+    {
+      "query": "GPIO引脚怎么分配",
+      "expected": "引脚分配"
+    },
+    {
+      "query": "引脚怎么分配",
+      "expected": "引脚分配"
+    },
+    {
+      "query": "怎样分配GPIO引脚",
+      "expected": "引脚分配"
+    },
+    {
+      "query": "GPIO引脚",
+      "expected": "引脚资源"
+    },
+    {
+      "query": "固件下栽",
+      "expected": "下载固件"
+    },
+    {
+      "query": "查看剩余内存",
+      "expected": "内存资源"
+    },
+    {
+      "query": "抓取日志",
+      "expected": "LOG抓取"
+    },
+    {
+      "query": "怎么刷机",
+      "expected": "下载固件"
+    },
+    {
+      "query": "怎么编译SDK",
+      "expected": "编译SDK"
+    },
+    {
+      "query": "网页怎么定制",
+      "expected": "前端定制开发"
+    },
+    {
+      "query": "死机现场怎么查",
+      "expected": "死机现场查看"
+    },
+    {
+      "query": "网络注册要多久",
+      "expected": "其他使用说明"
+    },
+    {
+      "query": "用户入口函数",
+      "expected": "用户入口函数"
+    },
+    {
+      "query": "怎么把日志取出来",
+      "expected": "LOG抓取"
+    },
+    {
+      "query": "看一下还有多少内存可用",
+      "expected": "内存资源"
+    },
+    {
+      "query": "程序卡死怎么收集现场",
+      "expected": "死机现场查看"
+    },
+    {
+      "query": "我要改网页的外观",
+      "expected": "前端定制开发"
+    },
+    {
+      "query": "webui二次认证",
+      "expected": null
+    },
+    {
+      "query": "WEBUI二次认证",
+      "expected": null
+    },
+    {
+      "query": "地球到月球有多远",
+      "expected": null
+    },
+    {
+      "query": "MQTT消息丢失怎么重发",
+      "expected": null
+    },
+    {
+      "query": "网页登录怎么验证身份",
+      "expected": null
+    }
+  ]
+}

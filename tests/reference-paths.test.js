@@ -21,3 +21,14 @@ test('nontrivial xml:base stops unsupported relocation before producing a damage
   const source = '<topic xml:base="shared/"><title>T</title><body><xref href="a.dita#t"/></body></topic>';
   assert.throws(() => paths.rebase(source, 'docs/a.dita', 'a.dita'), /xml:base/); assert.equal(paths.rebase(source, 'docs/a.dita', 'docs/b.dita'), source);
 });
+
+test('decoded absolute paths cannot become relative targets inside a nested Map directory', () => {
+  for (const from of ['main.ditamap', 'books/main.ditamap']) {
+    for (const href of ['%2Ftmp/a.dita', '%5Ctmp/a.dita', '%43%3A%5Cprivate.dita', '%5C%5Cserver%5Cshare.dita', '%68ttps%3A//example.invalid/a.dita']) {
+      assert.throws(() => paths.resolve(from, href), error => error.status === 400);
+      assert.throws(() => paths.rebase('<map><topicref href="' + href + '"/></map>', from, 'copy.ditamap'), error => error.status === 400);
+    }
+  }
+  assert.equal(paths.resolve('books/main.ditamap', '../topics/a%20b.dita').path, 'topics/a b.dita');
+  assert.equal(paths.resolve('books/main.ditamap', 'topics%2Fa.dita').path, 'books/topics/a.dita');
+});

@@ -45,6 +45,7 @@
       feature('noteRuleStore', 'DitaNoteRuleStore', 'createController', 'state api events'),
       feature('noteRules', 'DitaNoteRules', 'createController', 'state api events manual noteRuleStore setStatus', ['manual', 'noteRuleStore']),
       feature('project', 'DitaProject', 'createProjectController', 'state api events manual setStatus', ['manual']),
+      feature('knowledgeBase', 'DitaKnowledge', 'createController', 'state api events manual ditaCore project downloadText setStatus', ['manual', 'project']),
       feature('notePresentation', 'DitaFootnotePresentation', 'createController', 'state dom events manual', ['manual']),
       feature('delivery', 'DitaExport', 'createExportController', 'state dom api manual noteRules ditaCore setStatus toast bodyNavigation navigateToSource downloadText showLoading hideLoading', ['manual'], {
         expose: ['openModelExport', 'releaseExportPreview', 'previewMapHtml', 'previewMapMd', 'exportMapToHtmlFile', 'exportMapToMarkdownFile', 'lastDeliveryRecord', 'lastExportReport']
@@ -53,6 +54,7 @@
       feature('maps', 'DitaMapController', 'createMapController', 'state session dom api events setStatus setFileContent openFile', [], { views: views.maps }),
       feature('documents', 'DitaDocuments', 'createDocumentController', 'state session api events maps openFile setFileContent setMode setStatus save validateXml downloadXML', ['save', 'maps'], { views: views.documents }),
       feature('remoteLibraries', 'DitaRemoteLibraries', 'createController', 'state api events setStatus', [], { views: views.remoteLibraries }),
+      feature('tracking', 'DitaTracking', 'createController', 'state dom api events setFileContent setStatus toast'),
       feature('drafts', 'DitaDrafts', 'createDraftController', 'state api events openFile setFileContent setStatus toast downloadXML'),
       feature('authorSelection', 'DitaAuthorSelection', 'createController', 'state dom api events ditaCore applyAuthorEdit validateXml'),
       feature('appearance', 'DitaAppearance', 'createController', 'theme authorSelection', ['authorSelection']),

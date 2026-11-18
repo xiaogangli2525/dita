@@ -106,6 +106,55 @@ test('clean draft updates preserve unrelated recovery content and remove only ac
   store.put(scope, { ...backup, current: 'Original', dirty: false }, backup);
   assert.equal(data.getItem(key), damaged, 'a malformed backup is retained for explicit recovery');
 });
+test('independent pages retain competing drafts and update or discard only their own snapshots', () => {
+  const data = storage(), a = createDraftStore(data), b = createDraftStore(data), scope = { root: '/repo', branch: 'main' };
+  const file = current => ({ path: 'a.dita', disk: 'BASE', current, dirty: true });
+  a.put(scope, file('A')); b.put(scope, file('B')); a.put(scope, file('A2'));
+  assert.deepEqual(a.list(scope).map(draft => draft.current).sort(), ['A2', 'B']);
+  const reloaded = createDraftStore(data);
+  assert.deepEqual(reloaded.list(scope).map(draft => draft.current).sort(), ['A2', 'B']);
+  a.remove(scope, 'a.dita'); assert.deepEqual(b.list(scope).map(draft => draft.current), ['B']);
+  assert.equal(b.list(scope)[0].fromCurrentWindow, true);
+});
+test('a restored draft is consumed only when saved; undo and stale selection cannot remove competing versions', () => {
+  const data = storage(), a = createDraftStore(data), b = createDraftStore(data), page = createDraftStore(data), scope = { root: '/repo', branch: 'main' };
+  const file = current => ({ path: 'a.dita', disk: 'BASE', current, dirty: true });
+  a.put(scope, file('A')); b.put(scope, file('B'));
+  const selected = page.list(scope).find(draft => draft.current === 'A'); page.adopt(scope, selected); page.put(scope, file('A'));
+  page.put(scope, { ...file('BASE'), dirty: false }, file('A'));
+  assert.deepEqual(page.list(scope).map(draft => draft.current).sort(), ['A', 'B'], 'undo only clears the restoring page backup');
+  page.put(scope, file('A')); page.put(scope, { ...file('A'), disk: 'A', dirty: false });
+  assert.deepEqual(page.list(scope).map(draft => draft.current), ['B']);
+  const stale = page.list(scope)[0]; b.put(scope, file('B2'));
+  assert.throws(() => page.remove(scope, 'a.dita', stale), /草稿已更新/);
+  assert.throws(() => page.adopt(scope, stale), /草稿已更新/);
+  assert.deepEqual(page.list(scope).map(draft => draft.current), ['B2']);
+});
+test('draft replacement retains the last backup on quota failure and preserves legacy or damaged data', () => {
+  const data = storage(), store = createDraftStore(data), scope = { root: '/repo', branch: 'main' }, file = { path: 'a.dita', disk: 'BASE', current: 'A', dirty: true };
+  const legacyKey = 'dita.draft.v1:' + JSON.stringify([scope.root, scope.branch, file.path]);
+  const legacy = JSON.stringify({ schema: 1, ...scope, path: file.path, base: 'BASE', current: 'LEGACY', updatedAt: 1 });
+  data.setItem(legacyKey, legacy); store.put(scope, file);
+  const write = data.setItem; data.setItem = () => { throw Error('quota'); };
+  assert.throws(() => store.put(scope, { ...file, current: 'A2' }), /quota/);
+  assert.deepEqual(store.list(scope).map(draft => draft.current).sort(), ['A', 'LEGACY']);
+  data.setItem = write;
+  const old = store.list(scope).find(draft => draft.current === 'LEGACY');
+  store.adopt(scope, old); store.put(scope, { ...file, current: 'LEGACY' });
+  store.put(scope, { ...file, current: 'LEGACY', disk: 'LEGACY', dirty: false });
+  assert.equal(data.getItem(legacyKey), null); assert.equal(store.list(scope).length, 0);
+});
+test('interleaved page writes keep both revisions and concurrent deletion is not reported as corruption', () => {
+  const data = storage(), a = createDraftStore(data), b = createDraftStore(data), scope = { root: '/repo', branch: 'main' };
+  const file = current => ({ path: 'a.dita', disk: 'BASE', current, dirty: true });
+  a.put(scope, file('A')); b.put(scope, file('B'));
+  const write = data.setItem; let interleave = true;
+  data.setItem = (key, value) => { write(key, value); if (interleave) { interleave = false; b.put(scope, file('B2')); } };
+  a.put(scope, file('A2'));
+  assert.deepEqual(a.list(scope).map(draft => draft.current).sort(), ['A2', 'B2']);
+  data.getItem = key => { data.removeItem(key); return null; };
+  assert.equal(a.list(scope).length, 0); assert.equal(a.warnings.length, 0);
+});
 test('plaintext search crosses inline markup, decodes entities and returns exact source selection ranges', () => {
   const source = '<?xml version="1.0"?><topic><body><p>TCP <b>connection</b> &amp; MQTT</p><p>中文参数 <![CDATA[AT+OPEN]]></p></body></topic>';
   for (const [query, span] of [['TCP connection', 'TCP <b>connection'], ['& MQTT', '&amp; MQTT'], ['中文参数', '中文参数'], ['AT+OPEN', 'AT+OPEN']]) {

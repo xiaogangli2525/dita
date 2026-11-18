@@ -1,5 +1,6 @@
 'use strict';
 (function (root) {
+  const oxygen = typeof module !== 'undefined' ? require('./oxygen-core') : root.DitaOxygenCore;
   const resolver = typeof module !== 'undefined' ? require('./publication-resolver') : root.DitaPublicationResolver;
   const publication = typeof module !== 'undefined' ? require('./publication-core') : root.DitaPublication;
   const notesCore = typeof module !== 'undefined' ? require('./footnotes-core') : root.DitaFootnotesCore;
@@ -13,7 +14,12 @@
   const profileOf = snapshot => snapshot.filter ? profiling.compile(snapshot.filter.current) : null;
 
   function discoverModels(snapshot, profile = profileOf(snapshot)) {
-    return discovery.discover(resolver.resolveConrefsDetailed(snapshot.files, profile).files, profile);
+    let topics;
+    try { topics = resolver.resolveConrefsDetailed(snapshot.files, profile).files; }
+    catch { topics = snapshot.files; } // Expose declarations before publication reports unavailable reuse or branches.
+    const files = new Map(topics);
+    if (snapshot.map.source) files.set(snapshot.path || snapshot.map.path, { current: snapshot.map.source });
+    return discovery.discover(files, profile);
   }
 
   function listModels(snapshot) {
@@ -23,20 +29,22 @@
     return [...new Set([...discoverModels(snapshot).models, ...configured])].sort();
   }
 
-  function projectIssues(snapshot, model, profile) {
+  function projectIssues(snapshot, files, model, profile) {
     const issues = [];
     if (snapshot.noteRules?.error) issues.push({ path: '.dita-note-rules.json', message: snapshot.noteRules.error });
     if (snapshot.projectError) issues.push({ path: '.dita-project.json', message: snapshot.projectError });
     if (model && snapshot.project.models.length && !snapshot.project.models.includes(model)) {
       issues.push({ path: snapshot.path, message: '型号不在项目清单中：' + model });
     }
-    for (const [path, file] of snapshot.files) {
+    const inputs = new Map(files);
+    if (typeof snapshot.content === 'string' && !inputs.has(snapshot.path)) inputs.set(snapshot.path, { current: snapshot.map.source ?? snapshot.content });
+    for (const [path, file] of inputs) {
       try {
+        if (oxygen.collectOxyTrackedChanges(file.current).some(change => change.type !== 'comment' && change.id?.startsWith('dita-'))) issues.push({ path, message: '尚有未处理的 Oxygen 修订，请先接受或拒绝后再交付或发布知识库' });
         resolver.walk(xml.inspectSource(file.current), (node, ancestors) => {
           if (profile && [...ancestors, node].some(parent => !profile.keep(parent))) return;
-          const value = domain.decode(node.attrs.product);
-          if (/[()]/.test(value)) return;
-          const unknown = domain.checkModels(value.split(/\s+/).filter(Boolean), snapshot.project);
+          if (model && path === snapshot.path && snapshot.map.source && !domain.matches(domain.conditions(node, ancestors), model, profile)) return;
+          const unknown = domain.checkModels(domain.productValues(domain.decode(node.attrs.product)), snapshot.project);
           if (unknown.length) issues.push({ path, message: '未登记型号：' + unknown.join('、') });
         });
       } catch (error) { issues.push({ path, message: error.message }); }
@@ -46,21 +54,22 @@
 
   function prepare(snapshot, model = '', validateProject = true, { useRules = true, prefixes = false } = {}) {
     const profile = profileOf(snapshot);
+    const plan = resolver.planMap(snapshot.map, model, profile), files = resolver.scopeFiles(snapshot.files, plan, profile);
     if (validateProject) {
-      const issues = projectIssues(snapshot, model, profile);
+      const issues = projectIssues(snapshot, files, model, profile);
       if (issues.length) throw Object.assign(new Error(issues.map(item => item.path + '：' + item.message).join('\n')), { issues });
     }
     const publish = (files, projection = {}) => publication.preparePublication({
-      map: snapshot.map, files, model, profile,
+      map: snapshot.map, files, model, profile, plan,
       ruleConfirmed: projection.confirmed, ruleExclusions: projection.excluded
     });
     // Resolve actual uses before deciding which original notes can affect delivery.
-    const baseline = useRules && model ? publish(snapshot.files) : null;
+    const baseline = useRules && model ? publish(files) : null;
     const activeOrigins = baseline && new Set(baseline.notes.map(note => note.origin.path + '\n' + note.origin.start));
-    const projection = useRules ? rulesCore.project(snapshot.files, snapshot.noteRules?.config, model, {
+    const projection = useRules ? rulesCore.project(files, snapshot.noteRules?.config, model, {
       prefixes, profile, activeOrigins,
       knownModels: [...(snapshot.project.models || []), ...discoverModels(snapshot, profile).models]
-    }) : { files: snapshot.files };
+    }) : { files };
     if (projection.issues?.length) {
       const message = projection.issues.some(item => item.kind === 'model-scope') ?
         '有注脚的型号范围需要核对，请使用独立规则后再导出' : '注脚规则已过期，请重新核对后导出';
@@ -134,7 +143,7 @@
         [{ ...call, path: call.site.path, xmlPath: location.xmlPath, note }] : [];
     });
     attachUsages(notes, data.calls, locations);
-    return { notes, calls, models: publication.listModels(snapshot.files, profileOf(snapshot)), report: data.report };
+    return { notes, calls, models: discoverModels(snapshot).models, report: data.report };
   }
 
   function saveCandidates(snapshot) {

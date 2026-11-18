@@ -1,5 +1,7 @@
 /** Checked data exchanged by editing, capture, save and delivery boundaries. */
 export type EditorMode = 'editor' | 'visual' | 'preview' | 'review';
+export type ReviewDecision = 'accept' | 'reject';
+export type ReviewKey = number | string;
 export interface DocumentState {
   path: string; current: string; disk: string; baseline: string; gitStatus: string; dirty: boolean;
   history?: DocumentHistory;
@@ -8,12 +10,17 @@ export type DocumentSnapshot = Readonly<Omit<DocumentState, 'history'>>;
 export interface HistoryGroup { key: string; time?: number; composition?: boolean; beforeCursor?: string; afterCursor?: string }
 export interface HistoryMeta {
   selectionBefore?: unknown; selectionAfter?: unknown; mapTitle?: boolean;
-  reviewDecisionsBefore?: ReadonlyMap<number | string, string>; reviewDecisionsAfter?: ReadonlyMap<number | string, string>;
+  reviewDecisionsBefore?: ReadonlyMap<ReviewKey, ReviewDecision>; reviewDecisionsAfter?: ReadonlyMap<ReviewKey, ReviewDecision>;
+  reviewInManual?: boolean;
 }
 export interface HistoryEntry extends HistoryMeta { before: string; after: string; group?: HistoryGroup }
 export interface DocumentHistory { undo: HistoryEntry[]; redo: HistoryEntry[]; openGroup?: HistoryEntry | null }
 export interface SaveRequest { readonly path: string; readonly content: string; readonly expectedContent: string }
 export interface SaveAcknowledgement { content: string; path?: string; created?: boolean }
+export type BatchSaveFile = { readonly path: string; readonly status: 'saved' | 'notWritten' } |
+  { readonly path: string; readonly status: 'conflict' | 'failed'; readonly message: string };
+export type BatchSaveResponse = { readonly saved: true; readonly files: readonly BatchSaveFile[] } |
+  { readonly saved: false; readonly error: string; readonly files: readonly BatchSaveFile[] };
 export interface SaveResult extends SaveAcknowledgement { clean: boolean }
 export interface Proposal { readonly path: string; readonly workspaceToken: string; readonly before: string;
   readonly after: string; readonly instruction: string; readonly status: 'pending' | 'applied' }
@@ -55,7 +62,7 @@ export interface CapturePorts {
 }
 export type DeliveryFormat = 'html' | 'md' | 'pdf' | 'docx';
 export interface DeliveryReport { model: string; included: number; excluded: number; unmarked: number; unused: number;
-  filteredElements?: number; ruleApplied?: number; ruleFilteredParts?: number; prefixCandidates?: number;
+  filteredElements?: number; filteredMapBranches?: number; ruleApplied?: number; ruleFilteredParts?: number; prefixCandidates?: number;
   prefixApplied?: number; prefixExcluded?: number }
 export interface DeliveryTemplateRecord { id: string; name: string; version: string; renderer: string; sha256: string; fields: Readonly<Record<string, string>> }
 export interface CompiledDelivery { output: string | Blob; previewHtml: string; report: DeliveryReport; template?: DeliveryTemplateRecord | null }
@@ -78,5 +85,5 @@ export interface SavePorts {
 }
 export interface SaveElements {
   saveScopeDialog: HTMLDialogElement; saveScopeTitle: HTMLElement; saveScopeList: HTMLElement;
-  saveScopeError: HTMLElement; saveScopeCancel: HTMLButtonElement; saveScopeForm: HTMLFormElement;
+  saveScopeError: HTMLElement; saveScopeCancel: HTMLButtonElement; saveScopeConfirm: HTMLButtonElement; saveScopeForm: HTMLFormElement;
 }

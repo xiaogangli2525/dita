@@ -6,3 +6,9 @@ web/
 *.cjs
 .codex/
 ai-acceptance-report*.json
+
+models/
+dist/
+
+# Unpacked CLI delivery previews in the repository root.
+/blink-cli-*/

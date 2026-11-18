@@ -10,8 +10,9 @@ A lightweight local web client for reading, editing, reviewing, and exporting DI
 - [AI 辅助写作](docs/ai-editing.md)：模型配置、粘贴问题定位、选区修订、审核与撤销。
 - [AI 文字修订规则](docs/ai-writing-rules.md)：每轮默认发送给模型的执行与保留规则。
 - [真实 HTTP 手册 AI 验收](docs/ai-acceptance.md)：13 项用例预检、已配置模型的实测和报告判读。
-- [随 SDK 交付知识库计划](docs/knowledge-base-plan.md)：已记录的后续方向，暂缓实施。
-- [企业 PDF 模板](docs/enterprise-template-plan.md)：可替换模板包、封面、页眉页脚、水印、导入分享与交付追溯；Word 企业版式待接入。
+- [离线知识库发布](docs/knowledge-base.md)：组合多仓库手册，按型号生成可搜索的 SDK 离线文档包。
+- [PDF 与 Word 企业模板](docs/enterprise-template-plan.md)：可替换模板包、封面、页眉页脚、水印、导入分享与交付追溯。
+- [团队版设计方案](docs/team-edition/README.md)：团队工作区、权限、存储和部署的设计记录。
 
 ## Writing workflow
 
@@ -52,6 +53,8 @@ npm run check:ai      # real HTTP acceptance fixture preflight; no model call
 
 ESLint checks recommended correctness rules, including undefined/unused variables and preserved error causes. Browser-evaluated test/PDF callbacks have explicit browser globals; vendored code and source manuals are excluded. Intentional control-character rejection has a local, explained rule exception. CI runs lint and `npm run typecheck` on Node 20 and 22 before unit tests. `.editorconfig` sets basic code/text conventions without changing DITA encoding or forcing a repository-wide format rewrite. Pinned TypeScript checks the actual document/proposal/save, manual capture/snapshot and delivery-record implementations through JSDoc and `public/data-contracts.d.ts`; no browser build step is required. UI/rendering modules remain incrementally typed.
 
+Local build/runtime directories (`dist/`, `models/`, `oxygen-sdk/`, `web/`), unpacked root-level `blink-cli-*/` delivery previews and `.tmp_*/` scratch directories are excluded from ESLint. Keep local experimental scripts in a `.tmp_<name>/` directory so they do not enter the normal `tests/` scan. Source `.cjs` files and normal tests remain checked; the ESLint configuration deliberately does not import every `.gitignore` rule.
+
 ## Remote document libraries
 
 Run the local Node service with Git installed. In the left workspace settings, choose **加载远程库**, enter an HTTPS or SSH Git address and a new local name, optionally read/select a remote branch, then **克隆并选择手册**. Select an available `.ditamap` to begin writing. Libraries are stored under `REPOSITORIES_ROOT`; existing directories are never replaced. An empty/missing initial `DOCS_ROOT` can load the workbench so the first library can be imported.
@@ -90,6 +93,7 @@ The browser and server share a vendored copy of **sax 1.6.1** for XML validation
 - Export includes current working buffers; local images are embedded in HTML and Markdown
 - Map structure operations are undoable edits; use Save to write them to disk
 - Manual saves show an explicit selection of changed Topics and referenced resources
+- Oxygen-compatible text tracking with author/time, code whitespace, native review and persistent DITA revision records; see the first-version scope in the authoring guide
 - Recoverable browser drafts with repository/branch isolation and disk-base conflict checks
 - Project model registry, explicit confirmed-common notes, and source editing for reused notes
 - Cross-Topic plaintext search including unsaved buffers, plus image/Topic-link pickers
@@ -99,7 +103,9 @@ The browser and server share a vendored copy of **sax 1.6.1** for XML validation
 
 Open a functional manual's Map (or an individual Topic), choose **交付功能手册**, select the model, document version and **PDF** or **Word（.docx）**, then check, preview or export. Every format uses the same captured working buffers, local references and model-note rules. Each functional manual remains a separate deliverable. Notes are collected at the end with shared numbering and repeat links, matching HTML.
 
-Local PDF export downloads an actual `.pdf` and previews those same bytes. Word downloads a real Office Open XML `.docx`; its content preview uses HTML, and final pagination depends on Word and installed fonts. Text, headings and tables remain editable. SVG/WebP image assets alone are converted to PNG for Office compatibility. Unsupported conversions stop with a visible error instead of silently losing content. PDF supports replaceable enterprise templates with A4/Letter paper, covers, headers/footers and faint watermarks. Create/import a portable JSON package under delivery settings, or share the exact selected package with colleagues. Default PDF and Word retain Letter pages; branded Word templates are pending. See [template operation and contract](docs/enterprise-template-plan.md).
+Local PDF export downloads an actual `.pdf` and previews those same bytes. Word downloads an editable Office Open XML `.docx` with text, headings, tables and embedded images. Its preview uses HTML. Check pagination and fonts in Word or WPS, and update the table of contents there after opening. SVG/WebP image assets are converted to PNG for Office compatibility. Unsupported conversions stop with a visible error.
+
+PDF and Word can share a replaceable enterprise template package, including A4/Letter paper, a cover, headers, footers and watermarks. Choose a template enabled for your output format, such as the built-in 1.2.0 templates. Create, import or share a portable JSON package under delivery settings. The basic layout uses Letter paper. See [template operation and contract](docs/enterprise-template-plan.md).
 
 The static online demonstration has no PDF rendering server. Its **PDF（打印另存）** option opens a content preview. Click **打印 / 另存 PDF** above the preview, then choose **另存为 PDF** and a destination in the browser dialog. That action cannot verify whether a file was saved and does not create a delivery record. Word still downloads directly in the demo. Other real downloads record a SHA-256 of the exact output bytes in browser-local delivery history.
 
@@ -233,9 +239,9 @@ Open the function's Map, then choose **交付…**. Select a model and HTML or M
 <p>Shared limit<fn product="M100 M200">Check the firmware release notes.</fn></p>
 ```
 
-Model selection evaluates `product` on the footnote and its Topic ancestors. A note must match every applicable ancestor condition; a child cannot restore a note excluded by its parent. Without a DITAVAL, body content and notes without conditions are retained. Grouped product expressions and Map-level model selection still stop model export explicitly.
+Model selection evaluates `product` on Map branches, footnotes and their Topic ancestors. For `product="series(M100 M200)"`, either model matches the group. Each applicable group and ancestor must match. A Topic referenced in several branches appears once at its first surviving reference. Use DITAVAL to filter individually marked paragraphs, images and other content inside a surviving Topic.
 
-In **交付功能手册 → 正文条件过滤**, select a workspace `.ditaval` file to apply conditional processing to Map branches, Topic bodies, inline text, images and notes. For the real HTTP library, choose `filters/filter_tbd.ditaval` (or `filters/telecomversion.ditaval` for that delivery). This removes content marked only `product="tbd"`. No profile is selected automatically from filenames or Oxygen `.xpr` settings. The selected profile is remembered for that manual during the workspace session; choose **不使用 DITAVAL** to retain unfiltered body content.
+In **交付功能手册 → 正文条件过滤**, select a workspace `.ditaval` file to apply conditional processing to Map branches, Topic bodies, inline text, images and notes. For the real HTTP library, choose `filters/filter_tbd.ditaval` (or `filters/telecomversion.ditaval` for that delivery). This removes content marked only `product="tbd"`. Select **不使用条件文件（DITAVAL）** to apply only the model and note settings. The choice is remembered for that manual during the workspace session.
 
 Supported rules are `prop action="include|exclude|passthrough"` for `audience`, `platform`, `product`, `props`, `otherprops` and `deliveryTarget`, with attribute/global defaults and groups. Multiple values in one group use OR; groups and attributes use AND. Excluded ancestors exclude their contents. Flagging, revision flags, custom profiling specializations and branch `ditavalref` are not implemented and fail explicitly. The same captured profile applies to check, preview and all export formats; changing an opened profile buffer invalidates the delivery. Delivery records include its path and SHA-256, alongside the source document hashes. Filtering never writes back to the source library.
 
@@ -258,6 +264,12 @@ Local DITA links are rewritten to explicit document anchors. Missing targets sto
 Use **型号清单** to maintain allowed names in the current repository's optional `.dita-project.json`. Choose **已确认通用** to confirm a universally applicable note, or **待确认** for unresolved applicability; unresolved notes remain in delivery. The standard metadata marker `otherprops="applicability(common)"` records confirmation without turning an inline note into an ID-bearing definition.
 
 Saving a Map lists dirty files in its direct local dependency scope. Select the files to persist; unrelated and unselected edits stay in the workspace. Multi-file saves remain non-transactional and report partial failures. Draft recovery preserves the exact disk base, is isolated by repository and branch, and never overwrites a changed disk file automatically. Drafts and delivery records live in the current browser.
+
+Local Map references resolve to their exact relative paths in both the editor and knowledge-base publication. Missing targets are not replaced by same-name files in subdirectories; repair the Map reference before publishing. URI-encoded absolute paths are rejected after decoding. Map references using `xml:base` or `scope="peer"` are not supported: convert them to explicit workspace-relative references before using the local outline or publication. References with explicit or inherited `scope="external"` remain in the XML but are omitted from the local outline and publication inputs; descendants with explicit `scope="local"` are still included. Save As validates the resulting Map directory before creating or overwriting a file.
+
+Structural Map edits preserve untouched source ranges, including quote style, entity spelling, comments and line endings. Reordering and demotion use visible local siblings. Moves across a hidden external parent with visible local descendants require Source editing, because the flattened outline does not represent that XML parent. Promotion and demotion refuse changes to inherited `scope` or `processing-role`; set the intended attributes explicitly in Source before retrying. Operations around Oxygen annotation boundaries require review or an explicit Source edit.
+
+Filesystem saves read the encoding only from the XML declaration and check that the output can be read back without changing any characters before replacing a file. An unsupported encoding or an unrepresentable character stops the save and leaves the original bytes intact. To save such text, explicitly change the XML declaration to UTF-8 and retry; a GBK declaration is never silently written as GB18030. Valid UTF-8 replacement characters (`�`) remain literal content. Undecodable files, including malformed UTF-16, fail explicitly instead of supplying lossy replacement text. Successful saves acknowledge the verified content that was committed, without a second disk read that could fail or observe another process's edit.
 
 The sidebar offers repository/manual plaintext search with exact source navigation; current dirty buffers override disk hits. Insert **image** or **xref** through the resource picker to choose files/sections and generate relative paths. Uploaded images are create-only and limited to 2 MiB.
 

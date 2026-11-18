@@ -3,7 +3,7 @@ const test = require('node:test'), assert = require('node:assert/strict'), fs = 
 const { spawn, spawnSync, execFileSync } = require('node:child_process'), { createHash } = require('node:crypto'), { chromium } = require('playwright-core');
 const core = require('../public/template-core');
 
-test('replaceable enterprise PDF templates', async t => {
+test('replaceable enterprise delivery templates', async t => {
   const temp = await fs.mkdtemp(path.join(os.tmpdir(), 'dita-template-ui-')), repo = path.join(temp, 'docs'), templates = path.join(temp, 'templates');
   await fs.cp(path.join(__dirname, 'fixtures/manual'), repo, { recursive: true });
   const rows = Array.from({ length: 65 }, (_, i) => `<row><entry>AT+CHECK${i}</entry><entry>参数范围 ${i} 到 ${i + 16}，模块返回 OK 后继续发送下一条命令。</entry></row>`).join('');
@@ -38,7 +38,7 @@ test('replaceable enterprise PDF templates', async t => {
     assert.ok(boxes.every(box => Math.abs(Number(box[1]) - 595.28) < 1 && Math.abs(Number(box[2]) - 841.89) < 1), 'every page uses A4');
     const record = await page.evaluate(() => window.DitaApp.lastDeliveryRecord);
     assert.equal(record.template.id, 'enterprise-blue'); assert.equal(record.template.fields['manual.model'], 'M100'); assert.equal(record.template.fields['manual.releaseDate'], '2026-11-10');
-    assert.equal(record.template.sha256, createHash('sha256').update(JSON.stringify(core.builtins()[0])).digest('hex'));
+    assert.equal(record.template.sha256, createHash('sha256').update(JSON.stringify(core.builtins().find(pack => pack.id === 'enterprise-blue' && pack.version === '1.1.0'))).digest('hex'));
     assert.equal(record.outputSha256, createHash('sha256').update(bytes).digest('hex'));
     if (process.env.DITA_TEMPLATE_QA_DIR) { await fs.mkdir(process.env.DITA_TEMPLATE_QA_DIR, { recursive: true }); await fs.writeFile(path.join(process.env.DITA_TEMPLATE_QA_DIR, 'enterprise-a4.pdf'), bytes); }
   });
@@ -145,9 +145,58 @@ test('replaceable enterprise PDF templates', async t => {
     assert.equal(upgraded.renderer, 'manual-v2'); assert.equal(upgraded.watermark.opacity, 1); assert.deepEqual(JSON.parse(await fs.readFile(path.join(templates, 'legacy-brand@1.0.0.json'), 'utf8')), legacy);
     await page.click('#modelExportCancel');
   });
-  await t.test('Word retains its own content pipeline and cannot be mislabeled as a branded export', async () => {
-    await delivery('docx'); assert.equal(await page.locator('#exportTemplatePanel').isVisible(), false);
-    const bytes = await download(); assert.equal(bytes.subarray(0, 2).toString(), 'PK'); assert.equal((await page.evaluate(() => window.DitaApp.lastDeliveryRecord)).template, null);
+  await t.test('Word uses the shared enterprise template package with its own native DOCX renderer', async () => {
+    await delivery('docx');
+    assert.equal(await page.locator('#exportTemplatePanel').isVisible(), true);
+    assert.equal(await page.locator('#exportTemplate').inputValue(), 'enterprise-blue@1.2.0');
+    assert.match(await page.locator('#exportTemplateInfo').innerText(), /Word/);
+    const bytes = await download(); assert.equal(bytes.subarray(0, 2).toString(), 'PK');
+    const record = await page.evaluate(() => window.DitaApp.lastDeliveryRecord);
+    assert.equal(record.template.id, 'enterprise-blue'); assert.equal(record.template.version, '1.2.0');
+    assert.equal(record.template.fields['manual.model'], 'M100');
+  });
+  await t.test('an explicit basic Word layout survives format changes, reopening and reload', async () => {
+    await delivery('docx'); await page.selectOption('#exportTemplate', '');
+    await page.selectOption('#exportFormat', 'pdf'); await page.selectOption('#exportTemplate', 'enterprise-blue@1.2.0');
+    await page.selectOption('#exportFormat', 'docx'); assert.equal(await page.locator('#exportTemplate').inputValue(), '');
+    await page.click('#modelExportCancel');
+    await delivery('docx'); assert.equal(await page.locator('#exportTemplate').inputValue(), '');
+    await page.click('#modelExportCancel');
+    await start(); await delivery('docx');
+    assert.equal(await page.locator('#exportTemplate').inputValue(), '');
+    assert.equal(await page.locator('#exportTemplateFields').isVisible(), false);
+    const bytes = await download(); assert.equal(bytes.subarray(0, 2).toString(), 'PK');
+    assert.equal(await page.evaluate(() => window.DitaApp.lastDeliveryRecord.template), null);
+  });
+  await t.test('an explicit basic PDF layout is independent of the Word template selection', async () => {
+    await delivery('pdf'); await page.selectOption('#exportTemplate', '');
+    await page.selectOption('#exportFormat', 'docx'); await page.selectOption('#exportTemplate', 'enterprise-blue@1.2.0');
+    await page.selectOption('#exportFormat', 'pdf'); assert.equal(await page.locator('#exportTemplate').inputValue(), '');
+    await page.click('#modelExportCancel');
+    await start(); await delivery('pdf'); assert.equal(await page.locator('#exportTemplate').inputValue(), '');
+    await page.selectOption('#exportFormat', 'docx'); assert.equal(await page.locator('#exportTemplate').inputValue(), 'enterprise-blue@1.2.0');
+    await page.click('#modelExportCancel');
+  });
+  await t.test('template service failure preserves explicit basic layouts through reopening/reload while bound templates still require replacement', async () => {
+    const unavailable = route => route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Template service unavailable' }) });
+    await page.evaluate(() => { for (const key of Object.keys(localStorage)) if (key.startsWith('dita.template-choice.')) localStorage.removeItem(key); });
+    await page.route('**/api/templates', unavailable); await start();
+    for (const format of ['docx', 'pdf']) {
+      await delivery(format); assert.equal(await page.locator('#exportTemplate').inputValue(), '__unavailable__');
+      await page.selectOption('#exportTemplate', ''); await page.click('#modelExportCancel');
+      await delivery(format); assert.equal(await page.locator('#exportTemplate').inputValue(), '');
+      assert.match(await page.locator('#exportTemplateWarning').innerText(), /模板库读取失败.*已确认的基础版式/);
+      const bytes = await download(); assert.equal(bytes.subarray(0, format === 'pdf' ? 5 : 2).toString(), format === 'pdf' ? '%PDF-' : 'PK');
+      assert.equal(await page.evaluate(() => window.DitaApp.lastDeliveryRecord.template), null);
+      await start(); await delivery(format); assert.equal(await page.locator('#exportTemplate').inputValue(), ''); await page.click('#modelExportCancel');
+    }
+    await page.unroute('**/api/templates', unavailable); await start(); await delivery('docx'); await page.selectOption('#exportTemplate', 'enterprise-blue@1.2.0'); await page.click('#modelExportCancel');
+    await page.route('**/api/templates', unavailable); await start(); await delivery('docx');
+    assert.equal(await page.locator('#exportTemplate').inputValue(), 'enterprise-blue@1.2.0');
+    const before = await page.evaluate(() => window.DitaApp.lastDeliveryRecord?.outputSha256);
+    await page.click('#modelExportForm [value=check]'); await page.waitForFunction(() => document.getElementById('modelExportError').textContent.includes('所选模板不可用'));
+    assert.equal(await page.evaluate(() => window.DitaApp.lastDeliveryRecord?.outputSha256), before);
+    await page.click('#modelExportCancel'); await page.unroute('**/api/templates', unavailable);
   });
   assert.deepEqual(errors, []);
 });

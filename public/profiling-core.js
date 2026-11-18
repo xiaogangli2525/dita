@@ -2,6 +2,7 @@
 (function (root) {
   const xml = typeof module !== 'undefined' ? require('./xml-source') : root.DitaXmlSource;
   const domain = typeof module !== 'undefined' ? require('./manual-core') : root.DitaManualCore;
+  const { parseConditionGroups } = typeof module !== 'undefined' ? require('./condition-groups') : root.DitaConditionGroups;
   const attributes = new Set(['audience', 'platform', 'product', 'props', 'otherprops', 'deliveryTarget']);
   function compile(source) {
     const tree = xml.inspectSource(source), rules = new Map(), decisions = new WeakMap();
@@ -16,44 +17,42 @@
       if (rules.has(key)) throw new Error('DITAVAL 包含重复规则：' + (att || '默认') + (value ? '=' + value : ''));
       rules.set(key, action);
     }
-    function groups(value) {
-      const found = [], plain = [];
-      let rest = value;
-      while (rest.trim()) {
-        const match = /^\s*([^\s()]+)(?:\(([^()]*)\))?/.exec(rest);
-        if (!match) throw new Error('条件属性的分组语法无效：' + value);
-        if (match[2] === undefined) plain.push(match[1]);
-        else found.push({ name: match[1], values: match[2].trim().split(/\s+/).filter(Boolean) });
-        rest = rest.slice(match[0].length);
-      }
-      if (plain.length) found.push({ name: '', values: plain });
-      return found;
-    }
     function excluded(att, group, value) {
       const keys = [group && group + '\n' + value, att + '\n' + value, group && att + '\n' + group, att + '\n', '\n'].filter(Boolean);
       return keys.map(key => rules.get(key)).find(Boolean) === 'exclude';
+    }
+    function matchesProduct(value, model) {
+      return !model || [...parseConditionGroups('product', value)].every(([group, values]) =>
+        values.has(model) && !excluded('product', group === 'product' ? '' : group, model));
     }
     function keep(node) {
       if (decisions.has(node)) return decisions.get(node);
       const included = [...attributes].every(att => {
         if (!node.attrs[att]) return true;
-        const value = domain.decode(node.attrs[att]).trim();
-        return !value || groups(value).every(group => !group.values.length || group.values.some(value => !excluded(att, group.name, value)));
+        const groups = parseConditionGroups(att, domain.decode(node.attrs[att]));
+        for (const [name, values] of groups) {
+          const group = name === att ? '' : name;
+          if (![...values].some(value => !excluded(att, group, value))) return false;
+        }
+        return true;
       });
       decisions.set(node, included); return included;
     }
     // Maps can be filtered before resolving paths. Topic filtering is applied
     // by publication-core after expansion, keeping original note provenance.
-    function filterSource(source) {
-      const tree = xml.inspectSource(source), ranges = [];
+    function filterSource(source, subtree) {
+      const tree = subtree || xml.inspectSource(source), ranges = [];
       if (!keep(tree)) return null;
       function visit(node) {
         if (!keep(node)) { ranges.push([node.start, node.close?.end ?? node.end]); return; }
         node.children.filter(n => n.kind === 'element').forEach(visit);
       }
       visit(tree);
-      for (const [start, end] of ranges.reverse()) source = source.slice(0, start) + source.slice(end);
-      return source;
+      const kept = [];
+      let cursor = subtree ? tree.start : 0;
+      for (const [start, end] of ranges) { kept.push(source.slice(cursor, start)); cursor = end; }
+      kept.push(source.slice(cursor, subtree ? tree.close?.end ?? tree.end : source.length));
+      return kept.join('');
     }
     const names = { product:'产品标记', audience:'读者', platform:'平台', props:'条件', otherprops:'其他条件', deliveryTarget:'发布目标' };
     const actions = { include:'保留', exclude:'排除', passthrough:'正常保留' };
@@ -61,7 +60,7 @@
       const [att,value] = key.split('\n');
       return actions[action] + (att ? names[att] : '所有条件') + (value ? value==='tbd'?'为“待定（tbd）”的内容':'为“'+value+'”的内容' : '的默认内容');
     }).join('；') || '保留全部标记内容';
-    return { keep, filterSource, summary };
+    return { keep, filterSource, matchesProduct, summary };
   }
   const api = { compile };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaProfiling = api;

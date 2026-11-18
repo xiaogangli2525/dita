@@ -2,6 +2,8 @@
 (function (root) {
   const xml = typeof module !== 'undefined' ? require('./xml-source') : root.DitaXmlSource;
   const sax = typeof module !== 'undefined' ? require('./vendor/sax') : root.sax;
+  const mapContext = typeof module !== 'undefined' ? require('./map-context') : root.DitaMapContext;
+  const manual = typeof module !== 'undefined' ? require('./manual-core') : root.DitaManualCore;
   const topics = new Set(['topic', 'concept', 'task', 'reference']);
   function decode(value = '') { let out = ''; const p = sax.parser(true); p.ontext = s => { out += s; }; p.write('<v>' + value + '</v>').close(); return out; }
   const escape = value => value.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
@@ -33,26 +35,75 @@
     return [...found];
   }
   async function loadDependencies(files, read, profile) {
-    const loaded = new Map(files);
+    const loaded = new Map(files), requested = new Set(loaded.keys());
     let size = 0;
     for (const [path, file] of loaded) {
       size += file.current.length;
       if (loaded.size > 128 || size > 8 * 1024 * 1024) throw new Error('发布依赖超过限制（128 个文件／8 MiB 文本）');
       try {
-        for (const dependency of dependencies(file.current, path, profile)) if (!loaded.has(dependency)) {
-          loaded.set(dependency, { path: dependency, current: await read(dependency) });
+        for (const dependency of dependencies(file.current, path, profile)) if (!requested.has(dependency)) {
+          requested.add(dependency);
+          const current = await read(dependency);
+          if (current != null) loaded.set(dependency, { path: dependency, current });
         }
       } catch (e) { throw new Error(path + '：' + e.message, { cause: e }); }
     }
     return loaded;
   }
-  function validateMap(source, model) {
-    if (!source) return;
-    walk(xml.inspectSource(source), node => {
-      if (['mapref', 'ditavalref', 'keydef'].includes(node.name) || node.attrs.conref || node.attrs.conkeyref || node.attrs.keyref || node.attrs.keys || node.attrs.keyscope || /ditamap/i.test(decode(node.attrs.format)) || /\.ditamap(?:#|$)/i.test(decode(node.attrs.href))) throw new Error('Map 包含暂未支持的复用／键或子 Map，请先用完整 DITA 工具展开');
-      if (model && (node.attrs.product || node.attrs.props || node.attrs.otherprops)) throw new Error('Map 级型号条件尚未展开，请先使用 Topic 内的注脚条件或完整 DITA 发布工具');
-      if (node.attrs.href && decode(node.attrs.href).includes('#')) throw new Error('暂不支持 Map 引用指定 Topic 片段，请使用单 Topic 文件');
-    });
+  function inspectMap(source, model, profile) {
+    const excluded = new Set(); let filteredBranches = 0;
+    function visit(node, sourcePath, parent) {
+      const profileAllowed = !profile || profile.keep(node);
+      const modelAllowed = !profileAllowed || (sourcePath && !mapContext.isReference(node.name)) || !node.attrs.product || manual.matches([decode(node.attrs.product)], model, profile);
+      if (!profileAllowed || !modelAllowed) {
+        if (!sourcePath) throw new Error(profileAllowed ? '当前型号不适用于整个手册：' + model : 'DITAVAL 排除了整个手册，请检查过滤规则');
+        excluded.add(sourcePath);
+        if (!modelAllowed && mapContext.isReference(node.name)) filteredBranches++;
+        return;
+      }
+      const context = mapContext.inherit(node.attrs, parent, decode);
+      const external = context.scope === 'external';
+      const localSubmap = !external && (/ditamap/i.test(decode(node.attrs.format)) || /\.ditamap(?:#|$)/i.test(decode(node.attrs.href)));
+      if (['mapref', 'ditavalref', 'keydef'].includes(node.name) || node.attrs.conref || node.attrs.conkeyref || node.attrs.keyref || node.attrs.keys || node.attrs.keyscope || localSubmap) throw new Error('Map 包含暂未支持的复用／键或子 Map，请先用完整 DITA 工具展开');
+      if (model && !profile && (node.attrs.props || node.attrs.otherprops)) throw new Error('Map 的 props／otherprops 请使用 DITAVAL 明确交付条件');
+      if (!external && node.attrs.href && decode(node.attrs.href).includes('#')) throw new Error('暂不支持 Map 引用指定 Topic 片段，请使用单 Topic 文件');
+      node.children.filter(child => child.kind === 'element').forEach((child, index) => visit(child, sourcePath ? sourcePath + '.' + index : String(index), context));
+    }
+    if (source) visit(xml.inspectSource(source), '', undefined);
+    return { excluded, filteredBranches };
+  }
+  function validateMap(source, model) { inspectMap(source, model); }
+  function planMap(map, model, profile) {
+    const { excluded, filteredBranches } = inspectMap(map.source, model, profile);
+    function children(entries) {
+      return entries.flatMap(entry => {
+        if (typeof entry.sourcePath !== 'string') throw new Error('无法匹配 Map 引用位置，请重新打开手册再交付');
+        let sourcePath = entry.sourcePath;
+        while (sourcePath) {
+          if (excluded.has(sourcePath)) return [];
+          sourcePath = sourcePath.slice(0, Math.max(0, sourcePath.lastIndexOf('.')));
+        }
+        return [{ ...entry, children: children(entry.children || []) }];
+      });
+    }
+    return { children: excluded.size ? children(map.children || []) : map.children || [], filteredBranches, filtered: excluded.size > 0 };
+  }
+  function scopeFiles(files, plan, profile) {
+    if (!plan.filtered) return files;
+    const scoped = new Map();
+    function add(path) { if (files.has(path) && !scoped.has(path)) scoped.set(path, files.get(path)); }
+    function include(entries) {
+      for (const entry of entries) {
+        if (entry.type === 'file' && /\.(dita|xml)$/i.test(entry.path)) add(entry.path);
+        include(entry.children || []);
+      }
+    }
+    include(plan.children);
+    for (const [path, file] of scoped) {
+      try { dependencies(file.current, path, profile).forEach(add); }
+      catch (error) { throw new Error(path + '：' + error.message, { cause: error }); }
+    }
+    return scoped;
   }
   function resolveConrefsDetailed(files, profile) {
     const documents = new Map(), output = new Map(), origins = new Map(), sites = new Map();
@@ -148,6 +199,6 @@
     return { files: output, origins, sites };
   }
   function resolveConrefs(files) { return resolveConrefsDetailed(files).files; }
-  const api = { decode, escape, walk, localTarget, dependencies, loadDependencies, resolveConrefs, resolveConrefsDetailed, validateMap };
+  const api = { decode, escape, walk, localTarget, dependencies, loadDependencies, resolveConrefs, resolveConrefsDetailed, validateMap, planMap, scopeFiles };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaPublicationResolver = api;
 })(typeof window === 'undefined' ? globalThis : window);

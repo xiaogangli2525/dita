@@ -2,8 +2,16 @@
 (function (root) {
   function createPicker(A, prefix, formId, productId) {
     const get = suffix => document.getElementById(prefix + suffix), form = document.getElementById(formId), productsInput = document.getElementById(productId);
+    const scopeControls = form.querySelector('.note-scope-options');
     let original = null;
+    const groupedProduct = () => /[()]/.test(original?.product || '') ? original.product : '';
     function sync() {
+      if (groupedProduct()) {
+        get('ModelPicker').hidden = true;
+        get('ScopeSummary').textContent = '适用型号使用分组条件：' + groupedProduct() + '。可在此修改注脚内容；调整分组请使用源码模式。';
+        get('ScopeSummary').dataset.state = 'normal';
+        return;
+      }
       const scope = form.elements.scope.value;
       get('ModelPicker').hidden = scope !== 'models';
       const selected = Array.from(get('Models').querySelectorAll('input:checked'), node => node.value);
@@ -13,16 +21,18 @@
       if (original?.products?.length) conditions.pop();
       if (scope === 'models' && selected.length) conditions.push([...new Set(selected)].join(' '));
       const models = A.project.value.models.filter(root.DitaModelDiscovery.isModel);
-      const effective = models.filter(model => conditions.every(condition => condition.split(/\s+/).includes(model)));
+      let effective;
+      try { effective = models.filter(model => root.DitaManualCore.matches(conditions, model)); }
+      catch { effective = []; }
       const summary = get('ScopeSummary');
       summary.dataset.state = scope === 'models' && !selected.length || models.length && conditions.length && !effective.length ? 'warning' : 'normal';
       summary.textContent = scope === 'common' ? '所有型号通用。' : scope === 'models' && !selected.length ? '请选择适用型号。' :
-        conditions.some(condition => /[()]/.test(condition)) ? '包含分组型号条件，请在交付检查中确认适用范围。' :
         conditions.length ? (models.length ? effective.length ? '当前清单中适用：' + effective.join('、') : '与上级型号条件没有交集，请调整选择。' : '需同时满足：' + conditions.join(' ∩ ')) + (scope === 'unresolved' ? '；本条仍待确认。' : '') : '适用范围待确认；所有型号交付时都会保留。';
     }
     function draw(note, defaultScope) {
       original = note;
-      const selected = new Set(note.products || []), registered = A.project.value.models.filter(root.DitaModelDiscovery.isModel);
+      scopeControls.hidden = Boolean(groupedProduct());
+      const selected = new Set(groupedProduct() ? [] : note.products || []), registered = A.project.value.models.filter(root.DitaModelDiscovery.isModel);
       const known = new Set(registered.length ? registered : Array.from(A.state.filesMap.values()).flatMap(file => {
         try { return root.DitaFootnotesCore.listFootnotes(file.current).flatMap(note => note.products).filter(root.DitaModelDiscovery.isModel); } catch { return []; }
       }));
@@ -39,6 +49,7 @@
       sync();
     }
     function read() {
+      if (groupedProduct()) return { products: groupedProduct(), common: original.common };
       const scope = form.elements.scope.value, selected = Array.from(get('Models').querySelectorAll('input:checked'), node => node.value);
       if (!get('CustomModels').hidden) selected.push(...productsInput.value.trim().split(/\s+/).filter(Boolean));
       const products = scope === 'models' ? [...new Set(selected)] : [];

@@ -4,7 +4,6 @@ const http = require('http');
 const path = require('path');
 const referencePaths = require('./public/reference-paths');
 const fs = require('fs/promises');
-const { existsSync, readdirSync, statSync } = require('fs');
 const { randomUUID } = require('crypto');
 const { createWorkspaceLock } = require('./lib/workspace-lock');
 const workspaceLock = createWorkspaceLock();
@@ -16,6 +15,7 @@ let workspaceToken = randomUUID();
 
 const PORT = Number(process.env.PORT || 5050);
 const HOST = process.env.HOST || '127.0.0.1';
+const knowledgeReads = new Set(['/api/knowledge/catalog', '/api/knowledge/capture', '/api/knowledge/verify']);
 let DOCS_ROOT = path.resolve(process.env.DOCS_ROOT || path.join(__dirname, '..', 'repo_ml353a'));
 const DEFAULT_DOCS_ROOT = DOCS_ROOT;
 const REPOSITORIES_ROOT = path.resolve(process.env.REPOSITORIES_ROOT || path.dirname(DEFAULT_DOCS_ROOT));
@@ -39,6 +39,8 @@ function relativePath(absolutePath) {
 }
 
 const { readXmlFile, writeXmlFile, resolveWorkspacePath } = require('./lib/document-files');
+const { createDocumentBatch } = require('./lib/document-batch');
+const documentBatch = createDocumentBatch();
 async function checkedResolve(relative, options) {
   safeResolve(relative);
   return resolveWorkspacePath(DOCS_ROOT, relative, options);
@@ -48,17 +50,14 @@ const git = createGitService({ getRoot: () => DOCS_ROOT, repositoriesRoot: REPOS
 const remoteRepositories = createRemoteRepositories({ getRoot: () => DOCS_ROOT, repositoriesRoot: REPOSITORIES_ROOT, runGit: git.runGit });
 const { gitInfo, listRepositories, listBranches, gitWorktreeStatus, resolveSelectedRepository } = git;
 
-const MAP_REFERENCE_TAGS = new Set(["map", "bookmap", "topicref", "topichead", "topicgroup", "chapter", "appendix", "notices", "preface", "part", "frontmatter", "backmatter", "booklists"]);
+const { createMapReader, resolveMapHref: resolveHref } = require('./lib/map-reader');
+const { editMap } = require('./lib/map-operations');
 
 function isDitaLike(fileName) {
   return /\.(dita|ditamap|xml)$/i.test(fileName);
 
 }
 const { decodeEntities, parseXml, serializeXmlNode, serializeXmlDocument, elementChildren, childElement, textOf } = require('./lib/xml-tree');
-
-function mapElementChildren(node) {
-  return node?.children.filter(child => child.type === 'element') || [];
-}
 
 async function walkFileTree(current = '') {
   const entries = await fs.readdir(path.join(DOCS_ROOT, current), { withFileTypes: true });
@@ -80,137 +79,8 @@ async function walkFileTree(current = '') {
   return result;
 }
 
-function findFileInSubdirs(dir, basename) {
-  try {
-    const entries = readdirSync(dir, { withFileTypes: true });
-    for (const entry of entries) {
-      const full = path.join(dir, entry.name);
-      if (entry.isFile() && entry.name === basename) return full;
-    }
-    for (const entry of entries) {
-      if (entry.isDirectory() && entry.name !== '.git') {
-        const found = findFileInSubdirs(path.join(dir, entry.name), basename);
-        if (found) return found;
-      }
-    }
-  } catch (e) { console.warn('findFileInSubdirs error:', e.message); }
-  return null;
-}
-
-function resolveHref(mapPath, href) {
-  const mapDirectory = path.dirname(mapPath);
-  const decoded = decodeURIComponent(href.split('#')[0].split('?')[0]);
-  const absolute = path.resolve(DOCS_ROOT, mapDirectory, decoded);
-  const relative = relativePath(absolute);
-  if (relative.startsWith('..')) return null;
-  if (existsSync(absolute) && statSync(absolute).isFile()) return relative;
-  const parentDir = path.dirname(absolute);
-  const basename = path.basename(absolute);
-  if (existsSync(parentDir) && statSync(parentDir).isDirectory()) {
-    const found = findFileInSubdirs(parentDir, basename);
-    if (found) { const rel = relativePath(found); if (!rel.startsWith('..')) return rel; }
-  }
-  return relative;
-}
-
-function mapRefTitle(node, fallback) {
-  const title = childElement(node, 'title');
-  const topicmeta = childElement(node, 'topicmeta');
-  const navtitle = topicmeta ? childElement(topicmeta, 'navtitle') : null;
-  return (navtitle && textOf(navtitle).trim()) || (title && textOf(title).trim()) || node.attrs.navtitle || fallback;
-}
-
-function mapNodeToTree(node, mapPath, sourcePath = '', processingRole = 'normal') {
-  processingRole = node.attrs['processing-role'] || processingRole;
-  const tree = [];
-  let childIndex = -1;
-  for (const child of node.children) {
-    if (child.type === 'element') {
-      childIndex++;
-      const refNames = ['topicref', 'topichead', 'topicgroup', 'chapter', 'appendix', 'notices', 'preface', 'part', 'frontmatter', 'backmatter', 'booklists'];
-      if (refNames.includes(child.name)) {
-        const childSourcePath = sourcePath ? `${sourcePath}.${childIndex}` : String(childIndex);
-        const childRole = child.attrs['processing-role'] || processingRole;
-        const children = mapNodeToTree(child, mapPath, childSourcePath, childRole);
-        const href = child.attrs.href ? resolveHref(mapPath, child.attrs.href) : null;
-        const fallback = href ? path.basename(href) : (children.length ? child.name : child.name);
-        const entry = {
-          type: href ? 'file' : 'container',
-          title: mapRefTitle(child, fallback),
-          path: href || child.attrs.href || '',
-          sourcePath: childSourcePath,
-          processingRole: childRole,
-          children
-        };
-        if (href || children.length || !child.attrs.href) tree.push(entry);
-      }
-    }
-  }
-  return tree;
-}
-
-function locateMapNode(root, sourcePath) {
-  if (sourcePath === '' || sourcePath == null) return root;
-  const segments = String(sourcePath).split('.');
-  if (!segments.length || segments.some(segment => !/^\d+$/.test(segment))) return null;
-  let node = root;
-  for (const segment of segments) {
-    node = mapElementChildren(node)[Number(segment)];
-    if (node?.type !== 'element') return null;
-  }
-  return node;
-}
-
-function mapNodeParent(root, sourcePath) {
-  if (sourcePath === '' || sourcePath == null) return null;
-  const segments = String(sourcePath).split('.');
-  const parentPath = segments.slice(0, -1).join('.');
-  return locateMapNode(root, parentPath);
-}
-
-function sourcePathOf(root, target) {
-  function walk(node, currentPath = '') {
-    if (node === target) return currentPath;
-    const elements = mapElementChildren(node);
-    for (let index = 0; index < elements.length; index++) {
-      const child = elements[index];
-      const childPath = currentPath ? `${currentPath}.${index}` : String(index);
-      const found = walk(child, childPath);
-      if (found != null) return found;
-    }
-    return null;
-  }
-  return walk(root);
-}
-
-function addMapChild(parent, node, after = null) {
-  if (after) parent.children.splice(parent.children.indexOf(after) + 1, 0, node);
-  else parent.children.push(node);
-}
-
-function removeMapNode(parent, node) {
-  parent.children.splice(parent.children.indexOf(node), 1);
-}
-
-function previousElementSibling(parent, node) {
-
-  const index = parent.children.indexOf(node);
-  for (let i = index - 1; i >= 0; i--) {
-    const child = parent.children[i];
-    if (child?.type === 'element' && MAP_REFERENCE_TAGS.has(child.name)) return child;
-  }
-  return null;
-}
-
-function nextElementSibling(parent, node) {
-  const index = parent.children.indexOf(node);
-  for (let i = index + 1; i < parent.children.length; i++) {
-    const child = parent.children[i];
-    if (child?.type === 'element' && MAP_REFERENCE_TAGS.has(child.name)) return child;
-  }
-  return null;
-}
-
+const mapReader = createMapReader();
+const mapRefTitle = mapReader.title, mapNodeToTree = mapReader.children;
 
 async function validateTopicHref(mapPath, requestHref, dependencies = {}) {
   if (dependencies.resolveTopicHref) return dependencies.resolveTopicHref(mapPath, requestHref);
@@ -227,59 +97,11 @@ async function validateTopicHref(mapPath, requestHref, dependencies = {}) {
 }
 
 async function applyMapOperation(content, mapPath, request, dependencies = {}) {
-  const parsed = parseXml(content);
-  if (!MAP_REFERENCE_TAGS.has(parsed.root.name)) throw Object.assign(new Error('Not a DITA map'), { status: 400 });
-  const operation = String(request.operation || '');
-  const sourcePath = request.sourcePath == null ? '' : String(request.sourcePath);
-  const selected = locateMapNode(parsed.root, sourcePath);
-  if (!selected) throw Object.assign(new Error('Selected map node was not found'), { status: 404 });
-  let nextSelected = selected;
-  const parent = mapNodeParent(parsed.root, sourcePath);
-
-  if (operation === 'addTopicref' || operation === 'addTopichead') {
-    const isTopicref = operation === 'addTopicref';
-    const node = { type: 'element', name: isTopicref ? 'topicref' : 'topichead', attrs: {}, children: [] };
-    if (isTopicref) node.attrs.href = await validateTopicHref(mapPath, request.href, dependencies);
-    else {
-      const title = String(request.title || '').trim();
-      if (!title) throw Object.assign(new Error('Topic heading title is required'), { status: 400 });
-      node.children.push({ type: 'element', name: 'title', attrs: {}, children: [{ type: 'text', value: title }] });
-    }
-    const targetParent = selected === parsed.root || (!selected.attrs.href && MAP_REFERENCE_TAGS.has(selected.name)) ? selected : (parent || parsed.root);
-    addMapChild(targetParent, node, targetParent === parent ? selected : null);
-    nextSelected = node;
-  } else if (operation === 'moveUp' || operation === 'moveDown') {
-    if (!parent) throw Object.assign(new Error('Cannot move the map root'), { status: 400 });
-    const sibling = operation === 'moveUp' ? previousElementSibling(parent, selected) : nextElementSibling(parent, selected);
-    if (!sibling) throw Object.assign(new Error(operation === 'moveUp' ? 'Node is already first' : 'Node is already last'), { status: 409 });
-    removeMapNode(parent, selected);
-    parent.children.splice(parent.children.indexOf(sibling) + (operation === 'moveUp' ? 0 : 1), 0, selected);
-  } else if (operation === 'promote') {
-    if (!parent || parent === parsed.root) throw Object.assign(new Error('Node cannot be promoted further'), { status: 409 });
-    const parentSourcePath = sourcePathOf(parsed.root, parent);
-    const grandparent = mapNodeParent(parsed.root, parentSourcePath || '');
-    if (!grandparent) throw Object.assign(new Error('Parent node was not found'), { status: 404 });
-    removeMapNode(parent, selected);
-    grandparent.children.splice(grandparent.children.indexOf(parent) + 1, 0, selected);
-  } else if (operation === 'demote') {
-    if (!parent) throw Object.assign(new Error('Cannot demote the map root'), { status: 400 });
-    const sibling = previousElementSibling(parent, selected);
-    if (!sibling) throw Object.assign(new Error('No previous sibling can contain this node'), { status: 409 });
-    removeMapNode(parent, selected);
-    sibling.children.push(selected);
-  } else if (operation === 'remove') {
-    if (!parent) throw Object.assign(new Error('Cannot remove the map root'), { status: 400 });
-    removeMapNode(parent, selected);
-    nextSelected = parsed.root;
-  } else {
-    throw Object.assign(new Error('Unsupported map operation'), { status: 400 });
-  }
-
-  const nextSourcePath = nextSelected === parsed.root ? '' : (sourcePathOf(parsed.root, nextSelected) || '');
+  const result = await editMap(content, request, href => validateTopicHref(mapPath, href, dependencies));
+  const parsed = parseXml(result.content);
   return {
     original: content,
-    content: serializeXmlDocument(parsed),
-    selectedSourcePath: nextSourcePath,
+    ...result,
     map: {
       path: mapPath,
       name: path.basename(mapPath),
@@ -320,6 +142,7 @@ async function buildMapTrees(files) {
 
 async function buildWorkspace() {
   const exists = await fs.stat(DOCS_ROOT).then(stat => stat.isDirectory()).catch(error => { if (error.code === 'ENOENT') return false; throw error; });
+  if (exists) await documentBatch.recover(DOCS_ROOT);
   const files = exists ? await walkFileTree() : [];
   const maps = await buildMapTrees(files);
   const git = exists ? await listBranches().catch(() => ({ current: '', branches: [] })) : { current: '', branches: [] };
@@ -340,7 +163,7 @@ const handleApi = createApiHandler({
     get root() { return DOCS_ROOT; }, get token() { return workspaceToken; }, repositoriesRoot: REPOSITORIES_ROOT,
     snapshot: buildWorkspace, selectRepository, rotateToken: () => { workspaceToken = randomUUID(); }
   },
-  git, remoteRepositories,
+  git, remoteRepositories, documentBatch,
   documents: { checkedResolve, walkFileTree, readXmlFile, writeXmlFile, relativePath, isDitaLike },
   maps: { parseXml, childElement, textOf, mapNodeToTree, applyMapOperation },
   port: PORT, publicOrigin: process.env.PUBLIC_ORIGIN, bindHost: HOST, demoMode: process.env.DITA_DEMO_MODE === '1'
@@ -370,13 +193,15 @@ const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
     if (url.pathname.startsWith('/api/')) {
-      // AI works only on the submitted immutable source, performs no workspace
-      // IO, and verifies its token again on completion. Do not hold a workspace
-      // read/write lock during a potentially slow upstream model request.
-      if (['/api/ai/propose', '/api/ai/scan', '/api/ai/config'].includes(url.pathname)) {
+      // Model work uses immutable input. Knowledge source reads also touch
+      // working files, so they wait for a batch save before capturing them.
+      const readsKnowledgeSource = knowledgeReads.has(url.pathname);
+      if ((url.pathname.startsWith('/api/knowledge/') && !readsKnowledgeSource) ||
+          ['/api/ai/propose', '/api/ai/scan', '/api/ai/config'].includes(url.pathname)) {
         await handleApi(req, res, url.pathname, url.searchParams); return;
       }
-      await workspaceLock(req.method !== 'GET' && url.pathname !== '/api/export/pdf', () => handleApi(req, res, url.pathname, url.searchParams));
+      const write = url.pathname === '/api/workspace' || req.method !== 'GET' && !readsKnowledgeSource && url.pathname !== '/api/export/pdf';
+      await workspaceLock(write, () => handleApi(req, res, url.pathname, url.searchParams));
       return;
     }
     if (await serveStatic(res, url.pathname === '/' ? '/index.html' : url.pathname)) return;

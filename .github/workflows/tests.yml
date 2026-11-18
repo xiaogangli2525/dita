@@ -31,4 +31,49 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npx playwright-core install --with-deps chromium
       - run: sudo apt-get install -y poppler-utils
+      - run: npm run prepare:semantic
       - run: npm run test:browser
+        env:
+          BLINK_MODELS: ./models
+  semantic-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Verify batch save recovery on Windows
+        run: node --test tests/document-batch.test.js
+      - run: npm run prepare:semantic
+      - run: node --test tests/knowledge-semantic.test.js tests/knowledge-structure.test.js tests/knowledge-cli.test.js tests/knowledge-cache.test.js tests/knowledge-publish.test.js
+        env:
+          BLINK_MODELS: ./models
+      - run: node scripts/check-semantic.js dist/smoke.json
+      - run: npm run build:blink -- dist/smoke.json dist/blink-cli-windows-x64.zip dist/smoke.zip
+      - shell: pwsh
+        run: |
+          $noticePath = 'onnxruntime-third-party-1.21.0.txt'
+          $noticeHash = (Get-FileHash -Algorithm SHA256 (Join-Path 'docs/licenses' $noticePath)).Hash
+          Expand-Archive dist/blink-cli-windows-x64.zip -DestinationPath dist/unpacked
+          Set-Location dist/unpacked/blink-cli
+          if (Test-Path node_modules) { throw 'Runtime dependencies leaked into the public root' }
+          if (!(Test-Path docs/index.html)) { throw 'HTML reader missing from the portable package' }
+          if (!(Test-Path runtime/app/node_modules)) { throw 'Bundled runtime dependencies missing' }
+          if ((Get-FileHash -Algorithm SHA256 (Join-Path 'runtime/licenses' $noticePath)).Hash -ne $noticeHash) { throw 'Bundled ONNX Runtime third-party notices differ from source' }
+          $json = & .\blink-cli.cmd '日志抓取方法' --search semantic --json
+          if ($LASTEXITCODE -ne 0) { throw 'Portable CLI failed' }
+          $result = $json | ConvertFrom-Json
+          if ($result.results[0].title -ne '日志抓取方法') { throw 'Portable search returned an unexpected chapter' }
+          & .\blink-cli.cmd --kb .\docs\index.html --build-index .\verified-structure.json
+          if ($LASTEXITCODE -ne 0) { throw 'Portable structural index generation failed' }
+          $verified = Get-Content .\verified-structure.json -Raw | ConvertFrom-Json
+          if ($verified.semantic.profile.id -ne 'bge-small-zh-int8-cls-v3') { throw 'Unexpected chunking profile' }
+          if (!($verified.semantic.chunks | Where-Object { $_.kind -eq 'paragraph' })) { throw 'Published HTML structure was not recovered' }
+
+          $env:BLINK_MODELS = Join-Path $PWD 'missing-model'
+          $json = & .\blink-cli.cmd --kb .\docs\index.html --build-index .\verified-cached.json --json
+          if ($LASTEXITCODE -ne 0) { throw 'Portable manual cache reuse failed' }
+          $cached = $json | ConvertFrom-Json
+          if ($cached.reusedManuals -ne 1 -or $cached.rebuiltManuals -ne 0) { throw 'Portable cache statistics are incorrect' }

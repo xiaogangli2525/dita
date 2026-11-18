@@ -1,5 +1,19 @@
 export {};
 declare global {
+  var fflate: Pick<typeof import('fflate'), 'deflateSync'>;
+  var DitaKnowledgeSourceData: typeof import('../public/knowledge-source-data');
+  var DitaKnowledgeRetrieval: typeof import('../public/knowledge-retrieval');
+  var DitaKnowledgePlan: typeof import('../public/knowledge-plan');
+  var DitaKnowledgeSearch: typeof import('../public/knowledge-search');
+  var DitaKnowledgeSemantic: typeof import('../public/knowledge-semantic');
+  var DitaKnowledgePackage: typeof import('../public/knowledge-package');
+  var DitaKnowledgeReader: typeof import('../public/knowledge-reader');
+  var DitaKnowledgeLimits: typeof import('../public/knowledge-limits');
+  var DitaKnowledgeSearchProfile: typeof import('../public/knowledge-search-profile');
+  var DitaKnowledgeZip: typeof import('../public/knowledge-zip');
+  var DitaDiffCore: typeof import('../public/diff-core');
+  var DitaReviewStore: typeof import('../public/review-store');
+  var DitaReviewSession: typeof import('../public/review-session');
   var DitaAiEditCore: typeof import('../public/ai-edit-core');
   var DitaAiConversation: typeof import('../public/ai-conversation');
   var DitaDocumentStore: typeof import('../public/document-store');
@@ -11,6 +25,7 @@ declare global {
   var DitaManualDomain: typeof import('../public/manual-domain');
   var DitaManualCore: typeof import('../public/manual-core');
   var DitaProfiling: typeof import('../public/profiling-core');
+  var DitaConditionGroups: typeof import('../public/condition-groups');
   interface Window {
     DitaDocumentStore: typeof DitaDocumentStore; DitaSnapshotData: typeof DitaSnapshotData;
     DitaSave: typeof DitaSave; DitaDeliveryData: typeof DitaDeliveryData; DitaManualService: typeof DitaManualService;

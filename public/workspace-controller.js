@@ -1,5 +1,6 @@
 'use strict';
 (function (root) {
+  const reviewSession = typeof module !== 'undefined' ? require('./review-session') : root.DitaReviewSession;
   function createController(A, views) {
     const { state, session, dom, setStatus, toast } = A;
     const { renderWorkspaceSwitches, renderMapPicker, renderTabs, updateActivePanes,
@@ -22,11 +23,7 @@
         A.releaseExportPreview?.();
         session.replaceWorkspace(result);
         A.footnotes?.setScope('');
-        state.reviewGroups.clear();
-        state.reviewDecisions.clear();
-        state.reviewBaseline = '';
-        state.reviewCurrent = '';
-        state.reviewPath = '';
+        reviewSession.clearReviewState(state);
         state.selectedVisualElement = null;
         dom.rootPath.textContent = result.root;
         dom.rootPath.title = result.root;

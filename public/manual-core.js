@@ -1,9 +1,14 @@
 'use strict';
 (function (root) {
   const sax = typeof module !== 'undefined' ? require('./vendor/sax') : root.sax;
+  const { parseConditionGroups } = typeof module !== 'undefined' ? require('./condition-groups') : root.DitaConditionGroups;
   function decode(value = '') { let out = ''; const parser = sax.parser(true); parser.ontext = text => { out += text; }; parser.write('<v>' + value + '</v>').close(); return out; }
   function conditions(node, ancestors = []) { return [...ancestors, node].map(parent => decode(parent.attrs.product).trim()).filter(Boolean); }
-  function matches(conditions, model = '') { return !model || conditions.every(value => value.split(/\s+/).includes(model)); }
+  function productValues(value) { return [...parseConditionGroups('product', value).values()].flatMap(values => [...values]); }
+  function matches(conditions, model = '', profile) {
+    return !model || conditions.every(value => profile ? profile.matchesProduct(value, model) :
+      [...parseConditionGroups('product', value).values()].every(group => group.has(model)));
+  }
   function common(attrs) { return /(?:^|\s)applicability\(common\)(?:\s|$)/.test(decode(attrs.otherprops)); }
   function validateProject(value) {
     if (!value || Array.isArray(value) || typeof value !== 'object' || value.schema !== 1 || !Array.isArray(value.models) || value.models.length > 200) throw new Error('项目配置格式无效');
@@ -41,6 +46,6 @@
     return { on(name, callback) { if (!listeners.has(name)) listeners.set(name, new Set()); listeners.get(name).add(callback); return () => listeners.get(name)?.delete(callback); },
       emit(name, value) { for (const callback of listeners.get(name) || []) { try { callback(value); } catch (error) { onError(error); } } } };
   }
-  const api = { decode, conditions, matches, common, validateProject, checkModels, isModelMarker, collectPreviewPaths, relativeHref, createEvents };
+  const api = { decode, conditions, matches, productValues, common, validateProject, checkModels, isModelMarker, collectPreviewPaths, relativeHref, createEvents };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaManualCore = api;
 })(typeof window === 'undefined' ? globalThis : window);

@@ -124,7 +124,49 @@
       element.append(actions);
       return element;
     }
-    return { context, block };
+    function oxygen(change, oxyIndex, { focus, decide }) {
+      const block = documentRef.createElement('div');
+      block.className = 'oxy-change oxy-' + change.type + '-type';
+      block.dataset.oxyIndex = String(oxyIndex);
+      block.addEventListener('click', event => {
+        if (event.target.closest('button')) return;
+        focus();
+      });
+      block.style.cursor = 'pointer';
+      const typeLabel = documentRef.createElement('span');
+      typeLabel.className = 'oxy-type ' + change.type;
+      typeLabel.textContent = change.type === 'insert' ? '插入' : change.type === 'delete' ? '删除' : '批注';
+      const author = documentRef.createElement('span');
+      author.className = 'oxy-author';
+      author.textContent = change.author || '';
+      block.append(typeLabel, author);
+      if (change.content) {
+        const content = documentRef.createElement('div');
+        content.className = 'oxy-content';
+        content.textContent = change.content;
+        block.append(content);
+      }
+      if (change.context) {
+        const ctx = documentRef.createElement('div');
+        ctx.className = 'oxy-context';
+        ctx.textContent = '上下文：' + change.context;
+        block.append(ctx);
+      }
+      const actions = documentRef.createElement('div');
+      actions.className = 'diff-actions';
+      const accept = documentRef.createElement('button');
+      accept.type = 'button';
+      accept.textContent = '接受';
+      accept.addEventListener('click', () => decide(true));
+      const reject = documentRef.createElement('button');
+      reject.type = 'button';
+      reject.textContent = '拒绝';
+      reject.addEventListener('click', () => decide(false));
+      actions.append(accept, reject);
+      block.append(actions);
+      return block;
+    }
+    return { context, block, oxygen };
   }
   const api = { createReviewView };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaReviewView = api;

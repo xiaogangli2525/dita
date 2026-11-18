@@ -11,6 +11,16 @@ test('legacy template identities and renderer output remain byte-for-byte compat
   assert.throws(() => core.normalizePackage({ ...legacy[0], watermark: { ...legacy[0].watermark, source: 'logo' } }), /不受支持/);
   const next = core.upgrade(legacy[0]); assert.equal(next.renderer, 'manual-v2'); assert.equal(legacy[0].renderer, 'manual-v1');
 });
+test('shared template packages expose a native Word format without changing legacy PDF identities', () => {
+  const packages = core.builtins();
+  const word = packages.find(pack => pack.id === 'enterprise-blue' && pack.version === '1.2.0');
+  const legacy = packages.find(pack => pack.renderer === 'manual-v1');
+  assert.ok(word); assert.deepEqual(word.formats, ['pdf', 'docx']);
+  assert.deepEqual(core.normalizePackage(word), word);
+  assert.deepEqual(core.normalizePackage({ ...word, formats: ['docx'] }).formats, ['docx']);
+  assert.throws(() => core.normalizePackage({ ...legacy, formats: ['pdf', 'docx'] }), /升级新版排版/);
+});
+
 test('watermark uses actual selected artwork, with text only as an explicit choice', () => {
   const pack = packageValue(); assert.deepEqual(core.watermarkSource(pack), { kind: 'none' });
   pack.company.logo = 'assets/logo.png'; assert.deepEqual(core.watermarkSource(pack), { kind: 'image', asset: 'assets/logo.png' });
@@ -33,7 +43,7 @@ test('template capture is detached, explicit and deterministic across property o
   assert.throws(() => core.capture(packageValue(), { 'manual.title': '手册', 'manual.releaseDate': '2026-13-01' }), /发布日期/);
 });
 test('template boundary rejects unsupported execution, formats, paths and layout capabilities', () => {
-  for (const changed of [{ script: 'alert(1)' }, { schemaVersion: 2 }, { renderer: 'custom-js' }, { formats: ['docx'] }, { id: '../../private' }, { id: ['test'] }, { version: ['1.0.0'] }, { name: ' ' },
+  for (const changed of [{ script: 'alert(1)' }, { schemaVersion: 2 }, { renderer: 'custom-js' }, { formats: ['xlsx'] }, { formats: ['pdf', 'pdf'] }, { id: '../../private' }, { id: ['test'] }, { version: ['1.0.0'] }, { name: ' ' },
     { page: { ...packageValue().page, size: 'custom' } }, { numbering: { basis: 'body', startAt: 1 } },
     { company: { name: '', logo: 'file:///secret' } }, { assets: { '../logo.png': 'data:image/png;base64,AAAA' } },
     { assets: { 'assets/logo.png': 'data:image/svg+xml,<svg/>' } }, { cover: { ...packageValue().cover, fields: ['window.location'] } },
@@ -57,12 +67,12 @@ test('PDF template keeps content and escapes user fields without replacement-str
 test('template registry preserves installed versions and supports a portable package round trip', async t => {
   const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'dita-templates-')); t.after(() => fs.rm(directory, { recursive: true, force: true }));
   const store = createTemplateStore({ env: { DITA_TEMPLATE_DIR: directory } }), pack = { ...packageValue(), id: 'company-test', version: '1.0.0' };
-  const before = await store.list(); assert.equal(before.templates.length, 4);
+  const before = await store.list(); assert.equal(before.templates.length, 6);
   const saved = await store.save(pack); assert.equal(saved.sha256.length, 64);
   assert.deepEqual(await createTemplateStore({ env: { DITA_TEMPLATE_DIR: directory } }).save(JSON.parse(JSON.stringify(pack))), saved);
   await assert.rejects(store.save({ ...pack, name: 'changed' }), error => error.status === 409);
   const second = await store.save({ ...pack, version: '1.1.0', name: 'changed' }); assert.notEqual(second.sha256, saved.sha256);
-  assert.equal((await store.list()).templates.length, 6); assert.deepEqual((await fs.readdir(directory)).sort(), ['company-test@1.0.0.json', 'company-test@1.1.0.json']);
+  assert.equal((await store.list()).templates.length, 8); assert.deepEqual((await fs.readdir(directory)).sort(), ['company-test@1.0.0.json', 'company-test@1.1.0.json']);
 });
 test('concurrent template imports cannot overwrite one another and corrupt files remain untouched', async t => {
   const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'dita-template-race-')); t.after(() => fs.rm(directory, { recursive: true, force: true }));
@@ -70,11 +80,11 @@ test('concurrent template imports cannot overwrite one another and corrupt files
   const outcomes = await Promise.allSettled([store.save(pack), store.save({ ...pack, name: 'other' })]);
   assert.equal(outcomes.filter(item => item.status === 'fulfilled').length, 1); assert.equal(outcomes.find(item => item.status === 'rejected').reason.status, 409);
   await fs.writeFile(path.join(directory, 'broken.json'), '{broken');
-  const result = await store.list(); assert.equal(result.templates.length, 5); assert.equal(result.warnings.length, 1);
+  const result = await store.list(); assert.equal(result.templates.length, 7); assert.equal(result.warnings.length, 1);
   assert.equal(await fs.readFile(path.join(directory, 'broken.json'), 'utf8'), '{broken');
 });
 test('demo template registry never writes persistent user configuration', async () => {
   const store = createTemplateStore({ memory: true, env: { DITA_TEMPLATE_DIR: '/should-not-be-created' } });
-  await store.save({ ...packageValue(), id: 'demo-test' }); assert.equal((await store.list()).templates.length, 5);
-  assert.equal((await store.list()).temporary, true); assert.equal((await createTemplateStore({ memory: true }).list()).templates.length, 4);
+  await store.save({ ...packageValue(), id: 'demo-test' }); assert.equal((await store.list()).templates.length, 7);
+  assert.equal((await store.list()).temporary, true); assert.equal((await createTemplateStore({ memory: true }).list()).templates.length, 6);
 });

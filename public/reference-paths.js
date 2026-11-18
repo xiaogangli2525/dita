@@ -18,6 +18,9 @@
     if (!href || /^[/\\]|^[a-z][a-z\d+.-]*:/i.test(href)) return null;
     const match = /^([^?#]*)([\s\S]*)$/.exec(href); let pathname;
     try { pathname = decodeURIComponent(match[1]); } catch { fail('引用包含无效的 URI 编码：' + href); }
+    // Check the decoded URI before prefixing the Map directory; otherwise an
+    // encoded absolute path could be silently reinterpreted as a local target.
+    if (/^[/\\]|^[a-z][a-z\d+.-]*:/i.test(pathname)) fail('引用须为工作区内的相对路径：' + href);
     const directory = normalize(from).split('/').slice(0, -1).join('/');
     return { path: pathname ? normalize((directory ? directory + '/' : '') + pathname) : normalize(from), suffix: match[2], self: !pathname, directory: /[/]$/.test(pathname) };
   }

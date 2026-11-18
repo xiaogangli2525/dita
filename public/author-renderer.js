@@ -330,7 +330,7 @@
     if (tag === 'ins') {
       const el = documentRef.createElement('span');
       el.className = 'oxy-insert';
-      if (node.hasAttribute('data-oxy-index')) el.dataset.oxyIndex = node.getAttribute('data-oxy-index');
+      if (node.hasAttribute('data-oxy-index')) el.setAttribute('data-oxy-index', node.getAttribute('data-oxy-index'));
       if (node.hasAttribute('data-author')) el.title = '插入 — ' + node.getAttribute('data-author');
       for (const child of node.childNodes) {
         const rendered = renderDitaNode(child, documentRef, ctx);
@@ -342,7 +342,7 @@
       const el = documentRef.createElement('span');
       el.className = 'oxy-delete';
       el.textContent = node.textContent;
-      if (node.hasAttribute('data-oxy-index')) el.dataset.oxyIndex = node.getAttribute('data-oxy-index');
+      if (node.hasAttribute('data-oxy-index')) el.setAttribute('data-oxy-index', node.getAttribute('data-oxy-index'));
       if (node.hasAttribute('data-author')) el.title = '删除 — ' + node.getAttribute('data-author');
       return el;
     }
@@ -351,7 +351,7 @@
       el.className = 'oxy-comment';
       const comment = node.getAttribute('data-comment');
       const author = node.getAttribute('data-author');
-      if (node.hasAttribute('data-oxy-index')) el.dataset.oxyIndex = node.getAttribute('data-oxy-index');
+      if (node.hasAttribute('data-oxy-index')) el.setAttribute('data-oxy-index', node.getAttribute('data-oxy-index'));
       if (comment) el.title = (author ? author + '：' : '') + comment;
       for (const child of node.childNodes) {
         const rendered = renderDitaNode(child, documentRef, ctx);

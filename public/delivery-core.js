@@ -133,7 +133,7 @@ function ditaToHtml(node, ctx) {
     ctx.htmlFootnotes = ctx.htmlFootnotes || [];
     if (refs === 1) {
       const models = target.getAttribute('product');
-      const label = models ? '<small>适用型号：' + escapeHtmlAttr(models) + '</small> ' : '';
+      const label = models ? '<small>适用型号：' + escapeHtmlAttr(ctx.model || models) + '</small> ' : '';
       ctx.htmlFootnotes.push('');
       const origin = ctx.topicPath; ctx.topicPath = entry.path;
       try { ctx.htmlFootnotes[n - 1] = label + Array.from(target.childNodes).map(child => ditaToHtml(child, ctx)).join(''); }
@@ -231,8 +231,9 @@ async function exportMapToHtml({ map, files, title, loadImageBytes, model = '', 
   const prepared = publicationData || publication.preparePublication({ map, files, model }, collectPreviewPaths);
   files = prepared.files;
   const ctx = createContext();
+  ctx.model = model;
   ctx.noteDefinitions = publicationDefinitions(prepared);
-  const entries = collectPreviewPaths(map.children || []).filter(entry => !prepared.files.get(entry.path)?.excluded);
+  const entries = prepared.entries;
   ctx.anchors = publicationAnchors(prepared, entries);
   const sections = [];
   await loadPublicationImages(entries, prepared, files, ctx, loadImageBytes);
@@ -273,7 +274,7 @@ function markdownFootnote(node, ctx) {
     const models = target.getAttribute('product');
     const origin = ctx.topicPath; ctx.topicPath = entry.path;
     let content;
-    try { content = (models ? '**适用型号：' + mdEscape(models) + '。** ' : '') + Array.from(target.childNodes).map(child => mdInline(child, ctx)).join(''); }
+    try { content = (models ? '**适用型号：' + mdEscape(ctx.model || models) + '。** ' : '') + Array.from(target.childNodes).map(child => mdInline(child, ctx)).join(''); }
     finally { ctx.topicPath = origin; }
     ctx.mdFootnotes.push('[^' + index + ']: ' + content.trim().replace(/\n/g, '\n    '));
   }
@@ -433,10 +434,11 @@ async function exportMapToMarkdown({ map, files, title, loadImageBytes, model = 
   const prepared = publicationData || publication.preparePublication({ map, files, model }, collectPreviewPaths);
   files = prepared.files;
   const ctx = createContext();
+  ctx.model = model;
   ctx.mdFnCounter = 0;
   ctx.mdFootnotes = [];
   ctx.noteDefinitions = publicationDefinitions(prepared);
-  const entries = collectPreviewPaths(map.children || []).filter(entry => !prepared.files.get(entry.path)?.excluded);
+  const entries = prepared.entries;
   ctx.anchors = publicationAnchors(prepared, entries);
   const sections = [];
   await loadPublicationImages(entries, prepared, files, ctx, loadImageBytes);

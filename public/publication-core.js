@@ -11,13 +11,19 @@
     if (!/^[^/]+\/[^/]+$/.test(target.fragment)) throw new Error('注脚引用须使用 #TopicID/注脚ID：' + href);
     return target.path + '#' + target.fragment;
   }
-  function preparePublication({ map, files, model = '', profile, ruleConfirmed, ruleExclusions }, collectPaths = manual.collectPreviewPaths) {
-    resolver.validateMap(map.source, model);
+  function preparePublication({ map, files, model = '', profile, ruleConfirmed, ruleExclusions, plan }, collectPaths = manual.collectPreviewPaths) {
+    if (!plan) {
+      plan = resolver.planMap(map, model, profile);
+      files = resolver.scopeFiles(files, plan, profile);
+    }
     const resolved = resolver.resolveConrefsDetailed(files, profile), expanded = resolved.files;
-    const published = new Set(collectPaths(map.children || []).filter(entry => !profile || !expanded.has(entry.path) || profile.keep(xml.inspectSource(expanded.get(entry.path).current))).map(entry => entry.path));
+    const entries = collectPaths(plan.children).filter(entry => !profile || !expanded.has(entry.path) || profile.keep(xml.inspectSource(expanded.get(entry.path).current)));
+    const published = new Set(entries.map(entry => entry.path));
+    if (plan.filteredBranches && !published.size) throw new Error('所选型号没有可交付的章节：' + model);
     if (profile && !published.size) throw new Error('DITAVAL 排除了所有正文，请检查过滤规则和手册范围');
     const records = new Map(), definitions = new Map(), used = new Set(), referenced = new Set();
     const report = { model, excluded: 0, unmarked: 0, included: 0, unused: 0 };
+    if (plan.filteredBranches) report.filteredMapBranches = plan.filteredBranches;
     if (profile) report.filteredElements = 0;
     for (const path of published) if (!expanded.has(path)) throw new Error('无法读取：' + path);
     for (const [path, file] of expanded) {
@@ -39,12 +45,11 @@
             // Model selection scopes notes; the explicit DITAVAL scopes all elements.
             const conditions = manual.conditions(node, ancestors);
             if (manual.common(node.attrs) && conditions.length) throw new Error('通用注脚与型号条件冲突，请检查注脚或祖先条件');
-            if (profileAllowed && model && conditions.some(value => /[()]/.test(value))) throw new Error('型号导出暂不支持分组 product 条件，请使用空格分隔的型号');
             const origin = resolved.origins.get(path)[notes.length];
             const confirmedByRule = ruleConfirmed?.get(origin.path)?.has(origin.start), excludedByRule = ruleExclusions?.get(origin.path)?.has(origin.start);
             const note = { node, path, key: node.attrs.id ? path + '#' + decode(topic?.attrs.id) + '/' + decode(node.attrs.id) : '',
               conditions, common: manual.common(node.attrs), origin,
-              allowed: !excludedByRule && profileAllowed && manual.matches(conditions, model), unmarked: !confirmedByRule && !conditions.length && !manual.common(node.attrs) };
+              allowed: !excludedByRule && profileAllowed && manual.matches(conditions, model, profile), unmarked: !confirmedByRule && !conditions.length && !manual.common(node.attrs) };
             notes.push(note);
             sequence.push({ note, site: resolved.sites.get(path)[sequence.length], definition: Boolean(note.key) });
             if (note.key) { if (definitions.has(note.key)) throw new Error('重复的注脚 ID：' + note.key); definitions.set(note.key, note); }
@@ -52,8 +57,8 @@
           if (node.name === 'xref' && decode(node.attrs.type) === 'fn') {
             if (insideNote) throw new Error('暂不支持注脚内再次引用注脚');
             const conditions = manual.conditions(node, ancestors);
-            if (profileAllowed && model && conditions.some(value => /[()]/.test(value))) throw new Error('型号导出暂不支持分组 product 条件');
-            const ref = { node, conditions, allowed: profileAllowed && manual.matches(conditions, model), key: profileAllowed ? referenceKey(decode(node.attrs.href), path) : '' };
+            const allowed = profileAllowed && manual.matches(conditions, model, profile);
+            const ref = { node, conditions, allowed, key: allowed ? referenceKey(decode(node.attrs.href), path) : '' };
             refs.push(ref); sequence.push({ ref, site: resolved.sites.get(path)[sequence.length] });
           }
         });
@@ -79,8 +84,9 @@
         else if (note.key && !used.has(note.key)) { remove(record, note.node); if (visible) report.unused++; }
         else if (visible || used.has(note.key)) {
           report.included++; if (note.unmarked) report.unmarked++;
-          publicationNotes.set(note, { path, origin: note.origin, conditions: note.conditions, common: note.common, unmarked: note.unmarked, key: note.key, xml: record.source.slice(note.node.start, note.node.close?.end ?? note.node.end) });
-          if (note.key) noteDefinitions.set(note.key, { path, xml: record.source.slice(note.node.start, note.node.close?.end ?? note.node.end) });
+          const noteXml = profile ? profile.filterSource(record.source, note.node) : record.source.slice(note.node.start, note.node.close?.end ?? note.node.end);
+          publicationNotes.set(note, { path, origin: note.origin, conditions: note.conditions, common: note.common, unmarked: note.unmarked, key: note.key, xml: noteXml });
+          if (note.key) noteDefinitions.set(note.key, { path, xml: noteXml });
         }
       }
       let content = record.source;
@@ -109,7 +115,7 @@
     const calls = occurrences.filter(call => numbered.has(call.target)).map(call => ({ site: call.site, number: numbered.get(call.target).number, definition: Boolean(call.definition), conditions: [...call.target.conditions, ...(call.ref?.conditions || [])] }));
     // Source editors can open a resource-only definition while retaining Map scope.
     for (const item of ordered) calls.push({ site: { ...item.origin, name: 'fn' }, number: item.number, definition: Boolean(item.key), origin: true });
-    return { files: prepared, report, noteDefinitions, notes: ordered, calls };
+    return { entries, files: prepared, report, noteDefinitions, notes: ordered, calls };
   }
   function prepareTopic(source, path, model = '') {
     const map = { children: [{ path }] }, files = new Map([[path, { current: source }]]);

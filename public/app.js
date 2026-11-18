@@ -77,13 +77,14 @@
   });
   const editor = window.DitaEditorController.createEditorController(Object.freeze({
     state, session, dom, ditaCore, events, api: workspaceClient, setStatus, validateXml,
-    get authorSelection() { return A.authorSelection; }
+    get authorSelection() { return A.authorSelection; },
+    get tracking() { return A.tracking; }
   }), {
     documentLabel, renderTabs, renderOutline, renderInspector, updateTree,
     refreshChrome: updateDocumentChrome,
     beforeModeChange: () => A.releaseExportPreview?.(),
     modeChanged: () => {
-      A.shell?.syncMode(); A.footnotes?.syncMode(); A.authorNotes?.syncMode();
+      A.tracking?.sync(); A.shell?.syncMode(); A.footnotes?.syncMode(); A.authorNotes?.syncMode();
       A.editorTools?.syncMode(); A.authorContext?.hide(); A.footnotes?.hidePeek();
     }
   });

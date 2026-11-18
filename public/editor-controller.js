@@ -89,8 +89,9 @@
       refreshFileViews(file);
     }
 
-    function setFileContent(file, content, { record = true, updateEditor = true, historyMeta, group, render = true } = {}) {
+    function setFileContent(file, content, { record = true, updateEditor = true, historyMeta, group, render = true, origin = 'edit' } = {}) {
       if (!file) return false;
+      if (origin === 'edit') content = A.tracking?.prepare(file, content) ?? content;
       if (!documentStore.editDocument(file, content, { record, historyMeta, group })) return false;
       if (file.path === state.activePath || (/\.ditamap$/i.test(state.activePath) && state.mapAuthorPaths?.has(file.path))) {
         session.setHistoryTarget(file.path);
@@ -105,7 +106,7 @@
       if (!file) return;
       const entry = documentStore.travelHistory(file, 'undo');
       if (!entry) return;
-      if (entry.reviewDecisionsBefore) state.reviewDecisions = new Map(entry.reviewDecisionsBefore);
+      if (entry.reviewDecisionsBefore) restoreDecisions(entry.reviewDecisionsBefore, file, entry.reviewInManual);
       refreshHistoryTargetView(file, entry); restoreSelection(file, entry.selectionBefore); events.emit('document:changed', file);
       setStatus('已撤销');
     }
@@ -115,7 +116,7 @@
       if (!file) return;
       const entry = documentStore.travelHistory(file, 'redo');
       if (!entry) return;
-      if (entry.reviewDecisionsAfter) state.reviewDecisions = new Map(entry.reviewDecisionsAfter);
+      if (entry.reviewDecisionsAfter) restoreDecisions(entry.reviewDecisionsAfter, file, entry.reviewInManual);
       refreshHistoryTargetView(file, entry); restoreSelection(file, entry.selectionAfter); events.emit('document:changed', file);
       setStatus('已重做');
     }
@@ -262,7 +263,7 @@
     }
 
 
-    const { resetReviewSnapshot, renderDiff, renderMapReview, reviewAll } = review.createReviewController({
+    const { resetReviewSnapshot, renderDiff, renderMapReview, reviewAll, restoreDecisions } = review.createReviewController({
       state, dom, ditaCore, setFileContent, updateVisual, renderTabs, updateHistoryButtons, setStatus
     });
 
@@ -324,8 +325,9 @@
       validateXml(content);
       const before = selectionBefore ? { mode: 'visual', path: file.path, bookmark: selectionBefore } : captureSelection(file);
       if (content === file.current) { if (selectionAfter) A.authorSelection?.restore(surface, selectionAfter); return; }
-      const rendered = ditaCore.createAuthorTopic(content, document, false, file.path);
-      if (!setFileContent(file, content, { render: false, historyMeta: { selectionBefore: before } })) return;
+      const prepared = A.tracking?.prepare(file, content) ?? content;
+      const rendered = ditaCore.createAuthorTopic(prepared, document, false, file.path);
+      if (!setFileContent(file, prepared, { origin: 'prepared', render: false, historyMeta: { selectionBefore: before } })) return;
       renderAuthorSurface(file, surface, rendered);
       if (selectionAfter) A.authorSelection?.restore(surface, selectionAfter);
       ensureHistory(file).undo.at(-1).selectionAfter = captureSelection(file);

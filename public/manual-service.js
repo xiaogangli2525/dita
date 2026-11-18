@@ -42,9 +42,9 @@
     }
 
     /** @param {string} [path]
-     * @param {{resources?:boolean,filterPath?:string}} [options]
+     * @param {{resources?:boolean,filterPath?:string,model?:string,deferMissingTopics?:boolean,includeTopic?:(path:string)=>boolean}} [options]
      * @returns {Promise<import('./data-contracts').ManualSnapshot>} */
-    async function capture(path = A.state.activePath, { resources = false, filterPath = '' } = {}) {
+    async function capture(path = A.state.activePath, { resources = false, filterPath = '', model = '', deferMissingTopics = false, includeTopic } = {}) {
       if (!path) throw new Error('请先打开文档或功能手册');
       const workspace = A.api.token;
       await A.project?.ready?.();
@@ -67,12 +67,25 @@
         assertContext();
         const buffered = context.buffers.get(filePath); if (buffered) return buffered.current;
         const response = await A.api.request('/api/file?path=' + encodeURIComponent(filePath));
-        if (!response.ok) throw new Error(filePath + '：' + await A.api.error(response));
+        if (!response.ok) throw Object.assign(new Error(filePath + '：' + await A.api.error(response)), { status: response.status });
         const content = await response.text();
         assertContext();
         return content;
       }
 
+      /** @param {string} filePath */
+      async function readTopic(filePath) {
+        try { return await read(filePath); }
+        catch (error) {
+          if (!(deferMissingTopics && error instanceof Error && 'status' in error && error.status === 404)) throw error;
+          assertContext();
+          // The entry stays in the Map. Preparation will reject it if the
+          // selected model or an active reuse reference actually needs it.
+          return null;
+        }
+      }
+
+      if (includeTopic && !includeTopic(path)) throw new Error('所选主题不在本次发布范围内：' + path);
       const content = await read(path);
       if (filterPath && !/\.ditaval$/i.test(filterPath)) throw new Error('请选择工作区内的 DITAVAL 文件');
       const filter = filterPath ? Object.freeze({ path: filterPath, current: await read(filterPath) }) : null;
@@ -91,8 +104,25 @@
         assertContext();
       } else map = { title: path.split('/').pop(), path, children: [{ type: 'file', path }] };
 
+      if (includeTopic) {
+        /** @param {readonly import('./data-contracts').MapEntry[]} nodes
+         * @returns {import('./data-contracts').MapEntry[]} */
+        function includedEntries(nodes) {
+          return nodes.flatMap(node => {
+            const children = includedEntries(node.children || []);
+            if (node.type === 'file' && !includeTopic?.(node.path)) return children;
+            return [{ ...node, children }];
+          });
+        }
+        map = { ...map, children: includedEntries(map.children || []) };
+        if (!collectPreviewPaths(map.children).length) throw new Error('筛选后没有可发布的正文：' + path);
+      }
       const files = new Map();
-      for (const entry of collectPreviewPaths(map.children || [])) files.set(entry.path, { path: entry.path, current: await read(entry.path) });
+      const children = model ? resolver.planMap(map, model, profile).children : map.children || [];
+      for (const entry of collectPreviewPaths(children)) {
+        const current = await readTopic(entry.path);
+        if (current != null) files.set(entry.path, { path: entry.path, current });
+      }
       if (resources) {
         /** @param {readonly import('./data-contracts').MapEntry[]} nodes */
         async function include(nodes) {
@@ -103,9 +133,9 @@
             if (node.children) await include(node.children);
           }
         }
-        await include(map.children || []);
+        await include(children);
       }
-      const loaded = await resolver.loadDependencies(files, read, profile);
+      const loaded = await resolver.loadDependencies(files, readTopic, profile);
       const noteRules = A.noteRuleStore ? await A.noteRuleStore.read() : null;
       const snapshot = snapshots.createSnapshot({
         ...context, noteRules, capturedAt: new Date().toISOString(), path, content, map, filter,
