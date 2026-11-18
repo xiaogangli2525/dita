@@ -155,10 +155,32 @@ test('real HTTP knowledge delivery works across repositories and from a moved of
     assert.deepEqual(cachedBook.semantic, book.semantic);
     t.diagnostic('Real HTTP vector export: first=' + firstMs + 'ms; cached=' + cachedMs + 'ms; chunks=' + book.semantic.chunks.length +
       '; ZIP before compression=' + storedBytes + ' bytes; ZIP downloaded=' + result.bytes.length + ' bytes');
-    await page.locator('.knowledge-vector-options summary').click(); await page.check('#knowledgeRebuild');
+    await page.locator('.knowledge-vector-options summary').click();
+    await page.check('#knowledgeCompact');
+    const compact = await download(), compactArchive = unzipSync(new Uint8Array(compact.bytes));
+    const compactBook = JSON.parse(strFromU8(compactArchive['docs/knowledge.json']));
+    assert.equal(compactBook.semantic.schema, 2);
+    assert.equal(compactBook.semantic.profile.id, book.semantic.profile.id);
+    assert.equal(validate(flatten(compactBook), compactBook.semantic).length, book.semantic.chunks.length * 512);
+    assert.deepEqual(compactBook.semantic.chunks, book.semantic.chunks);
+    assert.deepEqual(compactArchive['docs/index.html'], archive['docs/index.html']);
+    assert.ok(compact.bytes.length < cached.bytes.length);
+    assert.match(await page.locator('#knowledgeVectorStatus').innerText(), /复用 1 份，重新生成 0 份.*Int8/);
+    const compactPath = path.join(temporary, 'real-http-int8.zip');
+    await fs.writeFile(compactPath, compact.bytes);
+    const info = JSON.parse(execFileSync(process.execPath, ['bin/blink-cli.js', '--kb', compactPath, '--info', '--json'], { encoding: 'utf8' }));
+    assert.equal(info.semantic.vectorEncoding, 'int8');
+    const resultFor = file => JSON.parse(execFileSync(process.execPath, ['bin/blink-cli.js', '--kb', file, '--search', 'semantic', '如何配置请求超时时间', '--json'], { encoding: 'utf8' })).results[0].id;
+    assert.equal(resultFor(cliZip), resultFor(compactPath));
+    t.diagnostic('Real HTTP Int8 ZIP: Float32=' + cached.bytes.length + ' bytes; Int8=' + compact.bytes.length + ' bytes');
+    await page.uncheck('#knowledgeCompact');
+    await page.check('#knowledgeRebuild');
     await download(); assert.match(await page.locator('#knowledgeVectorStatus').innerText(), /复用 0 份，重新生成 1 份/);
     assert.equal(await page.locator('#knowledgeRebuild').isChecked(), false);
-    await page.uncheck('#knowledgeSemantic'); assert.equal(await page.locator('#knowledgeRebuild').isDisabled(), true); await page.click('#knowledgeClose');
+    await page.uncheck('#knowledgeSemantic');
+    assert.equal(await page.locator('#knowledgeRebuild').isDisabled(), true);
+    assert.equal(await page.locator('#knowledgeCompact').isDisabled(), true);
+    await page.click('#knowledgeClose');
   });
   if (process.env.BLINK_MODELS) await stage('cancelling vector export ignores late responses and preserves the one-time rebuild choice', async () => {
     await page.click('#knowledgeButton'); await page.check('#knowledgeSemantic');

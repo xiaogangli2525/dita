@@ -6,7 +6,7 @@ const { createHash } = require('node:crypto');
 const { execFileSync } = require('node:child_process');
 const { unzipSync, zipSync } = require('fflate');
 const { bookFromPath, flatten } = require('../lib/knowledge-book');
-const { validate, PROFILE } = require('../public/knowledge-semantic');
+const { validate, PROFILE, COMPACT_SCHEMA, vectorEncoding } = require('../public/knowledge-semantic');
 const { createEncoder } = require('../lib/semantic-encoder');
 
 async function main() {
@@ -67,7 +67,8 @@ async function main() {
     }
     if (htmlFiles['docs/manifest.json']) {
       const manifest = JSON.parse(new TextDecoder().decode(htmlFiles['docs/manifest.json']));
-      manifest.semantic = { profile: book.semantic.profile, chunks: book.semantic.chunks.length, data: 'knowledge.json#semantic' };
+      manifest.semantic = { profile: book.semantic.profile, chunks: book.semantic.chunks.length,
+        ...(book.semantic.schema === COMPACT_SCHEMA ? { vectorEncoding: vectorEncoding(book.semantic.schema) } : {}), data: 'knowledge.json#semantic' };
       await fs.writeFile(path.join(bundle, 'docs', 'manifest.json'), JSON.stringify(manifest, null, 2));
     }
     await fs.writeFile(path.join(bundle, 'docs', 'knowledge.json'), JSON.stringify(book));

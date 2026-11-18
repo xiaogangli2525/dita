@@ -48,7 +48,8 @@
       const result = await stream(api, '/api/knowledge/semantic', { manual: inputManual(manual), model, force, profile: data.PROFILE.id }, {
         signal, current, onProgress: value => onProgress({ ...stats, position: position + 1, manual: manual.title, done: value.done, total: value.total })
       });
-      if (!['cache', 'generated', 'embedded'].includes(result.source) || !Array.isArray(result.warnings) || result.warnings.some(item => typeof item !== 'string') || result.index?.profile?.id !== data.PROFILE.id) throw Error('向量生成响应不兼容，请刷新工作台后重试');
+      if (!['cache', 'generated', 'embedded'].includes(result.source) || !Array.isArray(result.warnings) || result.warnings.some(item => typeof item !== 'string') ||
+          result.index?.schema !== 1 || result.index.profile?.id !== data.PROFILE.id) throw Error('向量生成响应不兼容，请刷新工作台后重试');
       data.validate(records, result.index);
       active(signal, current); groups.push(records); indexes.push(result.index); warnings.push(...result.warnings);
       stats[result.source === 'generated' ? 'rebuiltManuals' : 'reusedManuals']++; stats.totalChunks += result.index.chunks.length;
@@ -57,18 +58,21 @@
     }
     active(signal, current); return { index: data.combineIndexes(groups, indexes), stats, warnings: [...new Set(warnings)] };
   }
-  async function publish({ api, manuals, model, archiveOverhead, force = false, signal, current = () => true, onProgress = () => {}, onEstimate = () => {} }) {
+  async function publish({ api, manuals, model, archiveOverhead, compact = false, force = false, signal, current = () => true, onProgress = () => {}, onEstimate = () => {} }) {
     const groups = [], indexes = [], stats = { reusedManuals: 0, rebuiltManuals: 0, totalManuals: manuals.length, totalChunks: 0 };
     let estimate;
-    const result = await stream(api, '/api/knowledge/publish', { manuals: manuals.map(inputManual), model, force, archiveOverhead, profile: data.PROFILE.id }, {
+    const result = await stream(api, '/api/knowledge/publish', { manuals: manuals.map(inputManual), model, force, archiveOverhead, profile: data.PROFILE.id, ...(compact ? { compact } : {}) }, {
       signal, current, onProgress,
       onEstimate(value) {
-        if (estimate || JSON.stringify(value.profile) !== JSON.stringify(data.PROFILE) || !Number.isSafeInteger(value.chunks) || value.chunks < 0 || value.chunks > 12000 || !Number.isSafeInteger(value.bytes) || value.bytes < 0) throw Error('语义容量核算结果无效');
+        if (estimate || (value.schema ?? 1) !== (compact ? data.COMPACT_SCHEMA : 1) ||
+            JSON.stringify(value.profile) !== JSON.stringify(data.PROFILE) || !Number.isSafeInteger(value.chunks) || value.chunks < 0 ||
+            value.chunks > 12000 || !Number.isSafeInteger(value.bytes) || value.bytes < 0) throw Error('语义容量核算结果无效');
         onEstimate(value); estimate = value;
       },
       onManual(value) {
         const manual = manuals[indexes.length];
-        if (!estimate || !manual || value.manualId !== manual.id || !['cache', 'generated'].includes(value.source) || value.index?.profile?.id !== data.PROFILE.id) throw Error('向量生成响应与发布集合不一致');
+        if (!estimate || !manual || value.manualId !== manual.id || !['cache', 'generated'].includes(value.source) ||
+            value.index?.schema !== 1 || value.index.profile?.id !== data.PROFILE.id) throw Error('向量生成响应与发布集合不一致');
         const records = manual.entries.map(entry => ({ ...entry, manualId: manual.id, manualTitle: manual.title }));
         data.validate(records, value.index);
         stats[value.source === 'generated' ? 'rebuiltManuals' : 'reusedManuals']++; stats.totalChunks += value.index.chunks.length;

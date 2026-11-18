@@ -38,6 +38,11 @@ export interface KnowledgeBook {
 export interface KnowledgeRequest { readonly title: string; readonly model: string; readonly sdkVersion: string;
   readonly manuals: readonly KnowledgeManual[]; readonly generatedAt?: string; readonly semantic?: import('./knowledge-semantic').SemanticIndex }
 export interface ArchiveFile { readonly name: string; readonly content: string | Uint8Array<ArrayBuffer> }
+export interface SemanticEstimate {
+  readonly profile: import('./knowledge-semantic').SemanticIndex['profile'];
+  readonly schema?: import('./knowledge-semantic').SemanticIndex['schema'];
+  readonly chunks: number; readonly bytes: number;
+}
 
 export interface KnowledgeReceipt { readonly repositoryRoot: string; readonly branch: string; readonly revision: string; readonly commit: string;
   readonly files: readonly {readonly path: string; readonly sha256: string|null}[] }
