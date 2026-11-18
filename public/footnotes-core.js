@@ -24,12 +24,13 @@
       const end = node.close?.end ?? node.end;
       if (node.name === 'fn') {
         const inner = node.close ? source.slice(node.end, node.close.start) : '';
-        const products = textOf(node.attrs.product || '').trim().split(/\s+/).filter(Boolean);
+        const product = textOf(node.attrs.product || '').trim();
+        const products = product.split(/\s+/).filter(Boolean);
         const parent = [...ancestors].reverse().find(n => ['p', 'row', 'li', 'step', 'section'].includes(n.name)) || ancestors.at(-1);
         const context = parent && ['p', 'row', 'li', 'step', 'section'].includes(parent.name) ? textOf(withoutNotes(parent)).replace(/\s+/g, ' ').trim() : node.attrs.id ? '注脚定义 ' + textOf(node.attrs.id) : '';
         notes.push({ path, index: notes.length, xmlPath: indexes.join('/'), start: node.start, end,
           openEnd: node.end, closeStart: node.close?.start ?? node.end,
-          before: source.slice(node.start, end), inner, text: textOf(inner), products, conditions: manual.conditions(node, ancestors), common: manual.common(node.attrs), inherited: ancestors.some(parent => Boolean(parent.attrs.product)),
+          before: source.slice(node.start, end), inner, text: textOf(inner), products, product, conditions: manual.conditions(node, ancestors), common: manual.common(node.attrs), inherited: ancestors.some(parent => Boolean(parent.attrs.product)),
           rich: node.children.some(child => child.kind !== 'text'),
           referenced: Boolean(node.attrs.conref || node.attrs.conkeyref),
           context, source });
@@ -43,14 +44,17 @@
   function updateFootnote(source, note, { content, products = '', rich = note.rich, common = note.common }) {
     if (source !== note.source || source.slice(note.start, note.end) !== note.before) throw new Error('文档已变化，请重新打开这条注脚后再修改');
     if (note.referenced) throw new Error('此注脚引用其他内容，请在引用源中修改');
-    const modelNames = [...new Set(products.trim().split(/\s+/).filter(Boolean))].join(' ');
+    const preserveGroup = /[()]/.test(note.product || '') && products === note.product;
+    const modelNames = preserveGroup ? products : [...new Set(products.trim().split(/\s+/).filter(Boolean))].join(' ');
     if (common && (modelNames || note.conditions.slice(0, note.conditions.length - (note.products.length ? 1 : 0)).length)) throw new Error('存在型号条件的注脚不能标为通用，请先检查祖先条件');
-    if (common === note.common && modelNames === note.products.join(' ') && content === (note.rich ? note.inner : note.text)) return source;
+    if (common === note.common && (preserveGroup || modelNames === note.products.join(' ')) && content === (note.rich ? note.inner : note.text)) return source;
     let opening = source.slice(note.start, note.openEnd);
-    const attr = /\s+product\s*=\s*(?:"[^"]*"|'[^']*')/;
-    const attribute = modelNames ? ' product="' + escapeAttr(modelNames) + '"' : '';
-    if (attr.test(opening)) opening = opening.replace(attr, attribute);
-    else opening = opening.replace(/\/?\s*>$/, end => attribute + end);
+    if (!preserveGroup) {
+      const attr = /\s+product\s*=\s*(?:"[^"]*"|'[^']*')/;
+      const attribute = modelNames ? ' product="' + escapeAttr(modelNames) + '"' : '';
+      if (attr.test(opening)) opening = opening.replace(attr, attribute);
+      else opening = opening.replace(/\/?\s*>$/, end => attribute + end);
+    }
     const oldOther = textOf(xml.inspectSource(note.before).attrs.otherprops || '');
     const other = oldOther.replace(/(?:^|\s)applicability\(common\)(?=\s|$)/g, '').trim() + (common ? ' applicability(common)' : '');
     if (common !== note.common) {

@@ -361,8 +361,8 @@
       <label class="checkbox-row"><input id="exportPrefixNotes" type="checkbox"/>按“型号：说明”筛选注脚（请预览核对）</label>
       <p class="muted">仅处理明确的型号前缀；共用型号列表在导出副本中只显示当前型号。复杂说明使用独立规则。</p>
       <button id="exportReviewRules" type="button">核对注脚型号规则</button>
-      <label>正文条件过滤<select id="exportFilter"><option value="">不过滤正文（保留全部内容）</option></select></label>
-      <p id="exportFilterHint" class="muted">条件文件（DITAVAL）决定哪些标记内容保留，不负责识别文字中的型号。</p>
+      <label>正文条件过滤<select id="exportFilter"><option value="">不使用条件文件（DITAVAL）</option></select></label>
+      <p id="exportFilterHint" class="muted">选择型号会筛选标有适用型号的目录分支和注脚。DITAVAL 可进一步筛选 Topic 内的标记内容。</p>
       <label>文件格式<select id="exportFormat"><option value="html">HTML（推荐交付）</option><option value="pdf">PDF</option><option value="docx">Word（.docx）</option><option value="md">Markdown</option></select></label>
       <p id="exportFormatHint" class="muted"></p>
       <label>文档版本<input id="exportVersion" maxlength="80" placeholder="例如 V1.2，可留空"/></label>
@@ -593,8 +593,8 @@
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <script src="/vendor/sax.js"></script>
   <script src="/xml-source.js"></script>
-  <script src="/manual-core.js"></script>
   <script src="/condition-groups.js"></script>
+  <script src="/manual-core.js"></script>
   <script src="/profiling-core.js"></script>
   <script src="/reference-paths.js"></script>
   <script src="/asset-core.js"></script>

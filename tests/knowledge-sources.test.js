@@ -78,6 +78,18 @@ test('saved and Git knowledge captures omit external references and retain exact
   }
   assert.equal(await fs.readFile(path.join(root, 'manual.ditamap'), 'utf8'), content);
 });
+test('knowledge captures apply Map model branches before reading topics and collecting image inputs', async t => {
+  const { roots: [root], call, recipe, command } = await setup(t);
+  await fs.writeFile(path.join(root, 'manual.ditamap'), '<map><topicref product="series(ML307N)" href="topics/absent.dita"/><topicref product="series(ML307G)" href="topics/a.dita"/></map>');
+  command(root, 'add', '.');
+  command(root, '-c', 'user.name=QA', '-c', 'user.email=qa@example.invalid', 'commit', '-qm', 'model branches');
+  for (const revision of ['', 'HEAD']) {
+    const result = await call('capture', { ...recipe(root), revision });
+    assert.deepEqual(result.snapshot.files.map(([name]) => name), ['topics/a.dita']);
+    assert.ok(!result.receipt.files.some(file => file.path.includes('absent.dita')));
+    await assert.rejects(call('capture', { ...recipe(root), revision, model: 'ML307N', filterPath: '' }), /来源文件不存在.*topics\/absent\.dita/);
+  }
+});
 test('saved and Git captures refuse unsupported Map bases even when the wrong-path Topic exists', async t => {
   const { roots: [root], call, recipe, command } = await setup(t);
   await fs.writeFile(path.join(root, 'manual.ditamap'), '<map xml:base="topics/"><topicref href="a.dita"/></map>');

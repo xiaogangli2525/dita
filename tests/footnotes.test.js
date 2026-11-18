@@ -19,6 +19,13 @@ test('model filtering retains unassigned notes and never infers applicability fr
   assert.deepEqual(filterNotes(notes, 'M300').map(n => n.index), [1, 2]);
   assert.deepEqual(filterNotes(notes, '', 'MQTTOPEN').map(n => n.index), [0]);
 });
+test('grouped applicability filters notes and survives a text-only edit byte for byte', () => {
+  const xml = "<topic><body><p><fn product='series(M100  M200)'>Old</fn></p></body></topic>";
+  const notes = listFootnotes(xml), [note] = notes;
+  assert.equal(filterNotes(notes, 'M200').length, 1);
+  assert.equal(filterNotes(notes, 'M300').length, 0);
+  assert.equal(updateFootnote(xml, note, { content: 'Changed', products: note.product }), xml.replace('Old', 'Changed'));
+});
 test('edits only one fn and preserves declarations, CRLF, ids, links and surrounding source', () => {
   const [note] = listFootnotes(source);
   const next = updateFootnote(source, note, { content: 'New & correct <limit>', products: 'M200 M200 M400' });

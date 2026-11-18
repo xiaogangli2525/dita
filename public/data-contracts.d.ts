@@ -62,7 +62,7 @@ export interface CapturePorts {
 }
 export type DeliveryFormat = 'html' | 'md' | 'pdf' | 'docx';
 export interface DeliveryReport { model: string; included: number; excluded: number; unmarked: number; unused: number;
-  filteredElements?: number; ruleApplied?: number; ruleFilteredParts?: number; prefixCandidates?: number;
+  filteredElements?: number; filteredMapBranches?: number; ruleApplied?: number; ruleFilteredParts?: number; prefixCandidates?: number;
   prefixApplied?: number; prefixExcluded?: number }
 export interface DeliveryTemplateRecord { id: string; name: string; version: string; renderer: string; sha256: string; fields: Readonly<Record<string, string>> }
 export interface CompiledDelivery { output: string | Blob; previewHtml: string; report: DeliveryReport; template?: DeliveryTemplateRecord | null }

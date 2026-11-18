@@ -3,7 +3,7 @@
   function createCapture(A) {
     async function collect(path, { model, version = '', filterPath = '', prefixes = false }, signal) {
       const workspace = A.api.token;
-      const snapshot = await A.manual.capture(path, { filterPath, includeTopic: root.DitaKnowledgePlan.includesTopic });
+      const snapshot = await A.manual.capture(path, { filterPath, model, includeTopic: root.DitaKnowledgePlan.includesTopic });
       function check() {
         if (signal?.aborted) throw new Error('已取消加入手册');
         if (workspace !== A.api.token || !A.manual.current(snapshot)) throw new Error('文档或工作区已变化，请重新加入手册');
@@ -13,19 +13,16 @@
       if (unsaved.length) throw new Error('请先保存手册中的修改：' + unsaved.map(file => file.path).join('、'));
       const prepared = A.manual.prepare(snapshot, model, true, { prefixes });
       if (prepared.noteReview?.length) throw new Error(prepared.noteReview.some(item => item.kind === 'prefix') ? '有型号注脚需核对：请启用明确型号前缀筛选，或先在“交付手册”中确认独立规则。' : '有型号注脚范围需逐段确认，请先在“交付手册”中处理独立规则。');
-      // Model selection scopes footnotes; DITAVAL scopes the body. Refuse a
-      // remaining explicitly different model instead of indexing hidden text.
+      // The selected model scopes Map branches and notes. Reject incompatible
+      // conditions in the remaining body before it can enter the search index.
       function checkProducts(path, content) {
         const doc = A.ditaCore.parseXml(content);
         for (const node of doc.querySelectorAll('[product]')) {
-          const values = node.getAttribute('product').trim().split(/\s+/), models = values.filter(root.DitaModelDiscovery.isModel);
-          if (models.length && !values.includes(model)) throw new Error(path + '：仍有明确属于其它型号的正文，请选择能排除这些内容的 DITAVAL 后重新加入。');
+          const value = node.getAttribute('product');
+          if (root.DitaManualCore.productValues(value).some(root.DitaModelDiscovery.isModel) && !root.DitaManualCore.matches([value], model)) throw new Error(path + '：仍有明确属于其它型号的正文，请选择能排除这些内容的 DITAVAL 后重新加入。');
         }
       }
-      for (const entry of A.ditaCore.collectPreviewPaths(snapshot.map.children || [])) {
-        const file = prepared.files.get(entry.path);
-        if (file && !file.excluded) checkProducts(entry.path, file.current);
-      }
+      for (const entry of prepared.entries) checkProducts(entry.path, prepared.files.get(entry.path).current);
       for (const note of prepared.noteDefinitions.values()) checkProducts(note.path, note.xml);
       await A.manual.verifyRules(snapshot); check();
       async function loadImageBytes(imagePath) {
@@ -61,7 +58,7 @@
       } catch (error) { check(); console.warn('知识库来源信息不可用：', error.name); }
       const id = 'm-' + (await hash(snapshot.root + '\n' + snapshot.path)).slice(0, 16);
       const extracted = root.DitaKnowledgeDocument.extractManual(html, id);
-      const visible = A.ditaCore.collectPreviewPaths(snapshot.map.children || []).filter(entry => !prepared.files.get(entry.path)?.excluded);
+      const visible = prepared.entries;
       if (visible.length !== extracted.entries.length) throw new Error('发布章节与来源映射不一致');
       const engine = root.DitaKnowledgeSearch.createSearchEngine();
       for (const [index, entry] of extracted.entries.entries()) {

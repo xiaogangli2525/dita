@@ -10,7 +10,11 @@
   function discover(files, profile) {
     const models = new Set(), tableModels = new Set(), pending = new Set(), ignored = new Set(), evidence = [];
     const children = (node, name) => node.children.filter(child => child.kind === 'element' && (!name || child.name === name));
-    const tokens = node => refs.decode(node.attrs.product || '').trim().split(/\s+/).filter(Boolean);
+    function tokens(node) {
+      if (!node.attrs.product) return [];
+      try { return manual.productValues(refs.decode(node.attrs.product)); }
+      catch { return []; } // The publication check reports malformed syntax with a source path.
+    }
     const marked = nodes => nodes.some(node => { const values = tokens(node); return values.length > 0 && values.every(isPlaceholder); });
     const excluded = nodes => Boolean(profile && nodes.some(node => !profile.keep(node)));
     function add(model, path, kind) {
@@ -30,7 +34,7 @@
         const lineage = [...ancestors, node];
         tokens(node).filter(isPlaceholder).forEach(value => ignored.add(value));
         if (excluded(lineage)) return;
-        if (!marked(lineage) && !/[()]/.test(refs.decode(node.attrs.product || ''))) tokens(node).forEach(model => add(model, path, 'product'));
+        if (!marked(lineage)) tokens(node).forEach(model => add(model, path, 'product'));
         if (node.name !== 'tgroup') return;
         const header = children(children(node, 'thead')[0] || {children:[]}, 'row')[0];
         if (!header) return;

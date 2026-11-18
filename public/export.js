@@ -116,6 +116,7 @@
         get('exportPrefixNotes').disabled=!get('exportModel').value;
         const data = service().prepare(configuration.snapshot, get('exportModel').value, true, {prefixes:get('exportPrefixNotes').checked});
         get('modelExportSummary').textContent = `包含 ${data.report.included} 条注脚；排除 ${data.report.excluded} 条；保留 ${data.report.unmarked} 条待确认注脚。` + (data.report.unused ? ` ${data.report.unused} 条未引用定义不输出。` : '') + (configuration.snapshot.filter ? ` 正文条件排除 ${data.report.filteredElements} 处内容。` : '') + (get('exportModel').value && data.report.unmarked ? ' 其余未设置范围的说明继续保留，请核对是否通用。' : '');
+        if (data.report.filteredMapBranches) get('modelExportSummary').textContent += ` 已按型号排除 ${data.report.filteredMapBranches} 处 Map 分支。`;
         const blocking = (data.noteReview || []).map(item => ({ ...item, severity: 'error' }));
         const warnings = blocking.length ? [] : data.notes.filter(note => note.unmarked).map(note => ({ path: note.origin.path, severity: 'warning', message: '注脚尚未确认适用范围，将保留在交付中' }));
         if (data.report.ruleApplied) get('modelExportSummary').textContent += ` 已应用 ${data.report.ruleApplied} 条独立规则，筛除 ${data.report.ruleFilteredParts} 个片段（原始 DITA 不变）。`;
@@ -146,7 +147,7 @@
       models.forEach(model => get('exportModel').add(new Option(model, model)));
       if (models.includes(selectedModel)) get('exportModel').value = selectedModel;
       configuration = { snapshot, source }; formatHint();
-      get('exportFilterHint').textContent=snapshot.filter?(root.DitaProfiling?.compile(snapshot.filter.current).summary||snapshot.filter.path)+'。仅过滤已标记的正文、图片和注脚，不会识别文字中的型号；原文不变。':'保留全部正文。条件文件（DITAVAL）控制标记内容的取舍；注脚中的型号文字由上方选项处理。';
+      get('exportFilterHint').textContent = snapshot.filter ? (root.DitaProfiling.compile(snapshot.filter.current).summary || snapshot.filter.path) + '。与所选型号同时生效。' : '选择型号会筛选标有适用型号的目录分支和注脚。DITAVAL 可进一步筛选 Topic 内的正文、图片和注脚。';
       get('exportModel').disabled = false; get('exportFilter').disabled = false;get('exportReviewRules').disabled=false;
       get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = false; });
       get('modelExportScope').textContent = snapshot.map.title + ' · ' + snapshot.path;
@@ -176,13 +177,13 @@
         get('exportPrefixNotes').checked=prefixChoices.get(workspace+'\n'+scope)||false;
         const filters = await service().listFilters();
         if (generation !== operation || workspace !== A.api.token || !get('modelExportDialog').open) return;
-        get('exportFilter').replaceChildren(new Option('不过滤正文（保留全部内容）', ''));
+        get('exportFilter').replaceChildren(new Option('不使用条件文件（DITAVAL）', ''));
         filters.files.forEach(path => get('exportFilter').add(new Option((filters.descriptions?.[path]||'条件文件')+' · '+path, path)));
         const selectedFilter = selectedFilters.get(workspace + '\n' + scope) || '';
         get('exportFilter').value = filters.files.includes(selectedFilter) ? selectedFilter : '';
         get('exportFilter').disabled = false;
         get('exportFilterHint').textContent = filters.truncated ? '文件列表过长，仅显示部分 DITAVAL。请缩小文档库范围后重试。' : filters.files.length ? '按所选 DITAVAL 过滤正文、图片和注脚；源文档保持不变。' : '文档库中未找到 DITAVAL；当前保留全部正文。';
-        const snapshot = await service().capture(scope, { filterPath: get('exportFilter').value }), source = await provenance();
+        const snapshot = await service().capture(scope, { filterPath: get('exportFilter').value, deferMissingTopics: true }), source = await provenance();
         if (generation !== operation || !get('modelExportDialog').open) return;
         await templates?.load({ root: snapshot.root, branch: snapshot.branch, path: snapshot.path, title: snapshot.map.title });
         if (generation !== operation || !get('modelExportDialog').open) return;
@@ -210,7 +211,7 @@
       get('modelExportSummary').textContent = '正在应用条件过滤…'; get('modelExportError').textContent = '';
       get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = true; });
       try {
-        const snapshot = await service().capture(scope, { filterPath }), source = await provenance();
+        const snapshot = await service().capture(scope, { filterPath, deferMissingTopics: true }), source = await provenance();
         if (generation !== filterGeneration || operationId !== operation || workspace !== A.api.token || !get('modelExportDialog').open) return;
         if (!service().current(snapshot)) throw new Error('内容已变化，请重新打开交付设置');
         useSnapshot(snapshot, source, selectedModel); selectedFilters.set(workspace + '\n' + scope, filterPath);

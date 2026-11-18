@@ -83,7 +83,8 @@ test('cycles, missing targets, mismatched types, unsupported constructs and esca
     assert.equal(reads, 0);
   }
   assert.throws(() => resolver.validateMap('<map><topicref href="sub.ditamap"/></map>', ''), /子 Map/);
-  assert.throws(() => resolver.validateMap('<map product="M100"/>', 'M100'), /Map 级/);
+  assert.doesNotThrow(() => resolver.validateMap('<map product="M100"/>', 'M100'));
+  assert.throws(() => resolver.validateMap('<map product="M100"/>', 'M200'), /当前型号不适用/);
 });
 test('Map validation skips external targets but still rejects unsupported local descendants', () => {
   const map = child => '<map><topicref scope="external" href="https://example.invalid/remote.ditamap#part">' + child + '</topicref></map>';

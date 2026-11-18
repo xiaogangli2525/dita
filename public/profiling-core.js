@@ -21,6 +21,10 @@
       const keys = [group && group + '\n' + value, att + '\n' + value, group && att + '\n' + group, att + '\n', '\n'].filter(Boolean);
       return keys.map(key => rules.get(key)).find(Boolean) === 'exclude';
     }
+    function matchesProduct(value, model) {
+      return !model || [...parseConditionGroups('product', value)].every(([group, values]) =>
+        values.has(model) && !excluded('product', group === 'product' ? '' : group, model));
+    }
     function keep(node) {
       if (decisions.has(node)) return decisions.get(node);
       const included = [...attributes].every(att => {
@@ -56,7 +60,7 @@
       const [att,value] = key.split('\n');
       return actions[action] + (att ? names[att] : '所有条件') + (value ? value==='tbd'?'为“待定（tbd）”的内容':'为“'+value+'”的内容' : '的默认内容');
     }).join('；') || '保留全部标记内容';
-    return { keep, filterSource, summary };
+    return { keep, filterSource, matchesProduct, summary };
   }
   const api = { compile };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaProfiling = api;
