@@ -94,13 +94,26 @@ test('HTTP workflow protects edits, Git baselines, repository boundaries and wor
     ]) {
       const failed = await request('/api/file/batch', 'PUT', { files: [mapEdit, second] });
       assert.equal(failed.status, status);
-      assert.match((await failed.json()).error, /topics\/a\.dita/);
+      const result = await failed.json();
+      assert.equal(result.saved, false);
+      assert.match(result.error, /topics\/a\.dita/);
+      assert.deepEqual(result.files[0], { path: mapEdit.path, status: 'notWritten' });
+      assert.equal(result.files[1].path, topicEdit.path);
+      assert.equal(result.files[1].status, status === 409 ? 'conflict' : 'failed');
       assert.equal(await fs.readFile(map, 'utf8'), mapBefore);
       assert.equal(await fs.readFile(file, 'utf8'), initial);
     }
+    const rejected = await request('/api/file/batch', 'PUT', { files: [
+      { ...mapEdit, expectedContent: '<map/>' }, { ...topicEdit, content: '<topic' }
+    ] });
+    assert.deepEqual((await rejected.json()).files.map(file => [file.path, file.status]), [
+      [mapEdit.path, 'conflict'], [topicEdit.path, 'failed']
+    ]);
+    assert.equal(await fs.readFile(map, 'utf8'), mapBefore);
+    assert.equal(await fs.readFile(file, 'utf8'), initial);
     const saved = await request('/api/file/batch', 'PUT', { files: [mapEdit, topicEdit] });
     assert.equal(saved.status, 200);
-    assert.deepEqual(await saved.json(), { saved: true });
+    assert.deepEqual(await saved.json(), { saved: true, files: [mapEdit, topicEdit].map(file => ({ path: file.path, status: 'saved' })) });
     assert.equal(await fs.readFile(map, 'utf8'), mapEdit.content);
     assert.equal(await fs.readFile(file, 'utf8'), topicEdit.content);
     await Promise.all([fs.writeFile(map, mapBefore), fs.writeFile(file, initial)]);

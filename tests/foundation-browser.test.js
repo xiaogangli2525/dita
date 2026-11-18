@@ -63,6 +63,9 @@ test('foundation browser workflows', async t => {
     await fs.writeFile(noteName, externalNote);
     await page.click('#saveScopeConfirm');
     await page.waitForFunction(() => /shared\/notes\.dita.*已在磁盘上变化/.test(document.getElementById('status').textContent));
+    assert.equal(await page.locator('#saveScopeDialog').isVisible(), true);
+    assert.match(await page.locator('#saveScopeError').innerText(), /main\.ditamap：未写入/);
+    assert.match(await page.locator('#saveScopeError').innerText(), /shared\/notes\.dita.*已在磁盘上变化/);
     assert.equal(await fs.readFile(mapName, 'utf8'), originalMap);
     assert.equal(await fs.readFile(noteName, 'utf8'), externalNote);
     assert.equal(await page.evaluate(() => ['main.ditamap', 'shared/notes.dita'].every(name => window.DitaApp.state.filesMap.get(name).dirty)), true);
@@ -75,7 +78,6 @@ test('foundation browser workflows', async t => {
       });
       await route.fulfill({ response });
     }, { times: 1 });
-    await openScope();
     await page.click('#saveScopeConfirm'); await page.waitForFunction(() => !window.DitaApp.state.filesMap.get('shared/notes.dita').dirty);
     assert.match(await fs.readFile(noteName, 'utf8'), /A_EDITED/);
     assert.equal(await fs.readFile(mapName, 'utf8'), editedMap);

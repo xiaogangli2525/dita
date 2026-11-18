@@ -14,45 +14,72 @@
       if (!response.ok) throw new Error(await A.api.error(response));
       return response.json();
     });
+    /** @param {import('./data-contracts').BatchSaveResponse & {saved:false}} result */
+    function showPreflight(result) {
+      const message = get('saveScopeError');
+      message.replaceChildren('本批未写入。修正问题或调整保存范围后重试。');
+      for (const file of result.files) {
+        const detail = 'message' in file ? (file.message.startsWith(file.path) ? file.message : file.path + '：' + file.message) : file.path + '：未写入';
+        message.append(document.createElement('br'), detail);
+      }
+    }
     /** @param {readonly import('./data-contracts').DocumentSnapshot[]} files
      * @param {string} workspace */
     async function write(files, workspace) {
       if (A.saving) return false;
       A.saving = true; A.refreshChrome();
+      let saved = 0;
       try {
         if (workspace !== A.api.token) throw new Error('工作区已切换，请重新保存');
         const submissions = files.map(snapshot => {
-          A.validateXml(snapshot.current);
           const file = A.state.filesMap.get(snapshot.path);
           if (!file) throw new Error('文档已关闭，请重新打开：' + snapshot.path);
           const request = { path: snapshot.path, content: snapshot.current, expectedContent: snapshot.disk };
           return { file, request };
         });
-        if (submissions.length === 1) {
-          const { file, request } = submissions[0];
-          await persist(file, request);
+        if (submissions.length === 1 || A.state.capabilities.persistence === 'browser') {
+          for (const { request } of submissions) A.validateXml(request.content);
+          for (const { file, request } of submissions) {
+            if (workspace !== A.api.token) throw new Error('工作区已切换，请重新保存');
+            await persist(file, request); saved++;
+            if (A.state.filesMap.get(file.path) === file) A.events.emit('document:changed', file);
+          }
         } else {
           for (const { file } of submissions) root.DitaDocumentStore.breakHistoryGroup(file);
           const response = await A.api.request('/api/file/batch', {
             method: 'PUT', headers: { 'content-type': 'application/json' },
             body: JSON.stringify({ files: submissions.map(({ request }) => request) })
           });
-          if (!response.ok) throw new Error(await A.api.error(response));
-          if ((await response.json())?.saved !== true) throw new Error('未收到完整的批量保存回执，请核对磁盘状态');
+          if (!response.ok) {
+            /** @type {import('./data-contracts').BatchSaveResponse | null} */
+            const result = await response.json().catch(() => null);
+            if (workspace === A.api.token && get('saveScopeDialog').open && result?.saved === false && Array.isArray(result.files)) showPreflight(result);
+            throw new Error(result && 'error' in result && typeof result.error === 'string' ? result.error : `批量保存失败（HTTP ${response.status}）`);
+          }
+          /** @type {import('./data-contracts').BatchSaveResponse} */
+          const result = await response.json();
+          if (result?.saved !== true || !Array.isArray(result.files) || result.files.length !== submissions.length ||
+              submissions.some(({ request }, index) => result.files[index]?.path !== request.path || result.files[index]?.status !== 'saved')) {
+            throw new Error('未收到完整的批量保存回执，请核对磁盘状态');
+          }
           // The server acknowledges exactly the encoded request. Advance all
           // baselines together and retain edits made while the batch was writing.
           for (const { file, request } of submissions) {
             if (file.disk === request.expectedContent) root.DitaDocumentStore.acknowledgeSave(file, request, false);
           }
+          saved = submissions.length;
+          for (const { file } of submissions) if (A.state.filesMap.get(file.path) === file) A.events.emit('document:changed', file);
         }
-        for (const { file } of submissions) if (A.state.filesMap.get(file.path) === file) A.events.emit('document:changed', file);
         A.refreshFiles();
         const pending = Array.from(A.state.filesMap.values()).filter(file => file.dirty).length;
         A.setStatus(`已保存 ${files.length} 个文档到${A.state.capabilities.persistence === 'browser' ? '浏览器' : '磁盘'}${A.state.capabilities.git ? ' · 尚未提交 Git' : ''}` + (pending ? ` · 仍有 ${pending} 个文档待保存` : ''));
         return true;
       } catch (cause) {
         const error = cause instanceof Error ? cause : new Error(String(cause));
-        A.setStatus('保存失败：' + error.message, true);
+        A.setStatus((saved ? `已保存 ${saved} 个文档，其余未保存。` : '') + '保存失败：' + error.message, true);
+        if (workspace === A.api.token && get('saveScopeDialog').open && !get('saveScopeError').textContent) {
+          get('saveScopeError').textContent = error.message;
+        }
         A.toast(error.message, 'error'); return false;
       } finally { A.saving = false; A.refreshFiles(); A.refreshChrome(); }
     }
@@ -80,11 +107,16 @@
     get('saveScopeCancel').addEventListener('click', () => get('saveScopeDialog').close());
     get('saveScopeForm').addEventListener('submit', async event => {
       event.preventDefault();
+      if (A.saving) return;
       if (!configuration || !A.manual.current(configuration.snapshot)) { get('saveScopeError').textContent = '内容或工作区已变化，请重新打开保存范围'; return; }
       const selected = new Set(Array.from(get('saveScopeList').querySelectorAll('input:checked'), node => /** @type {HTMLInputElement} */ (node).value));
       if (!selected.size) { get('saveScopeError').textContent = '请至少选择一个文档'; return; }
       const files = configuration.candidates.filter(file => selected.has(file.path));
-      get('saveScopeDialog').close(); await write(files, configuration.snapshot.workspace);
+      const confirm = get('saveScopeConfirm');
+      confirm.disabled = true; get('saveScopeError').textContent = '';
+      const saved = await write(files, configuration.snapshot.workspace);
+      confirm.disabled = false;
+      if (saved && get('saveScopeDialog').open) get('saveScopeDialog').close();
     });
     return { saveCurrent };
   }

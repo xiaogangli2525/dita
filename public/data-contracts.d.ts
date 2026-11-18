@@ -17,6 +17,10 @@ export interface HistoryEntry extends HistoryMeta { before: string; after: strin
 export interface DocumentHistory { undo: HistoryEntry[]; redo: HistoryEntry[]; openGroup?: HistoryEntry | null }
 export interface SaveRequest { readonly path: string; readonly content: string; readonly expectedContent: string }
 export interface SaveAcknowledgement { content: string; path?: string; created?: boolean }
+export type BatchSaveFile = { readonly path: string; readonly status: 'saved' | 'notWritten' } |
+  { readonly path: string; readonly status: 'conflict' | 'failed'; readonly message: string };
+export type BatchSaveResponse = { readonly saved: true; readonly files: readonly BatchSaveFile[] } |
+  { readonly saved: false; readonly error: string; readonly files: readonly BatchSaveFile[] };
 export interface SaveResult extends SaveAcknowledgement { clean: boolean }
 export interface Proposal { readonly path: string; readonly workspaceToken: string; readonly before: string;
   readonly after: string; readonly instruction: string; readonly status: 'pending' | 'applied' }
@@ -81,5 +85,5 @@ export interface SavePorts {
 }
 export interface SaveElements {
   saveScopeDialog: HTMLDialogElement; saveScopeTitle: HTMLElement; saveScopeList: HTMLElement;
-  saveScopeError: HTMLElement; saveScopeCancel: HTMLButtonElement; saveScopeForm: HTMLFormElement;
+  saveScopeError: HTMLElement; saveScopeCancel: HTMLButtonElement; saveScopeConfirm: HTMLButtonElement; saveScopeForm: HTMLFormElement;
 }
