@@ -134,10 +134,12 @@ test('real HTTP knowledge delivery works across repositories and from a moved of
     await page.click('#knowledgeButton'); await page.check('#knowledgeSemantic');
     const firstStarted = Date.now(), result = await download(), firstMs = Date.now() - firstStarted, archive = unzipSync(new Uint8Array(result.bytes));
     const book = JSON.parse(strFromU8(archive['docs/knowledge.json']));
-    const { flatten, bookFromArchive } = require('../lib/knowledge-book'), { validate } = require('../public/knowledge-semantic');
+    const { flatten, bookFromPath } = require('../lib/knowledge-book'), { validate } = require('../public/knowledge-semantic');
     const storedBytes = measureFiles(Object.entries(archive).map(([name, content]) => ({ name, content })));
     assert.ok(result.bytes.length < storedBytes);
-    assert.deepEqual(bookFromArchive(result.bytes), book);
+    const cliZip = path.join(temporary, 'real-http-semantic.zip');
+    await fs.writeFile(cliZip, result.bytes);
+    assert.deepEqual(bookFromPath(cliZip), book);
     assert.ok(book.semantic.chunks.length > 24);
     assert.equal(validate(flatten(book), book.semantic).length, book.semantic.chunks.length * 512);
     const manifest = JSON.parse(strFromU8(archive['docs/manifest.json']));
