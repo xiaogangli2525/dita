@@ -44,6 +44,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci --ignore-scripts
+      - name: Verify batch save recovery on Windows
+        run: node --test tests/document-batch.test.js
       - run: npm run prepare:semantic
       - run: node --test tests/knowledge-semantic.test.js tests/knowledge-structure.test.js tests/knowledge-cli.test.js tests/knowledge-cache.test.js tests/knowledge-publish.test.js
         env:

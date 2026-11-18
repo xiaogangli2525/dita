@@ -19,23 +19,40 @@
     async function write(files, workspace) {
       if (A.saving) return false;
       A.saving = true; A.refreshChrome();
-      let saved = 0;
       try {
-        for (const file of files) A.validateXml(file.current);
-        for (const snapshot of files) {
-          if (workspace !== A.api.token) throw new Error('工作区已切换，请重新保存');
+        if (workspace !== A.api.token) throw new Error('工作区已切换，请重新保存');
+        const submissions = files.map(snapshot => {
+          A.validateXml(snapshot.current);
           const file = A.state.filesMap.get(snapshot.path);
           if (!file) throw new Error('文档已关闭，请重新打开：' + snapshot.path);
-          await persist(file, { path: snapshot.path, content: snapshot.current, expectedContent: snapshot.disk });
-          saved++; A.events.emit('document:changed', file);
+          const request = { path: snapshot.path, content: snapshot.current, expectedContent: snapshot.disk };
+          return { file, request };
+        });
+        if (submissions.length === 1) {
+          const { file, request } = submissions[0];
+          await persist(file, request);
+        } else {
+          for (const { file } of submissions) root.DitaDocumentStore.breakHistoryGroup(file);
+          const response = await A.api.request('/api/file/batch', {
+            method: 'PUT', headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ files: submissions.map(({ request }) => request) })
+          });
+          if (!response.ok) throw new Error(await A.api.error(response));
+          if ((await response.json())?.saved !== true) throw new Error('未收到完整的批量保存回执，请核对磁盘状态');
+          // The server acknowledges exactly the encoded request. Advance all
+          // baselines together and retain edits made while the batch was writing.
+          for (const { file, request } of submissions) {
+            if (file.disk === request.expectedContent) root.DitaDocumentStore.acknowledgeSave(file, request, false);
+          }
         }
+        for (const { file } of submissions) if (A.state.filesMap.get(file.path) === file) A.events.emit('document:changed', file);
         A.refreshFiles();
         const pending = Array.from(A.state.filesMap.values()).filter(file => file.dirty).length;
-        A.setStatus(`已保存 ${saved} 个文档到${A.state.capabilities.persistence === 'browser' ? '浏览器' : '磁盘'}${A.state.capabilities.git ? ' · 尚未提交 Git' : ''}` + (pending ? ` · 仍有 ${pending} 个文档待保存` : ''));
+        A.setStatus(`已保存 ${files.length} 个文档到${A.state.capabilities.persistence === 'browser' ? '浏览器' : '磁盘'}${A.state.capabilities.git ? ' · 尚未提交 Git' : ''}` + (pending ? ` · 仍有 ${pending} 个文档待保存` : ''));
         return true;
       } catch (cause) {
         const error = cause instanceof Error ? cause : new Error(String(cause));
-        A.setStatus(`${saved ? '已保存 ' + saved + ' 个文档，其余未保存。' : ''}保存失败：${error.message}`, true);
+        A.setStatus('保存失败：' + error.message, true);
         A.toast(error.message, 'error'); return false;
       } finally { A.saving = false; A.refreshFiles(); A.refreshChrome(); }
     }
