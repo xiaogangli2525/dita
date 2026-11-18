@@ -26,7 +26,7 @@ test('reference validity and supported subset fail explicitly', () => {
     '<topic id="t"><body><fn id="n">One</fn><fn id="n">Two</fn></body></topic>',
     '<topic id="t"><body><p><xref href="b.dita#t/n" type="fn"/></p></body></topic>',
     '<topic><body><p><fn conref="other.dita#t/n"/></p></body></topic>',
-    '<topic><body><p><fn product="group(M100 M200)">Condition</fn></p></body></topic>'
+    '<topic><body><p><fn product="group(M100 M200">Condition</fn></p></body></topic>'
   ]) assert.throws(() => prepareTopic(xml, 'topics/a.dita', 'M100'));
 });
 test('HTML and Markdown share model scope, sequential numbers and repeated-reference identity', async () => {

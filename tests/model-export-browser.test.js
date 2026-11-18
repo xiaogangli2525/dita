@@ -8,6 +8,10 @@ test('real HTTP delivery has one note frame, readable filter labels and reviewed
  for(const[p,b]of corpus){await fs.mkdir(path.dirname(path.join(repo,p)),{recursive:true});await fs.writeFile(path.join(repo,p),b);}
  const sample='<topic id="sample"><title>Sample</title><body><note><p>创建实例前设置 SSL 参数。</p></note><p>Command<fn>COMMON。<div>A1/B2：<b>KEEP_SHARED</b>。</div><div>B2：OTHER_ONLY。</div></fn></p></body></topic>';
  for(const[p,s]of Object.entries({'.dita-project.json':JSON.stringify({schema:1,models:['ML307G','ML307N','MN319-A','A1','B2']}),'sample.dita':sample,'sample.ditamap':'<map><title>Sample</title><topicref href="sample.dita"/></map>','ambiguous.dita':'<topic><title>Ambiguous</title><body><p>Command<fn>请根据B2的行为核对。</fn></p></body></topic>','ambiguous.ditamap':'<map><title>Ambiguous</title><topicref href="ambiguous.dita"/></map>'}))await fs.writeFile(path.join(repo,p),s);
+ const scopedTopic = '<topic><body><p>Shared chapter<fn product="series(A1 B2)">Grouped note</fn></p></body></topic>';
+ const scopedMap = '<map><title>Scoped manual</title><topichead product="series(B2)"><topicref href="missing.dita"/><topicref href="scoped.dita" navtitle="B chapter"/></topichead><topicref href="scoped.dita" navtitle="A chapter" product="A1"/></map>';
+ await fs.writeFile(path.join(repo, 'scoped.dita'), scopedTopic);
+ await fs.writeFile(path.join(repo, 'scoped.ditamap'), scopedMap);
  for(const args of [['init'],['add','.'],['-c','user.name=Test','-c','user.email=test@example.invalid','commit','-qm','fixture']])execFileSync('git',args,{cwd:repo,stdio:'ignore'});
  const port=await new Promise(resolve=>{const s=net.createServer();s.listen(0,'127.0.0.1',()=>{const p=s.address().port;s.close(()=>resolve(p));});});
  const server=spawn(process.execPath,['server.js'],{cwd:path.join(__dirname,'..'),env:{...process.env,DOCS_ROOT:repo,REPOSITORIES_ROOT:temp,PORT:String(port)},stdio:['ignore','pipe','pipe']});let browser;
@@ -86,6 +90,22 @@ test('real HTTP delivery has one note frame, readable filter labels and reviewed
   await page.locator('#modelExportDialog').waitFor();
   await page.waitForFunction(()=>document.getElementById('deliveryCheckStatus').textContent.includes('检查通过'));
   assert.equal(await page.locator('#exportModel').inputValue(), 'A1');
+ });
+ await check('Map branches select the matching repeat reference and ignore a missing chapter in another model', async () => {
+  await page.click('#modelExportCancel');
+  await open('scoped.ditamap');
+  await delivery();
+  await page.selectOption('#exportModel', 'B2');
+  await page.waitForFunction(() => document.getElementById('modelExportError').textContent.includes('missing.dita'));
+  await page.selectOption('#exportModel', 'A1');
+  assert.match(await page.locator('#modelExportSummary').innerText(), /按型号排除 1 处 Map 分支/);
+  await page.selectOption('#exportFormat', 'html');
+  const html = (await download()).toString();
+  assert.match(html, /A chapter/);
+  assert.match(html, /Grouped note/);
+  assert.doesNotMatch(html, /B chapter|missing\.dita|series\(A1 B2\)/);
+  assert.equal(await fs.readFile(path.join(repo, 'scoped.dita'), 'utf8'), scopedTopic);
+  assert.equal(await fs.readFile(path.join(repo, 'scoped.ditamap'), 'utf8'), scopedMap);
  });
  for(const[p,b]of corpus)assert.deepEqual(await fs.readFile(path.join(repo,p)),b);assert.equal(await fs.readFile(path.join(repo,'sample.dita'),'utf8'),sample);assert.deepEqual(errors,[]);
 });

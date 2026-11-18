@@ -20,7 +20,8 @@ The initial fixture milestone passed 105 unit/HTTP tests and 12 Chromium checks;
 
 | Case | Behavior |
 | --- | --- |
-| `fn product` and Topic ancestor `product` | Every applicable condition must match; body remains complete; no prose inference |
+| `fn product` and Topic ancestor `product` | The selected model must match each group on the note and its ancestors. Within a group a value can match on its own. |
+| Map or Bookmap `product` | Filter each reference and its ancestry before deduplicating. A Topic with multiple references publishes once, at its first surviving position. Explicit local reuse still resolves through the referenced source. |
 | Notes without any product condition | Retained by default; reviewed sidecar rules or explicitly enabled source-format prefix projection can filter their content for a selected model |
 | Local `fn`/paragraph/other same-element `conref` | Resolve in publication copies; preserve the including element's attributes and ID; omit the referenced root ID when not locally supplied |
 | Chained `conref` and images | Resolve relative to each source file and rebase image URIs into the including Topic |
@@ -37,8 +38,8 @@ Dependency loading is bounded to 128 files and 8M UTF-16 code units. Expansion i
 
 This remains a lightweight publisher, not DITA-OT or a DTD/schema-validating processor. Common direct local reuse is supported; complete DITA processing is not claimed.
 
-- Key-based reuse (`keyref`/`conkeyref`), push/range conrefs (`conaction`/`conrefend`), `xml:base`, child Maps/key scopes and Map-level model profiling are rejected. Map Topic-fragment selection is also rejected rather than ignored.
-- Grouped product expressions remain unsupported for model-footnote selection. An explicitly selected DITAVAL supports `audience`, `platform`, `product`, `props`, `otherprops`, `deliveryTarget`, defaults and groups. Unknown/unconfigured values default to inclusion. Flagging (`flag`, `revprop`), custom profiling specializations and branch `ditavalref` are rejected. Oxygen `.xpr` transformation settings are not imported; select the intended profile in the delivery dialog.
+- Key-based reuse (`keyref`/`conkeyref`), push/range conrefs (`conaction`/`conrefend`), `xml:base`, child Maps/key scopes and Map Topic fragments are rejected.
+- An explicitly selected DITAVAL supports `audience`, `platform`, `product`, `props`, `otherprops`, `deliveryTarget`, defaults and groups. Use it for Topic body filtering and Map `props`/`otherprops`. A DITAVAL exclusion of the selected model applies to a reference or note even when another value in its product group survives. Unknown/unconfigured DITAVAL values default to inclusion. Flagging (`flag`, `revprop`), custom profiling specializations and branch `ditavalref` are rejected. Select the intended workspace profile in the delivery dialog.
 - Reused content with fragment-only xrefs needing ID relocation, duplicate IDs introduced by reuse, nested footnotes and footnote references inside other footnotes are rejected. DITA specialization generalization and external entity expansion are not implemented.
 - Ordinary local links must point into the published Topics; a link whose target anchor cannot be emitted by the chosen format stops export. Other attachments are not packaged. HTML has valid explicit anchors; Markdown uses raw HTML anchors, so consumers must use a renderer that permits them.
 - Markdown cannot represent merged table cells reliably, so it stops with a recommendation to export HTML. Images remain embedded in both formats. Nested list notes are rendered once and share the same numbering context.
