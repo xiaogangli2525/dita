@@ -58,7 +58,7 @@
     }
     const baseline = filesFor();
     const baselineBytes = zip.measureFiles(baseline.files);
-    // Excludes the semantic JSON and the decimal chunk count in the manifest.
+    // The uncompressed budget excludes semantic JSON and the decimal chunk count.
     // The server adds these from its prepared chunks before starting inference.
     function archiveOverhead() {
       const nextManifest = { ...manifest, semantic: { profile: semanticData.PROFILE, chunks: 0 } };
