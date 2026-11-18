@@ -34,16 +34,18 @@ async function main() {
       'public/knowledge-search.js', 'public/knowledge-search-profile.js', 'public/knowledge-retrieval.js', 'public/knowledge-semantic.js', 'public/knowledge-structure.js', 'public/knowledge-limits.js'];
     for (const name of files) { await fs.mkdir(path.dirname(path.join(app, name)), { recursive: true }); await fs.copyFile(path.join(root, name), path.join(app, name)); }
     await fs.cp(path.join(modelRoot, PROFILE.model), path.join(bundle, 'runtime', 'models', PROFILE.model), { recursive: true });
+    const onnxVersion = '1.21.0';
     await fs.cp(path.join(root, 'docs', 'licenses'), path.join(bundle, 'runtime', 'licenses'), { recursive: true });
-    const notices = path.join(bundle, 'runtime', 'licenses', 'onnxruntime-third-party-1.21.0.txt');
-    execFileSync('curl', ['--fail', '--location', '--retry', '2', '--max-time', '30',
-      'https://raw.githubusercontent.com/microsoft/onnxruntime/v1.21.0/ThirdPartyNotices.txt', '--output', notices], { stdio: 'inherit' });
+    const notices = path.join(bundle, 'runtime', 'licenses', 'onnxruntime-third-party-' + onnxVersion + '.txt');
     if (createHash('sha256').update(await fs.readFile(notices)).digest('hex') !== '8c06e8cff286a4a117b3b246a4c7da68428a144af757823db50e3d6520941ec6') throw Error('运行库第三方许可文件校验失败');
     await fs.writeFile(path.join(app, 'package.json'), JSON.stringify({ name: 'blink-offline-search', version: '1.0.0', private: true,
       type: 'commonjs', dependencies: { '@huggingface/transformers': '3.8.1', fflate: '0.8.3', parse5: '7.3.0' } }, null, 2));
     // Install target-platform CPU dependencies at build time; end users unpack them.
     execFileSync(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['install', '--omit=dev', '--ignore-scripts', '--os=win32', '--cpu=x64', '--no-audit', '--no-fund'], { cwd: app, stdio: 'inherit', shell: process.platform === 'win32' });
-    const runtime = path.join(app, 'node_modules', 'onnxruntime-node', 'bin', 'napi-v3');
+    const onnx = path.join(app, 'node_modules', 'onnxruntime-node');
+    const installedVersion = JSON.parse(await fs.readFile(path.join(onnx, 'package.json'), 'utf8')).version;
+    if (installedVersion !== onnxVersion) throw Error('ONNX Runtime 版本与许可通知不匹配：' + installedVersion);
+    const runtime = path.join(onnx, 'bin', 'napi-v3');
     for (const name of await fs.readdir(runtime)) if (name !== 'win32') await fs.rm(path.join(runtime, name), { recursive: true });
     await fs.rm(path.join(runtime, 'win32', 'arm64'), { recursive: true, force: true });
     // Native ONNX is used for CPU inference; browser WASM and source maps are unused.

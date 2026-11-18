@@ -114,6 +114,8 @@ npm run build:blink -- ./MR380R-semantic-knowledge.json ./dist/blink-cli-windows
 
 默认输出为 `dist/blink-cli-windows-x64.zip`。输入本身是完整语义知识库 ZIP 时会自动保留原 HTML；语义 JSON 可通过第三参数传入原知识库 ZIP，构建时校验型号、SDK 版本及各章节正文一致后复制 HTML。构建过程需要网络安装固定版本运行依赖、下载并校验 Windows Node；用户使用已构建的包时从本地加载资源。包中包含模型与运行库的许可说明。量化权重的 24 MB 不包含运行库和知识库，最终包体积应以生成的 ZIP 为准。
 
+ONNX Runtime 1.21.0 的第三方许可通知原件随仓库保存在 `docs/licenses/`，随包复制到 `runtime/licenses/`。构建会校验包内通知文件的 SHA-256 和已安装的运行库版本。[ONNX Runtime 1.21.0 通知原件](https://sources.debian.org/data/main/o/onnxruntime/1.21.0%2Bdfsg-1/ThirdPartyNotices.txt)
+
 不同功能的手册可分别生成语义 JSON，再通过重复的 `--merge` 组合查询。合并要求产品型号、SDK 版本和完整 Embedding 配置一致，拒绝重复手册 ID。兼容向量直接复用，保留每份手册的独立 Git 来源。
 
 ```bash
