@@ -17,6 +17,7 @@ function request(text = 'HTTP 超时参数。', id = 'm-0123456789abcdef') {
   }] };
 }
 const vector = () => { const values = Array(512).fill(0); values[0] = 1; return values; };
+const uncompressedSize = files => measureFiles(Object.entries(files).map(([name, content]) => ({ name, content })));
 function publisher(t, workerData) {
   const workers = [], requests = [], value = createPublisher({ createWorker() {
     const thread = new Worker(path.join(__dirname, 'helpers/knowledge-worker-thread.js'), { workerData });
@@ -29,14 +30,23 @@ function publisher(t, workerData) {
   return { value, requests, workers };
 }
 
-test('ZIP measurement matches bytes including Chinese, surrogate replacements and headers', () => {
+test('ZIP uses DEFLATE when it saves bytes and preserves the uncompressed budget and UTF-8 content', async () => {
   const texts = ['中文😀', '\ud800', '\udfff', 'a\ud800b\udc00', 'quotes"\\\n'];
   for (const text of texts) assert.equal(textBytes(text), Buffer.byteLength(text));
-  const files = texts.map((content, i) => ({ name: 'docs/' + i + '.txt', content }));
-  assert.equal(measureFiles(files), createZip(files).size);
+  const files = [{ name: 'docs/compressed.txt', content: '中文😀'.repeat(200) }, { name: 'docs/stored.txt', content: 'X' },
+    ...texts.map((content, i) => ({ name: 'docs/' + i + '.txt', content }))];
+  const archive = createZip(files), bytes = new Uint8Array(await archive.arrayBuffer());
+  const methods = [];
+  unzipSync(bytes, { filter(entry) { methods.push(entry.compression); return false; } });
+  assert.equal(methods[0], 8);
+  assert.equal(methods[1], 0);
+  const unpacked = unzipSync(bytes);
+  for (const file of files) assert.deepEqual(Buffer.from(unpacked[file.name]), Buffer.from(file.content));
+  assert.equal(measureFiles(files), uncompressedSize(unpacked));
+  assert.ok(archive.size < measureFiles(files));
 });
 
-test('preflight rebases chunk positions and predicts the exact semantic ZIP without inference', async t => {
+test('preflight rebases chunk positions and predicts the uncompressed semantic ZIP budget without inference', async t => {
   const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'dita-estimate-')); t.after(() => fs.rm(directory, { recursive: true, force: true }));
   const input = request('带有中文与emoji😀的 HTTP 参数'), second = request('HTTP response 200', 'm-fedcba9876543210').manuals[0];
   input.manuals[0].entries = Array.from({ length: 12 }, (_, i) => ({ anchor: 'a' + i, title: 'HTTP ' + i, text: 'HTTP 参数😀' + i }));
@@ -49,7 +59,8 @@ test('preflight rebases chunk positions and predicts the exact semantic ZIP with
   const combined = data.combineIndexes(groups, indices);
   assert.equal(estimate.bytes, Buffer.byteLength(JSON.stringify(combined))); assert.equal(estimate.chunks, 13);
   const prepared = preparePackage(input), measured = prepared.measure(estimate), output = prepared.build(combined);
-  assert.equal(measured.bytes, output.zip.size);
+  assert.equal(measured.bytes, uncompressedSize(unzipSync(new Uint8Array(await output.zip.arrayBuffer()))));
+  assert.ok(output.zip.size < measured.bytes);
   for (const [i, records] of groups.entries()) await cache.put(records, input.model, data.PROFILE, indices[i]);
   tokenizations = 0;
   assert.deepEqual(await builder.estimate(input), estimate); assert.equal(tokenizations, 0, 'warm preflight must work without model assets');
@@ -63,8 +74,9 @@ test('production Worker reuses its sealed preview and produces a readable identi
   const phases = [], summary = await value.prepare(input, { onProgress: progress => phases.push(progress.stage) });
   input.manuals[0].entries[0].text = 'later edit';
   const preview = await value.preview(), output = await value.download({ semantic: false });
-  assert.equal(workers.length, 1); assert.equal(output.zip.size, summary.bytes);
+  assert.equal(workers.length, 1); assert.ok(output.zip.size < summary.bytes);
   const archive = unzipSync(new Uint8Array(await output.zip.arrayBuffer()));
+  assert.equal(uncompressedSize(archive), summary.bytes);
   assert.equal(strFromU8(archive['docs/index.html']), preview.html);
   assert.equal(JSON.parse(strFromU8(archive['docs/knowledge.json'])).manuals[0].entries[0].text, 'HTTP 超时参数。');
   assert.ok(phases.includes('index') && phases.includes('render'));
@@ -98,13 +110,14 @@ test('production Worker streams semantic results over HTTP with the pinned works
   const { value } = publisher(t, { origin: 'http://127.0.0.1:' + server.address().port });
   await value.prepare(input); const phases = [];
   const result = await value.download({ semantic: true, token: 'workspace-version-123' }, { onProgress: info => phases.push(info) });
-  const book = JSON.parse(strFromU8(unzipSync(new Uint8Array(await result.zip.arrayBuffer()))['docs/knowledge.json']));
+  const archive = unzipSync(new Uint8Array(await result.zip.arrayBuffer()));
+  const book = JSON.parse(strFromU8(archive['docs/knowledge.json']));
   assert.deepEqual(book.semantic, index); assert.equal(data.validate(records, book.semantic).length, chunks.length * 512);
   assert.equal(result.stats.reusedManuals, 1); assert.equal(result.stats.rebuiltManuals, 0);
   assert.deepEqual(received.map(item => item.path), ['/api/knowledge/publish']);
   assert.ok(received.every(item => item.token === 'workspace-version-123'));
   assert.ok(phases.some(info => info.stage === 'estimate') && phases.some(info => info.stage === 'vectors'));
-  assert.ok(phases.some(info => info.stage === 'capacity' && info.bytes === result.zip.size));
+  assert.ok(phases.some(info => info.stage === 'capacity' && info.bytes === uncompressedSize(archive)));
 });
 
 test('publication prepares every cold manual once, checks capacity before inference and reuses warm indices', async t => {
@@ -123,7 +136,8 @@ test('publication prepares every cold manual once, checks capacity before infere
   } });
   assert.equal(tokenizations, 2); assert.equal(generations, 2); assert.equal(first.stats.rebuiltManuals, 2);
   const combined = data.combineIndexes(input.manuals.map(builder.recordsFor), outputs);
-  assert.equal(prepared.measure(estimate).bytes, prepared.build(combined).zip.size);
+  const output = prepared.build(combined);
+  assert.equal(prepared.measure(estimate).bytes, uncompressedSize(unzipSync(new Uint8Array(await output.zip.arrayBuffer()))));
   const warm = await builder.publish(input, options);
   assert.equal(tokenizations, 2); assert.equal(generations, 2); assert.equal(warm.stats.reusedManuals, 2);
   input.manuals[1].entries[0].text += ' changed';

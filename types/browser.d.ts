@@ -1,5 +1,6 @@
 export {};
 declare global {
+  var fflate: Pick<typeof import('fflate'), 'deflateSync'>;
   var DitaKnowledgeSourceData: typeof import('../public/knowledge-source-data');
   var DitaKnowledgeRetrieval: typeof import('../public/knowledge-retrieval');
   var DitaKnowledgePlan: typeof import('../public/knowledge-plan');

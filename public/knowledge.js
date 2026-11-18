@@ -224,7 +224,7 @@
       else bar.removeAttribute('value');
       const detail = value.manual ? value.manual + ' · ' + value.position + '/' + value.totalManuals + ' 份手册' : value.total ? value.done + '/' + value.total : '';
       get('knowledgePublishDetail').textContent = detail;
-      if (Number.isFinite(value.bytes)) get('knowledgeCapacity').textContent = '预计交付 ' + (value.bytes / 1048576).toFixed(2) + ' MiB / 上限 64 MiB';
+      if (Number.isFinite(value.bytes)) get('knowledgeCapacity').textContent = '压缩前核算 ' + (value.bytes / 1048576).toFixed(2) + ' MiB / 上限 64 MiB';
       const vectors = value.stage === 'vectors';
       if (vectors !== generatingVectors) { generatingVectors = vectors; controls(); }
       if (vectors && Number.isFinite(value.reusedManuals)) get('knowledgeVectorStatus').textContent = '向量：复用 ' + value.reusedManuals + ' 份，重新生成 ' + value.rebuiltManuals + ' 份';

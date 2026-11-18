@@ -4,6 +4,7 @@ const fs = require('node:fs/promises'), path = require('node:path'), os = requir
 const { spawn, execFileSync } = require('node:child_process'), { pathToFileURL } = require('node:url');
 const { createHash } = require('node:crypto'), { chromium } = require('playwright-core'), { unzipSync, strFromU8 } = require('fflate');
 const { collectDemoFiles } = require('../scripts/demo-workspace');
+const { measureFiles } = require('../public/knowledge-zip');
 const hash = value => createHash('sha256').update(value).digest('hex');
 test('real HTTP knowledge delivery works across repositories and from a moved offline folder', async t => {
   const temporary = await fs.mkdtemp(path.join(os.tmpdir(), 'dita-knowledge-')), http = path.join(temporary, 'HTTP真实文档库'), extra = path.join(temporary, '独立测试库');
@@ -133,7 +134,12 @@ test('real HTTP knowledge delivery works across repositories and from a moved of
     await page.click('#knowledgeButton'); await page.check('#knowledgeSemantic');
     const firstStarted = Date.now(), result = await download(), firstMs = Date.now() - firstStarted, archive = unzipSync(new Uint8Array(result.bytes));
     const book = JSON.parse(strFromU8(archive['docs/knowledge.json']));
-    const { flatten } = require('../lib/knowledge-book'), { validate } = require('../public/knowledge-semantic');
+    const { flatten, bookFromPath } = require('../lib/knowledge-book'), { validate } = require('../public/knowledge-semantic');
+    const storedBytes = measureFiles(Object.entries(archive).map(([name, content]) => ({ name, content })));
+    assert.ok(result.bytes.length < storedBytes);
+    const cliZip = path.join(temporary, 'real-http-semantic.zip');
+    await fs.writeFile(cliZip, result.bytes);
+    assert.deepEqual(bookFromPath(cliZip), book);
     assert.ok(book.semantic.chunks.length > 24);
     assert.equal(validate(flatten(book), book.semantic).length, book.semantic.chunks.length * 512);
     const manifest = JSON.parse(strFromU8(archive['docs/manifest.json']));
@@ -147,7 +153,8 @@ test('real HTTP knowledge delivery works across repositories and from a moved of
     assert.match(await page.locator('#knowledgeVectorStatus').innerText(), /复用 1 份，重新生成 0 份/);
     const cachedBook = JSON.parse(strFromU8(unzipSync(new Uint8Array(cached.bytes))['docs/knowledge.json']));
     assert.deepEqual(cachedBook.semantic, book.semantic);
-    t.diagnostic('Real HTTP vector export: first=' + firstMs + 'ms; cached=' + cachedMs + 'ms; chunks=' + book.semantic.chunks.length);
+    t.diagnostic('Real HTTP vector export: first=' + firstMs + 'ms; cached=' + cachedMs + 'ms; chunks=' + book.semantic.chunks.length +
+      '; ZIP before compression=' + storedBytes + ' bytes; ZIP downloaded=' + result.bytes.length + ' bytes');
     await page.locator('.knowledge-vector-options summary').click(); await page.check('#knowledgeRebuild');
     await download(); assert.match(await page.locator('#knowledgeVectorStatus').innerText(), /复用 0 份，重新生成 1 份/);
     assert.equal(await page.locator('#knowledgeRebuild').isChecked(), false);
