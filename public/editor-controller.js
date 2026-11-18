@@ -217,7 +217,7 @@
     }
 
     function syncVisualToModel(event) {
-      if (state.suppressVisualInput) return;
+      if (state.suppressVisualInput || inputHistory?.pendingComposition(event)) return;
       if (state.mode !== 'visual') return;
       const file = state.filesMap.get(state.activePath);
       if (!file) return;
@@ -275,6 +275,7 @@
     });
 
     function markDirty(event) {
+      if (inputHistory?.pendingComposition(event)) return;
       const file = state.filesMap.get(state.activePath);
       if (!file || file.current === dom.editor.value) return;
       setFileContent(file, dom.editor.value, { updateEditor: false, ...inputHistory?.take(file, event) });

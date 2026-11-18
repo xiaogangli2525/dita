@@ -110,14 +110,19 @@ test('Oxygen tracking persists real code edits and supports review, history and 
     assert.equal((await page.locator('#typing-p').textContent()).replace(/\u00a0/g, ' '), 'HTTP request timeout 60 seconds 中文 😀');
   });
   await t.test('native Chromium composition commits tracked Chinese once and cancellation keeps history untouched', async () => {
-    const initial = await current('typing.dita'), offset = (await page.locator('#typing-p').textContent()).length;
+    const initial = await current('typing.dita'), initialText = await page.locator('#typing-p').textContent();
+    const offset = initialText.length;
     const depth = () => page.evaluate(() => window.DitaApp.state.filesMap.get('typing.dita').history.undo.length);
     await select('#typing-p', offset);
     const before = await depth(), cdp = await page.context().newCDPSession(page);
     try {
       const compose = text => cdp.send('Input.imeSetComposition', { text, selectionStart: text.length, selectionEnd: text.length });
-      await compose('zh'); await compose('zhong'); await compose('');
+      await compose('zh'); await compose('zhong');
       assert.equal(await current('typing.dita'), initial);
+      assert.equal(await depth(), before);
+      await compose('');
+      assert.equal(await current('typing.dita'), initial);
+      assert.equal(await page.locator('#typing-p').textContent(), initialText);
       assert.equal(await depth(), before);
       await compose('zh'); await compose('zhong');
       assert.equal(await current('typing.dita'), initial);

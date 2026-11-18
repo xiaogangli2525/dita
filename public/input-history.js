@@ -30,7 +30,10 @@
       if (!ending) return;
       // Some IMEs deliver the final input immediately after compositionend.
       // Keep that tail in this group, then close it before ordinary typing.
-      if (event.target === A.dom.editor) syncSource(event); else syncVisual(event);
+      if (event.data) {
+        if (event.target === A.dom.editor) syncSource(event);
+        else syncVisual(event);
+      }
       clearTimeout(timer); timer = setTimeout(() => { if (ending) store.breakHistoryGroup(ending.file); ending = null; pending = null; }, 0);
     }
     for (const element of [A.dom.editor, A.dom.visualEditor]) {
@@ -43,7 +46,12 @@
     }
     function reset() { clearTimeout(timer); composition = ending = null; breakAll(); }
     A.events.on('workspace:willChange', reset); A.events.on('file:opened', reset);
-    return { take, breakAll, reset };
+    // Native browsers can emit multiple input events for a single candidate.
+    // The committed DOM is read at compositionend, never during those updates.
+    function pendingComposition(event) {
+      return event?.type === 'input' && (event.isComposing || Boolean(composition));
+    }
+    return { take, breakAll, reset, pendingComposition };
   }
   root.DitaInputHistory = { createController };
 })(window);
