@@ -2,6 +2,7 @@
 (function (root) {
   const xml = typeof module !== 'undefined' ? require('./xml-source') : root.DitaXmlSource;
   const domain = typeof module !== 'undefined' ? require('./manual-core') : root.DitaManualCore;
+  const { parseConditionGroups } = typeof module !== 'undefined' ? require('./condition-groups') : root.DitaConditionGroups;
   const attributes = new Set(['audience', 'platform', 'product', 'props', 'otherprops', 'deliveryTarget']);
   function compile(source) {
     const tree = xml.inspectSource(source), rules = new Map(), decisions = new WeakMap();
@@ -16,19 +17,6 @@
       if (rules.has(key)) throw new Error('DITAVAL 包含重复规则：' + (att || '默认') + (value ? '=' + value : ''));
       rules.set(key, action);
     }
-    function groups(value) {
-      const found = [], plain = [];
-      let rest = value;
-      while (rest.trim()) {
-        const match = /^\s*([^\s()]+)(?:\(([^()]*)\))?/.exec(rest);
-        if (!match) throw new Error('条件属性的分组语法无效：' + value);
-        if (match[2] === undefined) plain.push(match[1]);
-        else found.push({ name: match[1], values: match[2].trim().split(/\s+/).filter(Boolean) });
-        rest = rest.slice(match[0].length);
-      }
-      if (plain.length) found.push({ name: '', values: plain });
-      return found;
-    }
     function excluded(att, group, value) {
       const keys = [group && group + '\n' + value, att + '\n' + value, group && att + '\n' + group, att + '\n', '\n'].filter(Boolean);
       return keys.map(key => rules.get(key)).find(Boolean) === 'exclude';
@@ -37,8 +25,12 @@
       if (decisions.has(node)) return decisions.get(node);
       const included = [...attributes].every(att => {
         if (!node.attrs[att]) return true;
-        const value = domain.decode(node.attrs[att]).trim();
-        return !value || groups(value).every(group => !group.values.length || group.values.some(value => !excluded(att, group.name, value)));
+        const groups = parseConditionGroups(att, domain.decode(node.attrs[att]));
+        for (const [name, values] of groups) {
+          const group = name === att ? '' : name;
+          if (![...values].some(value => !excluded(att, group, value))) return false;
+        }
+        return true;
       });
       decisions.set(node, included); return included;
     }

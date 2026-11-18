@@ -24,6 +24,7 @@ declare global {
   var DitaManualDomain: typeof import('../public/manual-domain');
   var DitaManualCore: typeof import('../public/manual-core');
   var DitaProfiling: typeof import('../public/profiling-core');
+  var DitaConditionGroups: typeof import('../public/condition-groups');
   interface Window {
     DitaDocumentStore: typeof DitaDocumentStore; DitaSnapshotData: typeof DitaSnapshotData;
     DitaSave: typeof DitaSave; DitaDeliveryData: typeof DitaDeliveryData; DitaManualService: typeof DitaManualService;

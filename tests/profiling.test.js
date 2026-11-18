@@ -23,6 +23,20 @@ test('DITAVAL honors OR within values, AND across attributes, defaults and group
 test('invalid and unsupported DITAVALs stop explicitly instead of passing ignored rules', () => {
   for (const source of ['<topic/>', '<val><revprop action="flag"/></val>', '<val><prop att="product" action="flag"/></val>', '<val><prop att="rev" action="exclude"/></val>', '<val><prop val="x" action="exclude"/></val>', '<val><prop att="product" val="a b" action="exclude"/></val>', '<val><prop action="include"/><prop action="exclude"/></val>']) assert.throws(()=>compile(source));
 });
+test('DITAVAL merges matching condition group names before filtering each Map branch', () => {
+  const profile = compile('<val><prop att="product" val="A" action="exclude"/></val>');
+  const source = '<map>' +
+    '<topicref href="repeated.dita" product="series(A) series(B)"/>' +
+    '<topicref href="implicit.dita" product="A product(B)"/>' +
+    '<topicref href="empty.dita" product="series() B"/>' +
+    '<topicref href="excluded.dita" product="series(A) region(B)"/>' +
+    '<topicref href="all-excluded.dita" product="series(A) series(A)"/>' +
+    '</map>';
+  assert.equal(profile.filterSource(source), source.replace(/<topicref href="(?:all-)?excluded\.dita"[^>]+\/>/g, ''));
+  for (const product of ['series(A', 'series(other(A))', 'series(A)region(B)']) {
+    assert.throws(() => profile.keep(node({ product })), /分组语法无效/);
+  }
+});
 test('a profile that excludes all published topics refuses an empty customer manual',()=>{
  const files=new Map([['hidden.dita',{current:'<topic id="h" product="tbd"><title>H</title></topic>'}]]);
  assert.throws(()=>publication.preparePublication({map:{children:[{type:'file',path:'hidden.dita'}]},files,profile:compile(val)},core.collectPreviewPaths),/排除了所有正文/);

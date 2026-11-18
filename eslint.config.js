@@ -2,7 +2,7 @@
 const js = require('@eslint/js');
 const globals = require('globals');
 const documentRules = ['manual-core', 'manual-domain', 'publication-core', 'publication-resolver',
-  'oxygen-core', 'model-discovery', 'model-note-text', 'note-rules-core', 'footnotes-core', 'profiling-core', 'xml-source', 'map-context'];
+  'oxygen-core', 'model-discovery', 'model-note-text', 'note-rules-core', 'footnotes-core', 'profiling-core', 'condition-groups', 'xml-source', 'map-context'];
 const importsOnly = names => 'CallExpression[callee.name="require"]' + names
   .flatMap(name => ['./' + name, './' + name + '.js'])
   .map(name => ':not([arguments.0.value=' + JSON.stringify(name) + '])').join('');
