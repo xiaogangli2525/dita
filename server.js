@@ -15,6 +15,7 @@ let workspaceToken = randomUUID();
 
 const PORT = Number(process.env.PORT || 5050);
 const HOST = process.env.HOST || '127.0.0.1';
+const knowledgeReads = new Set(['/api/knowledge/catalog', '/api/knowledge/capture', '/api/knowledge/verify']);
 let DOCS_ROOT = path.resolve(process.env.DOCS_ROOT || path.join(__dirname, '..', 'repo_ml353a'));
 const DEFAULT_DOCS_ROOT = DOCS_ROOT;
 const REPOSITORIES_ROOT = path.resolve(process.env.REPOSITORIES_ROOT || path.dirname(DEFAULT_DOCS_ROOT));
@@ -38,6 +39,8 @@ function relativePath(absolutePath) {
 }
 
 const { readXmlFile, writeXmlFile, resolveWorkspacePath } = require('./lib/document-files');
+const { createDocumentBatch } = require('./lib/document-batch');
+const documentBatch = createDocumentBatch();
 async function checkedResolve(relative, options) {
   safeResolve(relative);
   return resolveWorkspacePath(DOCS_ROOT, relative, options);
@@ -139,6 +142,7 @@ async function buildMapTrees(files) {
 
 async function buildWorkspace() {
   const exists = await fs.stat(DOCS_ROOT).then(stat => stat.isDirectory()).catch(error => { if (error.code === 'ENOENT') return false; throw error; });
+  if (exists) await documentBatch.recover(DOCS_ROOT);
   const files = exists ? await walkFileTree() : [];
   const maps = await buildMapTrees(files);
   const git = exists ? await listBranches().catch(() => ({ current: '', branches: [] })) : { current: '', branches: [] };
@@ -159,7 +163,7 @@ const handleApi = createApiHandler({
     get root() { return DOCS_ROOT; }, get token() { return workspaceToken; }, repositoriesRoot: REPOSITORIES_ROOT,
     snapshot: buildWorkspace, selectRepository, rotateToken: () => { workspaceToken = randomUUID(); }
   },
-  git, remoteRepositories,
+  git, remoteRepositories, documentBatch,
   documents: { checkedResolve, walkFileTree, readXmlFile, writeXmlFile, relativePath, isDitaLike },
   maps: { parseXml, childElement, textOf, mapNodeToTree, applyMapOperation },
   port: PORT, publicOrigin: process.env.PUBLIC_ORIGIN, bindHost: HOST, demoMode: process.env.DITA_DEMO_MODE === '1'
@@ -189,13 +193,15 @@ const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
     if (url.pathname.startsWith('/api/')) {
-      // AI input is immutable; knowledge reads bind their own repository and
-      // source version. Neither operation needs the active workspace IO lock.
-      // Both still pass the shared origin/token guard in handleApi.
-      if (url.pathname.startsWith('/api/knowledge/') || ['/api/ai/propose', '/api/ai/scan', '/api/ai/config'].includes(url.pathname)) {
+      // Model work uses immutable input. Knowledge source reads also touch
+      // working files, so they wait for a batch save before capturing them.
+      const readsKnowledgeSource = knowledgeReads.has(url.pathname);
+      if ((url.pathname.startsWith('/api/knowledge/') && !readsKnowledgeSource) ||
+          ['/api/ai/propose', '/api/ai/scan', '/api/ai/config'].includes(url.pathname)) {
         await handleApi(req, res, url.pathname, url.searchParams); return;
       }
-      await workspaceLock(req.method !== 'GET' && url.pathname !== '/api/export/pdf', () => handleApi(req, res, url.pathname, url.searchParams));
+      const write = url.pathname === '/api/workspace' || req.method !== 'GET' && !readsKnowledgeSource && url.pathname !== '/api/export/pdf';
+      await workspaceLock(write, () => handleApi(req, res, url.pathname, url.searchParams));
       return;
     }
     if (await serveStatic(res, url.pathname === '/' ? '/index.html' : url.pathname)) return;

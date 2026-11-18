@@ -23,7 +23,7 @@ test('HTTP workflow protects edits, Git baselines, repository boundaries and wor
     server.listen(0, '127.0.0.1', () => { const port = server.address().port; server.close(() => resolve(port)); });
   });
   const child = spawn(process.execPath, ['server.js'], {
-    cwd: path.join(__dirname, '..'), env: { ...process.env, PORT: String(port), DOCS_ROOT: repo, REPOSITORIES_ROOT: temporary, PUBLIC_ORIGIN: 'https://docs.example.invalid' },
+    cwd: path.join(__dirname, '..'), env: { ...process.env, PORT: String(port), DOCS_ROOT: repo, REPOSITORIES_ROOT: temporary, DITA_SAVE_JOURNAL_DIR: path.join(temporary, 'save-journal'), PUBLIC_ORIGIN: 'https://docs.example.invalid' },
     stdio: ['ignore', 'pipe', 'pipe']
   });
   t.after(async () => {
@@ -83,6 +83,40 @@ test('HTTP workflow protects edits, Git baselines, repository boundaries and wor
     const good = await request('/api/file', 'PUT', { path: 'topics/a.dita', content: initial, expectedContent: disk });
     assert.equal(good.status, 200);
     assert.equal(await fs.readFile(file, 'utf8'), initial);
+  });
+  await t.test('one batch validates all documents before disk writes and acknowledges only complete saves', async () => {
+    const map = path.join(repo, 'main.ditamap'), mapBefore = await fs.readFile(map, 'utf8');
+    const mapEdit = { path: 'main.ditamap', content: mapBefore.replace('Guide', 'Batch guide'), expectedContent: mapBefore };
+    const topicEdit = { path: 'topics/a.dita', content: initial.replace('Original', 'Batch edit'), expectedContent: initial };
+    for (const [second, status] of [
+      [{ ...topicEdit, expectedContent: '<topic/>' }, 409],
+      [{ ...topicEdit, content: '<topic>A & B</topic>' }, 400]
+    ]) {
+      const failed = await request('/api/file/batch', 'PUT', { files: [mapEdit, second] });
+      assert.equal(failed.status, status);
+      const result = await failed.json();
+      assert.equal(result.saved, false);
+      assert.match(result.error, /topics\/a\.dita/);
+      assert.deepEqual(result.files[0], { path: mapEdit.path, status: 'notWritten' });
+      assert.equal(result.files[1].path, topicEdit.path);
+      assert.equal(result.files[1].status, status === 409 ? 'conflict' : 'failed');
+      assert.equal(await fs.readFile(map, 'utf8'), mapBefore);
+      assert.equal(await fs.readFile(file, 'utf8'), initial);
+    }
+    const rejected = await request('/api/file/batch', 'PUT', { files: [
+      { ...mapEdit, expectedContent: '<map/>' }, { ...topicEdit, content: '<topic' }
+    ] });
+    assert.deepEqual((await rejected.json()).files.map(file => [file.path, file.status]), [
+      [mapEdit.path, 'conflict'], [topicEdit.path, 'failed']
+    ]);
+    assert.equal(await fs.readFile(map, 'utf8'), mapBefore);
+    assert.equal(await fs.readFile(file, 'utf8'), initial);
+    const saved = await request('/api/file/batch', 'PUT', { files: [mapEdit, topicEdit] });
+    assert.equal(saved.status, 200);
+    assert.deepEqual(await saved.json(), { saved: true, files: [mapEdit, topicEdit].map(file => ({ path: file.path, status: 'saved' })) });
+    assert.equal(await fs.readFile(map, 'utf8'), mapEdit.content);
+    assert.equal(await fs.readFile(file, 'utf8'), topicEdit.content);
+    await Promise.all([fs.writeFile(map, mapBefore), fs.writeFile(file, initial)]);
   });
   await t.test('encoding failures leave existing bytes intact and cannot create a damaged document', async () => {
     const disk = await fs.readFile(file, 'utf8');
