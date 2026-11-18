@@ -52,6 +52,8 @@ npm run check:ai      # real HTTP acceptance fixture preflight; no model call
 
 ESLint checks recommended correctness rules, including undefined/unused variables and preserved error causes. Browser-evaluated test/PDF callbacks have explicit browser globals; vendored code and source manuals are excluded. Intentional control-character rejection has a local, explained rule exception. CI runs lint and `npm run typecheck` on Node 20 and 22 before unit tests. `.editorconfig` sets basic code/text conventions without changing DITA encoding or forcing a repository-wide format rewrite. Pinned TypeScript checks the actual document/proposal/save, manual capture/snapshot and delivery-record implementations through JSDoc and `public/data-contracts.d.ts`; no browser build step is required. UI/rendering modules remain incrementally typed.
 
+Local build/runtime directories (`dist/`, `models/`, `oxygen-sdk/`, `web/`), unpacked root-level `blink-cli-*/` delivery previews and `.tmp_*/` scratch directories are excluded from ESLint. Keep local experimental scripts in a `.tmp_<name>/` directory so they do not enter the normal `tests/` scan. Source `.cjs` files and normal tests remain checked; the ESLint configuration deliberately does not import every `.gitignore` rule.
+
 ## Remote document libraries
 
 Run the local Node service with Git installed. In the left workspace settings, choose **加载远程库**, enter an HTTPS or SSH Git address and a new local name, optionally read/select a remote branch, then **克隆并选择手册**. Select an available `.ditamap` to begin writing. Libraries are stored under `REPOSITORIES_ROOT`; existing directories are never replaced. An empty/missing initial `DOCS_ROOT` can load the workbench so the first library can be imported.
