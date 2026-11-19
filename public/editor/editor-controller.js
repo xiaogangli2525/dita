@@ -3,7 +3,7 @@
   const documentStore = typeof module !== 'undefined' ? require('../document-store') : root.DitaDocumentStore;
   const review = typeof module !== 'undefined' ? require('../review/review') : root.DitaReview;
   const mapAuthor = typeof module !== 'undefined' ? require('./map-author-controller') : root.DitaMapAuthorController;
-  const loader = typeof module !== 'undefined' ? require('../document-loader') : root.DitaDocumentLoader;
+  const loader = typeof module !== 'undefined' ? require('../workspace/document-loader') : root.DitaDocumentLoader;
 
   // Coordinates Source/Author/Map surfaces around one document history. View
   // callbacks are injected; state and source rules remain in their own modules.

@@ -1,6 +1,6 @@
 'use strict';
 (function (root) {
-  const reviewSession = typeof module !== 'undefined' ? require('./review/review-session') : root.DitaReviewSession;
+  const reviewSession = typeof module !== 'undefined' ? require('../review/review-session') : root.DitaReviewSession;
   function createController(A, views) {
     const { state, session, dom, setStatus, toast } = A;
     const { renderWorkspaceSwitches, renderMapPicker, renderTabs, updateActivePanes,

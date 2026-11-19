@@ -1,5 +1,5 @@
 'use strict';
-const { createSession } = require('../public/workspace-session');
+const { createSession } = require('../public/workspace/workspace-session');
 const test = require('node:test'), assert = require('node:assert/strict');
 const { createController } = require('../public/editor/map-author-controller');
 const { createEvents } = require('../public/manual-core');

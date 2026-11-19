@@ -1,6 +1,6 @@
 'use strict';
 const test = require('node:test'), assert = require('node:assert/strict');
-const core = require('../public/ai-edit-core'), conversation = require('../public/ai-conversation');
+const core = require('../public/ai/ai-edit-core'), conversation = require('../public/ai/ai-conversation');
 const source = '<topic><title>T</title><body><p>发送请求，然后检查返回值。</p></body></topic>';
 const begin = source.indexOf('发送'), scope = core.target(source, begin, begin + '发送请求，然后检查返回值。'.length);
 const first = { summary: '润色完成', questions: [], edits: [{ id: 't0', before: scope.text, after: '发起请求，然后检查返回值。' }] };

@@ -1,9 +1,9 @@
 'use strict';
 const fs = require('node:fs'), path = require('node:path');
 const { performance } = require('node:perf_hooks');
-const core = require('../public/ai-edit-core');
-const conversation = require('../public/ai-conversation');
-const scan = require('../public/ai-scan-core');
+const core = require('../public/ai/ai-edit-core');
+const conversation = require('../public/ai/ai-conversation');
+const scan = require('../public/ai/ai-scan-core');
 const xml = require('../public/xml-source');
 const { decodeXmlBuffer } = require('../lib/document-files');
 const corpus = require('../tests/fixtures/ai-http-acceptance.json');

@@ -16,9 +16,15 @@ declare global {
   var DitaReviewSession: typeof import('../public/review/review-session');
   var DitaReviewView: typeof import('../public/review/review-view');
   var DitaReviewMarkup: typeof import('../public/review/review-markup');
-  var DitaAiEditCore: typeof import('../public/ai-edit-core');
-  var DitaAiConversation: typeof import('../public/ai-conversation');
+  var DitaAiEditCore: typeof import('../public/ai/ai-edit-core');
+  var DitaAiConversation: typeof import('../public/ai/ai-conversation');
+  var DitaAiContext: typeof import('../public/ai/ai-context');
+  var DitaAiTaskStore: typeof import('../public/ai/ai-task-store');
+  var DitaSearchCore: typeof import('../public/search-core');
   var DitaDocumentStore: typeof import('../public/document-store');
+  var DitaDocumentLoader: typeof import('../public/workspace/document-loader');
+  var DitaDocumentNavigation: typeof import('../public/workspace/document-navigation');
+  var DitaWorkspaceClient: ReturnType<typeof import('../public/workspace/workspace-client').createWorkspaceClient>;
   var DitaSnapshotData: typeof import('../public/snapshot-data');
   var DitaDeliveryData: typeof import('../public/delivery/delivery-data');
   var DitaDeliveryDocument: typeof import('../public/delivery/delivery-document');

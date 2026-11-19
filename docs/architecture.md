@@ -7,13 +7,16 @@
 | Module | Responsibility |
 | --- | --- |
 | `app-dom.js` | DOM handles only; no listeners, network or application state |
-| `workspace-controller.js` | Initialization, repository/branch switching, token adoption and safe directory refresh |
-| `document-navigation.js` | Last-request-wins document opens, close behavior and guarded source jumps |
-| `workspace-view.js` | Header/save status, tabs, outline, filename search and switching feedback |
+| `workspace/workspace-controller.js` | Initialization, repository and branch switching, token adoption and directory refresh |
+| `workspace/document-loader.js` | Shared disk reads and optional Git baselines for Topic tabs and Map chapters |
+| `workspace/document-navigation.js` | Last-request-wins document opens, close behavior and guarded source jumps |
+| `workspace/workspace-view.js` | Header and save status, tabs, outline, filename search and switching feedback |
 | `app-actions.js` | Delegate toolbar and global keyboard commands to existing feature/editor controllers |
 | `menu-controller.js` | Menu availability, keyboard navigation, focus restoration, bounds and async-action errors |
 
 Workspace switching prevents overlapping requests, rejects switching during an active save, and makes the header/layout inert while a confirmed switch is pending. Failed switches retain current buffers and restore interaction. Directory refresh rejects a different workspace identity before mutating state. Navigation refuses a delayed source jump after a newer document wins. No HTTP/domain work is moved into the view.
+
+When the Git lookup fails or returns an invalid baseline, the document loader uses the successful disk read as the comparison base and reports unknown Git status. Closing a document or switching workspaces invalidates the pending load before either result can register a buffer.
 
 UI follow-up includes source-identity outline targets (metadata titles cannot shift headings), keyboard document/navigation tabs, panel-safe menu Escape, outside-click capture, no-file action availability and handled failed opens. Rule review retains partial choices per source during the open session, confirms discarding them on close, freezes editing/selection during writes and allows cancelling slow reads. Delivery content scrolls independently from always-reachable actions; step changes reset content scroll.
 
@@ -129,7 +132,7 @@ The application remains a local Node server and buildless browser client. This c
 
 `public/editor/` groups the controllers used by the editing surface. The Map authoring controller, Map title patcher and shared XML scanner use strict JavaScript type checking. The controller uses shared document state, history edit and workspace request types, and the title patcher consumes the scanner's typed source ranges.
 
-Review views and decorations, delivery HTML and release records, and knowledge chapter extraction and retrieval metadata also use strict JavaScript type checking. The TypeScript project includes the four feature directories, where each module enables checks with `@ts-check`. The knowledge Worker resolves shared scripts relative to its own directory. The portable package includes the shared retrieval modules at the same relative paths used by the CLI and local reader.
+Review views and decorations, delivery HTML and release records, and knowledge chapter extraction and retrieval metadata also use strict JavaScript type checking. The TypeScript project includes the editor, review, delivery, knowledge, AI and workspace directories, where each module enables checks with `@ts-check`. Workspace requests, document loading and navigation, AI source selection and task recovery, and XML text search use the same strict checks. The knowledge Worker resolves shared scripts relative to its own directory. The portable package includes the shared retrieval modules at the same relative paths used by the CLI and local reader.
 
 `app-core.js` is a compatibility facade with explicit exports; existing `DitaVisualCore`/CommonJS callers retain their public API. It binds editor state/DOM only in compatibility methods, and assembles delivery using explicit parser, Oxygen and asset-path functions. New lower-level code imports its actual owner instead of depending on the facade.
 

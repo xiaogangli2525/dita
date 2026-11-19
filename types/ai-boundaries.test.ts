@@ -1,6 +1,6 @@
-import type { AiRequest, AiResult } from '../public/ai-contracts';
-import { target, applyResult } from '../public/ai-edit-core';
-import { create } from '../public/ai-conversation';
+import type { AiRequest, AiResult } from '../public/ai/ai-contracts';
+import { target, applyResult } from '../public/ai/ai-edit-core';
+import { create } from '../public/ai/ai-conversation';
 const request: AiRequest = { source: '<topic/>', start: 0, end: 8, instruction: '润色' };
 const scope = target(request.source, request.start, request.end);
 const result: AiResult = { summary: '', questions: [], edits: [{ id: 't0', before: 'a', after: 'b' }] };

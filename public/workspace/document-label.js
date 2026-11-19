@@ -1,7 +1,7 @@
 'use strict';
 (function (root) {
   const labels = new WeakMap();
-  /** @param {import('./contracts').DocumentState} file */
+  /** @param {import('../contracts').DocumentState} file */
   function documentLabel(file) {
     if (!file) return '';
     const cached = labels.get(file);

@@ -1,6 +1,6 @@
 'use strict';
 const test = require('node:test'), assert = require('node:assert/strict'), { createHash } = require('node:crypto');
-const core = require('../public/ai-edit-core'), { createTaskStore, fingerprint } = require('../public/ai-task-store');
+const core = require('../public/ai/ai-edit-core'), { createTaskStore, fingerprint } = require('../public/ai/ai-task-store');
 const identity = { root: '/docs', branch: 'main', path: 'main.ditamap' };
 function fixture() {
   const source = '<topic><title>HTTP</title><body><p>发送请求</p></body></topic>', start = source.indexOf('发送');
@@ -13,7 +13,7 @@ function storage() { const data = new Map(); return { data, getItem: key => data
 
 test('AI recovery retains scoped conversation and draft while dropping credentials and executable/UI data', () => {
   const disk = storage(), task = fixture(), store = createTaskStore(disk);
-  store.save(identity, { ...task, key: 'secret', configuration: { key: 'secret' }, html: '<script/>', busy: true });
+  store.save({ ...identity, key: 'identity-secret' }, { ...task, key: 'secret', configuration: { key: 'secret' }, html: '<script/>', busy: true });
   const saved = createTaskStore(disk).load(identity);
   assert.equal(saved.reply, task.reply); assert.equal(saved.model, task.model); assert.equal(saved.selected.path, 'a.dita');
   assert.deepEqual(saved.history.instructions, ['统一表述']); assert.equal(saved.proposal, true);

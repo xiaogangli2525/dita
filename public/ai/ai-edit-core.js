@@ -1,7 +1,7 @@
 'use strict';
 (function (root) {
-  const xml = typeof module !== 'undefined' ? require('./xml-source') : root.DitaXmlSource;
-  const { decode } = typeof module !== 'undefined' ? require('./manual-core') : root.DitaManualCore;
+  const xml = typeof module !== 'undefined' ? require('../xml-source') : root.DitaXmlSource;
+  const { decode } = typeof module !== 'undefined' ? require('../manual-core') : root.DitaManualCore;
   const BLOCKS = new Set('title shortdesc p cmd codeblock pre note fn entry stentry li dd dt'.split(' '));
   const LIMITS = Object.freeze({ source: 400000, text: 16000, instruction: 6000, edits: 80 });
   const fail = message => { throw Object.assign(new Error(message), { status: 400 }); };
