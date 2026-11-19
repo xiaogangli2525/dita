@@ -1,11 +1,11 @@
 'use strict';
 (function (root) {
-  const publication = typeof module !== 'undefined' ? require('./publication-core') : root.DitaPublication;
-  const assets = typeof module !== 'undefined' ? require('./asset-core') : root.DitaAssetCore;
-  const presentation = typeof module !== 'undefined' ? require('./document-presentation') : root.DitaDocumentPresentation;
+  const publication = typeof module !== 'undefined' ? require('../publication-core') : root.DitaPublication;
+  const assets = typeof module !== 'undefined' ? require('../asset-core') : root.DitaAssetCore;
+  const presentation = typeof module !== 'undefined' ? require('../document-presentation') : root.DitaDocumentPresentation;
   const { renderHtmlDocument } = typeof module !== 'undefined' ? require('./delivery-document') : root.DitaDeliveryDocument;
   const { highlightMarkdown, renderMarkdownToHtml } = typeof module !== 'undefined' ? require('./markdown-preview') : root.DitaMarkdownPreview;
-  const { collectPreviewPaths } = typeof module !== 'undefined' ? require('./manual-core') : root.DitaManualCore;
+  const { collectPreviewPaths } = typeof module !== 'undefined' ? require('../manual-core') : root.DitaManualCore;
   function createDeliveryCore({ parseXml, normalizeOxyPIs, resolveAssetPath }) {
     const createContext = () => ({ topicPath: '', imageDataCache: new Map(), fnCounter: 0, mdFnCounter: 0, mdFootnotes: [] });
 function escapeHtmlAttr(text) {
@@ -76,7 +76,7 @@ function publicationLink(node, ctx) {
   const href = node.getAttribute('href') || '';
   if (/^(https?:|mailto:|tel:|ftp:)/i.test(href)) return href;
   if (!href) return '';
-  const resolver = typeof module !== 'undefined' ? require('./publication-resolver') : window.DitaPublicationResolver;
+  const resolver = typeof module !== 'undefined' ? require('../publication-resolver') : window.DitaPublicationResolver;
   const target = resolver.localTarget(href, ctx.topicPath);
   if (!/\.(dita|xml)$/i.test(target.path)) throw new Error('链接资源无法打包进单文件手册：' + href);
   const anchor = ctx.anchors?.get(target.path + '#' + target.fragment);

@@ -5,10 +5,10 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { bookFromPath, flatten, mergeBooks } = require('../lib/knowledge-book');
 const semantic = require('../lib/knowledge-semantic');
-const semanticData = require('../public/knowledge-semantic');
-const { createSearchEngine } = require('../public/knowledge-search');
-const { queryConstraints } = require('../public/knowledge-retrieval').createSdkSearch();
-const { assertReadable } = require('../public/knowledge-limits');
+const semanticData = require('../public/knowledge/knowledge-semantic');
+const { createSearchEngine } = require('../public/knowledge/knowledge-search');
+const { queryConstraints } = require('../public/knowledge/knowledge-retrieval').createSdkSearch();
+const { assertReadable } = require('../public/knowledge/knowledge-limits');
 
 function defaultKnowledgePath() {
   const candidates = [
@@ -164,7 +164,7 @@ async function main() {
       return;
     }
     const engine = createSearchEngine();
-    const engineVersion = require('../public/knowledge-retrieval').createSdkSearch().version;
+    const engineVersion = require('../public/knowledge/knowledge-retrieval').createSdkSearch().version;
     let searchIndex = book.index?.compiled ? book.index : null;
     function ensureSearchIndex() { if (!searchIndex) searchIndex = engine.build(records); return searchIndex; }
 
@@ -205,7 +205,7 @@ async function main() {
         manual: manual.title, module: manual.module || manual.title, text: entry.text,
         sourcePath: entry.sourcePath || '', fingerprint: entry.fingerprint || '', source: sourceFor(book, manual.id), knowledgeBase };
       if (options.block) {
-        const structure = require('../public/knowledge-structure').validate(entry);
+        const structure = require('../public/knowledge/knowledge-structure').validate(entry);
         if (!structure) throw Error('本章没有结构块，请重新核对发布；仍可使用 --get 读取整章');
         const unit = structure.units.find(item => item.id === options.block);
         if (!unit) throw Error('找不到结构块 ID：' + options.block);

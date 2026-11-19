@@ -6,8 +6,8 @@ const os = require('node:os');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const { unzipSync, zipSync, Zip, ZipDeflate } = require('fflate');
-const { createZip } = require('../public/knowledge-zip');
-const { buildPackage } = require('../public/knowledge-package');
+const { createZip } = require('../public/knowledge/knowledge-zip');
+const { buildPackage } = require('../public/knowledge/knowledge-package');
 
 function fixture() {
   return buildPackage({
@@ -33,7 +33,7 @@ function run(args, cwd, env = {}) {
 }
 
 test('CLI block reads preserve table context and notes without returning unrelated chapter text', t => {
-  const structure = require('../public/knowledge-structure');
+  const structure = require('../public/knowledge/knowledge-structure');
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'blink-block-'));
   t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
   const book = structuredClone(fixture().book), entry = book.manuals[0].entries[0];
@@ -227,8 +227,8 @@ test('older semantic profiles remain readable and auto falls back without mixing
     const next = path.join(dir, 'new.json'), built = run(['--kb', target, '--build-index', next, '--json']);
     assert.equal(built.status, 0, built.stderr);
     const updated = JSON.parse(fs.readFileSync(next));
-    assert.equal(updated.semantic.profile.id, require('../public/knowledge-semantic').PROFILE.id);
-    require('../public/knowledge-semantic').validate(require('../lib/knowledge-book').flatten(updated), updated.semantic);
+    assert.equal(updated.semantic.profile.id, require('../public/knowledge/knowledge-semantic').PROFILE.id);
+    require('../public/knowledge/knowledge-semantic').validate(require('../lib/knowledge-book').flatten(updated), updated.semantic);
     assert.equal(updated.manuals[0].entries[0].text, book.manuals[0].entries[0].text);
   }
 });
@@ -239,7 +239,7 @@ test('structural recovery from a legacy ZIP is bound to its published HTML and m
   const book = structuredClone(fixture().book), manual = book.manuals[0], entry = manual.entries[0];
   manual.body = '<h2 id="' + entry.anchor + '">' + entry.title + '</h2><p>超时参数说明。</p>';
   entry.text = entry.title + '超时参数说明。';
-  const html = require('../public/knowledge-reader').renderPage(book);
+  const html = require('../public/knowledge/knowledge-reader').renderPage(book);
   const cli = structuredClone(book); delete cli.manuals[0].body;
   const good = createZip([{ name: 'docs/index.html', content: html }, { name: 'docs/knowledge.json', content: JSON.stringify(cli) }]);
   const target = path.join(dir, 'good.zip'); fs.writeFileSync(target, Buffer.from(await good.arrayBuffer()));
@@ -265,7 +265,7 @@ if (process.env.BLINK_MODELS) test('CLI reuses manual caches across processes an
   const output = JSON.parse(fs.readFileSync(next)); assert.equal(output.sdkVersion, 'V2'); assert.equal(output.manuals[0].source.commit, 'fresh-commit');
   assert.deepEqual(output.manuals[0].entries[0].aliases, ['新别名']);
   const packB = structuredClone(output); packB.manuals[0].id += 'b';
-  const data = require('../public/knowledge-semantic'); packB.semantic.chunks = packB.semantic.chunks.map(chunk => ({ ...chunk, manualId: packB.manuals[0].id }));
+  const data = require('../public/knowledge/knowledge-semantic'); packB.semantic.chunks = packB.semantic.chunks.map(chunk => ({ ...chunk, manualId: packB.manuals[0].id }));
   data.validate(require('../lib/knowledge-book').flatten(packB), packB.semantic);
   const b = path.join(dir, 'b.json'), merged = path.join(dir, 'merged.json'); fs.writeFileSync(b, JSON.stringify(packB));
   result = run(['--kb', next, '--merge', b, '--build-index', merged, '--json'], dir, { DITA_SEMANTIC_CACHE_DIR: path.join(dir, 'new-cache'), BLINK_MODELS: path.join(dir, 'missing-model') });

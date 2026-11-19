@@ -1,10 +1,10 @@
 // @ts-check
 'use strict';
 (function (root) {
-  const diff = typeof module !== 'undefined' ? require('./diff-core') : root.DitaDiffCore;
+  const diff = typeof module !== 'undefined' ? require('../diff-core') : root.DitaDiffCore;
   /** @typedef {import('./review-contracts').StoredReview} StoredReview */
   /** @typedef {import('./review-contracts').ReviewScope} ReviewScope */
-  /** @typedef {import('./data-contracts').ReviewDecision} ReviewDecision */
+  /** @typedef {import('../data-contracts').ReviewDecision} ReviewDecision */
   /** @param {unknown} value @returns {value is StoredReview} */
   function validRecord(value) {
     return !!value && typeof value === 'object' && 'schema' in value && value.schema === 1 &&
@@ -38,7 +38,7 @@
       warning = '审阅进度暂时仅保存在本页，浏览器存储不可用。';
       console.warn('审阅进度存储失败', error);
     }
-    /** @param {ReviewScope} scope @param {Pick<import('./data-contracts').DocumentState, 'path' | 'baseline' | 'current'>} file
+    /** @param {ReviewScope} scope @param {Pick<import('../data-contracts').DocumentState, 'path' | 'baseline' | 'current'>} file
      * @returns {import('./review-contracts').ReviewSnapshot} */
     function restore(scope, file) {
       /** @returns {import('./review-contracts').ReviewSnapshot} */

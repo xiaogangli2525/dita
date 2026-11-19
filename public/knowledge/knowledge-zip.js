@@ -3,7 +3,7 @@
 (function (root) {
   const limits = typeof module !== 'undefined' ? require('./knowledge-limits') : root.DitaKnowledgeLimits;
   const { deflateSync } = /** @type {Pick<typeof import('fflate'), 'deflateSync'>} */ (
-    typeof module !== 'undefined' ? require('./vendor/fflate') : root.fflate
+    typeof module !== 'undefined' ? require('../vendor/fflate') : root.fflate
   );
   /** @param {string} text */
   function textBytes(text) {

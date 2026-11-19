@@ -3,7 +3,7 @@
   const cancelled = () => Object.assign(Error('已取消发布'), { name: 'AbortError' });
   // One worker owns a sealed publication. Large HTML/index/vector objects stay
   // there; the UI receives progress, preview HTML on demand, or a final Blob.
-  function createPublisher({ createWorker = () => new root.Worker('/knowledge-publish-worker.js') } = {}) {
+  function createPublisher({ createWorker = () => new root.Worker('/knowledge/knowledge-publish-worker.js') } = {}) {
     let worker = null, pending = null, sequence = 0;
     function dispose(reason = cancelled()) {
       const old = worker, task = pending; worker = null; pending = null;

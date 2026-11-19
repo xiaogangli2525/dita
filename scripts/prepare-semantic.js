@@ -4,7 +4,7 @@ const path = require('node:path');
 const { createHash } = require('node:crypto');
 const { execFileSync } = require('node:child_process');
 const { ASSETS, createEncoder } = require('../lib/semantic-encoder');
-const { PROFILE } = require('../public/knowledge-semantic');
+const { PROFILE } = require('../public/knowledge/knowledge-semantic');
 
 async function main() {
   const modelRoot = path.resolve(process.env.BLINK_MODELS || path.join(__dirname, '..', 'models'));

@@ -1,4 +1,4 @@
-import type { DocumentState, HistoryMeta, ReviewDecision, ReviewKey, WorkspaceState } from './data-contracts';
+import type { DocumentState, HistoryMeta, ReviewDecision, ReviewKey, WorkspaceState } from '../data-contracts';
 export interface DiffRow { type: 'same' | 'old' | 'new'; text: string; oldIndex?: number; newIndex?: number }
 export interface DiffGroup { type: 'same' | 'changed'; rows: DiffRow[]; topicPath?: string }
 export interface ReviewSnapshot { baseline: string; current: string; decisions: Map<number, ReviewDecision> }

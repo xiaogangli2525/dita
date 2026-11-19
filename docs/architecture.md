@@ -111,14 +111,15 @@ The application remains a local Node server and buildless browser client. This c
 | Manual service | `manual-service.js` | Capture workspace/model identities before IO, read a Map or Topic and its dependencies, verify freshness and expose domain operations through the existing service contract |
 | Rendering compatibility | `app-core.js` | Explicit compatibility exports and state/DOM binding; assembles Author, source, Oxygen, diff and delivery modules |
 | XML/Author adapters | `xml-dom.js`, `author-renderer.js`, `author-source.js`, `oxygen-core.js` | XML validation/DOM/ranges, explicit-document projection, source writes and document-local Oxygen processing |
-| Delivery rendering | `delivery-core.js`, `delivery-document.js`, `markdown-preview.js`, `delivery-data.js` | DITA-to-output conversion, data-only HTML layout and standalone Markdown preview/highlighting |
+| Delivery rendering | `delivery/delivery-core.js`, `delivery/delivery-document.js`, `delivery/markdown-preview.js`, `delivery/delivery-data.js` | DITA-to-output conversion, HTML layout and Markdown preview |
 | Diff algorithms | `diff-core.js` | Pure comparison/grouping and review application algorithms |
-| Review workflow | `review.js`, `review-session.js`, `review-locations.js`, `review-view.js`, `review-store.js`, `review-markup.js` | Workflow coordination, typed Topic/Map decision sessions, source-aligned location/decorations, view creation and scoped progress storage |
+| Review workflow | `review/` | Git and Oxygen review, Topic and Map decision sessions, body decorations, change location and scoped progress storage |
+| Knowledge publication | `knowledge/` | Publication plans, chapter extraction, Worker, indexing, reader and retrieval shared with `blink-cli` |
 | Editor coordination | `editor/editor-controller.js`, `editor/input-history.js` | One document history across Source, Topic/Map Author and review; explicit service ports and surface/mode updates |
 | Map authoring | `editor/map-author-controller.js`, `editor/map-source.js` | Instance-local Map rendering and refresh jobs, plus source-range edits for Map/Bookmap titles |
-| Workspace presentation | `workspace-view.js`, `workspace-shell.js`, `menu-controller.js`, `app-dom.js`, `document-label.js`, `delivery-view.js` | Panel visibility, resizing, focus and document labels; presentation of delivery configuration, preflight and export readiness |
-| Feature controllers | `save.js`, `drafts.js`, `project.js`, `search.js`, `resources.js`, `export.js`, `map-controller.js`, `documents.js`, `author-notes.js`, `editor/editor-tools.js` | Bind DOM to domain/services; do not implement independent applicability or dependency rules |
-| Persistence adapters | `workspace-client.js`, `draft-store.js`, `release-store.js`, `browser-files.js` | Workspace identity on requests, browser-local recovery/history, download and hashing |
+| Workspace presentation | `workspace-view.js`, `workspace-shell.js`, `menu-controller.js`, `app-dom.js`, `document-label.js`, `delivery/delivery-view.js` | Panels, resizing, focus, document labels and delivery readiness |
+| Feature controllers | `save.js`, `drafts.js`, `project.js`, `search.js`, `resources.js`, `delivery/export.js`, `map-controller.js`, `documents.js`, `author-notes.js`, `editor/editor-tools.js` | Bind UI to shared domain rules and services |
+| Persistence adapters | `workspace-client.js`, `draft-store.js`, `delivery/release-store.js`, `browser-files.js` | Workspace identity on requests, browser-local recovery/history, download and hashing |
 | Server tools | `lib/workspace-tools.js` | Model config, bounded plaintext search, source provenance and image IO; receives the current root and existing IO/response helpers from the authenticated router |
 | HTTP and Git boundaries | `lib/api-router.js`, `lib/http-utils.js`, `lib/git-service.js` | Shared request guard and API dispatch, bounded JSON/response helpers, and repository/branch/Git baseline operations |
 
@@ -127,6 +128,8 @@ The application remains a local Node server and buildless browser client. This c
 ## Author and output rendering boundaries
 
 `public/editor/` groups the controllers used by the editing surface. The Map authoring controller, Map title patcher and shared XML scanner use strict JavaScript type checking. The controller uses shared document state, history edit and workspace request types, and the title patcher consumes the scanner's typed source ranges.
+
+Review views and decorations, delivery HTML and release records, and knowledge chapter extraction and retrieval metadata also use strict JavaScript type checking. The TypeScript project includes the four feature directories, where each module enables checks with `@ts-check`. The knowledge Worker resolves shared scripts relative to its own directory. The portable package includes the shared retrieval modules at the same relative paths used by the CLI and local reader.
 
 `app-core.js` is a compatibility facade with explicit exports; existing `DitaVisualCore`/CommonJS callers retain their public API. It binds editor state/DOM only in compatibility methods, and assembles delivery using explicit parser, Oxygen and asset-path functions. New lower-level code imports its actual owner instead of depending on the facade.
 

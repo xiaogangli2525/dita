@@ -1,6 +1,6 @@
 import { createDocument, snapshotDocument, createSaveCoordinator, createProposal, applyProposal } from '../public/document-store';
 import { createSnapshot } from '../public/snapshot-data';
-import { createRecord } from '../public/delivery-data';
+import { createRecord } from '../public/delivery/delivery-data';
 import type { ManualSnapshot, CompiledDelivery, WorkspaceState, HistoryMeta, ReviewKey, ReviewDecision } from '../public/data-contracts';
 const reviewHistory: HistoryMeta = { reviewDecisionsBefore: new Map<ReviewKey, ReviewDecision>([[1, 'accept'], ['topics/a.dita::1', 'reject']]) };
 // @ts-expect-error Review decisions captured in history are read-only.

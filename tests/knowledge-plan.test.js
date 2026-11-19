@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test'), assert = require('node:assert/strict');
-const { normalizePlan, createPlanStore } = require('../public/knowledge-plan');
-const { applyMetadata } = require('../public/knowledge-metadata');
+const { normalizePlan, createPlanStore } = require('../public/knowledge/knowledge-plan');
+const { applyMetadata } = require('../public/knowledge/knowledge-metadata');
 const source = () => ({ repositoryRoot: 'E:\\work\\http', repository: 'http', branch: 'master', path: 'http.ditamap', title: 'HTTP', version: 'V1', filterPath: 'filters/g.ditaval', prefixes: true, mode: 'AT', module: 'HTTP', overrides: {} });
 const plan = () => ({ schema: 1, id: 'plan-a', title: '开发者文档', model: 'ML307G', sdkVersion: 'V1', sources: [source()] });
 function memory() {
@@ -43,4 +43,16 @@ test('omitted shared support metadata does not block old plans or suppress unrel
   const result = applyMetadata(original, { overrides });
   assert.deepEqual(result.staleMetadata, ['topics/removed.dita']);
   assert.equal(Object.keys(overrides).length, 3);
+});
+test('older entries without fingerprints or source paths use default retrieval metadata', () => {
+  const entries = [
+    { title: '旧章节', sourcePath: 'old.dita', definedSymbols: ['AT+OLD'] },
+    { title: '旧示例', kind: 'example' }
+  ];
+  const result = applyMetadata({ title: 'HTTP', entries }, source());
+  assert.deepEqual(result.staleMetadata, []);
+  assert.deepEqual(result.entries, [
+    { ...entries[0], kind: 'guide', aliases: [] },
+    { ...entries[1], aliases: [], definedSymbols: [] }
+  ]);
 });

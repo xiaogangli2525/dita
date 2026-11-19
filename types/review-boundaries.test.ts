@@ -1,6 +1,6 @@
-import { createReviewSession } from '../public/review-session';
-import { createReviewStore } from '../public/review-store';
-import type { ReviewState, ReviewFrame } from '../public/review-contracts';
+import { createReviewSession } from '../public/review/review-session';
+import { createReviewStore } from '../public/review/review-store';
+import type { ReviewState, ReviewFrame } from '../public/review/review-contracts';
 import type { HistoryMeta } from '../public/data-contracts';
 declare const state: ReviewState;
 declare const frame: ReviewFrame;

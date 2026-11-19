@@ -130,10 +130,11 @@ The light workspace separates document navigation, editing and the attribute/rev
 
 - `public/document-store.js`: shared document mutations, undo/redo, save coordination and edit proposals.
 - `public/xml-source.js`: shared browser/server XML validation and source-preserving formatting.
-- `public/review.js`: Git/Oxygen review controller, with explicit bulk-operation scope.
+- `public/review/`: Git and Oxygen review, body decorations, change location and progress.
 - `lib/xml-tree.js`: server XML tree parsing and serialization.
 - `public/workspace-client.js`: workspace identity and stale-response handling.
-- `public/export.js`: export snapshots, resource loading and preview/download orchestration.
+- `public/delivery/`: export snapshots, resource loading, output templates, previews, downloads and release history.
+- `public/knowledge/`: publication plans, Worker, reader and shared retrieval used by the browser and `blink-cli`.
 - `public/publication-core.js`: shared source-preserving model-footnote filtering and reference validation for both publication formats.
 - `public/publication-resolver.js`: bounded local dependency loading, common conref expansion and unsupported-feature checks.
 - `public/app-core.js`: compatibility facade assembling Author, source, review and delivery APIs.
@@ -150,7 +151,7 @@ The light workspace separates document navigation, editing and the attribute/rev
 - `public/author-notes.js`: cancellable note insertion and direct marker editing, using the same source and history rules.
 - `public/editor/author-selection.js` / `public/editor/editor-tools.js`: source-aware selections, bookmarks, formatting, current-Topic plaintext search and replace, and block and resource insertion.
 - `public/note-scope.js`: shared model picker for new and existing notes.
-- `public/delivery-core.js` / `public/delivery-document.js` / `public/markdown-preview.js`: DITA publication conversion, data-only HTML document layout and standalone Markdown preview/highlighting.
+- `public/delivery/delivery-core.js` / `public/delivery/delivery-document.js` / `public/delivery/markdown-preview.js`: DITA publication conversion, data-only HTML document layout and standalone Markdown preview/highlighting.
 - `public/diff-core.js`: pure diff algorithms.
 - `public/manual-core.js` / `public/manual-domain.js`: shared applicability/configuration, publication membership and pure snapshot-to-publication/note/model operations.
 - `public/manual-service.js`: workspace reads, dependency capture and freshness checks; captures model settings before IO and exposes the same domain operations through the existing service interface.

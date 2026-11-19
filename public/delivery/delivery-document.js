@@ -1,10 +1,14 @@
+// @ts-check
 'use strict';
 (function (root) {
 
+  /** @param {string} text */
   function escapeHtmlAttr(text) {
     return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
+  /** @param {{title: string, model?: string, version?: string,
+   * sections: readonly {title: string, body: string}[], footnotes?: readonly string[]}} documentData */
   function renderHtmlDocument({ title, model = '', version = '', sections, footnotes = [] }) {
     const css = [
       'body { font-family: Segoe UI, Microsoft YaHei, sans-serif; max-width: 860px; margin: 40px auto; padding: 0 20px; color: #202124; line-height: 1.7; }',

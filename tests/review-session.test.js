@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test'), assert = require('node:assert/strict');
-const { createReviewSession, clearReviewState } = require('../public/review-session');
-const { createReviewStore } = require('../public/review-store');
+const { createReviewSession, clearReviewState } = require('../public/review/review-session');
+const { createReviewStore } = require('../public/review/review-store');
 const docs = require('../public/document-store');
 function fixture(inManual = false) {
   const a = docs.createDocument({ path: 'a.dita', content: 'First\nKeep\nSecond' });

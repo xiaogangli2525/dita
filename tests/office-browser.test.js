@@ -10,8 +10,8 @@ const { spawn, execFileSync } = require('node:child_process');
 const { createHash } = require('node:crypto');
 const { unzipSync, strFromU8 } = require('fflate');
 const { chromium } = require('playwright-core');
-const templateCore = require('../public/template-core');
-const { renderHtmlDocument } = require('../public/delivery-document');
+const templateCore = require('../public/delivery/template-core');
+const { renderHtmlDocument } = require('../public/delivery/delivery-document');
 
 async function inspectWord(page, bytes) {
   const zip = unzipSync(bytes), parts = Object.fromEntries(Object.entries(zip).filter(([name]) => name.endsWith('.xml') || name.endsWith('.rels')).map(([name, value]) => [name, strFromU8(value)]));

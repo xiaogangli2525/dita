@@ -4,7 +4,7 @@ const path = require('node:path');
 const assert = require('node:assert/strict');
 const { flatten } = require('../lib/knowledge-book');
 const { build, search } = require('../lib/knowledge-semantic');
-const { buildPackage } = require('../public/knowledge-package');
+const { buildPackage } = require('../public/knowledge/knowledge-package');
 
 async function main() {
   const destination = process.argv[2];

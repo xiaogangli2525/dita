@@ -1,5 +1,5 @@
-import type { KnowledgeBookManual, SearchRecord, SemanticEstimate } from '../public/knowledge-contracts';
-import type { SemanticIndex } from '../public/knowledge-semantic';
+import type { KnowledgeBookManual, SearchRecord, SemanticEstimate } from '../public/knowledge/knowledge-contracts';
+import type { SemanticIndex } from '../public/knowledge/knowledge-semantic';
 export type IndexManual = Pick<KnowledgeBookManual, 'id'|'title'|'entries'>;
 export interface IndexBook { readonly model:string; readonly manuals:readonly IndexManual[]; readonly semantic?:SemanticIndex }
 export interface IndexProgress { readonly stage?:'estimate'|'vectors'; readonly manual?:string; readonly position?:number; readonly totalManuals?:number; readonly done?:number; readonly total?:number; readonly source?:'generated'|'cache'|'embedded' }

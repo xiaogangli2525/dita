@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test'), assert = require('node:assert/strict'), fs = require('node:fs/promises'), os = require('node:os'), path = require('node:path'), net = require('node:net');
 const { spawn, spawnSync, execFileSync } = require('node:child_process'), { createHash } = require('node:crypto'), { chromium } = require('playwright-core');
-const core = require('../public/template-core');
+const core = require('../public/delivery/template-core');
 
 test('replaceable enterprise delivery templates', async t => {
   const temp = await fs.mkdtemp(path.join(os.tmpdir(), 'dita-template-ui-')), repo = path.join(temp, 'docs'), templates = path.join(temp, 'templates');
@@ -50,7 +50,7 @@ test('replaceable enterprise delivery templates', async t => {
   });
   await t.test('PDF watermark geometry is sheet-relative and footers retain their edge clearance', { skip: Boolean(spawnSync('pdftoppm', ['-v']).error) }, async () => {
     const art = await page.evaluate(() => { const canvas = document.createElement('canvas'); canvas.width = 300; canvas.height = 100; const context = canvas.getContext('2d'); context.fillStyle = '#ff00ff'; context.fillRect(0, 0, 300, 100); return canvas.toDataURL('image/png'); });
-    const document = require('../public/delivery-document').renderHtmlDocument({ title: 'Geometry', sections: [{ title: 'Chapter', body: '<p>BODY_TEXT</p>' }] });
+    const document = require('../public/delivery/delivery-document').renderHtmlDocument({ title: 'Geometry', sections: [{ title: 'Chapter', body: '<p>BODY_TEXT</p>' }] });
     const html = await page.evaluate(html => window.DitaOfficeExport.printable(html), document), token = await page.evaluate(() => window.DitaApp.api.token);
     for (const size of ['A4', 'Letter']) {
       const pack = core.builtins()[0]; pack.page.size = size; pack.page.marginsMm = { top: 30, right: 15, bottom: 24, left: 30 }; pack.cover.enabled = false;

@@ -43,7 +43,7 @@
     });
     return { schema: 1, id, title: text(value.title, 160, 'title'), model: text(value.model, 80, 'model'), sdkVersion: text(value.sdkVersion, 80, 'sdkVersion'), sources };
   }
-  /** @param {(import('./review-contracts').ReviewStorage & {readonly length: number, key(index: number): string|null}) | null} storage */
+  /** @param {(import('../review/review-contracts').ReviewStorage & {readonly length: number, key(index: number): string|null}) | null} storage */
   function createPlanStore(storage) {
     /** @returns {{plan: import('./knowledge-contracts').KnowledgePlan, serialized: string}[]} */
     function list() {

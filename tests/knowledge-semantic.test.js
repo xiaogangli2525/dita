@@ -1,8 +1,8 @@
 'use strict';
 const test = require('node:test'), assert = require('node:assert/strict');
-const { PROFILE, normalizeInput, chunksFor, createIndex, validate } = require('../public/knowledge-semantic');
+const { PROFILE, normalizeInput, chunksFor, createIndex, validate } = require('../public/knowledge/knowledge-semantic');
 const { flatten, mergeBooks } = require('../lib/knowledge-book');
-const { createSearchEngine } = require('../public/knowledge-search');
+const { createSearchEngine } = require('../public/knowledge/knowledge-search');
 const row = (text, manualId = 'a') => ({ manualId, manualTitle: 'HTTP', title: '参数', anchor: manualId + '-topic', text });
 const countTokens = text => text.length + 2;
 const vector = column => { const value = Array(512).fill(0); value[column] = 1; return value; };
@@ -28,7 +28,7 @@ test('all retrieval modes preserve normalized numeric and error-code constraints
 });
 
 test('semantic evidence retains the winning structural block and linked-note anchors', async t => {
-  const structure = require('../public/knowledge-structure'), semantic = require('../lib/knowledge-semantic');
+  const structure = require('../public/knowledge/knowledge-structure'), semantic = require('../lib/knowledge-semantic');
   t.mock.method(semantic.encoder, 'encode', async () => [vector(0)]);
   const values = { kind: 'table-row', section: ['连接配置'], context: ['参数：timeout'], text: '等待时间为 30 秒。', notes: [{ id: 'fn1', text: '重试前释放连接。' }] };
   const unit = { ...values, id: 'b-timeout', sourceAnchor: 'timeout-row', fingerprint: structure.fingerprint(values) };
@@ -54,7 +54,7 @@ test('semantic scope filters safely exclude legacy records without module or mod
 });
 
 test('semantic chunk and title boundaries retain whole Unicode characters and complete coverage', async () => {
-  const { legacyChunksFor, LEGACY_PROFILE } = require('../public/knowledge-semantic'), structure = require('../public/knowledge-structure');
+  const { legacyChunksFor, LEGACY_PROFILE } = require('../public/knowledge/knowledge-semantic'), structure = require('../public/knowledge/knowledge-structure');
   const records = [row('A😀'.repeat(500))];
   records[0].manualTitle = '😀'.repeat(60); records[0].title = '😀'.repeat(60);
   for (const structured of [false, true]) {
@@ -77,7 +77,7 @@ test('semantic chunk and title boundaries retain whole Unicode characters and co
 });
 
 test('previously exported legacy Unicode overlap offsets remain readable', () => {
-  const { LEGACY_PROFILE } = require('../public/knowledge-semantic');
+  const { LEGACY_PROFILE } = require('../public/knowledge/knowledge-semantic');
   const records = [{ ...row('😀'.repeat(400)), manualTitle: 'H' }], context = ['H', '参数'];
   const chunks = [[0, 503], [443, 800]].map(([start, end]) => {
     const text = [...context, records[0].text.slice(start, end)].join('\n');
@@ -103,7 +103,7 @@ test('semantic chunks keep exact chapter offsets, overlap and stable content bin
 });
 
 test('Int8 indexes preserve signed vector direction and source binding, rejecting corrupted rows', async () => {
-  const { compactIndex, COMPACT_SCHEMA, compatible, encodedVectorLength } = require('../public/knowledge-semantic');
+  const { compactIndex, COMPACT_SCHEMA, compatible, encodedVectorLength } = require('../public/knowledge/knowledge-semantic');
   const records = [row('完整的连接说明。')], chunks = await chunksFor(records, countTokens);
   const values = [0.3, -0.4, 0.1, ...Array(509).fill(0)], norm = Math.sqrt(values.reduce((sum, value) => sum + value ** 2, 0));
   const original = createIndex(chunks, [values.map(value => value / norm)]), originalBytes = original.vectors;
@@ -148,7 +148,7 @@ test('semantic manual packs merge without re-embedding and reject mixed profiles
   const a = await book('a'), b = await book('b'), combined = mergeBooks([a, b]);
   const values = validate(flatten(combined), combined.semantic);
   assert.equal(values[0], 1); assert.equal(values[513], 1);
-  const compact = require('../public/knowledge-semantic').compactIndex(flatten(b), b.semantic);
+  const compact = require('../public/knowledge/knowledge-semantic').compactIndex(flatten(b), b.semantic);
   const mixed = mergeBooks([a, { ...b, semantic: compact }]);
   assert.equal(mixed.semantic.schema, 1);
   assert.deepEqual(validate(flatten(mixed), mixed.semantic), values);

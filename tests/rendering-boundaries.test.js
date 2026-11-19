@@ -2,8 +2,8 @@
 const test = require('node:test'), assert = require('node:assert/strict'), path = require('node:path');
 const { execFileSync } = require('node:child_process');
 const xml = require('../public/xml-dom'), author = require('../public/author-renderer'), source = require('../public/author-source');
-const oxygen = require('../public/oxygen-core'), preview = require('../public/markdown-preview');
-const { renderHtmlDocument } = require('../public/delivery-document'), { buildMockDom } = require('./dom-mock');
+const oxygen = require('../public/oxygen-core'), preview = require('../public/delivery/markdown-preview');
+const { renderHtmlDocument } = require('../public/delivery/delivery-document'), { buildMockDom } = require('./dom-mock');
 
 test('canonical XML ranges retain source offsets while DOM receives a validated document without a DTD', () => {
   const input = '<?xml version="1.0"?>\r\n<!DOCTYPE topic [<!ELEMENT topic ANY>]>\r\n<!--keep--><topic id="t"><title>🔧 HTTP</title><body><p a="a > b"><![CDATA[A < B]]></p><?revision keep?></body></topic><?tail keep?>';
@@ -35,8 +35,8 @@ test('Author modules edit detached surfaces without application state and retain
 test('lower rendering modules can load without the app facade, editor services, DOM globals or delivery factory', () => {
   const output = execFileSync(process.execPath, ['-e', `
     require('./public/author-source');
-    const preview = require('./public/markdown-preview');
-    const {renderHtmlDocument} = require('./public/delivery-document');
+    const preview = require('./public/delivery/markdown-preview');
+    const {renderHtmlDocument} = require('./public/delivery/delivery-document');
     const oxy = require('./public/oxygen-core');
     if(Object.keys(require.cache).some(p=>/(?:app-core|delivery-core|editor-controller|manual-service)\\.js$/.test(p)))throw Error('Upper layer loaded');
     console.log(JSON.stringify({markdown:preview.renderMarkdownToHtml('**OK**'),
@@ -77,7 +77,7 @@ test('standalone Markdown preview retains literal code and refuses executable UR
 test('CDATA text renders as inert text in ordinary Author paragraphs and standalone Markdown conversion', () => {
   const { document } = buildMockDom(), node = { nodeType: 4, data: 'A < B & C', childNodes: [] };
   assert.equal(author.renderDitaNode(node, document)?.textContent, 'A < B & C');
-  const { createDeliveryCore } = require('../public/delivery-core');
+  const { createDeliveryCore } = require('../public/delivery/delivery-core');
   const delivery = createDeliveryCore({});
   assert.equal(delivery.ditaToMarkdown(node), 'A < B & C');
 });

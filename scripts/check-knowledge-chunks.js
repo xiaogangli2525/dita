@@ -1,8 +1,8 @@
 'use strict';
 const fs = require('node:fs'), path = require('node:path');
 const { bookFromPath, flatten } = require('../lib/knowledge-book');
-const semantic = require('../lib/knowledge-semantic'), data = require('../public/knowledge-semantic');
-const { createSearchEngine } = require('../public/knowledge-search');
+const semantic = require('../lib/knowledge-semantic'), data = require('../public/knowledge/knowledge-semantic');
+const { createSearchEngine } = require('../public/knowledge/knowledge-search');
 async function main() {
   const args = process.argv.slice(2), compact = args.at(-1) === '--compare-int8';
   if (compact) args.pop();

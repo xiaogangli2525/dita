@@ -79,7 +79,7 @@
 
 ## 2026-11-10 Word 企业模板实现补充
 
-- 新增 `public/template-word.js`：DOCX 原生模板适配器，独立于 PDF 分页引擎；共享同一份发布快照、模板字段和模板包哈希。
+- 新增 `public/delivery/template-word.js`：DOCX 原生模板适配器，独立于 PDF 分页引擎；共享同一份发布快照、模板字段和模板包哈希。
 - 模板协议允许 `pdf` / `docx` 能力组合；新增蓝绿/简洁 `1.2.0` 双格式模板，旧版 PDF 模板仍保留原始协议和哈希。旧版模板须升级后才可勾选 Word。
 - 交付界面在 PDF/Word 格式间筛选模板，并按格式保存选择；Word 使用 A4/Letter、原生封面/目录/正文分节、页眉页脚、PAGE/NUMPAGES 字段和浮动图片/文字水印。
 - DOCX 预览是 HTML 近似样式，不代表 Word 最终分页。目录包含原生 TOC 域、章节链接和 PAGEREF 页码字段，首次打开后需在 Word/WPS 中更新整个目录。Microsoft Word/WPS 打开、打印和分页验收仍是发布前人工步骤。

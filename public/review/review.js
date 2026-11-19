@@ -1,6 +1,6 @@
 'use strict';
 (function (root) {
-  const nativeTracking = typeof module !== 'undefined' ? require('./oxygen-tracking') : root.DitaOxygenTracking;
+  const nativeTracking = typeof module !== 'undefined' ? require('../oxygen-tracking') : root.DitaOxygenTracking;
   const sessions = typeof module !== 'undefined' ? require('./review-session') : root.DitaReviewSession;
   const bodyLocations = typeof module !== 'undefined' ? require('./review-locations') : root.DitaReviewLocations;
   const views = typeof module !== 'undefined' ? require('./review-view') : root.DitaReviewView;

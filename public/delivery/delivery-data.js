@@ -2,9 +2,9 @@
 'use strict';
 (function (root) {
   /** Build an auditable record from the exact compiled output, without UI or storage.
-   * @param {import('./data-contracts').DeliveryRequest} request
+   * @param {import('../data-contracts').DeliveryRequest} request
    * @param {(value:string|Blob)=>Promise<string>} sha256
-   * @returns {Promise<import('./data-contracts').DeliveryRecord>} */
+   * @returns {Promise<import('../data-contracts').DeliveryRecord>} */
   async function createRecord({ snapshot, source, data, model, format, version, filename, prefixes, unsavedPaths }, sha256) {
     if (!['html', 'md', 'pdf', 'docx'].includes(format) || !filename) throw TypeError('交付格式或文件名无效');
     /** @type {Map<string,string>} */

@@ -194,7 +194,7 @@ blink-cli --kb ./http.zip --build-index ./http-rebuilt.json --rebuild
 
 ### 检索约束与结构块读取
 
-网页、CLI 关键词检索和语义分流共用查询约束解析。完整 AT/API 符号、纯数字（包括负数、小数、十六进制）以及中英文错误码/状态码问题保留关键词精确约束；即使显式选择 `hybrid` 或 `semantic`，也不会用相似章节补回未收录的编号。这类查询不加载模型。领域词典、查询同义词和章节别名规则集中在 `public/knowledge-search-profile.js`，离线网页内嵌同一配置。
+网页、CLI 关键词检索和语义分流共用查询约束解析。完整 AT/API 符号、纯数字（包括负数、小数、十六进制）以及中英文错误码/状态码问题保留关键词精确约束；即使显式选择 `hybrid` 或 `semantic`，也不会用相似章节补回未收录的编号。这类查询不加载模型。领域词典、查询同义词和章节别名规则集中在 `public/knowledge/knowledge-search-profile.js`，离线网页内嵌同一配置。
 
 语义命中附带 `chunk`，包括 `unitId`、`sourceAnchor`、`sourcePath`、起止偏移、小节路径和关联注脚 ID。结构化章节另含可读取的 `chunk.blockId`；偏移相对于结构块正文，旧纯文本则相对于归一化章节正文。每章仍只返回最高相关片段，保留章节去重；强关键词命中的排序保持优先。
 

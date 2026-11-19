@@ -3,7 +3,7 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
 const { lineDiff, inlineDiff, groupDiffRows, applyDiffGroups } = require('../public/app-core');
-const { createReviewStore } = require('../public/review-store');
+const { createReviewStore } = require('../public/review/review-store');
 
 function reviewStorage() {
   const values = new Map();

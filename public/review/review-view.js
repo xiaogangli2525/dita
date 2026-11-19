@@ -1,6 +1,17 @@
+// @ts-check
 'use strict';
 (function (root) {
+  /** @typedef {import('../data-contracts').ReviewDecision | null | undefined} Decision */
+  /** @typedef {import('./review-contracts').DiffGroup} DiffGroup */
+  /** @typedef {import('./review-contracts').DiffRow} DiffRow */
+  /** @typedef {typeof import('../diff-core').inlineDiff} InlineDiff */
+  /** @typedef {{type: 'insert' | 'delete' | 'comment', author?: string, content?: string, context?: string}} OxygenChange */
+  /** @param {Event} event */
+  const fromButton = event => Boolean(/** @type {Element | null} */ (event.target)?.closest?.('button'));
+
+  /** @param {{document: Document, inlineDiff?: InlineDiff}} options */
   function createReviewView({ document: documentRef, inlineDiff }) {
+    /** @param {string} value */
     function reviewRowLabel(value) {
       const raw = String(value || '').trim();
       if (!raw) return '(空行)';
@@ -12,6 +23,7 @@
       return `${element[1]}${attrs ? ` · ${attrs}` : ' 元素'}`;
     }
 
+    /** @param {string} value */
     function reviewDiffLabel(value) {
       const raw = String(value || '').trim();
       const label = reviewRowLabel(raw);
@@ -25,6 +37,7 @@
     // review surface keeps the surrounding sentence intact and marks only the
     // changed words; doing the same here avoids turning a one-word edit into a
     // large full-line diff in the right dock.
+    /** @param {DiffRow} row @param {Decision} decision @param {ReturnType<InlineDiff> | null} [segments] */
     function createReviewLine(row, decision, segments = null) {
       const line = documentRef.createElement('div');
       line.className = `diff-line ${row.type}${segments ? ' inline' : ''}`;
@@ -53,6 +66,7 @@
       return line;
     }
 
+    /** @param {HTMLElement} container @param {readonly DiffRow[]} rows @param {Decision} decision */
     function appendReviewRows(container, rows, decision) {
       const oldRows = rows.filter(row => row.type === 'old');
       const newRows = rows.filter(row => row.type === 'new');
@@ -76,6 +90,7 @@
       for (const row of rows) container.append(createReviewLine(row, decision));
     }
 
+    /** @param {readonly DiffRow[]} rows */
     function context(rows) {
       const element = documentRef.createElement('div');
       element.className = 'diff-context';
@@ -83,16 +98,18 @@
       return element;
     }
 
+    /** @param {{group: DiffGroup, decision: Decision, number: number, label: string, focus(): void,
+     * decide(value: import('../data-contracts').ReviewDecision | null): void}} options */
     function block({ group, decision, number, label, focus, decide }) {
       const element = documentRef.createElement('div');
       element.className = `diff-block${decision ? ` decision-${decision}` : ''}`;
       element.tabIndex = 0;
       element.setAttribute('aria-label', label);
       element.addEventListener('click', event => {
-        if (!event.target.closest('button')) focus();
+        if (!fromButton(event)) focus();
       });
       element.addEventListener('keydown', event => {
-        if ((event.key === 'Enter' || event.key === ' ') && !event.target.closest('button')) {
+        if ((event.key === 'Enter' || event.key === ' ') && !fromButton(event)) {
           event.preventDefault(); focus();
         }
       });
@@ -109,7 +126,8 @@
       appendReviewRows(element, group.rows, decision);
       const actions = documentRef.createElement('div');
       actions.className = 'diff-actions';
-      for (const [value, text] of [['accept', '接受此块'], ['reject', '拒绝此块']]) {
+      const decisions = /** @type {const} */ ([['accept', '接受此块'], ['reject', '拒绝此块']]);
+      for (const [value, text] of decisions) {
         const button = documentRef.createElement('button');
         button.type = 'button'; button.textContent = text; button.disabled = Boolean(decision);
         button.addEventListener('click', () => decide(value));
@@ -124,12 +142,14 @@
       element.append(actions);
       return element;
     }
+    /** @param {OxygenChange} change @param {number} oxyIndex
+     * @param {{focus(): void, decide(accept: boolean): void}} actions */
     function oxygen(change, oxyIndex, { focus, decide }) {
       const block = documentRef.createElement('div');
       block.className = 'oxy-change oxy-' + change.type + '-type';
       block.dataset.oxyIndex = String(oxyIndex);
       block.addEventListener('click', event => {
-        if (event.target.closest('button')) return;
+        if (fromButton(event)) return;
         focus();
       });
       block.style.cursor = 'pointer';
