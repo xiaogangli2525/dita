@@ -1,7 +1,7 @@
 'use strict';
 (function (root) {
-  const xml = typeof module !== 'undefined' ? require('./xml-source') : root.DitaXmlSource;
-  const { decode } = typeof module !== 'undefined' ? require('./manual-core') : root.DitaManualCore;
+  const xml = typeof module !== 'undefined' ? require('../xml-source') : root.DitaXmlSource;
+  const { decode } = typeof module !== 'undefined' ? require('../manual-core') : root.DitaManualCore;
   const categories = Object.freeze({ wording: '术语与表述', technical: '参数或示例待核对', applicability: '型号范围待核对', missing: '步骤或条件待核对' });
   const limits = Object.freeze({ text: 1600, items: 56, batch: 14000, sections: 72, comparisons: 20 });
   const inline = new Set('b i u tt sup sub ph keyword term codeph cmdname msgph varname parmname apiname cite q xref uicontrol option userinput systemoutput filepath menucascade wintitle tm'.split(' '));

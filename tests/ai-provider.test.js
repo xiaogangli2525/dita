@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test'), assert = require('node:assert/strict');
 const { createAiProvider } = require('../lib/ai-provider');
-const core = require('../public/ai-edit-core');
+const core = require('../public/ai/ai-edit-core');
 const { createAiSettings } = require('../lib/ai-settings');
 const writingPolicy = require('../lib/ai-writing-policy');
 const xml = '<topic id="a"><title>HTTP</title><body><p>发送请求</p><p>不应发送的其他段落</p></body></topic>';

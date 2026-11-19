@@ -1,6 +1,6 @@
 'use strict';
 const test = require('node:test'), assert = require('node:assert/strict');
-const core = require('../public/ai-edit-core');
+const core = require('../public/ai/ai-edit-core');
 const store = require('../public/document-store');
 const source = '<?xml version="1.0" encoding="UTF-8"?>\r\n<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">\r\n<topic id="http"><title>HTTP</title><body><p product="ML307R">发送 <b>请求</b> &amp; 检查返回值。<fn id="note">MN318: 保留。</fn></p><p>其他型号原文</p></body></topic>';
 const scopeOf = (xml = source) => { const p = core.inspect(xml).find(n => n.kind === 'p'); return core.target(xml, p.start, p.end); };

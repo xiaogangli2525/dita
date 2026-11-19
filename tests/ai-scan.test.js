@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test'), assert = require('node:assert/strict'), path = require('node:path');
-const core = require('../public/ai-scan-core');
-const { createScanStore, mergeResult, findingKey } = require('../public/ai-scan-store');
+const core = require('../public/ai/ai-scan-core');
+const { createScanStore, mergeResult, findingKey } = require('../public/ai/ai-scan-store');
 const { collectDemoFiles } = require('../scripts/demo-workspace');
 const { decodeXmlBuffer } = require('../lib/document-files');
 const file = (path, current) => ({ path, current });

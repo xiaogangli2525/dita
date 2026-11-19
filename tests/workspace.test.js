@@ -2,7 +2,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { createSaveCoordinator, createProposal, applyProposal } = require('../public/document-store');
-const { createWorkspaceClient } = require('../public/workspace-client');
+const { createWorkspaceClient } = require('../public/workspace/workspace-client');
 const { createWorkspaceLock } = require('../lib/workspace-lock');
 const tick = () => new Promise(resolve => setImmediate(resolve));
 
@@ -65,6 +65,12 @@ test('workspace client tags requests and rejects old responses including delayed
   client.adopt('second');
   release('old workspace content');
   await assert.rejects(body, /工作区已切换/);
+});
+test('workspace client exposes a textual error for malformed error payloads', async () => {
+  const client = createWorkspaceClient(() => { throw new Error('Unexpected fetch'); });
+  assert.equal(await client.error(new Response('{"error":"具体原因"}')), '具体原因');
+  assert.equal(await client.error(new Response('{"error":{"code":"not-ready"}}')), '{"error":{"code":"not-ready"}}');
+  assert.equal(await client.error(new Response(null, { status: 503 })), 'HTTP 503');
 });
 
 test('workspace switching waits for reads and prevents later reads overtaking it', async () => {

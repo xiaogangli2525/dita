@@ -1,6 +1,6 @@
 'use strict';
 const test = require('node:test'), assert = require('node:assert/strict');
-const { createSession } = require('../public/workspace-session');
+const { createSession } = require('../public/workspace/workspace-session');
 const store = require('../public/document-store');
 const { createSnapshot } = require('../public/snapshot-data');
 const { createRecord } = require('../public/delivery/delivery-data');
@@ -82,7 +82,7 @@ test('delivery records hash exactly the captured sources and compiled bytes with
 test('lint enforces document, workspace and review mutation ownership', async () => {
   const { ESLint } = require('eslint'), lint = new ESLint();
   const source = `function mutate(state,file,A) { state.root='x'; A.state.mode='editor'; state.filesMap.clear(); file.disk='x'; state.reviewCurrent='x'; } module.exports=mutate;`;
-  const [controller] = await lint.lintText(source, { filePath: 'public/document-navigation.js' });
+  const [controller] = await lint.lintText(source, { filePath: 'public/workspace/document-navigation.js' });
   assert.equal(controller.messages.filter(item => item.ruleId === 'no-restricted-syntax').length, 5);
   const [reviewResult] = await lint.lintText(`function mutate(state) { state.reviewDecisions.set(0,'accept'); state.reviewGroups.clear(); } module.exports=mutate;`, { filePath: 'public/review/review.js' });
   assert.equal(reviewResult.messages.filter(item => item.ruleId === 'no-restricted-syntax').length, 2);

@@ -1,7 +1,7 @@
 'use strict';
-const { createSession } = require('../public/workspace-session');
+const { createSession } = require('../public/workspace/workspace-session');
 const test=require('node:test'),assert=require('node:assert/strict');
-const {createController}=require('../public/workspace-controller'),{createEvents}=require('../public/manual-core');
+const {createController}=require('../public/workspace/workspace-controller'),{createEvents}=require('../public/manual-core');
 function fixture(){
  const file={path:'a.dita',current:'<topic>working</topic>',dirty:true};
  const state={root:'old',files:[],maps:[],filesMap:new Map([['a.dita',file]]),activePath:'a.dita',activeView:'map',currentBranch:'main',reviewGroups:new Map(),reviewDecisions:new Map()};
@@ -29,7 +29,7 @@ test('tree refresh rejects changed workspace identities before changing state',a
  const f=fixture();f.A.send=async()=>({ok:true,json:async()=>({workspaceToken:'other',root:'other',files:[],maps:[]})});await assert.rejects(f.controller.refreshWorkspaceTree(),/工作区已在其他窗口切换/);assert.equal(f.A.state.root,'old');assert.equal(f.A.state.filesMap.get('a.dita'),f.file);
 });
 test('a delayed source jump cannot focus or select a document opened later',async()=>{
- const {createController}=require('../public/document-navigation');let release,focused=0;
+ const {createController}=require('../public/workspace/document-navigation');let release,focused=0;
  const gate=new Promise(resolve=>{release=resolve;}),state={filesMap:new Map(),maps:[],activePath:'',mode:'visual'},events=createEvents();
  const session=createSession(state);
  const controller=createController({state,session,events,api:{token:'workspace'},dom:{editor:{focus(){focused++;},setSelectionRange(){focused++;}}},ditaCore:{collectPreviewPaths:()=>[]},setMode:mode=>session.setMode(mode),setStatus(){},ensureMapAuthorFile:async path=>{if(path==='slow.dita')await gate;const file={path,current:'<topic/>',gitStatus:'clean'};return session.registerDocument(file);}},{renderTabs(){},updateActivePanes(){},updateHistoryButtons(){},updateTree(){}});
@@ -37,7 +37,7 @@ test('a delayed source jump cannot focus or select a document opened later',asyn
 });
 
 test('document close announces discarded content only after a dirty-close confirmation', t => {
- const {createController}=require('../public/document-navigation'),state={filesMap:new Map(),activePath:'',mode:'visual'},session=createSession(state),events=createEvents();
+ const {createController}=require('../public/workspace/document-navigation'),state={filesMap:new Map(),activePath:'',mode:'visual'},session=createSession(state),events=createEvents();
  const file={path:'a.dita',current:'<topic/>',dirty:true},discarded=[],closed=[];
  session.registerDocument(file);session.activateDocument(file.path);
  events.on('file:discarded',value=>discarded.push(value));events.on('file:closed',value=>closed.push(value));

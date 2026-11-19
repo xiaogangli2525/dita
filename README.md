@@ -132,7 +132,8 @@ The light workspace separates document navigation, editing and the attribute/rev
 - `public/xml-source.js`: shared browser/server XML validation and source-preserving formatting.
 - `public/review/`: Git and Oxygen review, body decorations, change location and progress.
 - `lib/xml-tree.js`: server XML tree parsing and serialization.
-- `public/workspace-client.js`: workspace identity and stale-response handling.
+- `public/workspace/`: workspace identity, repository and branch operations, document loading and navigation, and workbench presentation.
+- `public/ai/`: AI-assisted writing, source selection, model connection, task recovery and scan progress.
 - `public/delivery/`: export snapshots, resource loading, output templates, previews, downloads and release history.
 - `public/knowledge/`: publication plans, Worker, reader and shared retrieval used by the browser and `blink-cli`.
 - `public/publication-core.js`: shared source-preserving model-footnote filtering and reference validation for both publication formats.
@@ -142,9 +143,9 @@ The light workspace separates document navigation, editing and the attribute/rev
 - `public/oxygen-core.js`: document-local Oxygen presentation and source change enumeration.
 - `public/app.js`: initial state and service assembly; the compatibility facade delegates to controllers.
 - `public/app-dom.js`: DOM handle lookup, without behavior or IO.
-- `public/workspace-controller.js`: workspace initialization, repository/branch changes and guarded directory refresh.
-- `public/document-navigation.js`: document open/close and guarded source-position navigation.
-- `public/workspace-view.js`: document header/status, tabs, outline, filename search and switch feedback.
+- `public/workspace/workspace-controller.js`: workspace initialization, repository/branch changes and guarded directory refresh.
+- `public/workspace/document-navigation.js`: document open/close and guarded source-position navigation.
+- `public/workspace/workspace-view.js`: document header/status, tabs, outline, filename search and switch feedback.
 - `public/app-actions.js` / `public/menu-controller.js`: toolbar/global commands and accessible menu interaction.
 - `public/editor/`: editor coordination, input history, selection, clipboard, Author commands and Oxygen tracking controls.
 - `public/editor/map-author-controller.js` / `public/editor/map-source.js`: isolated Map loading and refresh and source-preserving Map/Bookmap title edits. Typing and title undo keep chapter surfaces mounted.
@@ -280,7 +281,7 @@ The sidebar offers repository/manual plaintext search with exact source navigati
 
 ## Architecture maintenance
 
-Feature startup is declared in `public/application.js`, including factories, dependency ports, initialization requirements and compatibility APIs. Delivery is an explicitly constructed controller; it no longer initializes through script-load side effects. New document state and save/manual snapshots use the shared `document-store` constructors. Protected workspace fields and document membership use named operations in `public/workspace-session.js`; captured Maps expose read-only views. Checked data contracts are in `public/data-contracts.d.ts`, while `public/contracts.js` documents the remaining UI ports; current runtime checks and dependency constraints are described in [architecture](docs/architecture.md).
+Feature startup is declared in `public/application.js`, including factories, dependency ports, initialization requirements and compatibility APIs. Delivery is an explicitly constructed controller; it no longer initializes through script-load side effects. New document state and save/manual snapshots use the shared `document-store` constructors. Protected workspace fields and document membership use named operations in `public/workspace/workspace-session.js`; captured Maps expose read-only views. Checked data contracts are in `public/data-contracts.d.ts`, while `public/contracts.js` documents the remaining UI ports; current runtime checks and dependency constraints are described in [architecture](docs/architecture.md).
 
 ## 日常编写
 

@@ -1,5 +1,5 @@
 'use strict';
-const { createSession } = require('../public/workspace-session');
+const { createSession } = require('../public/workspace/workspace-session');
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
