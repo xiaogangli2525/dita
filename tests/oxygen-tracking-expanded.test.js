@@ -95,6 +95,32 @@ test('regular Author replacement across comment boundaries preserves their exact
   view.querySelector('p').textContent = '开头替换 😀部 & 结束';
   const current = authorSource.updateSource(original, view);
   assert.equal(current, '<topic id="t"><title>批注</title><body><p>开头替换 😀' + start + comment + end + '部 &amp; 结束</p></body></topic>');
+  const tracked = tracking.trackEdit(original, current, meta);
+  assert.equal(tracking.resolve(tracked, false), original);
+  assert.equal(tracking.resolve(tracked, true), current);
+  assert.throws(() => tracking.trackEdit(original, current.replace(comment, ''), meta), /第一版/);
+  assert.throws(() => tracking.trackEdit(original, current.replace('保留 &amp; 核对', '已修改批注'), meta), /第一版/);
+});
+
+test('tracked Author replacement crosses eligible prior revisions while undoing them still restores the original XML', () => {
+  const { document } = buildMockDom();
+  const original = topic('AT+OPEN &amp; OLD\r\n    TIMEOUT=30\r\nFINAL');
+  const oldEdit = original.replace('TIMEOUT=30', 'TIMEOUT=60');
+  const amended = tracking.trackEdit(original, oldEdit, meta);
+  const target = 'AT+NEW &amp; OK\r\nFINAL';
+  const replace = source => {
+    const view = renderer.createAuthorTopic(source, document, false);
+    view.querySelector('pre').textContent = 'AT+NEW & OK\nFINAL';
+    return authorSource.updateSource(source, view, true);
+  };
+  const changes = tracking.trackEdit(amended, replace(amended), { ...meta, id: 'dita-amend' });
+  assert.equal(tracking.resolve(changes, false), original);
+  assert.equal(tracking.resolve(changes, true), topic(target));
+  for (const protectedSource of [
+    amended.replaceAll('跨端 QA &amp; 研发', '外部作者'),
+    amended.replace(/ id="dita-[^"]*"/g, ''),
+    amended.replace('<?oxy_insert_start ', '<?oxy_insert_start flag="done" ')
+  ]) assert.throws(() => tracking.trackEdit(protectedSource, replace(protectedSource), meta), /第一版/);
 });
 
 test('prose typing after a browser NBSP or collapsed whitespace preserves pending revisions', () => {

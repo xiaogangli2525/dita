@@ -58,7 +58,7 @@
     }
     return values;
   }
-  function trackGap(before, after, meta) {
+  function trackRun(before, after, meta) {
     if (before === after) return before;
     const beforeTokens = xml.scan(before), afterTokens = xml.scan(after);
     if ([...beforeTokens, ...afterTokens].some(t => !['text', 'pi'].includes(t.kind))) unsupported();
@@ -88,6 +88,30 @@
       return wrap(part.type, (part.type === 'new' ? newPart : oldPart).map(u => u.raw).join(''));
     }).join('');
   }
+  function commentRuns(source) {
+    const runs = [], comments = [];
+    let start = 0;
+    for (const token of xml.scan(source)) {
+      if (token.kind !== 'comment' && token.kind !== 'pi') continue;
+      const raw = source.slice(token.start, token.end);
+      if (token.kind !== 'comment' && !/^<\?oxy_comment_(?:start|end)(?:\s|\?)/.test(raw)) continue;
+      runs.push(source.slice(start, token.start));
+      comments.push(raw);
+      start = token.end;
+    }
+    runs.push(source.slice(start));
+    return { runs, comments };
+  }
+  function trackGap(before, after, meta) {
+    const old = commentRuns(before), next = commentRuns(after);
+    if (old.comments.length !== next.comments.length || old.comments.some((raw, i) => raw !== next.comments[i])) unsupported();
+    // New revision records must stay within each text run so accepting or
+    // rejecting them can never delete a comment or change its original order.
+    if (!old.comments.length) return trackRun(before, after, meta);
+    return old.runs.map((run, i) =>
+      trackRun(run, next.runs[i], { ...meta, id: meta.id + '-' + i }) + (old.comments[i] || '')
+    ).join('');
+  }
   // Compare validated XML structure, then track text gaps at their exact source
   // ranges. XML tags, entities, namespaces and inherited conditions are never
   // split or inferred from a plain-string diff.
@@ -103,7 +127,7 @@
       if (before.slice(a.start, end(a)) === after.slice(b.start, end(b))) return;
       if (a.name === b.name && !a.close && b.close && !a.children.length && !b.children.some(c => c.kind === 'element') &&
           before.slice(a.start, a.end).replace(/\/\s*>$/, '>') === after.slice(b.start, b.end) && !a.attrs.conref && !a.attrs.conkeyref && !['foreign', 'unknown'].includes(a.name)) {
-        if (protectedContent || revisions.some(c => c.index < a.end && c.index + c.matchLength > a.start)) unsupported();
+        if (protectedContent || revisions.some(c => c.type !== 'comment' && c.index < a.end && c.index + c.matchLength > a.start)) unsupported();
         const value = trackGap('', after.slice(b.end, b.close.start), { ...meta, id: meta.id + '-' + patches.length });
         patches.push({ start: a.start, end: a.end, value: after.slice(b.start, b.end) + value + after.slice(b.close.start, b.close.end) });
         return;
@@ -118,7 +142,7 @@
         const ae = ac[i]?.start ?? a.close?.start ?? a.end, be = bc[i]?.start ?? b.close?.start ?? b.end;
         const previous = before.slice(ap, ae), next = after.slice(bp, be);
         if (previous !== next) {
-          if (revisions.some(c => (c.type === 'comment' || c.author !== meta.author || !c.id?.startsWith('dita-')) && c.index < ae && c.index + c.matchLength > ap)) unsupported();
+          if (revisions.some(c => c.type !== 'comment' && (c.author !== meta.author || !c.id?.startsWith('dita-')) && c.index < ae && c.index + c.matchLength > ap)) unsupported();
           patches.push({ start: ap, end: ae, value: trackGap(previous, next, { ...meta, id: meta.id + '-' + patches.length }) });
         }
         if (i < ac.length) { visit(ac[i], bc[i], protectedContent); ap = end(ac[i]); bp = end(bc[i]); }

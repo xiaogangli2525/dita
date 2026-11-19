@@ -149,7 +149,7 @@ The light workspace separates document navigation, editing and the attribute/rev
 - `public/map-author-controller.js` / `public/map-source.js`: isolated Map loading/refresh lifecycle and source-preserving Map/Bookmap title edits; typing and title undo keep chapter surfaces mounted.
 - `public/author-notes.js`: cancellable note insertion and direct marker editing, using the same source and history rules.
 - `public/author-selection.js` / `public/editor-tools.js`: source-aware selections, bookmarks and detached edits; Author formatting, current-Topic plaintext search/replace, block/resource insertion and explicit Source tools.
-- `public/input-history.js` / `public/note-scope.js`: input grouping/IME lifecycle and the shared model picker for new/existing notes.
+- `public/editor/input-history.js` / `public/note-scope.js`: input grouping/IME lifecycle and the shared model picker for new/existing notes.
 - `public/delivery-core.js` / `public/delivery-document.js` / `public/markdown-preview.js`: DITA publication conversion, data-only HTML document layout and standalone Markdown preview/highlighting.
 - `public/diff-core.js`: pure diff algorithms.
 - `public/manual-core.js` / `public/manual-domain.js`: shared applicability/configuration, publication membership and pure snapshot-to-publication/note/model operations.

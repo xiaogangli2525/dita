@@ -57,7 +57,7 @@
       feature('gitCommit', 'DitaGitCommit', 'createController', 'state api events refreshChrome setStatus'),
       feature('tracking', 'DitaTracking', 'createController', 'state dom api events setFileContent setStatus toast'),
       feature('drafts', 'DitaDrafts', 'createDraftController', 'state api events openFile setFileContent setStatus toast downloadXML'),
-      feature('authorSelection', 'DitaAuthorSelection', 'createController', 'state dom api events ditaCore applyAuthorEdit validateXml'),
+      feature('authorSelection', 'DitaAuthorSelection', 'createController', 'state dom api events ditaCore tracking applyAuthorEdit validateXml', ['tracking']),
       feature('appearance', 'DitaAppearance', 'createController', 'theme authorSelection', ['authorSelection']),
       feature('bodyNavigation', 'DitaBodyNavigation', 'createController', 'state dom api events authorSelection openFile setMode setStatus', ['authorSelection']),
       feature('aiAuthoring', 'DitaAiAuthoring', 'createController', 'state dom api events manual authorSelection bodyNavigation navigateToSource openFile setFileContent validateXml setStatus shell', ['manual', 'authorSelection', 'bodyNavigation']),

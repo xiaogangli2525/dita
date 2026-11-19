@@ -5,7 +5,7 @@
   // The editor owns history/modes; this controller owns the asynchronous Map
   // surface and its refresh jobs. No render tokens or timers escape to app state.
   function createController({ state, session, dom, ditaCore, api, events, validateXml, setStatus }, {
-    load, documentLabel, setFileContent, takeHistory, renderAuthorSurface,
+    load, documentLabel, setFileContent, takeHistory, renderAuthorSurface, trackingActive,
     renderTabs, updateTree, renderInspector, updateHistoryButtons, renderMapReview
   }) {
     const document = dom.visualEditor.ownerDocument;
@@ -194,7 +194,7 @@
       if (!topicFile || !surface) return true;
       try {
         if (surface.ditaSourceContent !== topicFile.current) throw new Error('正文已由其他操作更新，请重新打开此 Topic 后继续编写');
-        const next = ditaCore.updateCurrentFromVisual(null, { visualEditor: surface }, topicFile.current);
+        const next = ditaCore.updateCurrentFromVisual(null, { visualEditor: surface }, topicFile.current, trackingActive?.(topicFile));
         if (next !== topicFile.current) {
           setFileContent(topicFile, next, { updateEditor: false, render: false, ...takeHistory(topicFile, event) });
           renderTabs();

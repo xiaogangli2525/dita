@@ -149,7 +149,7 @@
     function commit(target, copy, focusNode, start = 0, end = start) {
       check(target);
       deduplicateIds(copy);
-      const content = A.ditaCore.updateCurrentFromVisual(null, { visualEditor: copy }, target.current);
+      const content = A.ditaCore.updateCurrentFromVisual(null, { visualEditor: copy }, target.current, A.tracking?.active(target.file));
       A.validateXml(content); check(target);
       const path = focusNode?.ditaSourcePath;
       A.applyAuthorEdit(target.file, content, target.surface, { selectionBefore: bookmark(target.surface, target.range), selectionAfter: path === undefined ? null : { start: { block: path, offset: start }, end: { block: path, offset: end } } });
