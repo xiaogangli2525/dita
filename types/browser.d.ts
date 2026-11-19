@@ -27,6 +27,11 @@ declare global {
   var DitaProfiling: typeof import('../public/profiling-core');
   var DitaConditionGroups: typeof import('../public/condition-groups');
   var DitaThemePreference: typeof import('../public/appearance/theme-preference');
+  var sax: typeof import('../public/vendor/sax');
+  var DitaXmlSource: typeof import('../public/xml-source');
+  var DitaMapSource: typeof import('../public/editor/map-source');
+  var DitaMapAuthorController: typeof import('../public/editor/map-author-controller');
+  interface HTMLElement { ditaSourceContent?: string; }
   interface Window {
     DitaInputHistory: typeof import('../public/editor/input-history');
     DitaGitCommit: { createController(ports: import('../public/data-contracts').GitCommitPorts): object };

@@ -1,7 +1,7 @@
 'use strict';
 const { createSession } = require('../public/workspace-session');
 const test = require('node:test'), assert = require('node:assert/strict');
-const { createController } = require('../public/map-author-controller');
+const { createController } = require('../public/editor/map-author-controller');
 const { createEvents } = require('../public/manual-core');
 const { validateXml } = require('../public/xml-source');
 const { buildMockDom } = require('./dom-mock');

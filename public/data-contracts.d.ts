@@ -27,6 +27,11 @@ export interface Proposal { readonly path: string; readonly workspaceToken: stri
 export type PendingProposal = Proposal & { readonly status: 'pending' };
 export type AppliedProposal = Proposal & { readonly status: 'applied' };
 export interface FileContent { readonly path: string; readonly current: string }
+export interface XmlSourceRange { start: number; end: number }
+export interface XmlSourceToken extends XmlSourceRange { kind: 'text' | 'comment' | 'cdata' | 'pi' | 'tag' | 'doctype' }
+export interface XmlSourceElement extends XmlSourceRange {
+  kind: 'element'; name: string; attrs: Record<string, string>; children: (XmlSourceToken | XmlSourceElement)[]; close?: XmlSourceRange;
+}
 export interface MapEntry { readonly path: string; readonly type?: string; readonly title?: string; readonly name?: string;
   readonly source?: string; readonly sourcePath?: string; readonly href?: string; readonly processingRole?: string; readonly children?: readonly MapEntry[] }
 export interface ProjectConfig { readonly schema: 1; readonly models: readonly string[] }

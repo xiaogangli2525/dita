@@ -1,9 +1,14 @@
+// @ts-check
 'use strict';
 (function (root) {
+  /** @typedef {import('./data-contracts').XmlSourceToken} SourceToken */
+  /** @typedef {import('./data-contracts').XmlSourceElement} SourceElement */
   const sax = typeof module !== 'undefined' ? require('./vendor/sax') : root.sax;
   // SAX validates syntax; source ranges add duplicate-attribute/root checks and
   // let formatting preserve every byte outside structural whitespace.
+  /** @param {string} source @returns {SourceToken[]} */
   function scan(source) {
+    /** @type {SourceToken[]} */
     const tokens = [];
     let i = 0;
     while (i < source.length) {
@@ -15,6 +20,7 @@
         continue;
       }
       let terminator;
+      /** @type {SourceToken['kind']} */
       let kind = 'tag';
       if (source.startsWith('<!--', i)) { terminator = '-->'; kind = 'comment'; }
       else if (source.startsWith('<![CDATA[', i)) { terminator = ']]>'; kind = 'cdata'; }
@@ -41,15 +47,20 @@
     return tokens;
   }
 
+  /** @param {string} source @returns {SourceElement} */
   function analyze(source) {
     if (typeof source !== 'string') throw new Error('XML must be text');
+    /** @type {(message: string) => never} */
     const fail = message => { throw Object.assign(new Error(message), { status: 400 }); };
     for (const ch of source) {
-      const n = ch.codePointAt(0);
+      const n = ch.codePointAt(0) ?? 0;
       if (!(n === 9 || n === 10 || n === 13 || n >= 32 && n <= 0xd7ff || n >= 0xe000 && n <= 0xfffd || n >= 0x10000 && n <= 0x10ffff)) fail('Invalid XML character');
     }
     const tokens = scan(source);
-    const stack = [], roots = [];
+    /** @type {SourceElement[]} */
+    const stack = [];
+    /** @type {SourceElement[]} */
+    const roots = [];
     let doctype = false;
     for (const token of tokens) {
       const text = source.slice(token.start, token.end);
@@ -67,7 +78,7 @@
       }
       if (token.kind === 'cdata' && !stack.length) fail('CDATA outside root element');
       if (token.kind !== 'tag') {
-        if (stack.length) stack.at(-1).children.push(token);
+        stack.at(-1)?.children.push(token);
         continue;
       }
       if (text.startsWith('</')) {
@@ -78,6 +89,7 @@
       }
       const match = /^<([^\s/>]+)/.exec(text);
       if (!match) fail('Invalid start tag');
+      /** @type {SourceElement} */
       const node = { ...token, kind: 'element', name: match[1], children: [], attrs: {} };
       const attrs = text.slice(match[0].length, text.length - (text.endsWith('/>') ? 2 : 1));
       let rest = attrs;
@@ -89,7 +101,8 @@
         names.add(attr[1]); node.attrs[attr[1]] = attr[3];
         rest = rest.slice(attr[0].length);
       }
-      if (stack.length) stack.at(-1).children.push(node); else roots.push(node);
+      const parent = stack.at(-1);
+      if (parent) parent.children.push(node); else roots.push(node);
       if (roots.length > 1) fail('Multiple root elements');
       if (!text.endsWith('/>')) stack.push(node);
     }
@@ -106,15 +119,18 @@
         }
       };
       parser.write(source).close();
-    } catch (error) { fail(error.message); }
+    } catch (error) { fail(error instanceof Error ? error.message : String(error)); }
     return roots[0];
   }
 
+  /** @param {string} source */
   function validateXml(source) { analyze(source); return true; }
   const BLOCK_CONTAINERS = new Set(('topic concept task reference body conbody taskbody refbody section example ul ol steps steps-unordered step substeps substep table tgroup thead tbody row simpletable strow map bookmap topichead topicgroup topicref chapter part frontmatter backmatter topicmeta').split(' '));
+  /** @param {string} source */
   function formatXml(source) {
     const rootNode = analyze(source);
     const eol = source.includes('\r\n') ? '\r\n' : '\n';
+    /** @param {SourceElement} node @param {number} depth @returns {string} */
     function render(node, depth, preserve = false) {
       preserve = node.attrs['xml:space'] != null && node.attrs['xml:space'] !== 'default' || preserve && node.attrs['xml:space'] !== 'default';
       const end = node.close ? node.close.end : node.end;
