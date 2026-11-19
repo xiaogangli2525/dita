@@ -1,6 +1,6 @@
 'use strict';
 const test = require('node:test'), assert = require('node:assert/strict');
-const { readTitle, replaceTitle } = require('../public/map-source');
+const { readTitle, replaceTitle } = require('../public/editor/map-source');
 
 test('Map title edits preserve declarations, comments, revision PIs, CRLF and all unrelated source', () => {
   const source = '\uFEFF<?xml version="1.0" encoding="GBK"?>\r\n<!DOCTYPE map PUBLIC "-//OASIS//DTD DITA Map//EN" "map.dtd">\r\n<!--前言-->\r\n<map id = "http">\r\n  <title outputclass="manual">HTTP &amp; HTTPS</title>\r\n  <?oxy_comment_start author="研发"?><topicref href = "http.dita" /><?oxy_comment_end?>\r\n</map>\r\n<?tail keep?>';

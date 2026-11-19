@@ -16,7 +16,7 @@ function fixture() {
   const A = { state, dom: { editor: {} }, api: { token: 'workspace-1' }, events, toast() {}, setStatus() {},
     setFileContent(file, content, options) { assert.equal(options.origin, 'tracking'); store.editDocument(file, content); events.emit('document:changed', file); } };
   const window = { DitaOxygenTracking: core, DitaOxygenCore: oxygen, crypto: { randomUUID: () => 'controller' }, localStorage: { getItem: key => saved.get(key) || null, setItem: (key, value) => saved.set(key, value) } };
-  vm.runInNewContext(fs.readFileSync(require.resolve('../public/tracking'), 'utf8'), { window, document: { getElementById: get } });
+  vm.runInNewContext(fs.readFileSync(require.resolve('../public/editor/tracking'), 'utf8'), { window, document: { getElementById: get } });
   const controller = window.DitaTracking.createController(A), submit = () => get('trackingForm').listeners.get('submit')({ preventDefault() {} });
   return { A, file, original, controller, get, submit, saved };
 }

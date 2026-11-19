@@ -3,7 +3,7 @@ const test = require('node:test'), assert = require('node:assert/strict');
 const fs = require('node:fs/promises'), os = require('node:os'), path = require('node:path'), net = require('node:net');
 const { spawn, execFileSync } = require('node:child_process'), { chromium } = require('playwright-core'), iconv = require('iconv-lite');
 const { collectDemoFiles } = require('../scripts/demo-workspace');
-const { readTitle, replaceTitle } = require('../public/map-source');
+const { readTitle, replaceTitle } = require('../public/editor/map-source');
 
 test('Map title writing preserves real HTTP sources, chapter surfaces and shared history', async t => {
   const temporary = await fs.mkdtemp(path.join(os.tmpdir(), 'dita-map-author-')), repo = path.join(temporary, 'docs');

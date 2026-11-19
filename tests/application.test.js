@@ -57,7 +57,7 @@ test('loading the delivery module registers a factory without touching DOM or th
 });
 
 test('workspace modules register factories without reading the DOM or application facade at load time',()=>{
- for(const name of ['app-dom','workspace-view','workspace-controller','document-navigation','menu-controller','app-actions','map-author-controller','ai-authoring','ai-context','ai-connection']){
+ for(const name of ['app-dom','workspace-view','workspace-controller','document-navigation','menu-controller','app-actions','editor/map-author-controller','ai-authoring','ai-context','ai-connection']){
   const window=new Proxy({},{get(target,key){if(key==='DitaApp')throw Error('facade touched');return target[key];}});
   vm.runInNewContext(fs.readFileSync(require.resolve('../public/'+name),'utf8'),{window,document:new Proxy({},{get(){throw Error('DOM touched');}})});
   assert.equal(Object.keys(window).length,1,name);
@@ -66,8 +66,8 @@ test('workspace modules register factories without reading the DOM or applicatio
 
 test('domain modules stay independent of application, UI and filesystem controllers', () => {
   const directory = path.join(__dirname, '../public');
-  for (const name of ['manual-core', 'manual-domain', 'xml-source', 'map-source', 'map-context', 'document-store', 'footnotes-core', 'publication-core', 'publication-resolver', 'table-core', 'search-core', 'reference-paths', 'note-reuse-core']) {
+  for (const name of ['manual-core', 'manual-domain', 'xml-source', 'editor/map-source', 'map-context', 'document-store', 'footnotes-core', 'publication-core', 'publication-resolver', 'table-core', 'search-core', 'reference-paths', 'note-reuse-core']) {
     const source = fs.readFileSync(path.join(directory, name + '.js'), 'utf8');
-    assert.doesNotMatch(source, /(?:window|root)\.DitaApp|require\(['"]\.\/(?:app|app-core|delivery-core|manual-service|application|editor-controller|export|workspace-shell|save|documents)['"]\)/, name);
+    assert.doesNotMatch(source, /(?:window|root)\.DitaApp|require\(['"](?:\.\.?\/)+(?:editor\/)?(?:app|app-core|delivery-core|manual-service|application|editor-controller|export|workspace-shell|save|documents)(?:\.js)?['"]\)/, name);
   }
 });
