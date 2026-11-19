@@ -113,6 +113,7 @@
     maps: { ensureMapAuthorFile, renderTabs, documentLabel },
     documents: { renderTabs, updateActivePanes, updateTree,
       refreshWorkspaceTree: workspace.refreshWorkspaceTree },
+    gitCommit: { closeFile: navigation.closeFile, refreshWorkspaceTree: workspace.refreshWorkspaceTree },
     remoteLibraries: {
       reloadWorkspace: workspace.reloadWorkspace,
       loadRepositories: workspace.loadRepositories,

@@ -39,3 +39,63 @@ test('commit verifies the selected disk snapshot and leaves unrelated stages and
   assert.match(await fs.readFile(path.join(cwd, other), 'utf8'), /独立正文/);
   await assert.rejects(commits.commit({ ...fresh, files: pick(fresh), message: '过期请求' }), /分支或基线已变化/);
 });
+
+test('new and deleted documents can be committed together while failed commits preserve the index', async t => {
+  const cwd = await fs.mkdtemp(path.join(os.tmpdir(), 'dita-git-add-delete-'));
+  t.after(() => fs.rm(cwd, { recursive: true, force: true }));
+  const added = '新增 A.dita', removed = '待删除.dita', modified = 'modified.ditamap';
+  const old = '<topic id="t"><title>原文</title></topic>', next = old.replace('原文', '新版本');
+  const write = (file, content) => fs.writeFile(path.join(cwd, file), content);
+  const git = (...args) => execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
+  const stages = option => git('diff', '--cached', option, '--name-only', '-z').split('\0').filter(Boolean);
+  git('init', '-b', 'main'); git('config', 'user.name', 'Test'); git('config', 'user.email', 'test@example.invalid');
+  await Promise.all([write(removed, old), write(modified, '<map/>'), write('unrelated.txt', 'old'), write('.gitignore', 'ignored.dita\n')]);
+  git('add', '.'); git('commit', '-m', 'Start');
+  await Promise.all([
+    fs.rm(path.join(cwd, removed)), write(modified, '<map><title>New</title></map>'), write(added, next),
+    write('unselected.dita', old), write('ignored.dita', old), write('unrelated.txt', 'staged elsewhere')
+  ]);
+  git('add', 'unrelated.txt');
+  const getRoot = () => cwd, checkedResolve = name => resolveWorkspacePath(cwd, name);
+  const service = createGitService({ getRoot, repositoriesRoot: cwd, checkedResolve });
+  let beforeCommit;
+  const commits = createCommitService({ getRoot, checkedResolve, readXmlFile, async runGit(args, options) {
+    if (args.includes('commit')) await beforeCommit?.();
+    return service.runGit(args, options);
+  } });
+  const pick = plan => plan.files.filter(file => [added, removed, modified].includes(file.path));
+  async function checkedCommit() {
+    const plan = await commits.plan();
+    return commits.commit({ ...plan, files: pick(plan), message: '提交新增、修改和删除' });
+  }
+  const initial = await commits.plan();
+  assert.equal(initial.files.some(file => file.path === 'ignored.dita'), false);
+  assert.deepEqual(Object.fromEntries(pick(initial).map(({ path, kind }) => [path, kind])), {
+    [added]: 'added', [removed]: 'deleted', [modified]: 'modified'
+  });
+  beforeCommit = () => write(added, old);
+  await assert.rejects(checkedCommit(), /磁盘版本已变化/);
+  assert.equal(git('rev-parse', 'HEAD'), initial.head);
+  assert.deepEqual(stages('--ita-visible-in-index'), ['unrelated.txt']);
+  beforeCommit = () => write(removed, old);
+  await assert.rejects(checkedCommit(), /Git 实际提交范围已变化/);
+  assert.deepEqual(stages('--ita-visible-in-index'), ['unrelated.txt']);
+  await fs.rm(path.join(cwd, removed));
+  beforeCommit = () => git('add', '--', added);
+  await assert.rejects(checkedCommit(), /暂存状态已变化/);
+  assert.equal(git('show', ':' + added), old);
+  assert.equal((await commits.plan()).files.find(file => file.path === added).reason, '已有暂存内容');
+  git('reset', 'HEAD', '--', added);
+  git('add', '-N', 'unselected.dita');
+  beforeCommit = undefined;
+  await write(added, next);
+  const result = await checkedCommit();
+  assert.deepEqual(new Set(result.files), new Set([added, removed, modified]));
+  assert.equal(git('rev-parse', 'HEAD'), result.head);
+  assert.equal(git('show', 'HEAD:' + added), next);
+  assert.equal(git('show', 'HEAD:' + modified), '<map><title>New</title></map>');
+  assert.equal(git('ls-tree', 'HEAD', '--', removed, 'unselected.dita'), '');
+  assert.equal(git('show', ':unrelated.txt'), 'staged elsewhere');
+  assert.deepEqual(stages('--ita-invisible-in-index'), ['unrelated.txt']);
+  assert.deepEqual(stages('--ita-visible-in-index'), ['unrelated.txt', 'unselected.dita']);
+});

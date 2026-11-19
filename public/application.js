@@ -54,7 +54,7 @@
       feature('maps', 'DitaMapController', 'createMapController', 'state session dom api events setStatus setFileContent openFile', [], { views: views.maps }),
       feature('documents', 'DitaDocuments', 'createDocumentController', 'state session api events maps openFile setFileContent setMode setStatus save validateXml downloadXML', ['save', 'maps'], { views: views.documents }),
       feature('remoteLibraries', 'DitaRemoteLibraries', 'createController', 'state api events setStatus', [], { views: views.remoteLibraries }),
-      feature('gitCommit', 'DitaGitCommit', 'createController', 'state api events refreshChrome setStatus'),
+      feature('gitCommit', 'DitaGitCommit', 'createController', 'state api events refreshChrome setStatus', [], { views: views.gitCommit }),
       feature('tracking', 'DitaTracking', 'createController', 'state dom api events setFileContent setStatus toast'),
       feature('drafts', 'DitaDrafts', 'createDraftController', 'state api events openFile setFileContent setStatus toast downloadXML'),
       feature('authorSelection', 'DitaAuthorSelection', 'createController', 'state dom api events ditaCore tracking applyAuthorEdit validateXml', ['tracking']),

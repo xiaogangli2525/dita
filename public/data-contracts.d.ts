@@ -68,7 +68,7 @@ export interface CapturePorts {
 export type DeliveryFormat = 'html' | 'md' | 'pdf' | 'docx';
 export interface GitCommitPlan {
   readonly head: string; readonly branch: string;
-  readonly files: readonly { readonly path: string; readonly oid?: string; readonly reason?: string }[];
+  readonly files: readonly { readonly path: string; readonly kind: 'added' | 'modified' | 'deleted'; readonly oid?: string; readonly reason?: string }[];
 }
 export interface GitCommitPorts {
   readonly state: Pick<WorkspaceState, 'capabilities' | 'filesMap'>;
@@ -76,6 +76,10 @@ export interface GitCommitPorts {
   readonly events: { on(name: string, handler: () => void): unknown };
   refreshChrome(): void;
   setStatus(message: string, error?: boolean): void;
+}
+export interface GitCommitViews {
+  closeFile(path: string): void;
+  refreshWorkspaceTree(): Promise<void>;
 }
 export interface DeliveryReport { model: string; included: number; excluded: number; unmarked: number; unused: number;
   filteredElements?: number; filteredMapBranches?: number; ruleApplied?: number; ruleFilteredParts?: number; prefixCandidates?: number;

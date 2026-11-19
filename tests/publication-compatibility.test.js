@@ -67,6 +67,21 @@ test('conref chains keep local attributes and identifiers and rebase images to t
   assert.match(xml, /id="local"/); assert.match(xml, /product="M200"/); assert.match(xml, /callout="\*"/);
   assert.match(xml, /href="shared\/img.svg"/); assert.match(xml, /CHAIN/);
 });
+test('the supplied HTTP parameter samples report incompatible and missing conref targets without altering source', async () => {
+  const sourceRoot = path.join(__dirname, '../examples/http_httpsusermanual');
+  const common = 'contentmodule/topics/common_parameters/';
+  const sample = common + 'parameter_test.dita';
+  const readTopic = file => fs.readFileSync(path.join(sourceRoot, file), 'utf8');
+  const topics = await resolver.loadDependencies(new Map([[sample, { current: readTopic(sample) }]]), readTopic);
+  assert.deepEqual([...topics.keys()], [sample, common + 'product_parameters.dita', common + 'product_configurations.dita']);
+  assert.throws(() => resolver.resolveConrefs(topics), /parameter_test\.dita.*类型不匹配（<ph> → <li>）.*product_parameters\.dita#product_parameters\/package_lcc48_lga61/);
+  const profile = { keep: node => node.attrs.id !== 'test_basic_references' };
+  assert.throws(() => resolver.resolveConrefsDetailed(topics, profile), /parameter_test\.dita.*目标不存在.*product_configurations\.dita#product_configurations\/package_lcc48_lga61/);
+  const description = 'contentmodule/topics/g_product_description.dita';
+  const source = readTopic(description);
+  assert.throws(() => publication.prepareTopic(source, description), /g_product_description\.dita.*暂未支持 keyref/);
+  for (const [file, { current }] of topics) assert.equal(current, readTopic(file));
+});
 test('cycles, missing targets, mismatched types, unsupported constructs and escaping references stop publication', async () => {
   for (const [body, pattern] of [
     ['<p id="a" conref="#t/a"/>', /循环/],

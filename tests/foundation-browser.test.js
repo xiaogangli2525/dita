@@ -265,5 +265,26 @@ test('foundation browser workflows', async t => {
     assert.equal(gitRead('diff', '--cached', '--name-only'), 'local-note.txt');
     assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.get('other.dita').history.undo.length), depth);
   });
+  await scenario('the workbench labels and commits new and deleted DITA without taking other changes', async () => {
+    const added = '<topic id="fresh"><title>Fresh</title><body><p>New topic</p></body></topic>';
+    await fs.writeFile(path.join(repo, 'fresh.dita'), added);
+    await fs.writeFile(path.join(repo, 'unselected.dita'), added);
+    await fs.rm(path.join(repo, 'other.dita'));
+    await page.click('#gitCommitButton');
+    const add = page.getByLabel('新增 · fresh.dita'), remove = page.getByLabel('删除 · other.dita');
+    await add.check(); await remove.check();
+    assert.equal(await page.getByLabel('新增 · unselected.dita').isChecked(), false);
+    await page.fill('#gitCommitMessage', 'Add fresh and remove other');
+    await page.click('#gitCommitSubmit');
+    await page.waitForFunction(() => document.getElementById('gitCommitStatus').textContent.includes('提交 '), null, { timeout: 20000 });
+    const gitRead = (...args) => execFileSync('git', args, { cwd: repo, encoding: 'utf8' }).trim();
+    assert.equal(gitRead('diff', '--name-status', 'HEAD^', 'HEAD'), 'A\tfresh.dita\nD\tother.dita');
+    assert.equal(gitRead('show', 'HEAD:fresh.dita'), added);
+    assert.equal(gitRead('diff', '--cached', '--name-only'), 'local-note.txt');
+    assert.deepEqual(await page.evaluate(() => {
+      const state = window.DitaApp.state, files = state.files.map(file => file.path);
+      return { open: state.filesMap.has('other.dita'), removed: !files.includes('other.dita'), added: files.includes('fresh.dita') };
+    }), { open: false, removed: true, added: true });
+  });
   assert.deepEqual(errors, []);
 });

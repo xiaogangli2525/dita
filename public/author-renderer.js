@@ -1,6 +1,6 @@
 'use strict';
 (function (root) {
-  const { parseXml, serializeXmlNode, xmlNodePath } = typeof module !== 'undefined' ? require('./xml-dom') : root.DitaXmlDom;
+  const { parseXml, serializeXmlNode, xmlNodePath, visitElementPaths } = typeof module !== 'undefined' ? require('./xml-dom') : root.DitaXmlDom;
   const assetCore = typeof module !== 'undefined' ? require('./asset-core') : root.DitaAssetCore;
   const presentation = typeof module !== 'undefined' ? require('./document-presentation') : root.DitaDocumentPresentation;
   const { normalizeOxyPIs } = typeof module !== 'undefined' ? require('./oxygen-core') : root.DitaOxygenCore;
@@ -41,16 +41,10 @@
     const ctx = createAuthorContext(topicPath);
     const doc = parsed || parseXml(source);
     const root = doc.documentElement;
-    if (normalizeOxy && /<\?oxy_/.test(source)) {
-      // Oxygen wrappers can move source nodes and change their sibling indexes.
-      ctx.sourcePaths = new WeakMap();
-      function indexPaths(node, path) {
-        ctx.sourcePaths.set(node, path);
-        Array.from(node.children).forEach((child, index) => indexPaths(child, path ? path + '/' + index : String(index)));
-      }
-      indexPaths(root, '');
-      normalizeOxyPIs(doc, true);
-    }
+    // Index before rendering or inserting Oxygen wrappers, which can move source nodes.
+    ctx.sourcePaths = new WeakMap();
+    visitElementPaths(root, (node, path) => ctx.sourcePaths.set(node, path));
+    if (normalizeOxy && /<\?oxy_/.test(source)) normalizeOxyPIs(doc, true);
     const container = documentRef.createElement('article');
     container.ditaSourceContent = source;
     const sourceTitle = Array.from(root.childNodes).find(node => node.localName === 'title');

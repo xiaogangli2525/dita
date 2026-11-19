@@ -52,7 +52,7 @@ declare global {
   interface Text { ditaSourceTextPath?: string; }
   interface Window {
     DitaInputHistory: typeof import('../public/editor/input-history');
-    DitaGitCommit: { createController(ports: import('../public/data-contracts').GitCommitPorts): object };
+    DitaGitCommit: { createController(ports: import('../public/data-contracts').GitCommitPorts, views: import('../public/data-contracts').GitCommitViews): object };
     DitaDocumentStore: typeof DitaDocumentStore; DitaSnapshotData: typeof DitaSnapshotData;
     DitaSave: typeof DitaSave; DitaDeliveryData: typeof DitaDeliveryData; DitaManualService: typeof DitaManualService;
     DitaPublicationResolver: typeof DitaPublicationResolver; DitaManualDomain: typeof DitaManualDomain;
