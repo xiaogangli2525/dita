@@ -135,7 +135,7 @@
         }
         await include(children);
       }
-      const loaded = await resolver.loadDependencies(files, readTopic, profile);
+      const loaded = await resolver.loadDependencies(files, readTopic, profile, { deferInvalidConrefs: deferMissingTopics });
       const noteRules = A.noteRuleStore ? await A.noteRuleStore.read() : null;
       const snapshot = snapshots.createSnapshot({
         ...context, noteRules, capturedAt: new Date().toISOString(), path, content, map, filter,

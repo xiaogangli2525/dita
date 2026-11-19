@@ -47,7 +47,7 @@
  * @typedef {Object} DocumentNavigation
  * @property {(path:string,options?:{preserveFootnotesScope?:boolean})=>Promise<DocumentState|null>} openFile Null means a newer navigation won.
  * @property {(path:string)=>void} closeFile
- * @property {(path:string,start?:number,end?:number,expected?:string)=>Promise<void>} navigateToSource Rejects stale navigation before moving focus/selection.
+ * @property {(path:string,start?:number,end?:number,expected?:string,expectedSource?:string)=>Promise<void>} navigateToSource Rejects stale navigation before moving focus/selection.
  *
  * @typedef {Object} ProjectService
  * @property {ProjectConfig} value
@@ -87,7 +87,7 @@
  * @property {(message:string,error?:boolean)=>void} setStatus
  * @property {(message:string,level?:string)=>void} toast
  * @property {{node:Function}} bodyNavigation
- * @property {Function} navigateToSource
+ * @property {DocumentNavigation['navigateToSource']} navigateToSource
  * @property {Function} downloadText
  * @property {Function} showLoading
  * @property {Function} hideLoading

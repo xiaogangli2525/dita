@@ -50,12 +50,17 @@
       return file;
     }
 
-    /** @param {string} path @param {number} [start] @param {number} [end] @param {string} [expected] */
-    async function navigateToSource(path,start=0,end=start,expected) {
+    /** @param {string} path @param {number} [start] @param {number} [end]
+     * @param {string} [expected] @param {string} [expectedSource] */
+    async function navigateToSource(path,start=0,end=start,expected,expectedSource) {
       const token=A.api.token,file=await openFile(path,{preserveFootnotesScope:true});
       if(token!==A.api.token||!file||state.activePath!==path)throw Error('打开位置已变化，请重新选择来源');
+      if(expectedSource!==undefined&&file.current!==expectedSource)throw Error('原文已变化，请重新检查交付');
       if(expected!==undefined&&file.current.slice(start,end)!==expected)throw Error('内容已变化');
-      setMode('editor');dom.editor.focus();dom.editor.setSelectionRange(start,end);dom.editor.scrollTop=Math.max(0,file.current.slice(0,start).split('\n').length-5)*22;
+      // XML offsets include CRLF, whereas the textarea exposes LF only.
+      const before = file.current.slice(0, start).replace(/\r\n?/g, '\n');
+      const selectedEnd = end === start ? before.length : file.current.slice(0, end).replace(/\r\n?/g, '\n').length;
+      setMode('editor');dom.editor.focus();dom.editor.setSelectionRange(before.length,selectedEnd);dom.editor.scrollTop=Math.max(0,before.split('\n').length-5)*22;
     }
     /** @param {string} path */
     function closeFile(path) {

@@ -66,6 +66,7 @@
     }
     function showIssues(issues) {
       const list = get('deliveryChecks'); if (!list) return;
+      const workspace = A.api.token;
       list.replaceChildren();
       const notes = issues.filter(item => item.note);
       const count = get('deliveryNoteIssueCount');
@@ -103,8 +104,20 @@
           row.append(document.createTextNode((item.severity === 'error' ? '需处理：' : '提醒：') + item.message));
         }
         if (!item.note && item.path && /\.(dita|xml|ditamap)$/i.test(item.path)) {
-          const button = document.createElement('button'); button.type = 'button'; button.textContent = item.path;
-          button.addEventListener('click', async () => { get('modelExportDialog').close(); try { await A.navigateToSource(item.path); } catch (error) { A.setStatus(error.message, true); } }); row.append(button);
+          const location = item.location;
+          const button = document.createElement('button'); button.type = 'button';
+          if (location) {
+            const line = location.source.slice(0, location.start).split(/\r\n?|\n/).length;
+            button.textContent = '定位原文 · ' + item.path + ' · 第 ' + line + ' 行';
+          } else button.textContent = item.path;
+          button.addEventListener('click', async () => {
+            get('modelExportDialog').close();
+            try {
+              if (workspace !== A.api.token) throw Error('工作区已切换，请重新检查交付');
+              await A.navigateToSource(item.path, location?.start, location?.end, undefined, location?.source);
+            } catch (error) { A.setStatus(error.message, true); }
+          });
+          row.append(button);
         }
         list.append(row);
       }
@@ -208,7 +221,7 @@
       const selectedModel = get('exportModel').value;
       configuration = null; compiled = null; configuring = true; view().invalidate();
       get('exportModel').disabled=true;get('exportPrefixNotes').disabled=true;get('exportReviewRules').disabled=true;
-      get('modelExportSummary').textContent = '正在应用条件过滤…'; get('modelExportError').textContent = '';
+      get('modelExportSummary').textContent = '正在应用条件过滤…'; get('modelExportError').textContent = ''; showIssues([]);
       get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = true; });
       try {
         const snapshot = await service().capture(scope, { filterPath, deferMissingTopics: true }), source = await provenance();
@@ -217,7 +230,7 @@
         useSnapshot(snapshot, source, selectedModel); selectedFilters.set(workspace + '\n' + scope, filterPath);
       } catch (error) {
         if (generation !== filterGeneration || operationId !== operation) return;
-        view().invalidate(); get('modelExportSummary').textContent = ''; get('modelExportError').textContent = error.message;
+        view().invalidate(); get('modelExportSummary').textContent = ''; get('modelExportError').textContent = error.message; showIssues(issue(error));
       } finally {
         if (generation === filterGeneration && operationId === operation) {
           configuring = false;
