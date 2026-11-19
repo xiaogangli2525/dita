@@ -1,7 +1,7 @@
 'use strict';
 (function (root) {
   const { parseXml, parseSource, serializeXmlNode, cloneDitaNode, elementChildren, visitElementPaths } = typeof module !== 'undefined' ? require('./xml-dom') : root.DitaXmlDom;
-  const { createAuthorTopic } = typeof module !== 'undefined' ? require('./author-renderer') : root.DitaAuthorRenderer;
+  const { createAuthorTopic, originalInertAttributes } = typeof module !== 'undefined' ? require('./author-renderer') : root.DitaAuthorRenderer;
   const presentation = typeof module !== 'undefined' ? require('./document-presentation') : root.DitaDocumentPresentation;
   const { decode } = typeof module !== 'undefined' ? require('./manual-core') : root.DitaManualCore;
   const BODY_TAGS = presentation.bodies;
@@ -15,9 +15,15 @@
   function visualElementToDita(node, documentRef, preserveAttributes = false) {
     const converted = convertVisualElement(node, documentRef, preserveAttributes);
     if (converted) {
-      if (preserveAttributes) {
-        const inert = JSON.parse(node.getAttribute('data-dita-inert-attrs') || '{}');
-        for (const [name, value] of Object.entries(inert)) converted.setAttribute(name, value);
+      if (preserveAttributes && converted.nodeType === 1) {
+        // Browser editing may clone an element and retain its serialized metadata.
+        // On original nodes, prefer the attributes captured from the source.
+        try {
+          const inert = originalInertAttributes(node) ?? JSON.parse(node.getAttribute('data-dita-inert-attrs') || '{}');
+          if (inert && typeof inert === 'object' && !Array.isArray(inert)) {
+            for (const [name, value] of Object.entries(inert)) if (typeof value === 'string') converted.setAttribute(name, value);
+          }
+        } catch { /* Ignore damaged metadata on visual elements and keep editing. */ }
       }
       converted.ditaSourcePath = node.ditaSourcePath;
       converted.ditaVisualNode = node;
@@ -244,7 +250,9 @@
           const begin = offset;
           let text;
           if (source[offset] === '&') {
-            offset = source.indexOf(';', offset) + 1;
+            const semicolon = source.indexOf(';', offset + 1);
+            if (semicolon === -1 || semicolon >= token.end) throw new Error('批注附近的 XML 实体不完整，请在源码中修正');
+            offset = semicolon + 1;
             text = decode(source.slice(begin, offset));
           } else {
             text = String.fromCodePoint(source.codePointAt(offset)); offset += text.length;

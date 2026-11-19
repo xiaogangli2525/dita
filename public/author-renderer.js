@@ -5,6 +5,7 @@
   const presentation = typeof module !== 'undefined' ? require('./document-presentation') : root.DitaDocumentPresentation;
   const { normalizeOxyPIs } = typeof module !== 'undefined' ? require('./oxygen-core') : root.DitaOxygenCore;
   const BODY_TAGS = presentation.bodies, resolveAssetPath = assetCore.resolveAssetPath;
+  const inertAttributes = new WeakMap();
   const createAuthorContext = (topicPath = '') => ({ topicPath, fnCounter: 0 });
   const sourcePath = (node, ctx) => ctx.sourcePaths ? ctx.sourcePaths.get(node) : xmlNodePath(node);
 
@@ -24,8 +25,9 @@
     const local = name.toLowerCase();
     const unsafeHref = local === 'href' && !assetCore.safeLinkHref(value);
     if (/^(?:on|data-|src|form|xmlns)/.test(local) || ['style', 'class', 'contenteditable', 'autofocus', 'is', 'tabindex'].includes(local) || unsafeHref) {
-      const saved = JSON.parse(element.getAttribute('data-dita-inert-attrs') || '{}');
-      Object.defineProperty(saved, name, { value, enumerable: true, configurable: true, writable: true });
+      let saved = inertAttributes.get(element);
+      if (!saved) { saved = Object.create(null); inertAttributes.set(element, saved); }
+      saved[name] = value;
       element.setAttribute('data-dita-inert-attrs', JSON.stringify(saved));
     } else element.setAttribute(name, value);
   }
@@ -371,6 +373,7 @@
 
 
 
-  const api = { createAuthorTopic, renderDitaNode };
+  const originalInertAttributes = node => inertAttributes.get(node);
+  const api = { createAuthorTopic, renderDitaNode, originalInertAttributes };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaAuthorRenderer = api;
 })(typeof window === 'undefined' ? globalThis : window);

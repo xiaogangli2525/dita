@@ -89,6 +89,9 @@ test('ordinary annotated edits preserve untouched PI positions and entities, and
   surface.querySelector('h2').appendChild(document.createTextNode(' 更新'));
   const next = source.updateSource(input, surface);
   assert.equal(next, input.replace('</title>', ' 更新</title>'));
+  for (const invalidEntity of ['&', '&amp<?broken ignored?>;']) {
+    assert.throws(() => source.updateSource(input.replace('&amp;', invalidEntity), surface), /entity|实体/i);
+  }
   const replacement = author.createAuthorTopic(input, document);
   replacement.querySelector('h2').textContent = '替换标题';
   assert.equal(source.updateSource(input, replacement), input.replace('T &amp; X<?oxy_comment_end?>', '替换标题<?oxy_comment_end?>'));
@@ -96,4 +99,17 @@ test('ordinary annotated edits preserve untouched PI positions and entities, and
   const other = author.createAuthorTopic(marked, document);
   other.querySelector('p').textContent = 'Replacement';
   assert.equal(source.updateSource(marked, other), '<topic><title>T</title><body><p>Replacement<?oxy_comment_start author="A"?><?oxy_comment_end?></p></body></topic>');
+});
+
+test('damaged Author attribute metadata allows edits and preserves the source attributes', () => {
+  const { document } = buildMockDom();
+  const input = '<topic><title>T</title><body><p id="p" style=\'color: red\' data-team=\'manual\'>Original</p></body></topic>';
+  const surface = author.createAuthorTopic(input, document), paragraph = surface.querySelector('p');
+  paragraph.setAttribute('data-dita-inert-attrs', '{broken');
+  paragraph.textContent = 'Edited';
+  const added = document.createElement('p');
+  added.setAttribute('data-dita-inert-attrs', 'null');
+  added.appendChild(document.createTextNode('New block'));
+  paragraph.parentNode.appendChild(added);
+  assert.equal(source.updateSource(input, surface), input.replace('Original</p>', 'Edited</p><p>New block</p>'));
 });

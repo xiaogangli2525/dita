@@ -223,6 +223,7 @@
     for (let offset = 0; offset < vectors.length; offset += dims) {
       let peak = 0;
       for (let i = offset; i < offset + dims; i++) peak = Math.max(peak, Math.abs(vectors[i]));
+      if (!(peak > 0) || !Number.isFinite(peak)) throw Error('Int8 量化要求向量具有有效的非零峰值，请重新生成');
       const scale = 127 / peak;
       for (let i = offset; i < offset + dims; i++) quantized[i] = Math.round(vectors[i] * scale);
     }
