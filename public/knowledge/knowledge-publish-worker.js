@@ -1,7 +1,7 @@
 'use strict';
-importScripts('vendor/fflate.js', 'knowledge-retrieval.js', 'knowledge-search-profile.js', 'knowledge-search.js',
+importScripts('../vendor/fflate.js', 'knowledge-retrieval.js', 'knowledge-search-profile.js', 'knowledge-search.js',
   'knowledge-structure.js', 'knowledge-semantic.js', 'knowledge-reader.js', 'knowledge-limits.js',
-  'knowledge-zip.js', 'knowledge-package.js', 'workspace-client.js', 'knowledge-index.js');
+  'knowledge-zip.js', 'knowledge-package.js', '../workspace-client.js', 'knowledge-index.js');
 let prepared, activeId = null, controller, phases = [], phaseStart = 0, stage = '';
 function progress(value) {
   const now = performance.now();

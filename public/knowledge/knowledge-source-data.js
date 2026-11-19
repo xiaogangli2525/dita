@@ -1,7 +1,7 @@
 // @ts-check
 'use strict';
 (function (root) {
-  const snapshots = typeof module !== 'undefined' ? require('./snapshot-data') : root.DitaSnapshotData;
+  const snapshots = typeof module !== 'undefined' ? require('../snapshot-data') : root.DitaSnapshotData;
   /** Rehydrate only immutable source data; no live editor state or IO enters this adapter.
    * @param {import('./knowledge-contracts').KnowledgeBundle} bundle */
   function hydrate(bundle) {

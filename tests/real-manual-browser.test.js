@@ -4,7 +4,7 @@ const fs = require('node:fs/promises'), path = require('node:path'), os = requir
 const { spawn, execFileSync } = require('node:child_process'), { createHash } = require('node:crypto');
 const { chromium } = require('playwright-core'), { unzipSync, strFromU8 } = require('fflate');
 const { collectDemoFiles } = require('../scripts/demo-workspace');
-const templates = require('../public/template-core');
+const templates = require('../public/delivery/template-core');
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 const compact = text => text.replace(/\s+/g, '');
 

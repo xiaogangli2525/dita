@@ -1,9 +1,9 @@
 'use strict';
 const test = require('node:test'), assert = require('node:assert/strict');
 const { unzipSync, strFromU8 } = require('fflate');
-const { createSearchEngine } = require('../public/knowledge-search');
-const { buildPackage } = require('../public/knowledge-package');
-const { createZip } = require('../public/knowledge-zip');
+const { createSearchEngine } = require('../public/knowledge/knowledge-search');
+const { buildPackage } = require('../public/knowledge/knowledge-package');
+const { createZip } = require('../public/knowledge/knowledge-zip');
 test('technical lookup preserves complete command/parameter/numeric tokens and ranks definitions above examples', () => {
   const engine = createSearchEngine(), records = [
     { manualId: 'a', manualTitle: 'HTTP/HTTPS 用户手册', title: 'AT+MHTTPCFG', text: 'ssl_id timeout 范围为 0～5。' },
@@ -99,12 +99,12 @@ test('compiled reader and provenance are detached and frozen independently of ca
 });
 
 test('preview prepares one immutable rendering and export reuses it when vectors arrive', async t => {
-  const reader = require('../public/knowledge-reader'), zip = require('../public/knowledge-zip');
+  const reader = require('../public/knowledge/knowledge-reader'), zip = require('../public/knowledge/knowledge-zip');
   const render = t.mock.method(reader, 'renderPage'), archive = t.mock.method(zip, 'createZip');
-  const input = manual(), prepared = require('../public/knowledge-package').preparePackage({ title: 'KB', model: 'ML307G', sdkVersion: 'V1', manuals: [input] });
+  const input = manual(), prepared = require('../public/knowledge/knowledge-package').preparePackage({ title: 'KB', model: 'ML307G', sdkVersion: 'V1', manuals: [input] });
   assert.equal(render.mock.callCount(), 1); assert.equal(archive.mock.callCount(), 0);
   input.entries[0].text = 'later edit';
-  const records = require('../lib/knowledge-book').flatten(prepared.book), data = require('../public/knowledge-semantic');
+  const records = require('../lib/knowledge-book').flatten(prepared.book), data = require('../public/knowledge/knowledge-semantic');
   const chunks = await data.chunksFor(records, text => text.length + 2), vector = Array(512).fill(0); vector[0] = 1;
   const semantic = data.createIndex(chunks, chunks.map(() => vector));
   const output = prepared.build(semantic);
@@ -116,7 +116,7 @@ test('preview prepares one immutable rendering and export reuses it when vectors
 });
 
 test('a source below 40 MiB cannot publish a vector archive above the CLI input limit', async () => {
-  const structure = require('../public/knowledge-structure'), data = require('../public/knowledge-semantic');
+  const structure = require('../public/knowledge/knowledge-structure'), data = require('../public/knowledge/knowledge-semantic');
   const input = manual(), paragraph = 'The HTTP client sends a request and receives response data from the server. '.repeat(8);
   input.entries = []; const bodies = [];
   for (let chapter = 0; chapter < 60; chapter++) {
@@ -132,7 +132,7 @@ test('a source below 40 MiB cannot publish a vector archive above the CLI input 
   input.body = bodies.join(''); input.html = '<html><body>' + input.body + '</body></html>';
   input.toc = input.entries.map(({ title, anchor }) => ({ title, anchor }));
   assert.ok(Buffer.byteLength(input.html + input.body + JSON.stringify(input.entries)) < 40 * 1024 * 1024);
-  const prepared = require('../public/knowledge-package').preparePackage({ title: 'KB', model: 'ML307G', sdkVersion: 'V1', manuals: [input] });
+  const prepared = require('../public/knowledge/knowledge-package').preparePackage({ title: 'KB', model: 'ML307G', sdkVersion: 'V1', manuals: [input] });
   const records = require('../lib/knowledge-book').flatten(prepared.book);
   const chunks = await data.chunksFor(records, text => Math.ceil(text.length / 5) + 2), vector = Array(512).fill(0); vector[0] = 1;
   assert.equal(chunks.length, 12000);
@@ -140,7 +140,7 @@ test('a source below 40 MiB cannot publish a vector archive above the CLI input 
 });
 
 test('offline runtime embeds the same domain profile and query constraints as Node', () => {
-  const runtime = require('node:vm').runInNewContext(require('../public/knowledge-search').runtimeSource());
+  const runtime = require('node:vm').runInNewContext(require('../public/knowledge/knowledge-search').runtimeSource());
   const records = [{ manualId: 'http', title: 'AT+MHTTPDEL 删除HTTP实例', text: '删除实例。HTTP error code -17。' }];
   const browserIndex = runtime.build(records), engine = createSearchEngine(), index = engine.build(records);
   for (const query of ['释放HTTP实例', 'HTTP error code 99999', '-17', '０ｘＦＦＦＦ']) {

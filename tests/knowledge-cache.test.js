@@ -3,7 +3,7 @@ const test = require('node:test'), assert = require('node:assert/strict');
 const fs = require('node:fs/promises'), path = require('node:path'), os = require('node:os');
 const { createIndexBuilder } = require('../lib/knowledge-index');
 const { createVectorCache } = require('../lib/knowledge-vector-cache');
-const data = require('../public/knowledge-semantic'), { flatten } = require('../lib/knowledge-book');
+const data = require('../public/knowledge/knowledge-semantic'), { flatten } = require('../lib/knowledge-book');
 const manual = id => ({ id, title: '手册' + id, entries: [{ title: '参数说明', anchor: id + '-topic', text: '参数定义与设置示例。' }] });
 const book = (...manuals) => ({ schema: 1, title: '开发者知识库', model: 'ML307G', sdkVersion: 'v1', manuals });
 async function generate(records, progress, { legacy = false, signal } = {}) {

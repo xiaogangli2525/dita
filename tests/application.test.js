@@ -52,7 +52,7 @@ test('missing browser modules fail startup with a named dependency instead of pa
 test('loading the delivery module registers a factory without touching DOM or the application facade', () => {
   let touched = 0;
   const window = new Proxy({}, { get(target, key) { if (key === 'DitaApp') touched++; return target[key]; } });
-  vm.runInNewContext(fs.readFileSync(require.resolve('../public/export'), 'utf8'), { window, document: new Proxy({}, { get() { throw Error('DOM touched during module load'); } }) });
+  vm.runInNewContext(fs.readFileSync(require.resolve('../public/delivery/export'), 'utf8'), { window, document: new Proxy({}, { get() { throw Error('DOM touched during module load'); } }) });
   assert.equal(typeof window.DitaExport.createExportController, 'function'); assert.equal(touched, 0); assert.equal(Object.hasOwn(window, 'DitaApp'), false);
 });
 
@@ -68,6 +68,6 @@ test('domain modules stay independent of application, UI and filesystem controll
   const directory = path.join(__dirname, '../public');
   for (const name of ['manual-core', 'manual-domain', 'xml-source', 'editor/map-source', 'map-context', 'document-store', 'footnotes-core', 'publication-core', 'publication-resolver', 'table-core', 'search-core', 'reference-paths', 'note-reuse-core']) {
     const source = fs.readFileSync(path.join(directory, name + '.js'), 'utf8');
-    assert.doesNotMatch(source, /(?:window|root)\.DitaApp|require\(['"](?:\.\.?\/)+(?:editor\/)?(?:app|app-core|delivery-core|manual-service|application|editor-controller|export|workspace-shell|save|documents)(?:\.js)?['"]\)/, name);
+    assert.doesNotMatch(source, /(?:window|root)\.DitaApp|require\(['"](?:\.\.?\/)+(?:editor\/|delivery\/)?(?:app|app-core|delivery-core|manual-service|application|editor-controller|export|workspace-shell|save|documents)(?:\.js)?['"]\)/, name);
   }
 });

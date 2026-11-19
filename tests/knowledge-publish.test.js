@@ -2,10 +2,10 @@
 const test = require('node:test'), assert = require('node:assert/strict');
 const path = require('node:path'), fs = require('node:fs/promises'), os = require('node:os');
 const { Worker } = require('node:worker_threads');
-const { preparePackage } = require('../public/knowledge-package');
-const { createPublisher } = require('../public/knowledge-publisher');
-const { createZip, measureFiles, textBytes } = require('../public/knowledge-zip');
-const data = require('../public/knowledge-semantic');
+const { preparePackage } = require('../public/knowledge/knowledge-package');
+const { createPublisher } = require('../public/knowledge/knowledge-publisher');
+const { createZip, measureFiles, textBytes } = require('../public/knowledge/knowledge-zip');
+const data = require('../public/knowledge/knowledge-semantic');
 const { createVectorCache } = require('../lib/knowledge-vector-cache'), { createIndexBuilder } = require('../lib/knowledge-index');
 const { unzipSync, strFromU8 } = require('fflate');
 function request(text = 'HTTP 超时参数。', id = 'm-0123456789abcdef') {
@@ -169,7 +169,7 @@ test('publication rejects partial, out-of-order and duplicate streamed results',
   const estimate = { type: 'estimate', profile: data.PROFILE, chunks: chunks.length, bytes: Buffer.byteLength(JSON.stringify(index)) };
   const item = { type: 'manual', manualId: manual.id, source: 'cache', index };
   const result = { type: 'result', stats: { reusedManuals: 1, rebuiltManuals: 0, totalManuals: 1, totalChunks: chunks.length }, warnings: [] };
-  const publish = require('../public/knowledge-index').publish;
+  const publish = require('../public/knowledge/knowledge-index').publish;
   for (const messages of [[item, result], [estimate, result], [estimate, item, item, result], [estimate, { ...item, manualId: 'wrong' }, result], [estimate, estimate, item, result], [estimate, item]]) {
     await assert.rejects(publish({ manuals: input.manuals, model: input.model, archiveOverhead: 0,
       api: { request: async () => new Response(messages.map(message => JSON.stringify(message) + '\n').join('')) }

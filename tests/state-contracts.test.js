@@ -3,7 +3,7 @@ const test = require('node:test'), assert = require('node:assert/strict');
 const { createSession } = require('../public/workspace-session');
 const store = require('../public/document-store');
 const { createSnapshot } = require('../public/snapshot-data');
-const { createRecord } = require('../public/delivery-data');
+const { createRecord } = require('../public/delivery/delivery-data');
 const workspace = () => ({ root: '/docs', workspaceToken: 'one', files: [{ path: 'a.dita' }],
   maps: [{ path: 'main.ditamap', title: 'Disk', children: [{ path: 'a.dita' }] }], currentBranch: 'main' });
 const document = path => store.createDocument({ path, content: '<topic/>' });
@@ -84,7 +84,7 @@ test('lint enforces document, workspace and review mutation ownership', async ()
   const source = `function mutate(state,file,A) { state.root='x'; A.state.mode='editor'; state.filesMap.clear(); file.disk='x'; state.reviewCurrent='x'; } module.exports=mutate;`;
   const [controller] = await lint.lintText(source, { filePath: 'public/document-navigation.js' });
   assert.equal(controller.messages.filter(item => item.ruleId === 'no-restricted-syntax').length, 5);
-  const [reviewResult] = await lint.lintText(`function mutate(state) { state.reviewDecisions.set(0,'accept'); state.reviewGroups.clear(); } module.exports=mutate;`, { filePath: 'public/review.js' });
+  const [reviewResult] = await lint.lintText(`function mutate(state) { state.reviewDecisions.set(0,'accept'); state.reviewGroups.clear(); } module.exports=mutate;`, { filePath: 'public/review/review.js' });
   assert.equal(reviewResult.messages.filter(item => item.ruleId === 'no-restricted-syntax').length, 2);
   const [storeResult] = await lint.lintText(source, { filePath: 'public/document-store.js' });
   assert.equal(storeResult.errorCount, 0);

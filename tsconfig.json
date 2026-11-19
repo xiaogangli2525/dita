@@ -9,7 +9,8 @@
     "moduleResolution": "Node16",
     "lib": [
       "ES2023",
-      "DOM"
+      "DOM",
+      "DOM.Iterable"
     ],
     "types": [
       "node"
@@ -25,22 +26,17 @@
     "lib/ai-provider.js",
     "public/document-store.js",
     "public/xml-source.js",
-    "public/editor/map-source.js",
-    "public/editor/map-author-controller.js",
-    "public/editor/input-history.js",
     "public/workspace/git-commit.js",
     "public/appearance/theme-preference.js",
     "public/save.js",
     "public/snapshot-data.js",
     "public/manual-service.js",
-    "public/delivery-data.js",
-    "public/review-session.js",
-    "public/review-store.js",
-    "types/knowledge-boundaries.test.ts",
-    "public/knowledge-search.js",
-    "public/knowledge-plan.js",
-    "public/knowledge-source-data.js",
-    "public/knowledge-package.js",
-    "public/knowledge-zip.js"
+    "types/knowledge-boundaries.test.ts"
+  ],
+  "include": [
+    "public/editor/**/*.js",
+    "public/review/**/*.js",
+    "public/delivery/**/*.js",
+    "public/knowledge/**/*.js"
   ]
 }

@@ -4,7 +4,8 @@ const globals = require('globals');
 const documentRules = ['manual-core', 'manual-domain', 'publication-core', 'publication-resolver',
   'oxygen-core', 'model-discovery', 'model-note-text', 'note-rules-core', 'footnotes-core', 'profiling-core', 'condition-groups', 'xml-source', 'map-context'];
 const importsOnly = names => 'CallExpression[callee.name="require"]' + names
-  .flatMap(name => ['./' + name, './' + name + '.js'])
+  .map(name => name.startsWith('../') ? name : './' + name)
+  .flatMap(name => [name, name + '.js'])
   .map(name => ':not([arguments.0.value=' + JSON.stringify(name) + '])').join('');
 const domainRequire = importsOnly([...documentRules, 'vendor/sax']);
 const sharedMutations = [
@@ -18,31 +19,32 @@ const reviewMutations = [
   { selector: 'CallExpression[callee.object.property.name=/^(reviewGroups|reviewDecisions)$/][callee.property.name=/^(set|delete|clear)$/]', message: 'Review decisions and groups belong to review-session operations.' }
 ];
 const renderingBoundaries = [
-  { names: ['knowledge-retrieval', 'knowledge-plan', 'knowledge-structure', 'knowledge-limits', 'knowledge-search-profile'], imports: [] },
-  { names: ['knowledge-zip'], imports: ['knowledge-limits', 'vendor/fflate'] },
-  { names: ['knowledge-metadata'], imports: ['knowledge-plan'] },
-  { names: ['knowledge-source-data'], imports: ['snapshot-data'] },
-  { names: ['knowledge-search'], imports: ['knowledge-retrieval', 'knowledge-search-profile'] },
-  { names: ['knowledge-package'], imports: ['knowledge-reader', 'knowledge-search', 'knowledge-zip', 'knowledge-semantic', 'knowledge-limits'] },
-  { names: ['knowledge-semantic', 'knowledge-document'], imports: ['knowledge-structure'] },
-  { names: ['template-core'], imports: [] },
-  { names: ['template-pdf'], imports: ['template-core', 'template-pdf-v1'] },
-  { names: ['template-pdf-v1'], imports: ['template-core'] },
+  { names: ['knowledge/knowledge-retrieval', 'knowledge/knowledge-plan', 'knowledge/knowledge-structure',
+    'knowledge/knowledge-limits', 'knowledge/knowledge-search-profile'], imports: [] },
+  { names: ['knowledge/knowledge-zip'], imports: ['knowledge-limits', '../vendor/fflate'] },
+  { names: ['knowledge/knowledge-metadata'], imports: ['knowledge-plan'] },
+  { names: ['knowledge/knowledge-source-data'], imports: ['../snapshot-data'] },
+  { names: ['knowledge/knowledge-search'], imports: ['knowledge-retrieval', 'knowledge-search-profile'] },
+  { names: ['knowledge/knowledge-package'], imports: ['knowledge-reader', 'knowledge-search', 'knowledge-zip', 'knowledge-semantic', 'knowledge-limits'] },
+  { names: ['knowledge/knowledge-semantic', 'knowledge/knowledge-document'], imports: ['knowledge-structure'] },
+  { names: ['delivery/template-core', 'delivery/delivery-document', 'delivery/release-store'], imports: [] },
+  { names: ['delivery/template-pdf'], imports: ['template-core', 'template-pdf-v1'] },
+  { names: ['delivery/template-pdf-v1'], imports: ['template-core'] },
   { names: ['ai-conversation'], imports: ['ai-edit-core'] },
   { names: ['ai-task-store'], imports: ['ai-edit-core', 'ai-conversation'] },
-  { names: ['review-view'], imports: [] },
-  { names: ['review-session'], imports: ['diff-core'] },
-  { names: ['review-store'], imports: ['diff-core'] },
-  { names: ['review-locations'], imports: ['review-markup'] },
+  { names: ['review/review-view'], imports: [] },
+  { names: ['review/review-session'], imports: ['../diff-core'] },
+  { names: ['review/review-store'], imports: ['../diff-core'] },
+  { names: ['review/review-locations'], imports: ['review-markup'] },
+  { names: ['review/review-markup'], imports: ['../xml-source'] },
   { names: ['xml-dom'], imports: ['xml-source'] },
-  { names: ['delivery-document'], imports: [] },
   { names: ['oxygen-core'], imports: ['xml-source'] },
   { names: ['oxygen-tracking'], imports: ['xml-source', 'oxygen-core', 'diff-core'] },
   { names: ['author-renderer'], imports: ['xml-dom', 'asset-core', 'document-presentation', 'oxygen-core'] },
   { names: ['author-source'], imports: ['xml-dom', 'author-renderer', 'document-presentation', 'manual-core'] },
-  { names: ['markdown-preview'], imports: ['asset-core'] },
-  { names: ['delivery-core'], imports: ['publication-core', 'asset-core', 'document-presentation',
-    'delivery-document', 'markdown-preview', 'manual-core', 'publication-resolver'] }
+  { names: ['delivery/markdown-preview'], imports: ['../asset-core'] },
+  { names: ['delivery/delivery-core'], imports: ['../publication-core', '../asset-core', '../document-presentation',
+    'delivery-document', 'markdown-preview', '../manual-core', '../publication-resolver'] }
 ];
 
 module.exports = [
@@ -74,7 +76,7 @@ module.exports = [
       'no-restricted-properties': ['error', ...['window', 'root', 'globalThis'].flatMap(object =>
         ['DitaApp', 'fetch', 'localStorage'].map(property => ({ object, property,
           message: 'Rendering/source adapters receive data or DOM parameters, not application or IO services.' })))],
-      'no-restricted-syntax': ['error', ...sharedMutations, ...(names.includes('review-session') ? [] : reviewMutations), { selector: importsOnly(imports),
+      'no-restricted-syntax': ['error', ...sharedMutations, ...(names.includes('review/review-session') ? [] : reviewMutations), { selector: importsOnly(imports),
         message: 'Keep rendering dependencies within the declared acyclic layer boundary.' }]
     }
   })),
@@ -96,7 +98,7 @@ module.exports = [
       }]
     }
   },
-  { files: ['public/knowledge-publish-worker.js'], languageOptions: { globals: globals.worker } },
+  { files: ['public/knowledge/knowledge-publish-worker.js'], languageOptions: { globals: globals.worker } },
   // This backend file includes functions serialized by Playwright into Chromium.
   { files: ['lib/pdf-export.js'], languageOptions: { globals: { document: 'readonly' } } }
 ];

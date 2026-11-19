@@ -1,6 +1,6 @@
 'use strict';
 (function (root) {
-  /** @param {import('./contracts').ExportPorts} A */
+  /** @param {import('../contracts').ExportPorts} A */
   function createExportController(A, { loadImageBytes, createView = () => root.DitaDeliveryView.createView() } = {}) {
     let exporting = false, previewUrl = '', lastDeliveryRecord = null, lastExportReport = null;
     function releaseExportPreview() {

@@ -4,7 +4,7 @@ const fs = require('node:fs/promises'), path = require('node:path'), os = requir
 const { spawn, execFileSync } = require('node:child_process'), { pathToFileURL } = require('node:url');
 const { createHash } = require('node:crypto'), { chromium } = require('playwright-core'), { unzipSync, strFromU8 } = require('fflate');
 const { collectDemoFiles } = require('../scripts/demo-workspace');
-const { measureFiles } = require('../public/knowledge-zip');
+const { measureFiles } = require('../public/knowledge/knowledge-zip');
 const hash = value => createHash('sha256').update(value).digest('hex');
 test('real HTTP knowledge delivery works across repositories and from a moved offline folder', async t => {
   const temporary = await fs.mkdtemp(path.join(os.tmpdir(), 'dita-knowledge-')), http = path.join(temporary, 'HTTP真实文档库'), extra = path.join(temporary, '独立测试库');
@@ -92,7 +92,7 @@ test('real HTTP knowledge delivery works across repositories and from a moved of
     const endpoint = '**/knowledge-publish-worker.js'; let release;
     const hold = new Promise(resolve => { release = resolve; });
     await context.route(endpoint, async route => { await hold; await route.abort().catch(() => {}); });
-    const pending = context.waitForEvent('request', request => request.url().endsWith('/knowledge-publish-worker.js'));
+    const pending = context.waitForEvent('request', request => request.url().endsWith('/knowledge/knowledge-publish-worker.js'));
     await page.click('#knowledgePreview'); await pending;
     assert.equal(await page.locator('#knowledgeBatchCancel').innerText(), '取消发布');
     await page.click('#knowledgeBatchCancel'); release(); await context.unroute(endpoint);
@@ -134,7 +134,7 @@ test('real HTTP knowledge delivery works across repositories and from a moved of
     await page.click('#knowledgeButton'); await page.check('#knowledgeSemantic');
     const firstStarted = Date.now(), result = await download(), firstMs = Date.now() - firstStarted, archive = unzipSync(new Uint8Array(result.bytes));
     const book = JSON.parse(strFromU8(archive['docs/knowledge.json']));
-    const { flatten, bookFromPath } = require('../lib/knowledge-book'), { validate } = require('../public/knowledge-semantic');
+    const { flatten, bookFromPath } = require('../lib/knowledge-book'), { validate } = require('../public/knowledge/knowledge-semantic');
     const storedBytes = measureFiles(Object.entries(archive).map(([name, content]) => ({ name, content })));
     assert.ok(result.bytes.length < storedBytes);
     const cliZip = path.join(temporary, 'real-http-semantic.zip');

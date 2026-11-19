@@ -1,7 +1,7 @@
 'use strict';
 (function (root) {
   const documentStore = typeof module !== 'undefined' ? require('../document-store') : root.DitaDocumentStore;
-  const review = typeof module !== 'undefined' ? require('../review') : root.DitaReview;
+  const review = typeof module !== 'undefined' ? require('../review/review') : root.DitaReview;
   const mapAuthor = typeof module !== 'undefined' ? require('./map-author-controller') : root.DitaMapAuthorController;
   const loader = typeof module !== 'undefined' ? require('../document-loader') : root.DitaDocumentLoader;
 

@@ -1,6 +1,6 @@
 'use strict';
 const test = require('node:test'), assert = require('node:assert/strict');
-const {createReleaseStore}=require('../public/release-store'),{createDraftStore}=require('../public/draft-store');
+const {createReleaseStore}=require('../public/delivery/release-store'),{createDraftStore}=require('../public/draft-store');
 function storage(){const data=new Map();return{data,get length(){return data.size;},key:i=>[...data.keys()][i],getItem:key=>data.get(key)??null,setItem:(key,value)=>data.set(key,value),removeItem:key=>data.delete(key)};}
 test('corrupt or unavailable release history cannot masquerade as empty or be overwritten on append',()=>{
  for(const value of ['{broken','{}','[null]']){

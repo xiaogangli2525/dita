@@ -1,8 +1,8 @@
 'use strict';
 const test = require('node:test'), assert = require('node:assert/strict'), fs = require('node:fs/promises'), os = require('node:os'), path = require('node:path');
-const core = require('../public/template-core'), pdf = require('../public/template-pdf'), { createTemplateStore } = require('../lib/template-store');
+const core = require('../public/delivery/template-core'), pdf = require('../public/delivery/template-pdf'), { createTemplateStore } = require('../lib/template-store');
 const { createHash } = require('node:crypto');
-const html = require('../public/delivery-document').renderHtmlDocument({ title: '原始标题', model: 'M100', version: 'V1', sections: [{ title: '命令', body: '<p>AT+TEST 原始内容</p>' }] });
+const html = require('../public/delivery/delivery-document').renderHtmlDocument({ title: '原始标题', model: 'M100', version: 'V1', sections: [{ title: '命令', body: '<p>AT+TEST 原始内容</p>' }] });
 const packageValue = () => core.builtins()[0];
 test('legacy template identities and renderer output remain byte-for-byte compatible', () => {
   const legacy = core.builtins().filter(pack => pack.renderer === 'manual-v1'), hash = value => createHash('sha256').update(value).digest('hex');

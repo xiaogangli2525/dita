@@ -1,6 +1,6 @@
 'use strict';
 (function (root) {
-  const assets = typeof module !== 'undefined' ? require('./asset-core') : root.DitaAssetCore;
+  const assets = typeof module !== 'undefined' ? require('../asset-core') : root.DitaAssetCore;
 
   function escapeHtmlAttr(text) {
     return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');

@@ -28,7 +28,7 @@ function harness() {
     document: { getElementById() { return null; }, body: { append() {} }, createElement() { return { click() {}, remove() {} }; } }
   };
   vm.runInNewContext(fs.readFileSync(require.resolve('../public/browser-files.js'), 'utf8'), sandbox);
-  vm.runInNewContext(fs.readFileSync(require.resolve('../public/export.js'), 'utf8'), sandbox);
+  vm.runInNewContext(fs.readFileSync(require.resolve('../public/delivery/export.js'), 'utf8'), sandbox);
   A.manual = require('../public/manual-service').createManualService(A);
   let imageLoader = async () => 'data:image/png;base64,AAAA';
   const exporter = sandbox.window.DitaExport.createExportController(A, { loadImageBytes: (...args) => imageLoader(...args) });

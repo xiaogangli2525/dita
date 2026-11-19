@@ -1,11 +1,11 @@
 // @ts-check
 'use strict';
 (function (root) {
-  const diff = typeof module !== 'undefined' ? require('./diff-core') : root.DitaDiffCore;
+  const diff = typeof module !== 'undefined' ? require('../diff-core') : root.DitaDiffCore;
   /** @typedef {import('./review-contracts').ReviewFrame} ReviewFrame */
-  /** @typedef {import('./data-contracts').DocumentState} DocumentState */
-  /** @typedef {import('./data-contracts').ReviewDecision} ReviewDecision */
-  /** @typedef {import('./data-contracts').ReviewKey} ReviewKey */
+  /** @typedef {import('../data-contracts').DocumentState} DocumentState */
+  /** @typedef {import('../data-contracts').ReviewDecision} ReviewDecision */
+  /** @typedef {import('../data-contracts').ReviewKey} ReviewKey */
   /** @param {import('./review-contracts').ReviewUIState} state */
   function clearReviewState(state) {
     state.reviewGroups = new Map(); state.reviewDecisions = new Map();

@@ -1,4 +1,4 @@
-import type { DeliveryReport } from './data-contracts';
+import type { DeliveryReport } from '../data-contracts';
 export interface KnowledgeEntry { readonly structure?: import('./knowledge-structure').KnowledgeStructure; readonly anchor: string; readonly title: string; readonly text: string;
   readonly sourcePath?: string; readonly fingerprint?: string; readonly kind?: string; readonly aliases?: readonly string[];
   readonly symbols?: readonly string[]; readonly definedSymbols?: readonly string[] }
@@ -47,7 +47,7 @@ export interface SemanticEstimate {
 export interface KnowledgeReceipt { readonly repositoryRoot: string; readonly branch: string; readonly revision: string; readonly commit: string;
   readonly files: readonly {readonly path: string; readonly sha256: string|null}[] }
 export interface KnowledgeBundle { readonly schema: 1;
-  readonly snapshot: Omit<import('./data-contracts').ManualSnapshot,'files'|'buffers'> & {readonly files: readonly (readonly [string,import('./data-contracts').FileContent])[];readonly buffers:readonly []};
+  readonly snapshot: Omit<import('../data-contracts').ManualSnapshot,'files'|'buffers'> & {readonly files: readonly (readonly [string,import('../data-contracts').FileContent])[];readonly buffers:readonly []};
   readonly texts: readonly (readonly [string,string])[]; readonly assets: readonly (readonly [string,string])[];
   readonly provenance: {readonly commit:string;readonly branch:string;readonly dirty:boolean};readonly receipt:KnowledgeReceipt }
 

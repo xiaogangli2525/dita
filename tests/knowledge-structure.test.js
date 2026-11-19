@@ -1,8 +1,8 @@
 'use strict';
 const test = require('node:test'), assert = require('node:assert/strict');
 const { parseFragment } = require('parse5');
-const blocks = require('../public/knowledge-structure');
-const semantic = require('../public/knowledge-semantic');
+const blocks = require('../public/knowledge/knowledge-structure');
+const semantic = require('../public/knowledge/knowledge-semantic');
 const count = text => text.length + 2;
 const vector = () => [1, ...Array(511).fill(0)];
 function extract(html, footnotes = '') {

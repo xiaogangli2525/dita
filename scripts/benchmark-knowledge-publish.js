@@ -13,13 +13,13 @@ async function sample(mode, mib) {
     entries: [{ anchor: 'a', title: 'HTTP', text }], source: { repository: 'http', commit: 'a'.repeat(40), dirty: false, documents: [] }, report: { included: 0 }
   }] };
   let publisher, thread, prepare;
-  if (mode === 'worker') publisher = require('../public/knowledge-publisher').createPublisher({ createWorker() {
+  if (mode === 'worker') publisher = require('../public/knowledge/knowledge-publisher').createPublisher({ createWorker() {
     thread = new Worker(path.join(__dirname, '../tests/helpers/knowledge-worker-thread.js'));
     const handle = { postMessage: data => thread.postMessage(data), terminate: () => thread.terminate() };
     thread.on('message', data => handle.onmessage?.({ data })); thread.on('error', cause => handle.onerror?.({ message: cause.message }));
     return handle;
   } });
-  else prepare = require('../public/knowledge-package').preparePackage;
+  else prepare = require('../public/knowledge/knowledge-package').preparePackage;
   let last = performance.now(), maximumGap = 0, ticks = 0;
   const heartbeat = setInterval(() => { const now = performance.now(); maximumGap = Math.max(maximumGap, now - last); last = now; ticks++; }, 5);
   await delay(20); maximumGap = 0; ticks = 0; last = performance.now();

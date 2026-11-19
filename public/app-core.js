@@ -6,7 +6,7 @@
   const oxygen = typeof module !== 'undefined' ? require('./oxygen-core') : root.DitaOxygenCore;
   const assets = typeof module !== 'undefined' ? require('./asset-core') : root.DitaAssetCore;
   const presentation = typeof module !== 'undefined' ? require('./document-presentation') : root.DitaDocumentPresentation;
-  const deliveryFactory = typeof module !== 'undefined' ? require('./delivery-core') : root.DitaDeliveryCore;
+  const deliveryFactory = typeof module !== 'undefined' ? require('./delivery/delivery-core') : root.DitaDeliveryCore;
   const diff = typeof module !== 'undefined' ? require('./diff-core') : root.DitaDiffCore;
   const delivery = deliveryFactory.createDeliveryCore({ parseXml: xml.parseXml,
     normalizeOxyPIs: oxygen.normalizeOxyPIs, resolveAssetPath: assets.resolveAssetPath });

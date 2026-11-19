@@ -29,8 +29,8 @@ test('isolated captures from different repositories keep same-path documents and
   const { roots, call, recipe, command } = await setup(t);
   await fs.appendFile(path.join(roots[1], 'topics/a.dita'), '<!-- saved but uncommitted -->');
   const [a, b] = await Promise.all(roots.map(root => call('capture', recipe(root))));
-  const hydrated = require('../public/knowledge-source-data').hydrate(a); assert.equal(hydrated.snapshot.root, roots[0]);
-  assert.throws(() => require('../public/knowledge-source-data').hydrate({ ...a, schema: 99 }), /格式无效/);
+  const hydrated = require('../public/knowledge/knowledge-source-data').hydrate(a); assert.equal(hydrated.snapshot.root, roots[0]);
+  assert.throws(() => require('../public/knowledge/knowledge-source-data').hydrate({ ...a, schema: 99 }), /格式无效/);
   assert.match(new Map(a.snapshot.files).get('topics/a.dita').current, /TEST_0/); assert.match(new Map(b.snapshot.files).get('topics/a.dita').current, /TEST_1/);
   assert.match(new Map(b.snapshot.files).get('topics/a.dita').current, /saved but uncommitted/); assert.equal(b.provenance.dirty, true);
   for (const root of roots) assert.equal(command(root, 'branch', '--show-current'), 'main');
