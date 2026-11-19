@@ -9,6 +9,7 @@
     function sync() {
       for (const id of ['remoteImportButton', 'remoteUpdateButton']) { get(id).disabled = busy || !supported(); get(id).title = supported() ? '' : '远程 Git 需要运行本地服务；在线演示不支持远程仓库'; }
       get('remotePullButton').disabled = busy || !checked || checked.dirty || dirty() || checked.ahead > 0 || checked.behind < 1;
+      get('remotePushButton').disabled = busy || !A.state.capabilities.gitWrites || !checked?.ahead || checked.behind > 0;
     }
     async function request(url, body) {
       const response = await A.api.request(url, body === undefined ? {} : { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
@@ -65,6 +66,14 @@
       message('remoteUpdateStatus', '正在重新核对并拉取更新…'); const result = await request('/api/remote/update', { expectedHead: expected.head, expectedRemoteHead: expected.remoteHead });
       if (!result.updated) { draw(result.info); return; }
       await reloadWorkspace(result.workspace); get('remoteUpdateDialog').close(); await choose(result.workspace, previous); A.setStatus('已快进更新到远程版本；文档已重新加载');
+    }));
+    get('remotePushButton').addEventListener('click', () => run('remoteUpdateError', async () => {
+      if (!checked?.ahead || checked.behind || !A.state.capabilities.gitWrites) throw new Error('请先检查推送范围');
+      const expected = checked; checked = null;
+      message('remoteUpdateStatus', '正在核对并推送已有提交…');
+      const result = await request('/api/remote/push', { expectedHead: expected.head, expectedRemoteHead: expected.remoteHead });
+      draw(result.info);
+      if (result.pushed) A.setStatus('已推送到 origin/' + result.info.upstreamBranch);
     }));
     for (const prefix of ['remoteImport', 'remoteUpdate']) { get(prefix + 'Cancel').addEventListener('click', () => { if (!busy) get(prefix + 'Dialog').close(); }); get(prefix + 'Dialog').addEventListener('cancel', event => { if (busy) event.preventDefault(); }); }
     get('remoteManualCancel').addEventListener('click', () => get('remoteManualDialog').close());

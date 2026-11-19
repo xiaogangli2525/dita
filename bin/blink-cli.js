@@ -38,6 +38,7 @@ function parseArgs(args) {
     else if (arg === '--list') options.list = true;
     else if (arg === '--rebuild') options.rebuild = true;
     else if (arg === '--info') options.info = true;
+    else if (arg === '--serve') options.serve = true;
     else if (arg === '--help' || arg === '-h') options.help = true;
     else if (values.has(arg)) {
       if (i + 1 >= args.length || args[i + 1].startsWith('--')) throw new Error(arg + ' 缺少参数');
@@ -54,9 +55,11 @@ function parseArgs(args) {
   if (options.block && !options.get) throw Error('--block 仅用于 --get');
   if (options.chunking && (!options['build-index'] || !['structure', 'legacy'].includes(options.chunking))) throw Error('--chunking 仅用于 --build-index，可选 structure 或 legacy');
   if (options.search && !['auto', 'lexical', 'hybrid', 'semantic'].includes(options.search)) throw Error('--search 须为 auto、lexical、hybrid 或 semantic');
-  if ([options.list, options.info, Boolean(options.get), Boolean(options['build-index'])].filter(Boolean).length > 1) throw new Error('管理命令不能同时使用');
-  if ((options.list || options.info || options.get || options['build-index']) && options.query.length) throw new Error('管理命令不能同时带搜索问题');
-  if (!options.list && !options.info && !options.get && !options['build-index'] && !options.query.length && !options.help) throw new Error('请输入搜索内容，或使用 --list / --info');
+  const commands = [options.list, options.info, options.get, options['build-index'], options.serve].filter(Boolean);
+  if (commands.length > 1) throw new Error('管理命令不能同时使用');
+  if (commands.length && options.query.length) throw new Error('管理命令不能同时带搜索问题');
+  if (!commands.length && !options.query.length && !options.help) throw new Error('请输入搜索内容，或使用 --list / --info');
+  if (options.serve && options.merge.length) throw Error('网页阅读器一次打开一份发布包');
   return options;
 }
 
@@ -118,6 +121,7 @@ async function main() {
       '  --rebuild         本次重新生成全部手册向量，并更新本机缓存',
       '  --chunking <方式> structure（默认）或 legacy；生成索引时用于新旧分片对照',
       '  --merge <路径>    加入其它手册包，可重复指定；产品型号和 SDK 版本须一致',
+      '  --serve          在本机启动已解压知识库的语义阅读页',
       '',
       '知识库路径优先级：--kb、BLINK_KB 环境变量、当前目录下 docs/knowledge.json、docs/index.html，或唯一的 *knowledge*.zip。'
     ].join('\n') + '\n');
@@ -128,6 +132,11 @@ async function main() {
     const selectedPath = options.kb || defaultKnowledgePath();
     if (!selectedPath) throw new Error('没有找到知识库。请使用 --kb 指定 ZIP/目录，或设置 BLINK_KB 环境变量。');
     const knowledgePath = path.resolve(selectedPath);
+    if (options.serve) {
+      const { url } = await require('../lib/knowledge-reader-server').startReader(knowledgePath);
+      process.stdout.write('打开本机离线阅读页 ' + url + '\n按 Ctrl+C 退出。\n');
+      return;
+    }
     const knowledgePaths = [knowledgePath, ...options.merge.map(name => path.resolve(name))];
     const books = knowledgePaths.map(name => bookFromPath(name, { structured: !!options['build-index'] && options.chunking !== 'legacy' }));
     const outdated = books.some(value => value.semantic && !semanticData.compatible(value.semantic));

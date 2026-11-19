@@ -31,6 +31,7 @@ async function main() {
     const bundle = path.join(stage, 'blink-cli'), app = path.join(bundle, 'runtime', 'app');
     await fs.mkdir(app, { recursive: true });
     const files = ['bin/blink-cli.js', 'lib/knowledge-book.js', 'lib/abort.js', 'lib/knowledge-semantic.js', 'lib/knowledge-index.js', 'lib/knowledge-vector-cache.js', 'lib/semantic-encoder.js', 'lib/knowledge-structure.js',
+      'lib/http-utils.js', 'lib/knowledge-reader-server.js', 'public/knowledge-reader.js',
       'public/knowledge-search.js', 'public/knowledge-search-profile.js', 'public/knowledge-retrieval.js', 'public/knowledge-semantic.js', 'public/knowledge-structure.js', 'public/knowledge-limits.js'];
     for (const name of files) { await fs.mkdir(path.dirname(path.join(app, name)), { recursive: true }); await fs.copyFile(path.join(root, name), path.join(app, name)); }
     await fs.cp(path.join(modelRoot, PROFILE.model), path.join(bundle, 'runtime', 'models', PROFILE.model), { recursive: true });
@@ -73,7 +74,8 @@ async function main() {
     }
     await fs.writeFile(path.join(bundle, 'docs', 'knowledge.json'), JSON.stringify(book));
     await fs.writeFile(path.join(bundle, 'blink-cli.cmd'), '@echo off\r\nsetlocal\r\nif not defined BLINK_KB set "BLINK_KB=%~dp0docs\\knowledge.json"\r\nif not defined BLINK_MODELS set "BLINK_MODELS=%~dp0runtime\\models"\r\n"%~dp0runtime\\node.exe" "%~dp0runtime\\app\\bin\\blink-cli.js" %*\r\n');
-    const htmlHelp = htmlFiles['docs/index.html'] ? '双击 docs/index.html 阅读手册。' : '本包提供 CLI 检索。构建时可指定原知识库 ZIP，一并保留 HTML。';
+    if (htmlFiles['docs/index.html']) await fs.writeFile(path.join(bundle, 'blink-reader.cmd'), '@echo off\r\ncall "%~dp0blink-cli.cmd" --serve\r\n');
+    const htmlHelp = htmlFiles['docs/index.html'] ? '双击 docs/index.html 可阅读并按关键词检索。双击 blink-reader.cmd 并打开窗口中显示的本机地址，可在浏览器用语义检索。' : '本包提供 CLI 检索。构建时可指定原知识库 ZIP，一并保留 HTML。';
     await fs.writeFile(path.join(bundle, 'README.txt'), '离线知识库检索验证版\n\n' + htmlHelp + '向量数据位于 docs/knowledge.json 的 semantic 字段。\n\n在解压目录打开 PowerShell，执行\n.\\blink-cli.cmd --info\n.\\blink-cli.cmd KB "怎么把日志取出来"\n.\\blink-cli.cmd KB "看一下还有多少内存可用" --json\n.\\blink-cli.cmd KB "webui二次认证"\n\n随包提供 Windows x64 Node、CPU 推理运行库、分词器、量化模型和知识库。运行时从本地加载全部资源。搜索结果是原文线索，请结合章节核对。\n模型来源 https://huggingface.co/Xenova/bge-small-zh-v1.5\n基础模型 https://huggingface.co/BAAI/bge-small-zh-v1.5\n运行依赖位于 runtime/app/node_modules；模型位于 runtime/models；许可说明位于 runtime/licenses 和 runtime/LICENSE。\n');
     const archive = {};
     async function collect(dir, prefix) {

@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="专注于 DITA 文档编写、结构编辑与变更审阅的本地工作台" />
   <title>DITA Lite · 文档工作台</title>
-  <script src="/theme-preference.js"></script>
-  <script src="/theme-init.js"></script>
+  <script src="/appearance/theme-preference.js"></script>
+  <script src="/appearance/theme-init.js"></script>
   <link rel="stylesheet" href="/tokens.css" />
   <link rel="stylesheet" href="/styles.css" />
   <link rel="stylesheet" href="/workspace.css" />
   <link rel="stylesheet" href="/panels.css" />
   <link rel="stylesheet" href="/document.css" />
-  <link rel="stylesheet" href="/appearance.css" />
+  <link rel="stylesheet" href="/appearance/appearance.css" />
   <link rel="stylesheet" href="/ai-authoring.css" />
   <link rel="stylesheet" href="/knowledge.css" />
 </head>
@@ -88,7 +88,7 @@
         <label class="workspace-switch"><span>仓库</span><select id="repositorySelect"></select></label>
         <label class="workspace-switch"><span>分支</span><select id="branchSelect"></select></label>
       </div>
-        <div class="workspace-tool-actions"><button id="projectButton" type="button" title="维护当前仓库的型号清单">型号清单</button><div class="remote-library-actions"><button id="remoteImportButton" type="button">加载远程库</button><button id="remoteUpdateButton" type="button">远程更新</button></div></div>
+        <div class="workspace-tool-actions"><button id="projectButton" type="button" title="维护当前仓库的型号清单">型号清单</button><div class="remote-library-actions"><button id="remoteImportButton" type="button">加载远程库</button><button id="remoteUpdateButton" type="button">远程更新</button><button id="gitCommitButton" type="button" disabled>提交文档</button></div></div>
         <span id="rootPath" class="workspace-path">未加载</span>
         <div class="workspace-actions"><button id="draftsButton" type="button">恢复草稿</button><button id="releasesButton" type="button">交付记录</button></div>
       </div>
@@ -531,9 +531,19 @@
     <div class="dialog-actions"><button id="remoteImportCancel" type="button">取消</button><button type="submit" class="primary-action">克隆并选择手册</button></div>
   </form></dialog>
   <dialog id="remoteUpdateDialog" class="workspace-dialog" aria-labelledby="remoteUpdateHeading">
-    <h2 id="remoteUpdateHeading">远程更新</h2><p id="remoteRepositoryInfo" class="remote-repository-info"></p><p>检查更新会读取远程版本。拉取仅执行快进更新；本地改动和分叉需先在 Git 中处理。</p>
+    <h2 id="remoteUpdateHeading">远程更新</h2><p id="remoteRepositoryInfo" class="remote-repository-info"></p><p>核对本地和上游的提交差异。拉取使用快进更新，推送发送本地已有的提交。</p>
     <p id="remoteUpdateStatus" role="status"></p><p id="remoteUpdateError" class="form-error" role="alert"></p>
-    <div class="dialog-actions"><button id="remoteUpdateCancel" type="button">关闭</button><button id="remoteCheckButton" type="button">检查远程更新</button><button id="remotePullButton" type="button" class="primary-action" disabled>拉取更新</button></div>
+    <div class="dialog-actions"><button id="remoteUpdateCancel" type="button">关闭</button><button id="remoteCheckButton" type="button">检查远程更新</button><button id="remotePullButton" type="button" disabled>拉取更新</button><button id="remotePushButton" type="button" disabled>推送已有提交</button></div>
+  </dialog>
+  <dialog id="gitCommitDialog" class="workspace-dialog" aria-labelledby="gitCommitHeading">
+    <form id="gitCommitForm">
+      <h2 id="gitCommitHeading">提交已保存的文档</h2>
+      <p id="gitCommitStatus" role="status"></p>
+      <fieldset id="gitCommitFiles"><legend>选择已核对的文档</legend><div id="gitCommitList"></div></fieldset>
+      <label>提交说明 <textarea id="gitCommitMessage" maxlength="2000" required></textarea></label>
+      <p id="gitCommitError" class="form-error" role="alert"></p>
+      <div class="dialog-actions"><button id="gitCommitClose" type="button">关闭</button><button id="gitCommitSubmit" type="submit" class="primary-action" disabled>提交所选文档</button></div>
+    </form>
   </dialog>
   <dialog id="remoteManualDialog" class="workspace-dialog" aria-labelledby="remoteManualHeading"><form id="remoteManualForm">
     <h2 id="remoteManualHeading">选择功能手册</h2><label>手册入口<select id="remoteManual" required></select></label>
@@ -669,7 +679,7 @@
   <script src="/map-controller.js"></script>
   <script src="/document-templates.js"></script>
   <script src="/documents.js"></script>
-  <script src="/input-history.js"></script>
+  <script src="/editor/input-history.js"></script>
   <script src="/document-loader.js"></script>
   <script src="/map-source.js"></script>
   <script src="/map-author-controller.js"></script>
@@ -690,8 +700,9 @@
   <script src="/body-navigation.js"></script>
   <script src="/document-label.js"></script>
   <script src="/workspace-shell.js"></script>
-  <script src="/appearance-controller.js"></script>
+  <script src="/appearance/appearance-controller.js"></script>
   <script src="/remote-libraries.js"></script>
+  <script src="/workspace/git-commit.js"></script>
   <script src="/knowledge-retrieval.js"></script>
   <script src="/knowledge-search-profile.js"></script>
   <script src="/knowledge-search.js"></script>

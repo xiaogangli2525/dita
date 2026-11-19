@@ -80,6 +80,11 @@ test('Oxygen tracking persists real code edits and supports review, history and 
     await select('#other-code', 4); await page.keyboard.type(' X'); const changed = await current('b.dita'); assert.match(changed, /oxy_insert_start/);
     assert.equal(tracking.resolve(changed, false), tracking.setEnabled(other, true));
     await page.click('#authorUndoButton'); assert.equal(await current('b.dita'), other); await page.click('#authorRedoButton'); assert.equal(await current('b.dita'), changed);
+    await select('#other-code', 0, 6); await page.keyboard.insertText('CLOSE');
+    const replacement = await current('b.dita');
+    assert.equal(tracking.resolve(replacement, false), tracking.setEnabled(other, true));
+    assert.equal(tracking.resolve(replacement, true), tracking.setEnabled(other.replace('OPEN', 'CLOSE'), true));
+    await page.click('#authorUndoButton'); assert.equal(await current('b.dita'), changed);
     await configure(false); await select('#other-code', 6); await page.keyboard.type('!'); const off = await current('b.dita');
     assert.equal(tracking.resolve(off, false).includes('OPEN!'), true);
   });
@@ -108,6 +113,75 @@ test('Oxygen tracking persists real code edits and supports review, history and 
     await page.reload(); await page.waitForFunction(() => window.DitaApp?.state.root); await open('typing.dita');
     assert.equal(await current('typing.dita'), revision);
     assert.equal((await page.locator('#typing-p').textContent()).replace(/\u00a0/g, ' '), 'HTTP request timeout 60 seconds 中文 😀');
+  });
+  await t.test('native Chromium composition commits tracked Chinese once and cancellation keeps history untouched', async () => {
+    const initial = await current('typing.dita'), initialText = await page.locator('#typing-p').textContent();
+    const offset = initialText.length;
+    const depth = () => page.evaluate(() => window.DitaApp.state.filesMap.get('typing.dita').history.undo.length);
+    await select('#typing-p', offset);
+    const before = await depth(), cdp = await page.context().newCDPSession(page);
+    try {
+      const compose = text => cdp.send('Input.imeSetComposition', { text, selectionStart: text.length, selectionEnd: text.length });
+      await compose('zh'); await compose('zhong');
+      assert.equal(await current('typing.dita'), initial);
+      assert.equal(await depth(), before);
+      await compose('');
+      assert.equal(await current('typing.dita'), initial);
+      assert.equal(await page.locator('#typing-p').textContent(), initialText);
+      assert.equal(await depth(), before);
+      await compose('zh'); await compose('zhong');
+      assert.equal(await current('typing.dita'), initial);
+      await cdp.send('Input.insertText', { text: '中' });
+      await page.waitForFunction(() => window.DitaOxygenTracking.resolve(window.DitaApp.state.filesMap.get('typing.dita').current, true).includes('😀中'));
+      const changed = await current('typing.dita');
+      assert.equal(await depth(), before + 1);
+      assert.doesNotMatch(changed, /zhong/);
+      assert.equal(tracking.resolve(changed, false), tracking.setEnabled(prose, true));
+      await page.keyboard.press('Control+z'); assert.equal(await current('typing.dita'), initial);
+      await page.keyboard.press('Control+y'); assert.equal(await current('typing.dita'), changed);
+      await select('#typing-p', (await page.locator('#typing-p').textContent()).length);
+      await compose('wen'); await cdp.send('Input.insertText', { text: '文' });
+      await page.waitForFunction(() => window.DitaOxygenTracking.resolve(window.DitaApp.state.filesMap.get('typing.dita').current, true).includes('😀中文'));
+      assert.equal(await depth(), before + 2);
+      await page.keyboard.press('Control+z'); assert.equal(await current('typing.dita'), changed);
+      await page.keyboard.press('Control+z'); assert.equal(await current('typing.dita'), initial);
+      await select('#typing-p', 0, 4);
+      await compose('shuru'); assert.equal(await current('typing.dita'), initial);
+      await compose('');
+      assert.equal(await page.locator('#typing-p').textContent(), initialText);
+      assert.equal(await page.evaluate(() => getSelection().toString()), initialText.slice(0, 4));
+      assert.equal(await current('typing.dita'), initial);
+      assert.equal(await depth(), before);
+    } finally { await cdp.detach(); }
+  });
+  await t.test('Author input crosses an earlier tracked replacement and undo restores its pending revisions', async () => {
+    const before = await current('typing.dita');
+    const text = await page.locator('#typing-p').textContent();
+    await select('#typing-p', 0, text.length);
+    await page.keyboard.insertText('设置完成 & 继续');
+    const changed = await current('typing.dita');
+    assert.equal(tracking.resolve(changed, false), tracking.setEnabled(prose, true));
+    assert.match(tracking.resolve(changed, true), /<p id="typing-p">设置完成 &amp; 继续<\/p>/);
+    await page.keyboard.press('Control+z');
+    assert.equal(await current('typing.dita'), before);
+  });
+  await t.test('cancelling a native candidate restores the original Source value and selection', async () => {
+    await configure(false);
+    await page.click('#sourceButton');
+    const source = page.locator('#editor'), initial = await source.inputValue();
+    const start = initial.indexOf('Typing');
+    assert.notEqual(start, -1);
+    await source.focus();
+    await source.evaluate((node, start) => node.setSelectionRange(start, start + 6), start);
+    const cdp = await page.context().newCDPSession(page);
+    try {
+      await cdp.send('Input.imeSetComposition', { text: 'shuru', selectionStart: 5, selectionEnd: 5 });
+      assert.equal(await current('typing.dita'), initial);
+      await cdp.send('Input.imeSetComposition', { text: '', selectionStart: 0, selectionEnd: 0 });
+      assert.equal(await source.inputValue(), initial);
+      assert.deepEqual(await source.evaluate(node => [node.selectionStart, node.selectionEnd]), [start, start + 6]);
+      assert.equal(await current('typing.dita'), initial);
+    } finally { await cdp.detach(); }
   });
   assert.deepEqual(errors, []);
 });

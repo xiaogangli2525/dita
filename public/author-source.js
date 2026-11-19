@@ -218,7 +218,7 @@
     return gaps;
   }
 
-  function serializeAuthorEdits(root, original, projected, range, source) {
+  function serializeAuthorEdits(root, original, projected, range, source, tracking) {
     const originalByPath = new Map();
     const projectedByPath = new Map();
     function indexNodes(node, map) {
@@ -235,8 +235,7 @@
       const escaped = text => escapeText(text).replace(/\r?\n/g, newline);
       const trivia = tokens.filter(token => token.kind === 'pi' || token.kind === 'comment');
       if (!trivia.length) return escaped(next);
-      // Retain annotations at their original source positions. A minimal text
-      // edit must not move both ends of an Oxygen comment behind the new text.
+      // Keep annotations outside the minimal changed range at their source offsets.
       if (tokens.some(token => token.kind === 'cdata')) throw new Error('文字同时包含 CDATA 和批注标记，请使用源码修改');
       let chars = [];
       for (const token of tokens.filter(token => token.kind === 'text')) {
@@ -276,8 +275,16 @@
       const insertion = first === chars.length ? start + gap.length : first === 0 ? start : chars[first].start;
       const begin = first === chars.length - tail ? insertion : chars[first].start;
       const end = first === chars.length - tail ? begin : chars[chars.length - tail - 1].end;
-      if (trivia.some(token => token.start < end && token.end > begin)) throw new Error('修改跨过批注或修订标记，请分段修改或使用源码');
-      return source.slice(start, begin) + escaped(changed.slice(first, changed.length - tail).join('')) + source.slice(end, start + gap.length);
+      const covered = trivia.filter(token => token.start < end && token.end > begin);
+      const raw = token => source.slice(token.start, token.end);
+      if (covered.some(token => token.kind !== 'comment' && !/^<\?oxy_comment_(?:start|end)(?:\s|\?)/.test(raw(token)) &&
+          !(tracking && /^<\?oxy_(?:insert_(?:start|end)|delete)(?:\s|\?)/.test(raw(token))))) {
+        throw new Error('修改跨过批注或修订标记，请分段修改或使用源码');
+      }
+      // Preserve crossed markers in source order. For tracked edits the
+      // tracking engine still verifies and rebuilds eligible revision records.
+      return source.slice(start, begin) + escaped(changed.slice(first, changed.length - tail).join('')) +
+        covered.map(raw).join('') + source.slice(end, start + gap.length);
     }
 
     function serialize(node, oldNode, span) {
@@ -360,13 +367,13 @@
     return result;
   }
 
-  function updateSource(source, visualEditor) {
+  function updateSource(source, visualEditor, tracking = false) {
     const { document: doc, tree } = parseSource(source);
     const root = doc.documentElement.cloneNode(true);
     const projected = doc.documentElement.cloneNode(true);
     updateDitaBody(projected, createAuthorTopic(source, doc, false, '', doc), doc);
     updateDitaBody(root, visualEditor, doc);
-    return serializeAuthorEdits(root, doc.documentElement, projected, sourceRanges(tree), source);
+    return serializeAuthorEdits(root, doc.documentElement, projected, sourceRanges(tree), source, tracking);
   }
 
 

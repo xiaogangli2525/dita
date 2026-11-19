@@ -44,8 +44,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci --ignore-scripts
-      - name: Verify batch save recovery on Windows
-        run: node --test tests/document-batch.test.js
+      - name: Verify document saving and Git commit on Windows
+        run: node --test tests/document-batch.test.js tests/git-commit.test.js
       - run: npm run prepare:semantic
       - run: node --test tests/knowledge-semantic.test.js tests/knowledge-structure.test.js tests/knowledge-cli.test.js tests/knowledge-cache.test.js tests/knowledge-publish.test.js
         env:
@@ -60,6 +60,7 @@ jobs:
           Set-Location dist/unpacked/blink-cli
           if (Test-Path node_modules) { throw 'Runtime dependencies leaked into the public root' }
           if (!(Test-Path docs/index.html)) { throw 'HTML reader missing from the portable package' }
+          if (!(Test-Path blink-reader.cmd)) { throw 'Local reader launcher missing from the portable package' }
           if (!(Test-Path runtime/app/node_modules)) { throw 'Bundled runtime dependencies missing' }
           if ((Get-FileHash -Algorithm SHA256 (Join-Path 'runtime/licenses' $noticePath)).Hash -ne $noticeHash) { throw 'Bundled ONNX Runtime third-party notices differ from source' }
           $json = & .\blink-cli.cmd '日志抓取方法' --search semantic --json

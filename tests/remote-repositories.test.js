@@ -43,3 +43,15 @@ test('fast-forward also protects ignored local files newly tracked by the remote
   const checked = await f.remote.check(); assert.equal(checked.dirty, false); await assert.rejects(f.remote.update({ expectedHead: checked.head, expectedRemoteHead: checked.remoteHead }));
   assert.equal(await fs.readFile(path.join(f.root, 'private.txt'), 'utf8'), 'local private notes'); assert.equal(git(f.root, 'rev-parse', 'HEAD'), checked.head);
 });
+test('push sends only the checked branch commit and preserves saved working edits', async t => {
+  const f = await fixture(t); await f.clone();
+  const file = path.join(f.root, 'a.dita');
+  await fs.writeFile(file, '<topic>提交版本</topic>'); git(f.root, 'add', 'a.dita');
+  git(f.root, '-c', 'user.name=Test', '-c', 'user.email=test@example.invalid', 'commit', '-m', 'local');
+  await fs.writeFile(file, '<topic>工作区版本</topic>');
+  const checked = await f.remote.check(), expected = { expectedHead: checked.head, expectedRemoteHead: checked.remoteHead };
+  assert.equal((await f.remote.push(expected)).pushed, true);
+  assert.equal(await fs.readFile(file, 'utf8'), '<topic>工作区版本</topic>');
+  assert.equal((await f.remote.check()).remoteHead, checked.head);
+  await assert.rejects(f.remote.push(expected), /已变化/);
+});

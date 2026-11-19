@@ -61,7 +61,9 @@ Run the local Node service with Git installed. In the left workspace settings, c
 
 **远程更新** first checks origin's tracked branch without changing working documents. **拉取更新** rechecks the exact local and remote commits and permits fast-forward only. Unsaved editor buffers, dirty/untracked Git files, local-ahead commits, divergent histories and changed remote checks block updating. Ignored files are also protected against checkout overwrite. A successful update rotates the workspace token, reloads files and reopens the active manual when it still exists.
 
-Private repositories use existing Git credentials/SSH keys on the machine running the service. Configure credentials and host trust there first; the app never requests passwords or tokens. Addresses containing credentials, query parameters, file paths or Git helper protocols are refused. Git commands run without interactive prompts, with bounded timeouts and hooks/submodule recursion disabled. LFS objects and submodules are not downloaded automatically. Only the chosen branch is cloned; publishing/committing/pushing changes remains an external Git operation.
+Private repositories use existing Git credentials/SSH keys on the machine running the service. Configure credentials and host trust there first; the app never requests passwords or tokens. Addresses containing credentials, query parameters, file paths or Git helper protocols are refused. Git commands run without interactive prompts, with bounded timeouts and hooks/submodule recursion disabled. LFS objects and submodules are not downloaded automatically. Only the chosen branch is cloned.
+
+In a loopback-only workbench, use **提交文档** to select saved changes to tracked DITA, XML and DITAVAL files and create a local commit. Files with staged changes are excluded, and the commit checks that the selected disk versions and branch still match. To send existing commits, check **远程更新**, then choose **推送已有提交**. This supports fast-forward pushes to the configured origin upstream. Use an external Git tool to stage new files or deletions and to open pull requests.
 
 The static hosted demonstration has no filesystem Git backend. Its remote controls are explicitly disabled. The GitHub connector used to develop this project is separate from the application's repository credentials.
 
@@ -147,7 +149,7 @@ The light workspace separates document navigation, editing and the attribute/rev
 - `public/map-author-controller.js` / `public/map-source.js`: isolated Map loading/refresh lifecycle and source-preserving Map/Bookmap title edits; typing and title undo keep chapter surfaces mounted.
 - `public/author-notes.js`: cancellable note insertion and direct marker editing, using the same source and history rules.
 - `public/author-selection.js` / `public/editor-tools.js`: source-aware selections, bookmarks and detached edits; Author formatting, current-Topic plaintext search/replace, block/resource insertion and explicit Source tools.
-- `public/input-history.js` / `public/note-scope.js`: input grouping/IME lifecycle and the shared model picker for new/existing notes.
+- `public/editor/input-history.js` / `public/note-scope.js`: input grouping/IME lifecycle and the shared model picker for new/existing notes.
 - `public/delivery-core.js` / `public/delivery-document.js` / `public/markdown-preview.js`: DITA publication conversion, data-only HTML document layout and standalone Markdown preview/highlighting.
 - `public/diff-core.js`: pure diff algorithms.
 - `public/manual-core.js` / `public/manual-domain.js`: shared applicability/configuration, publication membership and pure snapshot-to-publication/note/model operations.

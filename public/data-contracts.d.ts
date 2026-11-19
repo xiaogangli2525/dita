@@ -50,7 +50,7 @@ export interface WorkspaceState {
   readonly repositories: readonly { readonly path: string; readonly name: string }[];
   readonly branches: readonly { readonly name: string; readonly commit?: string }[];
   readonly filesMap: ReadonlyMap<string, DocumentState>; readonly mapAuthorPaths: ReadonlySet<string>;
-  readonly capabilities: { readonly persistence: string; readonly git: boolean; readonly pdf?: boolean; readonly remoteGit?: boolean };
+  readonly capabilities: { readonly persistence: string; readonly git: boolean; readonly pdf?: boolean; readonly remoteGit?: boolean; readonly gitWrites?: boolean };
 }
 export interface CaptureContext { workspace: string; root: string; branch: string; project: ProjectConfig;
   projectContent: string | null | undefined; projectError?: string; buffers: ReadonlyMap<string, DocumentSnapshot> }
@@ -61,6 +61,17 @@ export interface CapturePorts {
   noteRuleStore?: { current(rules: NoteRulesSnapshot | null): boolean; read(): Promise<NoteRulesSnapshot>; verify(rules: NoteRulesSnapshot | null): Promise<void> };
 }
 export type DeliveryFormat = 'html' | 'md' | 'pdf' | 'docx';
+export interface GitCommitPlan {
+  readonly head: string; readonly branch: string;
+  readonly files: readonly { readonly path: string; readonly oid?: string; readonly reason?: string }[];
+}
+export interface GitCommitPorts {
+  readonly state: Pick<WorkspaceState, 'capabilities' | 'filesMap'>;
+  readonly api: CapturePorts['api'];
+  readonly events: { on(name: string, handler: () => void): unknown };
+  refreshChrome(): void;
+  setStatus(message: string, error?: boolean): void;
+}
 export interface DeliveryReport { model: string; included: number; excluded: number; unmarked: number; unused: number;
   filteredElements?: number; filteredMapBranches?: number; ruleApplied?: number; ruleFilteredParts?: number; prefixCandidates?: number;
   prefixApplied?: number; prefixExcluded?: number }

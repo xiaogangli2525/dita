@@ -90,7 +90,7 @@ test('text revisions retain DITA attributes, table cell context and unrelated im
 test('unsupported structure, attributes, CDATA, references, foreign metadata and PI edits fail before mutation', () => {
   const before = topic('OLD');
   for (const next of [before.replace('id="code"', 'id="changed"'), before.replace('<p id="tail">保持</p>', ''), before.replace('OLD', '<b>NEW</b>')]) assert.throws(() => tracking.trackEdit(before, next, meta), /第一版/);
-  for (const raw of ['<![CDATA[OLD]]>', '<!--annotation-->OLD', '<?oxy_attributes a="x"?>OLD', '<?oxy_insert_start author="Other"?>OLD<?oxy_insert_end?>']) {
+  for (const raw of ['<![CDATA[OLD]]>', '<?other_annotation keep?>OLD', '<?oxy_attributes a="x"?>OLD', '<?oxy_insert_start author="Other"?>OLD<?oxy_insert_end?>']) {
     assert.throws(() => tracking.trackEdit(topic(raw), topic(raw.replace('OLD', 'NEW')), meta), /第一版/);
   }
   assert.throws(() => tracking.trackEdit(topic('<ph conref="other#t/p">OLD</ph>'), topic('<ph conref="other#t/p">NEW</ph>'), meta), /第一版/);

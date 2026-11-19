@@ -21,8 +21,8 @@
   function renderDitaNode(node, documentRef = globalThis.document, context) {
     return author.renderDitaNode(node, documentRef, context);
   }
-  function updateCurrentFromVisual(_state, dom, content) {
-    return source.updateSource(content, dom.visualEditor);
+  function updateCurrentFromVisual(_state, dom, content, tracking = false) {
+    return source.updateSource(content, dom.visualEditor, tracking);
   }
   function updateVisualFromXml(_state, dom, content, documentRef = dom.visualEditor.ownerDocument, normalizeOxy = false, topicPath = '') {
     const container = author.createAuthorTopic(content, documentRef, normalizeOxy, topicPath);
@@ -34,8 +34,8 @@
       updateVisualFromXml(content, normalizeOxy) {
         updateVisualFromXml(state, dom, content, dom.visualEditor.ownerDocument, normalizeOxy, state.activePath || '');
       },
-      visualToXml(content) {
-        return source.updateSource(content ?? state.filesMap.get(state.activePath).current, dom.visualEditor);
+      visualToXml(content, tracking = false) {
+        return updateCurrentFromVisual(state, dom, content ?? state.filesMap.get(state.activePath).current, tracking);
       }
     };
   }

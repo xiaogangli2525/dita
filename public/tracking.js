@@ -55,7 +55,7 @@
     });
     for (const name of ['file:closed', 'document:changed', 'workspace:changed', 'author:rendered']) A.events.on(name, sync);
     A.events.on('workspace:willChange', () => { target = null; dialog.close(); });
-    sync(); return { prepare, sync, show };
+    sync(); return { active, prepare, sync, show };
   }
   root.DitaTracking = { createController };
 })(window);

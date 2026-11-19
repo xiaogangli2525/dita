@@ -62,7 +62,7 @@ module.exports = [
     }
   },
   {
-    files: ['public/*.js'], ignores: ['public/document-store.js'],
+    files: ['public/**/*.js'], ignores: ['public/document-store.js', 'public/vendor/**'],
     rules: { 'no-restricted-syntax': ['error',
       ...sharedMutations, ...reviewMutations
     ] }
@@ -78,7 +78,7 @@ module.exports = [
         message: 'Keep rendering dependencies within the declared acyclic layer boundary.' }]
     }
   })),
-  { files: ['public/*.js', 'tests/*-browser.test.js', 'tests/browser.test.js', 'tests/visual-core.test.js'],
+  { files: ['public/**/*.js', 'tests/*-browser.test.js', 'tests/browser.test.js', 'tests/visual-core.test.js'],
     languageOptions: { globals: { ...globals.node, ...globals.browser } } },
   {
     files: documentRules.map(name => 'public/' + name + '.js'),

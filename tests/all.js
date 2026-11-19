@@ -52,6 +52,7 @@ require('./demo-workspace.test');
 require('./model-discovery.test');
 require('./atomic-write.test');
 require('./document-batch.test');
+require('./git-commit.test');
 require('./export-isolation.test');
 require('./recovery-errors.test');
 require('./note-rules.test');

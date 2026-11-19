@@ -63,6 +63,14 @@
     file.disk = result.content; file.dirty = file.current !== file.disk;
     file.gitStatus = result.created ? 'untracked' : 'modified';
   }
+  /** @param {import('./data-contracts').DocumentState} file
+   * @param {{content:string,status:string}} git */
+  function acknowledgeCommit(file, git) {
+    if (typeof git.content !== 'string' || typeof git.status !== 'string') throw TypeError('Git 基线响应无效');
+    breakHistoryGroup(file);
+    file.baseline = git.content;
+    file.gitStatus = git.status;
+  }
   // Save acknowledgements advance disk, never a newer working buffer.
   /** @param {(request:import('./data-contracts').SaveRequest)=>Promise<import('./data-contracts').SaveAcknowledgement>} send */
   function createSaveCoordinator(send) {
@@ -109,7 +117,7 @@
     commit(file, proposal.after); // Reuses the editor's undo history; never saves.
     return Object.freeze({ ...proposal, status: 'applied' });
   }
-  const api = { createDocument, snapshotDocument, editDocument, travelHistory, historyOf, breakHistoryGroup, createSaveCoordinator, acknowledgeSave, createProposal, applyProposal };
+  const api = { createDocument, snapshotDocument, editDocument, travelHistory, historyOf, breakHistoryGroup, createSaveCoordinator, acknowledgeSave, acknowledgeCommit, createProposal, applyProposal };
   if (typeof module !== 'undefined') module.exports = api;
   else root.DitaDocumentStore = api;
 })(typeof window === 'undefined' ? globalThis : window);

@@ -217,7 +217,7 @@
     }
 
     function syncVisualToModel(event) {
-      if (state.suppressVisualInput) return;
+      if (state.suppressVisualInput || inputHistory?.pendingComposition(event)) return;
       if (state.mode !== 'visual') return;
       const file = state.filesMap.get(state.activePath);
       if (!file) return;
@@ -243,7 +243,7 @@
       try {
         const previous = file.current;
         if (dom.visualEditor.ditaSourceContent !== previous) throw new Error('正文已由其他操作更新，请重新打开后继续编写');
-        const next = visualCore.visualToXml();
+        const next = visualCore.visualToXml(previous, A.tracking?.active(file));
         if (next !== previous) {
           setFileContent(file, next, { updateEditor: false, render: false, ...inputHistory?.take(file, event) });
         }
@@ -268,23 +268,34 @@
     });
 
     const mapController = mapAuthor.createController({ state, session, dom, ditaCore, api: workspaceClient, events, validateXml, setStatus }, {
-      load: documents.load, documentLabel, setFileContent,
+      load: documents.load, documentLabel, setFileContent, trackingActive: file => A.tracking?.active(file),
       takeHistory: (file, event) => inputHistory?.take(file, event),
       renderAuthorSurface, renderTabs, updateTree, renderInspector,
       updateHistoryButtons, renderMapReview
     });
 
     function markDirty(event) {
+      if (inputHistory?.pendingComposition(event)) return;
       const file = state.filesMap.get(state.activePath);
       if (!file || file.current === dom.editor.value) return;
       setFileContent(file, dom.editor.value, { updateEditor: false, ...inputHistory?.take(file, event) });
     }
 
-    function renderAuthorSurface(file, surface, rendered) {
+    function restoreCancelledComposition(file, selection, event) {
+      const surface = event.target === dom.editor ? dom.editor : surfaceFor(file);
+      if (!surface?.contains(event.target)) return;
+      const focused = surface.contains(document.activeElement);
+      if (surface === dom.editor) dom.editor.value = file.current;
+      else if (surface.matches('[data-map-title]')) mapController.refreshTitle(file);
+      else renderAuthorSurface(file, surface, null, false);
+      if (focused) restoreSelection(file, selection);
+    }
+
+    function renderAuthorSurface(file, surface, rendered, preserveCaret = true) {
       const scrollTop = dom.visualEditor.scrollTop, scrollLeft = dom.visualEditor.scrollLeft;
       const selection = root.getSelection(), current = selection?.rangeCount ? selection.getRangeAt(0) : null;
       let bookmark;
-      if (current && surface.contains(current.endContainer)) {
+      if (preserveCaret && current && surface.contains(current.endContainer)) {
         const element = current.endContainer.nodeType === 1 ? current.endContainer : current.endContainer.parentElement;
         const block = element.closest('p,td,th,li,pre,h2,h3,h4') || surface;
         const prefix = current.cloneRange(); prefix.selectNodeContents(block); prefix.setEnd(current.endContainer, current.endOffset);
@@ -333,7 +344,8 @@
       ensureHistory(file).undo.at(-1).selectionAfter = captureSelection(file);
     }
 
-    inputHistory = root.DitaInputHistory?.createController({ state, dom, events }, { capture: captureSelection, syncVisual: syncVisualToModel, syncSource: markDirty, undo: undoFile, redo: redoFile,
+    inputHistory = root.DitaInputHistory?.createController({ state, dom, events }, { capture: captureSelection, syncVisual: syncVisualToModel, syncSource: markDirty,
+      restoreCancelled: restoreCancelledComposition, undo: undoFile, redo: redoFile,
       resolve(target) {
         if (target === dom.editor && state.mode === 'editor') return state.filesMap.get(state.activePath);
         if (state.mode !== 'visual' || !dom.visualEditor.contains(target)) return null;
