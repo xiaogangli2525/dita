@@ -1,6 +1,6 @@
 'use strict';
 (function (root) {
-  const { parseXml, parseSource, serializeXmlNode, cloneDitaNode, elementChildren, xmlNodePath } = typeof module !== 'undefined' ? require('./xml-dom') : root.DitaXmlDom;
+  const { parseXml, parseSource, serializeXmlNode, cloneDitaNode, elementChildren, visitElementPaths } = typeof module !== 'undefined' ? require('./xml-dom') : root.DitaXmlDom;
   const { createAuthorTopic } = typeof module !== 'undefined' ? require('./author-renderer') : root.DitaAuthorRenderer;
   const presentation = typeof module !== 'undefined' ? require('./document-presentation') : root.DitaDocumentPresentation;
   const { decode } = typeof module !== 'undefined' ? require('./manual-core') : root.DitaManualCore;
@@ -220,13 +220,14 @@
 
   function serializeAuthorEdits(root, original, projected, range, source, tracking) {
     const originalByPath = new Map();
+    const originalPaths = new WeakMap();
     const projectedByPath = new Map();
-    function indexNodes(node, map) {
-      map.set(node.ditaSourcePath ?? xmlNodePath(node), node);
-      for (const child of elementChildren(node)) indexNodes(child, map);
-    }
-    indexNodes(original, originalByPath);
-    indexNodes(projected, projectedByPath);
+    visitElementPaths(original, (node, path) => {
+      originalByPath.set(path, node);
+      originalPaths.set(node, path);
+    });
+    visitElementPaths(projected, (node, path) => projectedByPath.set(node.ditaSourcePath ?? path, node));
+    const projectionOf = node => projectedByPath.get(originalPaths.get(node)) || node;
     const normalizeText = text => text.replace(/\r\n?/g, '\n');
     const escapeText = text => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     const newline = source.includes('\r\n') ? '\r\n' : '\n';
@@ -289,10 +290,11 @@
 
     function serialize(node, oldNode, span) {
       if (!oldNode || !span) return serializeXmlNode(node).replace(/\r?\n/g, newline);
-      const oldProjection = projectedByPath.get(xmlNodePath(oldNode)) || oldNode;
+      const oldProjection = projectionOf(oldNode);
       if (authorSignature(node) === authorSignature(oldProjection)) return source.slice(span.start, span.end);
       const newChildren = elementChildren(node);
       const oldChildren = elementChildren(oldNode);
+      const oldIndexes = new Map(oldChildren.map((child, index) => [child, index]));
       const oldGaps = [];
       let cursor = span.openEnd;
       for (const childSpan of span.children) {
@@ -309,29 +311,33 @@
       const matchPass = find => newChildren.forEach((child, index) => {
         if (matches[index] >= 0) return;
         const match = find(child);
-        if (match && oldChildren.includes(match) && !used.has(match)) {
+        const oldIndex = oldIndexes.get(match);
+        if (oldIndex !== undefined && !used.has(match)) {
           used.add(match);
-          matches[index] = oldChildren.indexOf(match);
+          matches[index] = oldIndex;
         }
       });
       matchPass(child => originalByPath.get(child.ditaSourcePath));
       matchPass(child => child.getAttribute('id') && oldChildren.find(item => !used.has(item) && item.localName === child.localName && item.getAttribute('id') === child.getAttribute('id')));
-      matchPass(child => oldChildren.find(item => !used.has(item) && item.localName === child.localName && authorSignature(child) === authorSignature(projectedByPath.get(xmlNodePath(item)) || item)));
+      matchPass(child => oldChildren.find(item => !used.has(item) && item.localName === child.localName && authorSignature(child) === authorSignature(projectionOf(item))));
       matchPass(child => oldChildren.find(item => !used.has(item) && item.localName === child.localName));
       // Comments and processing instructions outside deleted elements remain
       // part of the source, even though Author does not expose them as blocks.
       const triviaPattern = /<!--[^]*?-->|<\?[^]*?\?>/g;
+      const matchedIndexes = new Set(matches);
       const retainedTrivia = oldGaps.map((gap, index) => {
-        if (matches.includes(index) || index >= oldChildren.length) return '';
+        if (matchedIndexes.has(index) || index >= oldChildren.length) return '';
         const trivia = gap.match(triviaPattern) || [];
         if (!trivia.length) return '';
         return gap.replace(triviaPattern, '').trim() ? trivia.join('') : gap.replace(/\r?\n[ \t]*$/, '');
       });
-      const takeTriviaBefore = limit => retainedTrivia.map((trivia, index) => {
-        if (index >= limit) return '';
-        retainedTrivia[index] = '';
+      let triviaIndex = 0;
+      function takeTriviaBefore(limit) {
+        let trivia = '';
+        const end = Math.min(limit, retainedTrivia.length);
+        while (triviaIndex < end) trivia += retainedTrivia[triviaIndex++];
         return trivia;
-      }).join('');
+      }
       const blockContent = (oldChildren.length > 0 || newChildren.length > 0) && newGaps.every(text => !text.trim()) && projectionGaps.every(text => !text.trim());
       const defaultGap = oldGaps.find(gap => !gap.trim() && /\n/.test(gap)) || '';
       let inner = '';
@@ -359,11 +365,9 @@
     const result = source.slice(0, range.start) + serialize(root, original, range) + source.slice(range.end);
     // The live visual DOM survives typing. Rebase its node identities after
     // deletions/insertions so the next keystroke still patches the right node.
-    function rebase(node) {
-      if (node.ditaVisualNode) node.ditaVisualNode.ditaSourcePath = xmlNodePath(node);
-      for (const child of elementChildren(node)) rebase(child);
-    }
-    rebase(root);
+    visitElementPaths(root, (node, path) => {
+      if (node.ditaVisualNode) node.ditaVisualNode.ditaSourcePath = path;
+    });
     return result;
   }
 

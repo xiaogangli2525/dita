@@ -46,6 +46,8 @@ This remains a lightweight publisher, not DITA-OT or a DTD/schema-validating pro
 
 The supplied HTTP manual has undergone software acceptance. Before broader rollout, compare each new functional manual with its approved release and inspect model applicability. Product truth, full schema conformance and unseen company-specific structures still require separate verification.
 
+Additional shared content in the supplied library exercises these boundaries outside the HTTP Map. In `common_parameters/parameter_test.dita`, the inline `ph` references in the basic section point to `li` targets in `product_parameters.dita`. The configuration section also references IDs that are missing from `product_configurations.dita`. The publisher reports the incompatible element types or the exact missing target, as appropriate. `g_product_description.dita` uses `keyref="product"` and requires key expansion before publication. The library files are used as supplied by the regression.
+
 Reference specifications consulted: [OASIS DITA conref](https://docs.oasis-open.org/dita/dita/v1.3/os/part2-tech-content/langRef/attributes/theconrefattribute.html), [conditional processing](https://docs.oasis-open.org/dita/dita/v1.3/os/part2-tech-content/archSpec/base/condproc.html) and [Map cascading](https://docs.oasis-open.org/dita/dita/v1.3/cs01/part1-base/archSpec/base/cascading-in-a-ditamap.html). The supported subset above defines this implementation's behavior.
 
 ## Workspace integration

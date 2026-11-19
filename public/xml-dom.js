@@ -52,7 +52,11 @@
     return indexes.join('/');
   }
 
+  function visitElementPaths(node, visit, path = '') {
+    visit(node, path);
+    elementChildren(node).forEach((child, index) => visitElementPaths(child, visit, path ? path + '/' + index : String(index)));
+  }
 
-  const api = { stripDocType, parseXml, parseSource, serializeXmlNode, cloneDitaNode, elementChildren, xmlNodePath };
+  const api = { stripDocType, parseXml, parseSource, serializeXmlNode, cloneDitaNode, elementChildren, xmlNodePath, visitElementPaths };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaXmlDom = api;
 })(typeof window === 'undefined' ? globalThis : window);

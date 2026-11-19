@@ -153,7 +153,8 @@
         const targetDoc = documents.get(target.path);
         if (!targetDoc) throw new Error(origin + '：无法读取内容引用：' + target.path);
         const targetNode = target.fragment ? targetDoc.ids.get(target.fragment) : targetDoc.tree;
-        if (!targetNode || targetNode.name !== node.name) throw new Error(origin + '：内容引用目标不存在或元素类型不匹配：' + key);
+        if (!targetNode) throw new Error(origin + '：内容引用目标不存在：' + key);
+        if (targetNode.name !== node.name) throw new Error(origin + '：内容引用的元素类型不匹配（<' + node.name + '> → <' + targetNode.name + '>）：' + key);
         const firstSite = activeSites.length;
         const resolved = render(targetNode, target.path, destination, [...chain, key]);
         // Keep the visible source occurrence separate from the reused definition.

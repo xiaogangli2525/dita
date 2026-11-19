@@ -98,9 +98,10 @@ test('reliable writing commands, clipboard, templates and body navigation', asyn
       const core = window.DitaVisualCore, source = '<topic><title>长手册样例</title><body>' + Array.from({ length: 400 }, (_, i) => '<p id="p' + i + '">参数说明 ' + i + ' MQTT TCP HTTP 中文内容与默认值。</p>').join('') + '</body></topic>';
       const start = performance.now(), surface = core.createAuthorTopic(source), rendered = performance.now() - start, times = []; let current = source;
       for (let i = 0; i < 12; i++) { surface.querySelector('#p200').firstChild.data += '字'; const begin = performance.now(); current = core.updateCurrentFromVisual(null, { visualEditor: surface }, current); times.push(performance.now() - begin); }
-      return { paragraphs: surface.querySelectorAll('p').length, rendered, editMedian: times.sort((a, b) => a - b)[6], hasLast: current.includes('id="p399"') };
+      const expected = source.replace('参数说明 200 MQTT TCP HTTP 中文内容与默认值。', '$&' + '字'.repeat(12));
+      return { paragraphs: surface.querySelectorAll('p').length, rendered, editMedian: times.sort((a, b) => a - b)[6], exactXml: current === expected };
     });
-    assert.equal(result.paragraphs, 400); assert.equal(result.hasLast, true); t.diagnostic('Long Topic sample (ms): ' + JSON.stringify(result));
+    assert.equal(result.paragraphs, 400); assert.equal(result.exactXml, true); t.diagnostic('Long Topic sample (ms): ' + JSON.stringify(result));
   });
   assert.deepEqual(errors, []);
 });
