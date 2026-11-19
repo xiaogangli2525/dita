@@ -80,7 +80,10 @@ test('offline ZIP preserves UTF-8 bytes, provenance and per-manual downloads wit
 test('package boundaries reject mismatched models, duplicate manual identities, invalid fields and unsafe ZIP paths', () => {
   const options = { title: 'KB', model: 'ML307G', sdkVersion: 'V1', manuals: [manual()] };
   for (const bad of [{ model: '' }, { sdkVersion: '' }, { title: '' }, { manuals: [] }, { manuals: [manual(), manual()] }, { manuals: [{ ...manual(), model: 'ML307N' }] }]) assert.throws(() => buildPackage({ ...options, ...bad }));
-  for (const name of ['../escape', '/absolute', 'docs/../escape', 'docs//a', 'C:/x']) assert.throws(() => createZip([{ name, content: 'x' }]), /路径/);
+  for (const name of ['../escape', '/absolute', 'docs/../escape', 'docs/.. /escape', 'docs//a', 'C:/x', 'a\\b', 'docs/标题\n.txt', 'docs/\ud800.txt']) {
+    assert.throws(() => createZip([{ name, content: 'x' }]), /路径/);
+  }
+  assert.throws(() => createZip([{ name: '档'.repeat(21846), content: 'x' }]), /ZIP 大小限制/);
   assert.throws(() => createZip([{ name: 'a', content: 'x' }, { name: 'a', content: 'y' }]), /重复/);
 });
 test('embedded titles and contents cannot break out of the offline data script', () => {

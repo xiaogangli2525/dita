@@ -114,6 +114,7 @@ test('Int8 indexes preserve signed vector direction and source binding, rejectin
   assert.equal(atob(compact.vectors).length * 4, atob(originalBytes).length);
   assert.equal(original.schema, 1);
   assert.equal(original.vectors, originalBytes);
+  assert.throws(() => compactIndex(records, createIndex(chunks, [Array(512).fill(0)])), /归一化|非零峰值/);
   assert.equal(compactIndex(records, compact), compact);
   assert.deepEqual(compact.chunks, original.chunks);
   const decoded = validate(records, compact), source = validate(records, original);

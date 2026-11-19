@@ -33,9 +33,14 @@ function publisher(t, workerData) {
 test('ZIP uses DEFLATE when it saves bytes and preserves the uncompressed budget and UTF-8 content', async () => {
   const texts = ['中文😀', '\ud800', '\udfff', 'a\ud800b\udc00', 'quotes"\\\n'];
   for (const text of texts) assert.equal(textBytes(text), Buffer.byteLength(text));
-  const files = [{ name: 'docs/compressed.txt', content: '中文😀'.repeat(200) }, { name: 'docs/stored.txt', content: 'X' },
+  const files = [{ name: 'docs/模组手册/连接 参数😀.txt', content: '中文😀'.repeat(200) }, { name: 'docs/stored.txt', content: 'X' },
     ...texts.map((content, i) => ({ name: 'docs/' + i + '.txt', content }))];
   const archive = createZip(files), bytes = new Uint8Array(await archive.arrayBuffer());
+  const view = new DataView(bytes.buffer), central = view.getUint32(bytes.length - 22 + 16, true);
+  assert.equal(view.getUint16(6, true) & 0x800, 0x800);
+  assert.equal(view.getUint16(central + 8, true) & 0x800, 0x800);
+  assert.equal(view.getUint16(26, true), Buffer.byteLength(files[0].name));
+  assert.equal(view.getUint16(central + 28, true), Buffer.byteLength(files[0].name));
   const methods = [];
   unzipSync(bytes, { filter(entry) { methods.push(entry.compression); return false; } });
   assert.equal(methods[0], 8);

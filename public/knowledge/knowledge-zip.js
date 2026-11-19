@@ -39,17 +39,19 @@
     /** @param {number} size @param {number} signature */
     function header(size, signature) { const data = new Uint8Array(size); new DataView(data.buffer).setUint32(0, signature, true); return data; }
     if (!files.length || files.length > 65535) throw new Error('知识库打包文件数量无效');
-    const measured = measureFiles(files);
-    limits.assertReadable(measured, '知识库 ZIP');
     // Validate names before encoding content, then retain only immutable Blob
     // parts instead of keeping all UTF-8 buffers alongside the final archive.
-    for (const file of files) {
-      if (!/^[a-zA-Z0-9_./-]+$/.test(file.name) || file.name.startsWith('/') || file.name.split('/').some(part => !part || part === '.' || part === '..') || names.has(file.name)) throw new Error('知识库打包路径无效或重复');
-      names.add(file.name);
-      if (file.name.length > 65535) throw new Error('知识库超过 ZIP 大小限制');
-    }
+    const entries = files.map(({ name, content }) => {
+      if (typeof name !== 'string' || /[\\:*?"<>|\p{Cc}\p{Cs}]/u.test(name) ||
+          name.split('/').some(part => !part || /^[. ]+$/.test(part)) || names.has(name)) throw new Error('知识库打包路径无效或重复');
+      if (textBytes(name) > 65535) throw new Error('知识库超过 ZIP 大小限制');
+      names.add(name);
+      return { name, content };
+    });
+    const measured = measureFiles(entries);
+    limits.assertReadable(measured, '知识库 ZIP');
     let done = 0;
-    for (const file of files) {
+    for (const file of entries) {
       const name = encoder.encode(file.name), data = typeof file.content === 'string' ? encoder.encode(file.content) : file.content;
       const compressed = deflateSync(data, { level: 3 });
       const method = compressed.byteLength < data.byteLength ? 8 : 0;
@@ -63,10 +65,10 @@
       d.setUint16(4, 20, true); d.setUint16(6, 20, true); d.setUint16(8, 0x800, true); d.setUint16(10, method, true); d.setUint16(14, 33, true);
       d.setUint32(16, crc, true); d.setUint32(20, payload.length, true); d.setUint32(24, data.length, true); d.setUint16(28, name.length, true); d.setUint32(42, offset, true); directory.set(name, 46);
       central.push(directory); centralSize += directory.length; offset += entry.length + payload.length;
-      onProgress(++done, files.length);
+      onProgress(++done, entries.length);
     }
     const end = header(22, 0x06054b50), view = new DataView(end.buffer);
-    view.setUint16(8, files.length, true); view.setUint16(10, files.length, true); view.setUint32(12, centralSize, true); view.setUint32(16, offset, true);
+    view.setUint16(8, entries.length, true); view.setUint16(10, entries.length, true); view.setUint32(12, centralSize, true); view.setUint32(16, offset, true);
     const archive = new Blob([...local, ...central, end], { type: 'application/zip' });
     if (archive.size + savedBytes !== measured) throw new Error('知识库打包内容在生成时发生变化，请重试');
     return archive;

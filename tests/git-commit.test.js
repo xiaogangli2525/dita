@@ -73,6 +73,36 @@ test('new and deleted documents can be committed together while failed commits p
   assert.deepEqual(Object.fromEntries(pick(initial).map(({ path, kind }) => [path, kind])), {
     [added]: 'added', [removed]: 'deleted', [modified]: 'modified'
   });
+  await t.test('an index rename error survives a lock cleanup error and closes the handle once', async t => {
+    const index = path.join(cwd, '.git', 'index'), lock = index + '.lock';
+    const before = await fs.readFile(index);
+    const open = fs.open, rename = fs.rename, rm = fs.rm;
+    const warnings = t.mock.method(console, 'warn', () => {});
+    let closeCalls = 0;
+    t.mock.method(fs, 'open', async (file, ...args) => {
+      const handle = await open(file, ...args);
+      if (file === lock) {
+        const close = handle.close.bind(handle);
+        t.mock.method(handle, 'close', async () => { closeCalls++; await close(); });
+      }
+      return handle;
+    });
+    t.mock.method(fs, 'rename', async (from, to) => {
+      if (from === lock) throw Object.assign(new Error('EBUSY replacing the Git index'), { code: 'EBUSY' });
+      return rename(from, to);
+    });
+    t.mock.method(fs, 'rm', async (file, options) => {
+      if (file === lock) throw Object.assign(new Error('EPERM cleaning up the Git index lock'), { code: 'EPERM' });
+      return rm(file, options);
+    });
+    try {
+      await assert.rejects(commits.commit({ ...initial, files: pick(initial), message: 'Rename should fail' }), /EBUSY replacing the Git index/);
+      assert.equal(closeCalls, 1);
+      assert.equal(warnings.mock.callCount(), 1);
+      assert.equal(warnings.mock.calls[0].arguments.at(-1), 'EPERM');
+      assert.deepEqual(await fs.readFile(index), before);
+    } finally { await rm(lock, { force: true }); }
+  });
   beforeCommit = () => write(added, old);
   await assert.rejects(checkedCommit(), /磁盘版本已变化/);
   assert.equal(git('rev-parse', 'HEAD'), initial.head);
