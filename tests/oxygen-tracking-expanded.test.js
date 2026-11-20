@@ -120,7 +120,33 @@ test('tracked Author replacement crosses eligible prior revisions while undoing 
     amended.replaceAll('跨端 QA &amp; 研发', '外部作者'),
     amended.replace(/ id="dita-[^"]*"/g, ''),
     amended.replace('<?oxy_insert_start ', '<?oxy_insert_start flag="done" ')
-  ]) assert.throws(() => tracking.trackEdit(protectedSource, replace(protectedSource), meta), /第一版/);
+  ]) assert.throws(() => tracking.trackEdit(protectedSource, replace(protectedSource), meta), /第一版|其他作者或外部导入/);
+});
+
+test('plain text around imported revisions stays editable and both authors retain independent revisions', () => {
+  const deletion = '<?oxy_delete author="同行" content="30" timestamp="20261117T084031+0000"?>';
+  const insertion = '<?oxy_insert_start author="同行" timestamp="20261117T084031+0000"?>90<?oxy_insert_end?>';
+  const external = deletion + insertion;
+  const previous = topic('before ' + external + ' after');
+  const desired = previous.replace('before ', '开头😀 ').replace(' after', ' 结尾 &amp; 说明');
+  const current = tracking.trackEdit(previous, desired, meta);
+  assert.ok(current.includes(external));
+  const earlier = change => change.author === '同行';
+  const records = oxygen.collectOxyTrackedChanges(current);
+  assert.equal(records.filter(earlier).length, 2);
+  assert.ok(records.some(change => change.author === meta.author));
+  const laterEdit = tracking.trackEdit(current, current.replace('结尾', '末尾'), { ...meta, id: 'dita-repeat' });
+  assert.ok(laterEdit.includes(external));
+  assert.equal(tracking.resolve(laterEdit, true), tracking.resolve(desired.replace('结尾', '末尾'), true));
+  assert.equal(tracking.resolve(laterEdit, false), tracking.resolve(previous, false));
+  assert.throws(() => tracking.trackEdit(previous, desired.replace('?>90<?', '?>60<?'), meta), /其他作者或外部导入/);
+  assert.throws(() => tracking.trackEdit(previous, desired.replace(deletion, ''), meta), /第一版/);
+});
+
+test('tracked replacements protect Oxygen insertions spanning element boundaries', () => {
+  const before = '<topic><body><p><?oxy_insert_start author="作者" id="dita-imported"?>文字<b>格式</b>尾部<?oxy_insert_end?></p></body></topic>';
+  const after = before.replace('>格式<', '>新格式<');
+  assert.throws(() => tracking.trackEdit(before, after, { ...meta, author: '作者' }), /第一版/);
 });
 
 test('prose typing after a browser NBSP or collapsed whitespace preserves pending revisions', () => {

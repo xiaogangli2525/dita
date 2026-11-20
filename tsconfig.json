@@ -25,6 +25,8 @@
     "lib/ai-provider.js",
     "public/document-store.js",
     "public/xml-source.js",
+    "public/oxygen-core.js",
+    "public/oxygen-tracking.js",
     "public/author-source.js",
     "public/appearance/theme-preference.js",
     "public/save.js",

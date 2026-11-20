@@ -1,33 +1,47 @@
+// @ts-check
 'use strict';
 (function (root) {
 
   const xml = typeof module !== 'undefined' ? require('./xml-source') : root.DitaXmlSource;
+  /** @type {Readonly<Record<string, string>>} */
+  const entities = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'" };
+  /** @param {string} value */
   function decodeEntities(value) {
-    return value.replace(/&(#x[0-9a-f]+|#\d+|amp|lt|gt|quot|apos);/gi, (entity, key) => {
+    return value.replace(/&(#x[0-9a-f]+|#\d+|amp|lt|gt|quot|apos);/gi, (entity, /** @type {string} */ key) => {
       if (key[0] === '#') {
         const n = key[1].toLowerCase() === 'x' ? parseInt(key.slice(2), 16) : Number(key.slice(1));
         return n > 0 && n <= 0x10ffff ? String.fromCodePoint(n) : entity;
       }
-      return ({ amp: '&', lt: '<', gt: '>', quot: '"', apos: "'" })[key] ?? entity;
+      return entities[key] ?? entity;
     });
   }
+  /** @param {string} data */
   function parseOxyPIAttrs(data) {
-    const attrs = {}, re = /([\w:.-]+)\s*=\s*(["'])([^]*?)\2/g;
+    /** @type {Record<string, string | undefined>} */
+    const attrs = {};
+    const re = /([\w:.-]+)\s*=\s*(["'])([^]*?)\2/g;
     let match;
     while ((match = re.exec(data || ''))) attrs[match[1]] = decodeEntities(match[3]);
     return attrs;
   }
+  /** @param {string} text */
   function readable(text) {
     return xml.scan(text).filter(t => t.kind === 'text' || t.kind === 'cdata').map(t =>
       t.kind === 'cdata' ? text.slice(t.start + 9, t.end - 3) : decodeEntities(text.slice(t.start, t.end))).join('');
   }
 
+  /** @param {Node} node @param {string} [target] @returns {node is ProcessingInstruction} */
+  function isInstruction(node, target) {
+    return node.nodeType === 7 && (target === undefined || /** @type {ProcessingInstruction} */ (node).target === target);
+  }
+
+  /** @param {readonly Node[]} nodes @param {Document} doc @param {(() => number) | null} getIndex @returns {Node[]} */
   function processOxyNodes(nodes, doc, getIndex) {
     const result = [];
     let i = 0;
     while (i < nodes.length) {
       const child = nodes[i];
-      if (child.nodeType === 7 && child.target === 'oxy_insert_start') {
+      if (isInstruction(child, 'oxy_insert_start')) {
         const attrs = parseOxyPIAttrs(child.data);
         const ins = doc.createElement('ins');
         ins.setAttribute('class', 'oxy-insert');
@@ -36,7 +50,7 @@
         if (attrs.timestamp) ins.setAttribute('data-timestamp', attrs.timestamp);
         i++;
         const inner = [];
-        while (i < nodes.length && !(nodes[i].nodeType === 7 && nodes[i].target === 'oxy_insert_end')) {
+        while (i < nodes.length && !isInstruction(nodes[i], 'oxy_insert_end')) {
           inner.push(nodes[i]);
           i++;
         }
@@ -45,7 +59,7 @@
         result.push(ins);
         continue;
       }
-      if (child.nodeType === 7 && child.target === 'oxy_delete') {
+      if (isInstruction(child, 'oxy_delete')) {
         const attrs = parseOxyPIAttrs(child.data);
         const del = doc.createElement('del');
         del.setAttribute('class', 'oxy-delete');
@@ -57,7 +71,7 @@
         i++;
         continue;
       }
-      if (child.nodeType === 7 && child.target === 'oxy_comment_start') {
+      if (isInstruction(child, 'oxy_comment_start')) {
         const attrs = parseOxyPIAttrs(child.data);
         const span = doc.createElement('span');
         span.setAttribute('class', 'oxy-comment');
@@ -67,7 +81,7 @@
         if (attrs.timestamp) span.setAttribute('data-timestamp', attrs.timestamp);
         i++;
         const inner = [];
-        while (i < nodes.length && !(nodes[i].nodeType === 7 && nodes[i].target === 'oxy_comment_end')) {
+        while (i < nodes.length && !isInstruction(nodes[i], 'oxy_comment_end')) {
           inner.push(nodes[i]);
           i++;
         }
@@ -83,15 +97,18 @@
     return result;
   }
 
+  /** @param {Document} doc */
   function normalizeOxyPIs(doc, indexed = false) {
     let oxyCounter = 0;
     // Assign indexes in source order before wrappers move children around.
+    /** @param {Node} node */
     function index(node) {
-      if (node.nodeType === 7 && ['oxy_insert_start', 'oxy_delete', 'oxy_comment_start'].includes(node.target)) node.oxyReviewIndex = oxyCounter++;
+      if (isInstruction(node) && ['oxy_insert_start', 'oxy_delete', 'oxy_comment_start'].includes(node.target)) node.oxyReviewIndex = oxyCounter++;
       for (const child of Array.from(node.childNodes || [])) index(child);
     }
     index(doc.documentElement); oxyCounter = 0;
-    const walk = (element) => {
+    /** @param {Node} element */
+    const walk = element => {
       if (!element || element.nodeType !== 1) return;
       const processed = processOxyNodes(Array.from(element.childNodes), doc, indexed ? () => oxyCounter++ : null);
       while (element.firstChild) element.removeChild(element.firstChild);
@@ -103,8 +120,12 @@
     if (doc.documentElement) walk(doc.documentElement);
   }
 
+  /** @param {string} text */
   function collectOxyTrackedChanges(text) {
-    const changes = [], open = [];
+    /** @type {import('./data-contracts').OxygenChange[]} */
+    const changes = [];
+    /** @type {{name: string, attrs: ReturnType<typeof parseOxyPIAttrs>, token: import('./data-contracts').XmlSourceToken}[]} */
+    const open = [];
     for (const token of xml.scan(text)) {
       if (token.kind !== 'pi') continue;
       const raw = text.slice(token.start, token.end), match = /^<\?(oxy_[\w]+)\b([^]*?)\?>$/.exec(raw);
@@ -130,6 +151,7 @@
     if (open.length) throw new Error('Oxygen 修订起始标记没有对应终点');
     return changes.sort((a, b) => a.index - b.index);
   }
+  /** @param {string} text */
   function hasUnsupportedChanges(text) {
     return xml.scan(text).some(token => {
       if (token.kind !== 'pi') return false;
