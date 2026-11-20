@@ -66,7 +66,7 @@
               const file = A.state.filesMap.get(draft.path);
               const response = await A.api.request('/api/file?path=' + encodeURIComponent(draft.path));
               if (!response.ok) throw new Error(await A.api.error(response));
-              const freshDisk = await response.text();
+              const freshDisk = await root.DitaBrowserFiles.readXmlResponse(response);
               if (workspace !== A.api.token) throw new Error('工作区已切换');
               if (freshDisk !== draft.base || file.disk !== draft.base || file.dirty && file.current !== draft.current) throw new Error('磁盘或编辑内容已变化。请下载草稿，与当前文档比较后合并。');
               store.adopt(scope(), draft);

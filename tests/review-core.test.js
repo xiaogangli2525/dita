@@ -319,3 +319,12 @@ test('review merge keeps the working document line endings', () => {
   assert.equal(accepted, current);
   assert.ok(accepted.includes('\r\n'));
 });
+
+test('review preserves each working newline when the Git baseline or nearby lines use a different delimiter', () => {
+  const baseline = 'first\r\nprevious\r\nlast\r\n';
+  for (const current of ['first\nnew\nlast\n', 'first\nnew\r\nlast\n']) {
+    const index = groupDiffRows(lineDiff(baseline, current)).findIndex(group => group.type === 'changed');
+    assert.equal(applyDiffGroups(baseline, current, new Map([[index, 'accept']])), current);
+    assert.equal(applyDiffGroups(baseline, current, new Map([[index, 'reject']])), 'first\nprevious\nlast\n');
+  }
+});

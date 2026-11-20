@@ -14,6 +14,11 @@
     const utf8 = content.replace(/^(\uFEFF?<\?xml[^?]*?encoding\s*=\s*)(["'])([^"']*)\2/, (_, prefix, quote) => prefix + quote + 'UTF-8' + quote);
     downloadText(utf8, name, 'application/xml;charset=utf-8');
   }
-  const api = { downloadText, downloadXML, sha256 };
+  /** /api/file sends decoded XML as UTF-8. Keep its BOM for exact disk comparisons.
+   * @param {Pick<Response, 'arrayBuffer'>} response */
+  async function readXmlResponse(response) {
+    return new TextDecoder('utf-8', { ignoreBOM: true, fatal: true }).decode(await response.arrayBuffer());
+  }
+  const api = { downloadText, downloadXML, sha256, readXmlResponse };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaBrowserFiles = api;
 })(typeof window === 'undefined' ? globalThis : window);

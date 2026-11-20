@@ -16,6 +16,12 @@ test('document loading, Save As and Map paths preserve current user intent and w
   const illustrated = '<?xml version="1.0" encoding="GBK"?>\r\n<!--keep--><topic id="assets"><title>中文图片</title><body><p><image id="illustration" href="diagram.svg" alt="Diagram"/></p><p><xref href="new-topic.dita#new/cmd">Details</xref></p><p conref="new-topic.dita#new/cmd"/><codeblock>  KEEP\r\n    INDENT</codeblock></body></topic>\r\n<?tail keep?>';
   await fs.writeFile(path.join(repo, 'manuals/with-assets.dita'), iconv.encode(illustrated, 'gbk'));
   await fs.writeFile(path.join(repo, 'manuals/diagram.svg'), '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="10"><rect width="20" height="10"/></svg>');
+  const encodedTopics = [['utf8', 'UTF-8'], ['utf16', 'UTF-16LE']].map(([id, encoding]) => ({
+    id, encoding, name: id + '.dita',
+    source: `\uFEFF<?xml version="1.0" encoding="${encoding}"?>\n<topic id="${id}"><title>中文</title><body><p id="${id}-text">原文</p></body></topic>`
+  }));
+  for (const { name, encoding, source } of encodedTopics) await fs.writeFile(path.join(repo, name), iconv.encode(source, encoding));
+  await fs.writeFile(path.join(repo, 'encoded.ditamap'), '<map><title>编码手册</title><topicref href="utf8.dita"/><topicref href="utf16.dita"/></map>');
   for (const args of [['init'], ['add', '.'], ['-c', 'user.name=Test', '-c', 'user.email=test@example.invalid', 'commit', '-m', 'fixture']]) execFileSync('git', args, { cwd: repo, stdio: 'ignore' });
   const port = await new Promise(resolve => { const socket = net.createServer(); socket.listen(0, '127.0.0.1', () => { const value = socket.address().port; socket.close(() => resolve(value)); }); });
   const server = spawn(process.execPath, ['server.js'], { cwd: path.join(__dirname, '..'), env: { ...process.env, DOCS_ROOT: repo, REPOSITORIES_ROOT: temp, PORT: String(port) }, stdio: ['ignore', 'pipe', 'pipe'] });
@@ -35,6 +41,48 @@ test('document loading, Save As and Map paths preserve current user intent and w
   async function edit(page, selector, text) { await page.locator(selector).click(); await page.keyboard.press('End'); await page.keyboard.insertText(text); }
   function answer(page, value) { page.on('dialog', dialog => dialog.type() === 'prompt' ? dialog.accept(value) : dialog.accept()); }
   async function saveAs(page) { await page.click('button[data-menu=file]'); await page.locator('#menuPopup').getByRole('menuitem', { name: '另存为', exact: true }).click(); }
+
+  await t.test('BOM-prefixed files retain encoding in Topic and Map saves and still detect outside changes', async st => {
+    const { page } = await fresh(st);
+    const send = (url, trigger) => Promise.all([
+      page.waitForResponse(response => response.request().method() === 'PUT' && new URL(response.url()).pathname === url),
+      trigger()
+    ]).then(([response]) => response);
+    const expected = new Map();
+    for (const { id, name, source, encoding } of encodedTopics) {
+      await open(page, name);
+      assert.equal((await current(page, name)).disk, source);
+      await edit(page, '#' + id + '-text', ' 单篇保存');
+      const changed = source.replace('原文', '原文 单篇保存');
+      assert.equal((await send('/api/file', () => page.click('#saveButton'))).status(), 200);
+      await page.waitForFunction(name => !window.DitaApp.state.filesMap.get(name).dirty, name);
+      assert.deepEqual(await fs.readFile(path.join(repo, name)), iconv.encode(changed, encoding));
+      expected.set(name, changed.replace('单篇保存', '单篇保存 批量保存'));
+    }
+    await page.reload();
+    await page.waitForFunction(() => window.DitaApp?.state.root);
+    await open(page, 'encoded.ditamap');
+    for (const { id } of encodedTopics) await edit(page, '#' + id + '-text', ' 批量保存');
+    const saveBatch = async () => {
+      await page.click('#saveButton');
+      await page.waitForSelector('#saveScopeDialog[open]');
+      return send('/api/file/batch', () => page.click('#saveScopeConfirm'));
+    };
+    assert.equal((await saveBatch()).status(), 200);
+    await page.waitForSelector('#saveScopeDialog', { state: 'hidden' });
+    for (const { name, encoding } of encodedTopics) {
+      assert.deepEqual(await fs.readFile(path.join(repo, name)), iconv.encode(expected.get(name), encoding));
+    }
+    for (const { id } of encodedTopics) await edit(page, '#' + id + '-text', ' 待保存');
+    const [first, second] = encodedTopics;
+    const external = iconv.encode(expected.get(second.name).replace('原文', '外部修改'), second.encoding);
+    await fs.writeFile(path.join(repo, second.name), external);
+    assert.equal((await saveBatch()).status(), 409);
+    await page.waitForFunction(() => document.querySelector('#saveScopeError').textContent.includes('在磁盘上变化'));
+    assert.deepEqual(await fs.readFile(path.join(repo, first.name)), iconv.encode(expected.get(first.name), first.encoding));
+    assert.deepEqual(await fs.readFile(path.join(repo, second.name)), external);
+    for (const { name } of encodedTopics) assert.match((await current(page, name)).current, /待保存/);
+  });
 
   await t.test('duplicate opens issue one read and preserve the new buffer and undo history', async st => {
     const { page, gate } = await fresh(st), held = deferred(), release = gate(); let reads = 0;

@@ -7,6 +7,7 @@
   const { collectPreviewPaths } = typeof module !== 'undefined' ? require('./manual-core') : root.DitaManualCore;
   const store = typeof module !== 'undefined' ? require('./document-store') : root.DitaDocumentStore;
   const profiling = typeof module !== 'undefined' ? require('./profiling-core') : root.DitaProfiling;
+  const browserFiles = typeof module !== 'undefined' ? require('./browser-files') : root.DitaBrowserFiles;
 
   /** Workspace IO and snapshot freshness only; document rules live in manual-domain.
    * @param {import('./data-contracts').CapturePorts} A */
@@ -68,7 +69,7 @@
         const buffered = context.buffers.get(filePath); if (buffered) return buffered.current;
         const response = await A.api.request('/api/file?path=' + encodeURIComponent(filePath));
         if (!response.ok) throw Object.assign(new Error(filePath + '：' + await A.api.error(response)), { status: response.status });
-        const content = await response.text();
+        const content = await browserFiles.readXmlResponse(response);
         assertContext();
         return content;
       }

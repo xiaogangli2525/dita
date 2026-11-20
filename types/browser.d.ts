@@ -16,11 +16,16 @@ declare global {
   var DitaReviewSession: typeof import('../public/review/review-session');
   var DitaReviewView: typeof import('../public/review/review-view');
   var DitaReviewMarkup: typeof import('../public/review/review-markup');
+  var DitaReview: typeof import('../public/review/review');
+  var DitaReviewLocations: typeof import('../public/review/review-locations');
+  var DitaOxygenTracking: typeof import('../public/oxygen-tracking');
+  var DitaOxygenCore: typeof import('../public/oxygen-core');
   var DitaAiEditCore: typeof import('../public/ai/ai-edit-core');
   var DitaAiConversation: typeof import('../public/ai/ai-conversation');
   var DitaAiContext: typeof import('../public/ai/ai-context');
   var DitaAiTaskStore: typeof import('../public/ai/ai-task-store');
   var DitaSearchCore: typeof import('../public/search-core');
+  var DitaBrowserFiles: typeof import('../public/browser-files');
   var DitaDocumentStore: typeof import('../public/document-store');
   var DitaDocumentLoader: typeof import('../public/workspace/document-loader');
   var DitaDocumentNavigation: typeof import('../public/workspace/document-navigation');
@@ -39,6 +44,10 @@ declare global {
   var DitaThemePreference: typeof import('../public/appearance/theme-preference');
   var sax: typeof import('../public/vendor/sax');
   var DitaXmlSource: typeof import('../public/xml-source');
+  var DitaXmlDom: typeof import('../public/xml-dom');
+  var DitaAuthorRenderer: typeof import('../public/author-renderer');
+  var DitaAuthorSource: typeof import('../public/author-source');
+  var DitaDocumentPresentation: typeof import('../public/document-presentation');
   var DitaMapSource: typeof import('../public/editor/map-source');
   var DitaMapAuthorController: typeof import('../public/editor/map-author-controller');
   var DitaKnowledgeMetadata: typeof import('../public/knowledge/knowledge-metadata');
@@ -46,8 +55,11 @@ declare global {
   var DitaKnowledgeDocument: typeof import('../public/knowledge/knowledge-document');
   interface HTMLElement {
     ditaSourceContent?: string;
-    ditaSourcePath?: string;
     ditaReviewOriginal?: Text;
+  }
+  interface Node {
+    ditaSourcePath?: string;
+    ditaVisualNode?: Node;
   }
   interface Text { ditaSourceTextPath?: string; }
   interface Window {

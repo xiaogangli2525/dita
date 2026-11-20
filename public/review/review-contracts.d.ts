@@ -23,3 +23,25 @@ export interface ReviewProgress {
   readonly warning: string;
 }
 export type ReviewWriter = (file: DocumentState, content: string, options: { historyMeta: HistoryMeta }) => boolean;
+export interface OxygenChange {
+  type: 'insert' | 'delete' | 'comment'; index: number; matchLength: number;
+  author?: string; content?: string; context?: string; keepContent?: string; deletedContent?: string;
+}
+export interface ReviewControllerPorts {
+  state: ReviewState & Pick<WorkspaceState, 'mode' | 'mapAuthorPaths'>;
+  dom: {
+    visualEditor: HTMLElement; reviewPane?: HTMLElement | null; reviewScope?: HTMLSelectElement | null;
+    diff: HTMLElement; reviewMeta: HTMLElement; acceptAllButton: HTMLButtonElement; rejectAllButton: HTMLButtonElement;
+  };
+  ditaCore: {
+    parseXml(source: string): Document;
+    inlineDiff: typeof import('../diff-core').inlineDiff;
+    inspectSource?: typeof import('../xml-source').inspectSource;
+    collectOxyTrackedChanges?(source: string): OxygenChange[];
+  };
+  setFileContent(file: DocumentState, content: string, options: { origin: 'review'; historyMeta?: HistoryMeta }): boolean;
+  updateVisual(file: DocumentState, reviewing: boolean): void;
+  renderTabs(): void;
+  updateHistoryButtons(): void;
+  setStatus(message: string, error?: boolean): void;
+}

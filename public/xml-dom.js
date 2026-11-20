@@ -39,8 +39,12 @@
     return clone;
   }
 
+  /** @param {Node} node @returns {node is Element} */
+  function isElement(node) { return node.nodeType === 1; }
+
+  /** @param {Node | null | undefined} node */
   function elementChildren(node) {
-    return Array.from(node?.childNodes || []).filter(child => child.nodeType === 1);
+    return Array.from(node?.childNodes || []).filter(isElement);
   }
 
   function xmlNodePath(node) {
@@ -52,11 +56,12 @@
     return indexes.join('/');
   }
 
+  /** @param {Element} node @param {(node: Element, path: string) => void} visit */
   function visitElementPaths(node, visit, path = '') {
     visit(node, path);
     elementChildren(node).forEach((child, index) => visitElementPaths(child, visit, path ? path + '/' + index : String(index)));
   }
 
-  const api = { stripDocType, parseXml, parseSource, serializeXmlNode, cloneDitaNode, elementChildren, xmlNodePath, visitElementPaths };
+  const api = { stripDocType, parseXml, parseSource, serializeXmlNode, cloneDitaNode, isElement, elementChildren, xmlNodePath, visitElementPaths };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaXmlDom = api;
 })(typeof window === 'undefined' ? globalThis : window);

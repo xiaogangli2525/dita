@@ -23,6 +23,7 @@
       response.text = guarded(response.text.bind(response));
       response.json = guarded(response.json.bind(response));
       response.blob = guarded(response.blob.bind(response));
+      response.arrayBuffer = guarded(response.arrayBuffer.bind(response));
       if (response.status === 409 && response.headers.get('x-workspace-stale') === '1') {
         throw new Error('工作区已在其他窗口切换。请先下载保留未保存内容，再刷新页面。');
       }

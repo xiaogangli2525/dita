@@ -56,6 +56,11 @@ test('real browser editing, reading and review workflow', async t => {
   await fs.writeFile(path.join(root, 'oxy-second.dita'), oxygen);
   await fs.writeFile(path.join(root, 'oxy-pair-manual.ditamap'), '<map><title>Oxygen 来源定位</title><topicref href="oxy.dita"/><topicref href="oxy-second.dita"/></map>');
   await fs.writeFile(path.join(root, 'main.ditamap'), '<map><title>Map</title><topicref href="a.dita"/><topicref href="oxy.dita"/></map>');
+  const structuralSource = '<topic id="structure"><title>结构审阅</title><body>\n<section>\n<p>段落</p>\n</section>\n</body></topic>';
+  const lineEndingSource = '<topic id="eol"><title>换行审阅</title><body>\r\n<p>第一段</p>\r\n<p>第二段</p>\r\n</body></topic>';
+  await fs.writeFile(path.join(root, 'review-structure.dita'), structuralSource);
+  await fs.writeFile(path.join(root, 'review-eol.dita'), lineEndingSource);
+  await fs.writeFile(path.join(root, '.gitattributes'), 'review-eol.dita -text\n');
   await fs.cp(path.join(__dirname, 'fixtures/manual'), path.join(root, 'manual'), { recursive: true });
   await fs.rename(path.join(root, 'manual/main.ditamap'), path.join(root, 'manual/mqtt-acceptance.ditamap'));
   const gbkPath = path.join(root, 'manual/topics/publish.dita');
@@ -63,6 +68,8 @@ test('real browser editing, reading and review workflow', async t => {
   const git = (...args) => execFileSync('git', args, { cwd: root, stdio: 'ignore' });
   git('init'); git('-c', 'user.name=Test', '-c', 'user.email=test@example.invalid', 'add', '.');
   git('-c', 'user.name=Test', '-c', 'user.email=test@example.invalid', 'commit', '-m', 'fixture');
+  const lfWorking = lineEndingSource.replaceAll('\r\n', '\n').replace('第二段', '第二段有修改');
+  await fs.writeFile(path.join(root, 'review-eol.dita'), lfWorking);
   const port = await new Promise(resolve => {
     const server = net.createServer(); server.listen(0, '127.0.0.1', () => {
       const port = server.address().port; server.close(() => resolve(port));
@@ -302,6 +309,38 @@ test('real browser editing, reading and review workflow', async t => {
     await page.click('#reviewButton'); await page.click('#acceptAllButton');
     assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.get('a.dita').baseline), initial);
     assert.equal(writes.length, before);
+  });
+  await t.test('Git review preserves XML and does not record a decision when one changed block would break paired tags', async () => {
+    await open('review-structure.dita');
+    const changed = structuralSource.replaceAll('section', 'example');
+    await source(changed);
+    await page.click('#reviewButton');
+    await page.selectOption('#reviewScope', 'git');
+    const blocks = page.locator('#diff .diff-block');
+    assert.equal(await blocks.count(), 2);
+    const before = await page.evaluate(() => window.DitaApp.state.filesMap.get('review-structure.dita').history.undo.length);
+    await blocks.first().getByRole('button', { name: '拒绝此块', exact: true }).click();
+    assert.match(await page.locator('#status').textContent(), /无法应用该变更块/);
+    assert.equal(await current(), changed);
+    assert.equal(await page.locator('#diff .decision-reject').count(), 0);
+    assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.get('review-structure.dita').history.undo.length), before);
+    await page.click('#rejectAllButton');
+    assert.equal(await current(), structuralSource);
+    assert.equal(await fs.readFile(path.join(root, 'review-structure.dita'), 'utf8'), structuralSource);
+  });
+  await t.test('accepting a saved Git text change preserves LF when the baseline uses CRLF', async () => {
+    await open('review-eol.dita');
+    await page.click('#reviewButton');
+    const snapshot = await page.evaluate(() => {
+      const file = window.DitaApp.state.filesMap.get('review-eol.dita');
+      return { disk: file.disk, baseline: file.baseline };
+    });
+    assert.equal(snapshot.baseline, lineEndingSource);
+    assert.equal(snapshot.disk, lfWorking);
+    await page.locator('#diff').getByRole('button', { name: '接受此块', exact: true }).click();
+    assert.equal(await current(), lfWorking);
+    assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.get('review-eol.dita').dirty), false);
+    assert.equal(await page.locator('#diff .decision-accept').count(), 1);
   });
   await t.test('review marks source-aligned paragraphs, table cells and deletion locations', async () => {
     await open('review.dita');

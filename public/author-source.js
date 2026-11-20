@@ -1,10 +1,19 @@
+// @ts-check
 'use strict';
 (function (root) {
-  const { parseXml, parseSource, serializeXmlNode, cloneDitaNode, elementChildren, visitElementPaths } = typeof module !== 'undefined' ? require('./xml-dom') : root.DitaXmlDom;
+  const { parseXml, parseSource, serializeXmlNode, cloneDitaNode, isElement, elementChildren, visitElementPaths } = typeof module !== 'undefined' ? require('./xml-dom') : root.DitaXmlDom;
   const { createAuthorTopic, originalInertAttributes } = typeof module !== 'undefined' ? require('./author-renderer') : root.DitaAuthorRenderer;
   const presentation = typeof module !== 'undefined' ? require('./document-presentation') : root.DitaDocumentPresentation;
   const { decode } = typeof module !== 'undefined' ? require('./manual-core') : root.DitaManualCore;
   const BODY_TAGS = presentation.bodies;
+  /** @typedef {import('./data-contracts').XmlSourceElement} XmlSourceElement */
+  /** @typedef {import('./data-contracts').XmlSourceToken} XmlSourceToken */
+  /** @typedef {{start:number, openEnd:number, closeStart:number, end:number, gaps:XmlSourceToken[][], children:SourceRange[]}} SourceRange */
+  /** @param {Node} node @returns {node is Text} */
+  const isText = node => node.nodeType === 3;
+  /** @param {Node} node @returns {node is Text | CDATASection} */
+  const isTextOrCdata = node => isText(node) || node.nodeType === 4;
+  const bodyNames = new Map([['topic', 'body'], ['concept', 'conbody'], ['reference', 'refbody'], ['task', 'taskbody']]);
 
   const VISUAL_TO_DITA = new Map(Object.entries({
     h1: 'title', h2: 'title', h3: 'title', h4: 'title', h5: 'title', h6: 'title',
@@ -12,13 +21,15 @@
     span: 'ph', div: 'p', a: 'xref', strong: 'b', em: 'i'
   }));
 
+  /** @param {Node} node @param {Document} documentRef @returns {Element | Text | null} */
   function visualElementToDita(node, documentRef, preserveAttributes = false) {
     const converted = convertVisualElement(node, documentRef, preserveAttributes);
     if (converted) {
-      if (preserveAttributes && converted.nodeType === 1) {
+      if (preserveAttributes && isElement(converted) && isElement(node)) {
         // Browser editing may clone an element and retain its serialized metadata.
         // On original nodes, prefer the attributes captured from the source.
         try {
+          /** @type {unknown} */
           const inert = originalInertAttributes(node) ?? JSON.parse(node.getAttribute('data-dita-inert-attrs') || '{}');
           if (inert && typeof inert === 'object' && !Array.isArray(inert)) {
             for (const [name, value] of Object.entries(inert)) if (typeof value === 'string') converted.setAttribute(name, value);
@@ -31,17 +42,19 @@
     return converted;
   }
 
+  /** @param {Node} node @param {Document} documentRef @returns {Element | Text | null} */
   function convertVisualElement(node, documentRef, preserveAttributes = false) {
-    if (node.nodeType !== 1) return null;
+    if (!isElement(node)) return null;
     const sourceTag = node.localName.toLowerCase();
     const ditaTag = VISUAL_TO_DITA.get(sourceTag) || sourceTag;
     const sourceTagAttribute = node.getAttribute?.('data-dita-source');
     if (!sourceTagAttribute && sourceTag === 'br') return documentRef.createTextNode('\n');
-    if ((sourceTagAttribute === 'fn' || sourceTagAttribute === 'xref' && node.getAttribute('type') === 'fn') && node.getAttribute('data-dita-original')) {
-      return parseXml(node.getAttribute('data-dita-original')).documentElement;
+    const original = node.getAttribute('data-dita-original');
+    if ((sourceTagAttribute === 'fn' || sourceTagAttribute === 'xref' && node.getAttribute('type') === 'fn') && original) {
+      return parseXml(original).documentElement;
     }
-    if (sourceTagAttribute === 'image' && node.getAttribute('data-dita-original')) {
-      const image = parseXml(node.getAttribute('data-dita-original')).documentElement;
+    if (sourceTagAttribute === 'image' && original) {
+      const image = parseXml(original).documentElement;
       const alt = Array.from(image.children).find(child => child.localName === 'alt');
       for (const attr of Array.from(node.attributes)) {
         if (attr.name === 'data-dita-href') image.setAttribute('href', attr.value);
@@ -52,7 +65,6 @@
     }
     if (sourceTagAttribute === 'table' && sourceTag === 'div') {
       let table = null;
-      const original = node.getAttribute('data-dita-original');
       if (original) {
         try { table = parseXml(original).documentElement; } catch { table = null; }
       }
@@ -63,17 +75,18 @@
       const htmlTable = Array.from(node.children || []).find(child => child.localName === 'table');
       if (htmlTable) {
         const rows = Array.from(htmlTable.querySelectorAll('tr'));
-        let tgroup = Array.from(table.childNodes).find(child => child.localName === 'tgroup');
+        let tgroup = elementChildren(table).find(child => child.localName === 'tgroup');
         if (!tgroup) {
           tgroup = documentRef.createElement('tgroup');
           tgroup.setAttribute('cols', String(rows.reduce((max, row) => Math.max(max, row.children.length), 0) || 1));
           table.appendChild(tgroup);
         }
+        /** @type {Map<string, Element>} */
         const sections = new Map();
-        for (const child of Array.from(tgroup.childNodes)) {
+        for (const child of elementChildren(tgroup)) {
           if (child.localName === 'thead' || child.localName === 'tbody') {
             sections.set(child.localName, child);
-            for (const row of Array.from(child.childNodes)) {
+            for (const row of elementChildren(child)) {
               if (row.localName === 'row') child.removeChild(row);
             }
           }
@@ -102,7 +115,7 @@
               for (const [name, value] of Object.entries(attrs)) entry.setAttribute(name, value);
             } catch { /* Ignore malformed visual metadata and keep cell text. */ }
             for (const child of htmlCell.childNodes || []) {
-              if (child.nodeType === 3) entry.appendChild(documentRef.createTextNode(child.data));
+              if (isText(child)) entry.appendChild(documentRef.createTextNode(child.data));
               else {
                 const converted = visualElementToDita(child, documentRef, true);
                 if (converted) entry.appendChild(converted);
@@ -115,9 +128,11 @@
       }
       const visualTitle = Array.from(node.children || []).find(child => child.localName === 'h3');
       if (visualTitle) {
-        const title = Array.from(table.childNodes).find(child => child.localName === 'title');
+        const title = elementChildren(table).find(child => child.localName === 'title');
         const converted = visualElementToDita(visualTitle, documentRef, true);
-        if (title) title.replaceWith(converted); else table.insertBefore(converted, table.firstChild);
+        if (converted) {
+          if (title) title.replaceWith(converted); else table.insertBefore(converted, table.firstChild);
+        }
       }
       return table;
     }
@@ -135,7 +150,7 @@
 
     }
     for (const child of node.childNodes) {
-      if (child.nodeType === 3) {
+      if (isText(child)) {
         element.appendChild(documentRef.createTextNode(child.data));
         continue;
       }
@@ -145,35 +160,38 @@
     return element;
   }
 
+  /** @param {Element} root @param {Element} visualContainer @param {Document} document */
   function updateDitaBody(root, visualContainer, document) {
     const sourceBody = BODY_TAGS.has(root.localName)
       ? root
-      : Array.from(root.childNodes).find(node => BODY_TAGS.has(node.localName));
-    const bodyName = { topic: 'body', concept: 'conbody', reference: 'refbody', task: 'taskbody' }[root.localName];
-    if (!sourceBody && !bodyName) throw new Error(`No DITA body found in <${root.localName}>`);
-    const bodyClone = sourceBody ? cloneDitaNode(sourceBody, document) : document.createElement(bodyName);
-    const sourceTitle = Array.from(root.childNodes).find(node => node.localName === 'title');
-    const visualTitle = Array.from(visualContainer.childNodes).find(node => node.localName === 'h2');
-    const bodyContent = Array.from(visualContainer.childNodes).find(node => node.localName === 'div' && node.hasAttribute('data-dita-body'));
-    const sourceSummary = Array.from(root.childNodes).find(node => node.localName === 'shortdesc');
-    const summaries = Array.from(visualContainer.childNodes).filter(node => node.getAttribute?.('data-dita-source') === 'shortdesc');
+      : elementChildren(root).find(node => BODY_TAGS.has(node.localName));
+    const bodyName = bodyNames.get(root.localName);
+    const bodyClone = sourceBody ? cloneDitaNode(sourceBody, document) : bodyName && document.createElement(bodyName);
+    if (!bodyClone) throw new Error(`No DITA body found in <${root.localName}>`);
+    const sourceTitle = elementChildren(root).find(node => node.localName === 'title');
+    const visualTitle = elementChildren(visualContainer).find(node => node.localName === 'h2');
+    const bodyContent = elementChildren(visualContainer).find(node => node.localName === 'div' && node.hasAttribute('data-dita-body'));
+    const sourceSummary = elementChildren(root).find(node => node.localName === 'shortdesc');
+    const summaries = elementChildren(visualContainer).filter(node => node.getAttribute?.('data-dita-source') === 'shortdesc');
     if (summaries.length > 1) throw new Error('摘要不能拆成多个摘要，请在正文中添加段落');
     if (!visualTitle || !bodyContent) throw new Error('Visual editor is missing its editable title or body');
-    if (Array.from(visualContainer.childNodes).filter(node => node.localName === 'h2').length !== 1) throw new Error('标题不能拆成多行，请撤销此操作后继续编辑');
+    if (elementChildren(visualContainer).filter(node => node.localName === 'h2').length !== 1) throw new Error('标题不能拆成多行，请撤销此操作后继续编辑');
 
     const titleElement = visualElementToDita(visualTitle, document, true);
+    if (!titleElement) throw new Error('Visual editor has an invalid title');
     if (sourceTitle) sourceTitle.replaceWith(titleElement);
     else root.insertBefore(titleElement, root.firstChild);
     if (summaries.length) {
       const summary = visualElementToDita(summaries[0], document, true);
+      if (!summary) throw new Error('Visual editor has an invalid summary');
       if (sourceSummary) sourceSummary.replaceWith(summary);
       else root.insertBefore(summary, titleElement.nextSibling);
     } else sourceSummary?.remove();
 
     const newContent = [];
     for (const node of bodyContent.childNodes) {
-      if (node.nodeType === 1 && node.hasAttribute('data-dita-placeholder') && !node.textContent.trim() && !node.querySelector('img,.fn-ref') && bodyContent.children.length === 1) continue;
-      if (node.nodeType === 3 && node.data.trim()) {
+      if (isElement(node) && node.hasAttribute('data-dita-placeholder') && !node.textContent?.trim() && !node.querySelector('img,.fn-ref') && bodyContent.children.length === 1) continue;
+      if (isText(node) && node.data.trim()) {
         const paragraph = document.createElement('p');
         paragraph.appendChild(document.createTextNode(node.data));
         paragraph.ditaSourcePath = node.ditaSourcePath;
@@ -186,28 +204,32 @@
     }
     bodyClone.replaceChildren(...newContent);
     if (!sourceBody) {
-      if (newContent.length) root.insertBefore(bodyClone, Array.from(root.childNodes).find(node => node.localName === 'related-links' || ['topic', 'concept', 'task', 'reference'].includes(node.localName)) || null);
+      if (newContent.length) root.insertBefore(bodyClone, elementChildren(root).find(node => node.localName === 'related-links' || ['topic', 'concept', 'task', 'reference'].includes(node.localName)) || null);
     } else if (sourceBody !== root) sourceBody.replaceWith(bodyClone);
     else root.replaceChildren(...Array.from(root.childNodes).filter(node => node !== sourceBody), bodyClone);
     return root;
   }
 
   // Adapt the canonical XML source tree to the patcher's element ranges.
+  /** @param {XmlSourceElement} node @returns {SourceRange} */
   function sourceRanges(node) {
+    /** @type {XmlSourceToken[][]} */
     const gaps = [[]];
     for (const child of node.children) {
       if (child.kind === 'element') gaps.push([]);
-      else gaps.at(-1).push(child);
+      else gaps[gaps.length - 1].push(child);
     }
     return { start: node.start, openEnd: node.end, closeStart: node.close?.start ?? node.end,
       end: node.close?.end ?? node.end, gaps,
       children: node.children.filter(child => child.kind === 'element').map(sourceRanges) };
   }
 
+  /** @param {Node} node */
   function authorSignature(node) {
+    /** @param {Node} current @returns {unknown} */
     function parts(current, preserveSpace = false) {
-      if (current.nodeType === 3 || current.nodeType === 4) return preserveSpace || current.data.trim() ? current.data.replace(/\r\n?/g, '\n') : null;
-      if (current.nodeType !== 1) return null;
+      if (isTextOrCdata(current)) return preserveSpace || current.data.trim() ? current.data.replace(/\r\n?/g, '\n') : null;
+      if (!isElement(current)) return null;
       const attrs = Array.from(current.attributes || []).map(attr => [attr.name, attr.value]).sort();
       const exact = preserveSpace || presentation.preformatted.has(current.localName) || current.getAttribute('xml:space') === 'preserve';
       return [current.localName, attrs, Array.from(current.childNodes).map(child => parts(child, exact)).filter(child => child !== null)];
@@ -215,30 +237,44 @@
     return JSON.stringify(parts(node));
   }
 
+  /** @param {Element} node */
   function textGaps(node) {
     const gaps = [''];
     for (const child of node.childNodes) {
       if (child.nodeType === 1) gaps.push('');
-      else if (child.nodeType === 3 || child.nodeType === 4) gaps[gaps.length - 1] += child.data;
+      else if (isTextOrCdata(child)) gaps[gaps.length - 1] += child.data;
     }
     return gaps;
   }
 
+  /** @param {Element} root @param {Element} original @param {Element} projected @param {SourceRange} range
+   * @param {string} source @param {boolean} tracking */
   function serializeAuthorEdits(root, original, projected, range, source, tracking) {
+    /** @type {Map<string, Element>} */
     const originalByPath = new Map();
+    /** @type {WeakMap<Element, string>} */
     const originalPaths = new WeakMap();
+    /** @type {Map<string, Element>} */
     const projectedByPath = new Map();
     visitElementPaths(original, (node, path) => {
       originalByPath.set(path, node);
       originalPaths.set(node, path);
     });
     visitElementPaths(projected, (node, path) => projectedByPath.set(node.ditaSourcePath ?? path, node));
-    const projectionOf = node => projectedByPath.get(originalPaths.get(node)) || node;
+    /** @param {Element} node */
+    function projectionOf(node) {
+      const path = originalPaths.get(node);
+      return path === undefined ? node : projectedByPath.get(path) || node;
+    }
+    /** @param {string} text */
     const normalizeText = text => text.replace(/\r\n?/g, '\n');
+    /** @param {string} text */
     const escapeText = text => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     const newline = source.includes('\r\n') ? '\r\n' : '\n';
 
+    /** @param {string} gap @param {string} next @param {string} previous @param {readonly XmlSourceToken[]} tokens @param {number} start */
     function patchGap(gap, next, previous, tokens, start) {
+      /** @param {string} text */
       const escaped = text => escapeText(text).replace(/\r?\n/g, newline);
       const trivia = tokens.filter(token => token.kind === 'pi' || token.kind === 'comment');
       if (!trivia.length) return escaped(next);
@@ -255,7 +291,7 @@
             offset = semicolon + 1;
             text = decode(source.slice(begin, offset));
           } else {
-            text = String.fromCodePoint(source.codePointAt(offset)); offset += text.length;
+            text = String.fromCodePoint(/** @type {number} */ (source.codePointAt(offset))); offset += text.length;
             if (text === '\r') { if (source[offset] === '\n') offset++; text = '\n'; }
           }
           chars.push({ text, start: begin, end: offset });
@@ -285,6 +321,7 @@
       const begin = first === chars.length - tail ? insertion : chars[first].start;
       const end = first === chars.length - tail ? begin : chars[chars.length - tail - 1].end;
       const covered = trivia.filter(token => token.start < end && token.end > begin);
+      /** @param {XmlSourceToken} token */
       const raw = token => source.slice(token.start, token.end);
       if (covered.some(token => token.kind !== 'comment' && !/^<\?oxy_comment_(?:start|end)(?:\s|\?)/.test(raw(token)) &&
           !(tracking && /^<\?oxy_(?:insert_(?:start|end)|delete)(?:\s|\?)/.test(raw(token))))) {
@@ -296,6 +333,7 @@
         covered.map(raw).join('') + source.slice(end, start + gap.length);
     }
 
+    /** @param {Element} node @param {Element | undefined} oldNode @param {SourceRange | undefined} span @returns {string} */
     function serialize(node, oldNode, span) {
       if (!oldNode || !span) return serializeXmlNode(node).replace(/\r?\n/g, newline);
       const oldProjection = projectionOf(oldNode);
@@ -312,21 +350,27 @@
       oldGaps.push(source.slice(cursor, span.closeStart));
       const newGaps = textGaps(node);
       const projectionGaps = textGaps(oldProjection);
+      /** @type {Set<Element>} */
       const used = new Set();
       const matches = newChildren.map(() => -1);
       // Reserve identities before matching new elements. Otherwise an inserted
       // paragraph could consume the source span belonging to the next paragraph.
+      /** @param {(child:Element) => Element | undefined} find */
       const matchPass = find => newChildren.forEach((child, index) => {
         if (matches[index] >= 0) return;
         const match = find(child);
+        if (!match) return;
         const oldIndex = oldIndexes.get(match);
         if (oldIndex !== undefined && !used.has(match)) {
           used.add(match);
           matches[index] = oldIndex;
         }
       });
-      matchPass(child => originalByPath.get(child.ditaSourcePath));
-      matchPass(child => child.getAttribute('id') && oldChildren.find(item => !used.has(item) && item.localName === child.localName && item.getAttribute('id') === child.getAttribute('id')));
+      matchPass(child => child.ditaSourcePath === undefined ? undefined : originalByPath.get(child.ditaSourcePath));
+      matchPass(child => {
+        const id = child.getAttribute('id');
+        if (id) return oldChildren.find(item => !used.has(item) && item.localName === child.localName && item.getAttribute('id') === id);
+      });
       matchPass(child => oldChildren.find(item => !used.has(item) && item.localName === child.localName && authorSignature(child) === authorSignature(projectionOf(item))));
       matchPass(child => oldChildren.find(item => !used.has(item) && item.localName === child.localName));
       // Comments and processing instructions outside deleted elements remain
@@ -340,6 +384,7 @@
         return gap.replace(triviaPattern, '').trim() ? trivia.join('') : gap.replace(/\r?\n[ \t]*$/, '');
       });
       let triviaIndex = 0;
+      /** @param {number} limit */
       function takeTriviaBefore(limit) {
         let trivia = '';
         const end = Math.min(limit, retainedTrivia.length);
@@ -361,7 +406,8 @@
       inner += takeTriviaBefore(Infinity);
       const tail = oldGaps[oldGaps.length - 1];
       if (blockContent || normalizeText(newGaps[newGaps.length - 1]) === normalizeText(projectionGaps[projectionGaps.length - 1] || '')) inner += tail;
-      else inner += patchGap(tail, newGaps[newGaps.length - 1], projectionGaps[projectionGaps.length - 1] || '', span.gaps.at(-1), span.children.at(-1)?.end ?? span.openEnd);
+      else inner += patchGap(tail, newGaps[newGaps.length - 1], projectionGaps[projectionGaps.length - 1] || '', span.gaps[span.gaps.length - 1], span.children.at(-1)?.end ?? span.openEnd);
+      /** @param {Element} element */
       const attrs = element => JSON.stringify(Array.from(element.attributes || []).map(attr => [attr.name, attr.value]).sort());
       let open = node.localName === oldNode.localName && attrs(node) === attrs(oldProjection) ? source.slice(span.start, span.openEnd) : serializeXmlNode(node.cloneNode(false));
       if (/\/\s*>$/.test(open)) {
@@ -379,10 +425,11 @@
     return result;
   }
 
+  /** @param {string} source @param {Element} visualEditor */
   function updateSource(source, visualEditor, tracking = false) {
     const { document: doc, tree } = parseSource(source);
-    const root = doc.documentElement.cloneNode(true);
-    const projected = doc.documentElement.cloneNode(true);
+    const root = /** @type {Element} */ (doc.documentElement.cloneNode(true));
+    const projected = /** @type {Element} */ (doc.documentElement.cloneNode(true));
     updateDitaBody(projected, createAuthorTopic(source, doc, false, '', doc), doc);
     updateDitaBody(root, visualEditor, doc);
     return serializeAuthorEdits(root, doc.documentElement, projected, sourceRanges(tree), source, tracking);

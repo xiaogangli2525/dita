@@ -77,20 +77,46 @@
         state.filesMap.get(target.file.path) === target.file && latest.baseline === target.baseline && latest.current === target.current &&
         canReuse(target.file, target.inManual);
     }
-    /** @param {ReviewFrame} target @param {ReadonlyMap<number, ReviewDecision | null>} updates @param {import('./review-contracts').ReviewWriter} write */
-    function decide(target, updates, write) {
-      if (!isCurrent(target)) throw new Error('原文已变化，请重新核对所选变更块。');
-      const changed = groups(target, 0), before = new Map(state.reviewDecisions), after = new Map(before);
-      for (const [index, decision] of updates) {
-        if (!Number.isInteger(index) || changed[index]?.type !== 'changed' || decision !== null && decision !== 'accept' && decision !== 'reject') throw new Error('审阅决定或变更块无效。');
-        const key = target.keyFor(index);
-        if (decision === null) after.delete(key); else after.set(key, decision);
+    /** @typedef {ReadonlyMap<number, ReviewDecision | null>} ReviewUpdates */
+    /** @typedef {(file: DocumentState, content: string) => void} ValidateCandidate */
+    /** @param {ReadonlyMap<ReviewFrame,ReviewUpdates>} batch
+     * @param {import('./review-contracts').ReviewWriter} write @param {ValidateCandidate} [validate] */
+    function decideBatch(batch, write, validate) {
+      let decisions = state.reviewDecisions;
+      const prepared = [];
+      // Build and validate every result before touching a buffer or its history.
+      for (const [target, updates] of batch) {
+        if (!isCurrent(target)) throw new Error('原文已变化，请重新核对所选变更块。');
+        if (!updates.size) continue;
+        const changed = groups(target, 0), before = new Map(decisions), after = new Map(before);
+        for (const [index, decision] of updates) {
+          if (!Number.isInteger(index) || changed[index]?.type !== 'changed' || decision !== null && decision !== 'accept' && decision !== 'reject') throw new Error('审阅决定或变更块无效。');
+          const key = target.keyFor(index);
+          if (decision === null) after.delete(key); else after.set(key, decision);
+        }
+        const content = diff.applyDiffGroups(target.baseline, target.current, decisionsFor(target, after), 0, 'accept');
+        validate?.(target.file, content);
+        prepared.push({ target, content, before, after });
+        decisions = after;
       }
-      const content = diff.applyDiffGroups(target.baseline, target.current, decisionsFor(target, after), 0, 'accept');
-      const previousContent = target.file.current;
-      state.reviewDecisions = after;
-      try { return write(target.file, content, { historyMeta: { reviewDecisionsBefore: before, reviewDecisionsAfter: new Map(after), reviewInManual: target.inManual } }); }
-      catch (error) { if (target.file.current === previousContent) state.reviewDecisions = before; throw error; }
+      let written = false;
+      for (const { target, content, before, after } of prepared) {
+        const previousContent = target.file.current;
+        state.reviewDecisions = after;
+        try {
+          const historyMeta = { reviewDecisionsBefore: before, reviewDecisionsAfter: new Map(after), reviewInManual: target.inManual };
+          written = write(target.file, content, { historyMeta }) || written;
+        } catch (error) {
+          if (target.file.current === previousContent) state.reviewDecisions = before;
+          throw error;
+        }
+      }
+      return written;
+    }
+    /** @param {ReviewFrame} target @param {ReviewUpdates} updates
+     * @param {import('./review-contracts').ReviewWriter} write @param {ValidateCandidate} [validate] */
+    function decide(target, updates, write, validate) {
+      return decideBatch(new Map([[target, updates]]), write, validate);
     }
     /** Restore only this document's decisions; other Topics may have newer history.
      * @param {ReadonlyMap<ReviewKey, ReviewDecision>} decisions @param {DocumentState} file @param {boolean} [sourceInManual] */
@@ -104,7 +130,7 @@
     }
     /** @param {ReviewFrame} target */
     function save(target) { progress.save(state, target.file, target.baseline, target.current, decisionsFor(target)); }
-    return { resetTopic, frame, decisionsFor, canReuse, prepareManual, groups, registerGroup, isCurrent, decide, restoreDecisions, save,
+    return { resetTopic, frame, decisionsFor, canReuse, prepareManual, groups, registerGroup, isCurrent, decide, decideBatch, restoreDecisions, save,
       clearGroups: () => { state.reviewGroups = new Map(); },
       /** @param {ReviewKey} key */
       decision: key => state.reviewDecisions.get(key), get groupCount() { return state.reviewGroups.size; } };

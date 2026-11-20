@@ -59,16 +59,17 @@ test('profile publication removes ancestors and excluded note references while p
   assert.deepEqual(resolver.dependencies(source,'a.dita',compile(val)),['a.dita']);
 });
 test('manual capture freezes DITAVAL buffers, filters Map references before loading and detects stale filter edits', async () => {
-  const file={path:'filters/release.ditaval',current:val,disk:val}, topic='<topic id="t"><title>T</title><body><p product="tbd">PRIVATE</p><p>Public</p></body></topic>';
+  const file={path:'filters/release.ditaval',current:val,disk:val}, topic='\uFEFF<topic id="t"><title>T</title><body><p product="tbd">PRIVATE</p><p>Public</p></body></topic>';
   const state={root:'docs',currentBranch:'main',activePath:'main.ditamap',filesMap:new Map([[file.path,file]])};
   const reads=[], source='<map><topicref href="missing.dita" product="tbd"/><topicref href="a.dita"/></map>';
   const a={state,ditaCore:core,api:{token:'w',error:async()=> 'missing',request:async(url,options)=>{
     reads.push(url);
     if(url==='/api/map/resolve'){assert.doesNotMatch(JSON.parse(options.body).content,/missing/);return {ok:true,json:async()=>({children:[{type:'file',path:'a.dita'}]})};}
-    const path=new URL(url,'http://local').searchParams.get('path');return {ok:true,text:async()=>path==='main.ditamap'?source:topic};
+    const path=new URL(url,'http://local').searchParams.get('path');return new Response(path==='main.ditamap'?source:topic);
   }}};
   const service=createManualService(a),snapshot=await service.capture('main.ditamap',{filterPath:file.path});
   assert.equal(snapshot.filter.current,val);assert.equal(service.current(snapshot),true);
+  assert.equal(snapshot.files.get('a.dita').current, topic);
   assert.doesNotMatch(service.prepare(snapshot).files.get('a.dita').current,/PRIVATE/);
   assert.equal(reads.some(path=>path.includes('missing.dita')),false);
   file.current='<val/>';assert.equal(service.current(snapshot),false);

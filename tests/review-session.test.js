@@ -74,6 +74,22 @@ test('invalid decisions and a rejected writer leave original content and decisio
   assert.throws(() => session.decide(frame, new Map([[0, 'reject']]), () => { throw Error('write rejected'); }), /write rejected/);
   assert.equal(a.current, original); assert.equal(state.reviewDecisions.size, 0);
 });
+test('a failed candidate in a manual review prevents every decision and content write', () => {
+  const { a, b, session, state, write } = fixture(true);
+  const originals = [a.current, b.current];
+  const history = structuredClone([a.history, b.history]);
+  const batch = new Map([a, b].map(file => [session.frame(file, true), new Map([[0, 'reject']])]));
+  const inspected = [];
+  assert.throws(() => session.decideBatch(batch, write, (file, content) => {
+    inspected.push(file.path);
+    assert.notEqual(content, file.current);
+    if (file === b) throw new Error('invalid candidate');
+  }), /invalid candidate/);
+  assert.deepEqual(inspected, [a.path, b.path]);
+  assert.deepEqual([a.current, b.current], originals);
+  assert.equal(state.reviewDecisions.size, 0);
+  assert.deepEqual([a.history, b.history], history);
+});
 test('manual snapshots are private, refresh changed blocks and preserve decisions for untouched Topics', () => {
   const { a, b, state, session, write } = fixture(true), frame = session.frame(a, true);
   session.decide(frame, new Map([[0, 'accept']]), write); session.save(frame);
