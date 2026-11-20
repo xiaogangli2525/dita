@@ -23,25 +23,31 @@
     visit(node, ancestors);
     for (const child of node.children) if (child.kind === 'element') walk(child, visit, [...ancestors, node]);
   }
-  function dependencies(source, path, profile) {
+  function dependencies(source, path, profile, { deferInvalidConrefs = false } = {}) {
     const found = new Set();
     function visit(node) {
       if (profile && !profile.keep(node)) return;
       const href = node.attrs.conref || (node.name === 'xref' && decode(node.attrs.type) === 'fn' ? node.attrs.href : '');
-      if (href) found.add(localTarget(decode(href), path).path);
+      if (href) {
+        try { found.add(localTarget(decode(href), path).path); }
+        catch (error) {
+          if (!deferInvalidConrefs || !node.attrs.conref) throw error;
+          // Let the publication check report this source location. Never read the invalid target.
+        }
+      }
       node.children.filter(child => child.kind === 'element').forEach(visit);
     }
     visit(xml.inspectSource(source));
     return [...found];
   }
-  async function loadDependencies(files, read, profile) {
+  async function loadDependencies(files, read, profile, options) {
     const loaded = new Map(files), requested = new Set(loaded.keys());
     let size = 0;
     for (const [path, file] of loaded) {
       size += file.current.length;
       if (loaded.size > 128 || size > 8 * 1024 * 1024) throw new Error('发布依赖超过限制（128 个文件／8 MiB 文本）');
       try {
-        for (const dependency of dependencies(file.current, path, profile)) if (!requested.has(dependency)) {
+        for (const dependency of dependencies(file.current, path, profile, options)) if (!requested.has(dependency)) {
           requested.add(dependency);
           const current = await read(dependency);
           if (current != null) loaded.set(dependency, { path: dependency, current });
@@ -100,13 +106,15 @@
     }
     include(plan.children);
     for (const [path, file] of scoped) {
-      try { dependencies(file.current, path, profile).forEach(add); }
+      try { dependencies(file.current, path, profile, { deferInvalidConrefs: true }).forEach(add); }
       catch (error) { throw new Error(path + '：' + error.message, { cause: error }); }
     }
     return scoped;
   }
   function resolveConrefsDetailed(files, profile) {
     const documents = new Map(), output = new Map(), origins = new Map(), sites = new Map();
+    const issues = new Map(), maxIssues = 100;
+    let omittedIssues = false;
     let activeOrigins = [], activeSites = [];
     function indexIds(tree, path) {
       const ids = new Map();
@@ -131,6 +139,16 @@
       while (base.length && parts.length && base[0] === parts[0]) { base.shift(); parts.shift(); }
       return [...base.map(() => '..'), ...parts].map(encodeURIComponent).join('/') + (target.fragment ? '#' + target.fragment : '');
     }
+    function referenceProblem(path, node, message) {
+      const { source } = documents.get(path);
+      const key = path + '\n' + node.start;
+      if (!issues.has(key)) {
+        if (issues.size < maxIssues) issues.set(key, { path, message, location: { source, start: node.start, end: node.end } });
+        else omittedIssues = true;
+      }
+      // Continue through siblings to collect diagnostics. This partial result is never published.
+      return source.slice(node.start, node.close?.end ?? node.end);
+    }
     let expansions = 0;
     function render(node, origin, destination, chain = []) {
       const doc = documents.get(origin);
@@ -143,18 +161,22 @@
         });
         return doc.source.slice(node.start, node.close?.end ?? node.end);
       }
-      for (const attr of ['conkeyref', 'conrefend', 'conaction', 'keyref', 'xml:base']) if (node.attrs[attr] != null) throw new Error(origin + '：暂未支持 ' + attr + '，请先展开后再发布');
+      for (const attr of ['conkeyref', 'conrefend', 'conaction', 'keyref', 'xml:base']) if (node.attrs[attr] != null) {
+        return referenceProblem(origin, node, '暂未支持 ' + attr + '，请先展开后再发布');
+      }
       let attrs = node.attrs, children = node.children, childOrigin = origin, source = doc.source;
       if (attrs.conref != null) {
-        const target = localTarget(decode(attrs.conref), origin);
+        let target;
+        try { target = localTarget(decode(attrs.conref), origin); }
+        catch (error) { return referenceProblem(origin, node, '内容引用无效：' + error.message); }
         const key = target.path + '#' + target.fragment;
-        if (chain.includes(key) || chain.length >= 24) throw new Error(origin + '：内容引用循环或层级过深：' + key);
-        if (++expansions > 1024) throw new Error('内容引用展开超过 1024 次');
+        if (chain.includes(key) || chain.length >= 24) return referenceProblem(origin, node, '内容引用循环或层级过深：' + key);
         const targetDoc = documents.get(target.path);
-        if (!targetDoc) throw new Error(origin + '：无法读取内容引用：' + target.path);
+        if (!targetDoc) return referenceProblem(origin, node, '无法读取内容引用：' + target.path);
         const targetNode = target.fragment ? targetDoc.ids.get(target.fragment) : targetDoc.tree;
-        if (!targetNode) throw new Error(origin + '：内容引用目标不存在：' + key);
-        if (targetNode.name !== node.name) throw new Error(origin + '：内容引用的元素类型不匹配（<' + node.name + '> → <' + targetNode.name + '>）：' + key);
+        if (!targetNode) return referenceProblem(origin, node, '内容引用目标不存在：' + key);
+        if (targetNode.name !== node.name) return referenceProblem(origin, node, '内容引用的元素类型不匹配（<' + node.name + '> → <' + targetNode.name + '>）：' + key);
+        if (++expansions > 1024) throw new Error('内容引用展开超过 1024 次');
         const firstSite = activeSites.length;
         const resolved = render(targetNode, target.path, destination, [...chain, key]);
         // Keep the visible source occurrence separate from the reused definition.
@@ -174,7 +196,7 @@
       if (node.name === 'fn' || node.name === 'xref' && decode(node.attrs.type) === 'fn') activeSites.push({ path: origin, start: node.start, name: node.name });
       let opening = source.slice(node.start, node.end);
       if (origin !== destination && attrs.href) {
-        if (node.name === 'xref' && decode(attrs.href).startsWith('#')) throw new Error(origin + '：复用片段中的同文件链接需先显式展开，避免目标 ID 重定位错误');
+        if (node.name === 'xref' && decode(attrs.href).startsWith('#')) return referenceProblem(origin, node, '复用片段中的同文件链接需先显式展开，避免目标 ID 重定位错误');
         const value = escape(rebase(decode(attrs.href), origin, destination));
         opening = opening.replace(/(\shref\s*=\s*)(["'])[\s\S]*?\2/, (_, prefix) => prefix + '"' + value + '"');
       }
@@ -193,9 +215,16 @@
       try {
         const content = doc.source.slice(0, doc.tree.start) + render(doc.tree, path, path) + doc.source.slice(doc.tree.close?.end ?? doc.tree.end);
         if (content.length > 4 * 1024 * 1024) throw new Error('展开后的 Topic 超过 4 MiB');
-        indexIds(xml.inspectSource(content), path);
-        output.set(path, { ...file, current: content }); origins.set(path, activeOrigins); sites.set(path, activeSites);
+        if (!issues.size) {
+          indexIds(xml.inspectSource(content), path);
+          output.set(path, { ...file, current: content }); origins.set(path, activeOrigins); sites.set(path, activeSites);
+        }
       } catch (e) { throw new Error(path + '：' + e.message, { cause: e }); }
+    }
+    if (issues.size) {
+      const found = [...issues.values()], first = found[0];
+      const summary = omittedIssues ? '仅列出前 ' + maxIssues + ' 处问题。' : found.length + ' 处引用或复用问题需要处理。';
+      throw Object.assign(new Error((found.length > 1 ? summary : '') + first.path + '：' + first.message), { issues: found });
     }
     return { files: output, origins, sites };
   }

@@ -242,6 +242,38 @@ test('foundation browser workflows', async t => {
     assert.equal(await page.locator('#modelExportDialog').isVisible(), false); assert.match(await current(), /missing.dita/); await source(previous);
     await page.setViewportSize({ width: 390, height: 844 }); assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true);
   });
+  await scenario('reference checks show several problems and select the exact CRLF source tag', async () => {
+    await page.setViewportSize({ width: 1440, height: 1100 });
+    const file = 'topics/connect.dita';
+    const previous = await page.evaluate(file => window.DitaApp.state.filesMap.get(file).current, file);
+    const missing = '<ph conref="../shared/notes.dita#notes/absent"/>', invalid = '<ph conref="../../escape.dita#x/absent"/>';
+    const changed = previous.replace('</body>', '\n<p>' + missing + '</p>\n<p>' + invalid + '</p>\n</body>').replace(/\r?\n/g, '\r\n');
+    const set = content => page.evaluate(({ file, content }) => {
+      const app = window.DitaApp; app.setFileContent(app.state.filesMap.get(file), content);
+    }, { file, content });
+    await set(changed);
+    await open('main.ditamap'); await delivery();
+    // The configuration preview already has diagnostics, before rendering an export.
+    await page.click('[data-delivery-step=check]');
+    const missingRow = page.locator('#deliveryChecks li').filter({ hasText: '内容引用目标不存在' });
+    const invalidRow = page.locator('#deliveryChecks li').filter({ hasText: '引用超出工作区' });
+    await missingRow.waitFor(); await invalidRow.waitFor();
+    const line = changed.slice(0, changed.indexOf(invalid)).split('\r\n').length;
+    await invalidRow.getByRole('button', { name: '定位原文 · ' + file + ' · 第 ' + line + ' 行', exact: true }).click();
+    const selection = () => page.locator('#editor').evaluate(node => node.value.slice(node.selectionStart, node.selectionEnd));
+    await page.waitForFunction(tag => {
+      const editor = document.getElementById('editor');
+      return editor === document.activeElement && editor.value.slice(editor.selectionStart, editor.selectionEnd) === tag;
+    }, invalid);
+    assert.equal(await selection(), invalid);
+    await open('main.ditamap'); await delivery(); await page.click('[data-delivery-step=check]');
+    await missingRow.waitFor();
+    await set(changed + '<!--content changed while the report was open-->');
+    await missingRow.getByRole('button').click();
+    await page.waitForFunction(() => document.getElementById('status').textContent.includes('原文已变化'));
+    assert.notEqual(await selection(), missing);
+    await set(previous);
+  });
   await scenario('the workbench commits selected saved DITA and updates the review base without staging other changes', async () => {
     await page.setViewportSize({ width: 1440, height: 1100 });
     git('config', 'user.name', 'Test');

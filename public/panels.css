@@ -195,7 +195,7 @@
 #deliveryReady { border:1px solid var(--border); border-radius:8px; padding:16px; }
 #deliveryReady h3 { margin:0 0 8px; font-size:16px; }
 .delivery-checks { padding:0; list-style:none; max-height:none; overflow:visible; }
-.delivery-checks li { padding:12px; margin:8px 0; border-radius:6px; line-height:1.8; background:var(--warning-soft); }
+.delivery-checks li { padding:12px; margin:8px 0; border-radius:6px; line-height:1.8; overflow-wrap:anywhere; background:var(--warning-soft); }
 .delivery-checks .check-error { background:var(--danger-soft); }
 .delivery-checks button { display:block; max-width:100%; text-align:left; margin:6px 0 0; padding:5px 8px; border:1px solid currentColor; border-radius:5px; background:transparent; color:inherit; font:inherit; }
 .footnote-dialog .delivery-note-count { color:var(--text); font-weight:600; }

@@ -74,13 +74,41 @@ test('the supplied HTTP parameter samples report incompatible and missing conref
   const readTopic = file => fs.readFileSync(path.join(sourceRoot, file), 'utf8');
   const topics = await resolver.loadDependencies(new Map([[sample, { current: readTopic(sample) }]]), readTopic);
   assert.deepEqual([...topics.keys()], [sample, common + 'product_parameters.dita', common + 'product_configurations.dita']);
-  assert.throws(() => resolver.resolveConrefs(topics), /parameter_test\.dita.*类型不匹配（<ph> → <li>）.*product_parameters\.dita#product_parameters\/package_lcc48_lga61/);
-  const profile = { keep: node => node.attrs.id !== 'test_basic_references' };
-  assert.throws(() => resolver.resolveConrefsDetailed(topics, profile), /parameter_test\.dita.*目标不存在.*product_configurations\.dita#product_configurations\/package_lcc48_lga61/);
+  assert.throws(() => resolver.resolveConrefs(topics), error => {
+    const issues = error.issues.filter(item => item.path === sample);
+    const mismatch = issues.find(item => item.message.includes('类型不匹配（<ph> → <li>）'));
+    const missing = issues.find(item => item.message.includes('目标不存在'));
+    assert.match(mismatch.message, /product_parameters\.dita#product_parameters\/package_lcc48_lga61/);
+    assert.match(missing.message, /product_configurations\.dita#product_configurations\/package_lcc48_lga61/);
+    for (const { location } of [mismatch, missing]) {
+      assert.equal(location.source, readTopic(sample));
+      assert.match(location.source.slice(location.start, location.end), /^<ph conref="[^"]+"\/>$/);
+    }
+    return true;
+  });
   const description = 'contentmodule/topics/g_product_description.dita';
   const source = readTopic(description);
   assert.throws(() => publication.prepareTopic(source, description), /g_product_description\.dita.*暂未支持 keyref/);
   for (const [file, { current }] of topics) assert.equal(current, readTopic(file));
+});
+test('reference diagnostics preserve dependency origins, ignore excluded content and never fetch invalid URIs', async () => {
+  const profile = require('../public/profiling-core').compile('<val><prop att="platform" val="hidden" action="exclude"/></val>');
+  const reuse = '<p conref="shared.dita#s/reuse"/>';
+  const invalid = '<p conref="../../escape.dita#e/p"/>';
+  const nested = '<ph keyref="product"/>';
+  const source = '<topic id="a"><body>' + reuse.repeat(2) + invalid + '<p platform="hidden" conref="outside.dita#x/hidden"/></body></topic>';
+  const shared = '<topic id="s"><body><p id="reuse">' + nested + '</p></body></topic>';
+  const reads = [];
+  const files = await resolver.loadDependencies(new Map([['a.dita', { current: source }]]), async path => {
+    reads.push(path); return shared;
+  }, profile, { deferInvalidConrefs: true });
+  assert.deepEqual(reads, ['shared.dita']);
+  assert.throws(() => resolver.resolveConrefsDetailed(files, profile), error => {
+    assert.deepEqual(error.issues.map(({ path, location }) => [path, location.source.slice(location.start, location.end)]), [
+      ['shared.dita', nested], ['a.dita', invalid]
+    ]);
+    return true;
+  });
 });
 test('cycles, missing targets, mismatched types, unsupported constructs and escaping references stop publication', async () => {
   for (const [body, pattern] of [
