@@ -1,3 +1,4 @@
+// @ts-check
 'use strict';
 (function (root) {
   const nativeTracking = typeof module !== 'undefined' ? require('../oxygen-tracking') : root.DitaOxygenTracking;
@@ -5,6 +6,13 @@
   const bodyLocations = typeof module !== 'undefined' ? require('./review-locations') : root.DitaReviewLocations;
   const views = typeof module !== 'undefined' ? require('./review-view') : root.DitaReviewView;
   const progress = typeof module !== 'undefined' ? require('./review-store') : root.DitaReviewStore;
+  /** @typedef {import('../data-contracts').DocumentState} DocumentState */
+  /** @typedef {import('../data-contracts').ReviewDecision} ReviewDecision */
+  /** @typedef {import('./review-contracts').ReviewFrame} ReviewFrame */
+  /** @typedef {import('./review-contracts').OxygenChange} OxygenChange */
+  /** @param {unknown} error */
+  const errorMessage = error => error instanceof Error ? error.message : String(error);
+  /** @param {import('./review-contracts').ReviewControllerPorts} ports */
   function createReviewController({ state, dom, ditaCore, setFileContent, updateVisual, renderTabs, updateHistoryButtons, setStatus }) {
     const { inlineDiff } = ditaCore;
     const REVIEW_CONTEXT_SIZE = 3;
@@ -13,16 +21,21 @@
     try { storage = root.localStorage; }
     catch (error) { console.warn('无法读取审阅进度存储', error); }
     const reviewStore = progress.createReviewStore(storage);
-    let reviewSurface = null, reviewingMap = false, oxygenError = '';
+    /** @type {DocumentState | null} */
+    let reviewSurface = null;
+    let reviewingMap = false, oxygenError = '';
+    /** @param {DocumentState} file @returns {OxygenChange[]} */
     function collectOxygen(file) {
       try {
         if (root.DitaOxygenCore?.hasUnsupportedChanges(file.current)) oxygenError = '含尚不支持的 Oxygen 属性或 CDATA 修订，请在 Oxygen 中处理';
         return ditaCore.collectOxyTrackedChanges?.(file.current) || [];
-      } catch (error) { oxygenError = file.path + '：' + error.message; return []; }
+      } catch (error) { oxygenError = file.path + '：' + errorMessage(error); return []; }
     }
     const session = sessions.createReviewSession({ state, progress: reviewStore });
     const resetReviewSnapshot = session.resetTopic, decisionsFor = session.decisionsFor, saveFrame = session.save;
+    /** @param {DocumentState} file */
     const reviewFrame = (file, inManual = reviewingMap) => session.frame(file, inManual);
+    /** @param {DocumentState} file */
     const reviewSnapshotCanReuse = (file, inManual = false) => session.canReuse(file, inManual);
     const { clear: clearReviewLocations, mark: markReviewLocations, focus: focusReviewGroup } = bodyLocations.createReviewLocations({
       visualEditor: dom.visualEditor, legend: dom.reviewPane?.querySelector('.review-legend'),
@@ -30,6 +43,7 @@
       ditaCore, decisionFor: session.decision, setStatus
     });
 
+    /** @param {HTMLElement | DocumentFragment} container @param {ReviewFrame} frame @param {import('./review-contracts').DiffGroup[]} groups */
     function appendGitGroups(container, frame, groups) {
       let changed = 0;
       for (const [index, group] of groups.entries()) {
@@ -49,24 +63,27 @@
       return changed;
     }
 
+    /** @param {DocumentState} file @param {number} count */
     function nativeMarks(file, count) {
       const active = state.filesMap.get(state.activePath);
-      return dom.reviewScope?.value === 'oxygen' && (count > 0 || nativeTracking.enabled(file.current) || active && nativeTracking.enabled(active.current));
+      return dom.reviewScope?.value === 'oxygen' && (count > 0 || nativeTracking.enabled(file.current) || Boolean(active && nativeTracking.enabled(active.current)));
     }
 
+    /** @param {OxygenChange} change @param {boolean} accept */
     function getOxyReplacement(change, accept) {
       if (change.type === 'insert') return accept ? (change.keepContent || '') : '';
       if (change.type === 'delete') return accept ? '' : (change.deletedContent ?? change.content ?? '');
       return change.keepContent || '';
     }
 
+    /** @param {DocumentState} file @param {OxygenChange} change @param {boolean} accept */
     function applyOxyChange(file, change, accept) {
       if (!file || typeof change.index !== 'number') return;
       const source = file.current;
       const replacement = getOxyReplacement(change, accept);
       const next = source.slice(0, change.index) + replacement + source.slice(change.index + change.matchLength);
       try { ditaCore.parseXml(next); }
-      catch (error) { setStatus('无法应用该修订：' + error.message, true); return; }
+      catch (error) { setStatus('无法应用该修订：' + errorMessage(error), true); return; }
       setFileContent(file, next, { origin: 'review' });
       setStatus(accept ? '已接受修订' : '已拒绝修订');
       if (state.mode === 'review') {
@@ -80,12 +97,14 @@
       }
     }
 
+    /** @param {DocumentState} file */
     function surfaceFor(file) {
       if (file.path === state.activePath) return /\.ditamap$/i.test(file.path) ?
         dom.visualEditor.querySelector('[data-map-title]') : dom.visualEditor;
-      return Array.from(dom.visualEditor.querySelectorAll('.map-topic-surface')).find(node => node.dataset.mapTopicPath === file.path);
+      return Array.from(dom.visualEditor.querySelectorAll('.map-topic-surface')).find(node => node.getAttribute('data-map-topic-path') === file.path);
     }
 
+    /** @param {number} oxyIndex @param {DocumentState} file */
     function scrollToOxyChange(oxyIndex, file) {
       if (typeof oxyIndex !== 'number') return;
       const el = surfaceFor(file)?.querySelector('[data-oxy-index="' + oxyIndex + '"]');
@@ -95,6 +114,7 @@
       setTimeout(() => el.classList.remove('oxy-flash'), 1500);
     }
 
+    /** @param {OxygenChange} change @param {number} oxyIndex @param {DocumentState} file */
     function createOxyChangeBlock(change, oxyIndex, file) {
       const expected = file.current, rootPath = state.activePath;
       return reviewView.oxygen(change, oxyIndex, {
@@ -109,6 +129,7 @@
         }
       });
     }
+    /** @param {DocumentState | null | undefined} file */
     function renderDiff(file, resetSnapshot = false) {
       clearReviewLocations(); oxygenError = '';
       if (!file) {
@@ -163,6 +184,7 @@
       setStatus(oxygenError || combinedSummary, Boolean(oxygenError));
     }
 
+    /** @param {string} message */
     function showReviewEmpty(message) {
       const empty = document.createElement('p');
       empty.className = 'review-empty';
@@ -170,16 +192,17 @@
       dom.diff.replaceChildren(empty);
     }
 
+    /** @param {DocumentState} file */
     function renderMapReview(file) {
       clearReviewLocations(); oxygenError = '';
       const restoreAll = reviewSurface !== file || !reviewingMap;
       reviewSurface = file; reviewingMap = true;
-      const topicFiles = Array.from(state.mapAuthorPaths || []).map(path => state.filesMap.get(path)).filter(Boolean);
-      const allFiles = [...new Set([file, ...topicFiles].filter(Boolean))];
+      const allFiles = manualFiles(file);
       session.prepareManual(allFiles, restoreAll);
       const changedFiles = allFiles.filter(topic => { const frame = reviewFrame(topic, true); return frame.baseline !== frame.current; });
       const fragment = document.createDocumentFragment();
       let totalOxy = 0;
+      /** @type {Map<DocumentState, number>} */
       const nativeCounts = new Map();
       for (const topic of allFiles) {
         const changes = collectOxygen(topic);
@@ -220,7 +243,7 @@
         const frame = reviewFrame(topic, true);
         const groups = session.groups(frame, REVIEW_CONTEXT_SIZE);
         const surface = surfaceFor(topic);
-        if (!nativeMarks(topic, nativeCounts.get(topic))) markReviewLocations(topic, surface, groups, frame.keyFor, frame.baseline);
+        if (!nativeMarks(topic, nativeCounts.get(topic) ?? 0)) markReviewLocations(topic, surface, groups, frame.keyFor, frame.baseline);
         appendGitGroups(section, frame, groups);
         fragment.append(section);
       }
@@ -238,9 +261,15 @@
       setStatus(oxygenError || combinedSummary, Boolean(oxygenError));
     }
 
-    // Single-block actions and bulk Git review use the same history transaction.
-    function writeReviewDecisions(frame, updates) {
-      return session.decide(frame, updates, (file, content, options) => setFileContent(file, content, { ...options, origin: 'review' }));
+    /** @type {import('./review-contracts').ReviewWriter} */
+    const writeReviewedFile = (file, content, options) => {
+      return setFileContent(file, content, { ...options, origin: 'review' });
+    };
+
+    /** @param {DocumentState} file @param {string} content */
+    function validateGitCandidate(file, content) {
+      try { ditaCore.parseXml(content); }
+      catch (error) { throw new Error(file.path + '：' + errorMessage(error), { cause: error }); }
     }
 
     function renderActiveReview(refreshSurface = false) {
@@ -250,13 +279,18 @@
       else renderDiff(active, false);
     }
 
+    /** @param {ReviewFrame} frame @param {number} index @param {ReviewDecision | null} decision */
     function applyReviewedGroup(frame, index, decision) {
       if (!session.isCurrent(frame)) {
         renderActiveReview(true);
         setStatus('原文已变化，已更新审阅，请重新核对所选变更块。');
         return;
       }
-      writeReviewDecisions(frame, new Map([[index, decision]]));
+      try { session.decide(frame, new Map([[index, decision]]), writeReviewedFile, validateGitCandidate); }
+      catch (error) {
+        setStatus('无法应用该变更块。若首尾标签分属不同块，请在源码模式一并修改，或核对后使用批量审阅。' + errorMessage(error), true);
+        return;
+      }
       renderTabs();
       updateHistoryButtons();
       renderActiveReview();
@@ -265,42 +299,57 @@
         `已${decision === 'accept' ? '接受' : '拒绝'}${location}所选变更块`);
     }
 
+    /** @param {DocumentState} map */
+    function manualFiles(map) {
+      const files = new Set([map]);
+      for (const path of state.mapAuthorPaths || []) {
+        const topic = state.filesMap.get(path);
+        if (topic) files.add(topic);
+      }
+      return [...files];
+    }
+
     function reviewFiles() {
       const active = state.filesMap.get(state.activePath);
       if (!active) return [];
-      return /\.ditamap$/i.test(active.path)
-        ? [...new Set([active, ...Array.from(state.mapAuthorPaths || [], path => state.filesMap.get(path))].filter(Boolean))]
-        : [active];
+      return /\.ditamap$/i.test(active.path) ? manualFiles(active) : [active];
     }
+    /** @param {boolean} git @param {boolean} oxygen */
     function updateBulkButtons(git, oxygen) {
       const scope = dom.reviewScope?.value || 'git';
       const available = scope === 'oxygen' ? oxygen : git;
       dom.acceptAllButton.disabled = !available;
       dom.rejectAllButton.disabled = !available;
     }
+    /** @param {boolean} accept */
     function reviewAll(accept) {
       const files = reviewFiles();
       const scope = dom.reviewScope?.value || 'git';
-      if (scope === 'git' && files.some(file => !session.isCurrent(reviewFrame(file, /\.ditamap$/i.test(state.activePath))))) {
-        renderActiveReview(true); setStatus('原文已变化，已更新审阅，请重新核对后再批量处理。'); return;
-      }
-      const prepared = new Map();
       if (scope === 'oxygen') {
         // Validate every restored document before changing any buffer in a Map.
+        /** @type {Map<DocumentState, string>} */
+        const prepared = new Map();
         try { for (const file of files) prepared.set(file, nativeTracking.resolveForReview(file.current, accept)); }
-        catch (error) { setStatus('无法批量应用修订：' + error.message, true); return; }
-      }
-      for (const file of files) {
-        if (scope === 'oxygen') {
-          setFileContent(file, prepared.get(file), { origin: 'review' });
-        } else {
-          const frame = reviewFrame(file, /\.ditamap$/i.test(state.activePath));
+        catch (error) { setStatus('无法批量应用修订：' + errorMessage(error), true); return; }
+        for (const [file, content] of prepared) setFileContent(file, content, { origin: 'review' });
+      } else {
+        const inManual = /\.ditamap$/i.test(state.activePath);
+        const frames = files.map(file => reviewFrame(file, inManual));
+        if (frames.some(frame => !session.isCurrent(frame))) {
+          renderActiveReview(true); setStatus('原文已变化，已更新审阅，请重新核对后再批量处理。'); return;
+        }
+        /** @type {Map<ReviewFrame,Map<number,ReviewDecision>>} */
+        const batch = new Map();
+        for (const frame of frames) {
+          /** @type {Map<number,ReviewDecision>} */
           const decisions = new Map();
           session.groups(frame, REVIEW_CONTEXT_SIZE).forEach((group, index) => {
             if (group.type !== 'same') decisions.set(index, accept ? 'accept' : 'reject');
           });
-          writeReviewDecisions(frame, decisions);
+          batch.set(frame, decisions);
         }
+        try { session.decideBatch(batch, writeReviewedFile, validateGitCandidate); }
+        catch (error) { setStatus('无法批量应用 Git 变更。' + errorMessage(error), true); return; }
       }
       const active = state.filesMap.get(state.activePath);
       if (active) {

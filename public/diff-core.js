@@ -262,25 +262,22 @@ function applyDiffGroups(oldText, newText, decisions, _contextSize = 0, defaultD
   // indexes stay identical when all context is retained, so use an
   // untrimmed grouping for the actual merge.
   const groups = groupDiffRows(lineDiff(oldText, newText), 0);
+  const currentEndings = String(newText).match(/\r?\n/g) || [];
+  const defaultEnding = currentEndings[0] ?? (/\r\n/.test(String(oldText)) ? '\r\n' : '\n');
   const output = [];
-  groups.forEach((group, index) => {
-    if (group.type === 'same') {
-      output.push(...group.rows.map(row => row.text));
-      return;
-    }
+  let ending = '';
+  for (const [index, group] of groups.entries()) {
     const decision = decisions instanceof Map ? decisions.get(index) : undefined;
     const keepNew = (decision ?? defaultDecision) === 'accept';
-    const oldRows = group.rows.filter(row => row.type === 'old');
-    const newRows = group.rows.filter(row => row.type === 'new');
-    output.push(...(keepNew ? newRows : oldRows).map(row => row.text));
-  });
-  // Preserve the working document's line-ending convention. The baseline
-  // often comes from `git show` (LF) while the open file may be CRLF; using
-  // the baseline here would rewrite the entire document after one decision.
-  const joiner = /\r\n/.test(String(newText))
-    ? '\r\n'
-    : /\r\n/.test(String(oldText)) ? '\r\n' : '\n';
-  return output.join(joiner);
+    for (const row of group.rows) {
+      if (row.type !== 'same' && row.type !== (keepNew ? 'new' : 'old')) continue;
+      output.push(ending + row.text);
+      // Existing lines keep their exact delimiter. Restored lines use the
+      // working document's convention, falling back to the Git baseline.
+      ending = currentEndings[row.newIndex - 1] ?? defaultEnding;
+    }
+  }
+  return output.join('');
 }
 
 const api = { lineDiff, inlineDiff, groupDiffRows, applyDiffGroups };

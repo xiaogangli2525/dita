@@ -60,7 +60,7 @@ async function saveAsFile() {
       guard();
       const existing = await fetch('/api/file?path=' + encodeURIComponent(target));
       if (!existing.ok) throw new Error(await responseError(existing));
-      expectedContent = await existing.text();
+      expectedContent = await root.DitaBrowserFiles.readXmlResponse(existing);
       guard();
       if (originalTarget && originalDisk !== expectedContent) throw new Error('目标磁盘文件已变化，请重新打开后比较，再执行另存为');
       if (!confirm(`文件已存在，是否覆盖？\n\n${target}`)) return;

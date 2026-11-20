@@ -46,7 +46,7 @@
       if (snapshot.filter) sources.set(snapshot.filter.path, snapshot.filter.current);
       for (const [name, content] of sources) {
         const response = await A.api.request('/api/file?path=' + encodeURIComponent(name), { signal });
-        if (!response.ok || await response.text() !== content) throw new Error('源文件已变化或无法读取，请刷新后重新加入：' + name);
+        if (!response.ok || await root.DitaBrowserFiles.readXmlResponse(response) !== content) throw new Error('源文件已变化或无法读取，请刷新后重新加入：' + name);
         check();
       }
       const hash = root.DitaBrowserFiles.sha256;

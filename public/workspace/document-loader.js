@@ -4,6 +4,7 @@
   /** @typedef {import('../data-contracts').DocumentState} DocumentState */
   /** @typedef {import('../data-contracts').CapturePorts['api']} WorkspaceApi */
   const store = typeof module !== 'undefined' ? require('../document-store') : root.DitaDocumentStore;
+  const browserFiles = typeof module !== 'undefined' ? require('../browser-files') : root.DitaBrowserFiles;
 
   /** @param {Pick<WorkspaceApi, 'request'>} api @param {string} path */
   async function readGit(api, path) {
@@ -45,7 +46,7 @@
       const task = (async () => {
         const disk = api.request('/api/file?path=' + encodeURIComponent(path)).then(async response => {
           if (!response.ok) throw new Error(path + '：' + await (api.error ? api.error(response) : response.text()));
-          return response.text();
+          return browserFiles.readXmlResponse(response);
         });
         const [content, git] = await Promise.all([disk, readGit(api, path)]);
         if (workspace !== api.token || started !== generation || revision !== revisions.get(path)) throw new Error('工作区或文档已关闭，已忽略旧的加载结果');

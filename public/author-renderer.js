@@ -5,6 +5,7 @@
   const presentation = typeof module !== 'undefined' ? require('./document-presentation') : root.DitaDocumentPresentation;
   const { normalizeOxyPIs } = typeof module !== 'undefined' ? require('./oxygen-core') : root.DitaOxygenCore;
   const BODY_TAGS = presentation.bodies, resolveAssetPath = assetCore.resolveAssetPath;
+  /** @type {WeakMap<Element, Record<string, string>>} */
   const inertAttributes = new WeakMap();
   const createAuthorContext = (topicPath = '') => ({ topicPath, fnCounter: 0 });
   const sourcePath = (node, ctx) => ctx.sourcePaths ? ctx.sourcePaths.get(node) : xmlNodePath(node);
@@ -39,6 +40,8 @@
     for (const child of node.childNodes) { const rendered = renderDitaNode(child, documentRef, ctx); if (rendered) heading.appendChild(rendered); }
     return heading;
   }
+  /** @param {string} source @param {Document} documentRef
+   * @param {boolean} [normalizeOxy] @param {string} [topicPath] @param {Document | null} [parsed] */
   function createAuthorTopic(source, documentRef, normalizeOxy = false, topicPath = '', parsed = null) {
     const ctx = createAuthorContext(topicPath);
     const doc = parsed || parseXml(source);
@@ -373,6 +376,7 @@
 
 
 
+  /** @param {Element} node */
   const originalInertAttributes = node => inertAttributes.get(node);
   const api = { createAuthorTopic, renderDitaNode, originalInertAttributes };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaAuthorRenderer = api;
