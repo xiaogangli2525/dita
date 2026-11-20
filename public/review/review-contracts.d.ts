@@ -1,4 +1,4 @@
-import type { DocumentState, HistoryMeta, ReviewDecision, ReviewKey, WorkspaceState } from '../data-contracts';
+import type { DocumentState, HistoryMeta, OxygenChange, ReviewDecision, ReviewKey, WorkspaceState } from '../data-contracts';
 export interface DiffRow { type: 'same' | 'old' | 'new'; text: string; oldIndex?: number; newIndex?: number }
 export interface DiffGroup { type: 'same' | 'changed'; rows: DiffRow[]; topicPath?: string }
 export interface ReviewSnapshot { baseline: string; current: string; decisions: Map<number, ReviewDecision> }
@@ -23,10 +23,6 @@ export interface ReviewProgress {
   readonly warning: string;
 }
 export type ReviewWriter = (file: DocumentState, content: string, options: { historyMeta: HistoryMeta }) => boolean;
-export interface OxygenChange {
-  type: 'insert' | 'delete' | 'comment'; index: number; matchLength: number;
-  author?: string; content?: string; context?: string; keepContent?: string; deletedContent?: string;
-}
 export interface ReviewControllerPorts {
   state: ReviewState & Pick<WorkspaceState, 'mode' | 'mapAuthorPaths'>;
   dom: {

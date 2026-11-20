@@ -32,6 +32,14 @@ export interface XmlSourceToken extends XmlSourceRange { kind: 'text' | 'comment
 export interface XmlSourceElement extends XmlSourceRange {
   kind: 'element'; name: string; attrs: Record<string, string>; children: (XmlSourceToken | XmlSourceElement)[]; close?: XmlSourceRange;
 }
+interface OxygenChangeRange {
+  index: number; matchLength: number; id?: string; author: string; timestamp: string; content: string;
+}
+export type OxygenChange = OxygenChangeRange & (
+  { type: 'insert' | 'comment'; keepContent: string; context?: string } |
+  { type: 'delete'; deletedContent: string }
+);
+export interface OxygenTrackingAuthor { author: string; timestamp: string; id: string }
 export interface MapEntry { readonly path: string; readonly type?: string; readonly title?: string; readonly name?: string;
   readonly source?: string; readonly sourcePath?: string; readonly href?: string; readonly processingRole?: string; readonly children?: readonly MapEntry[] }
 export interface ProjectConfig { readonly schema: 1; readonly models: readonly string[] }

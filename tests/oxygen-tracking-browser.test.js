@@ -4,6 +4,7 @@ const fs = require('node:fs/promises'), os = require('node:os'), path = require(
 const { spawn, execFileSync } = require('node:child_process');
 const { chromium } = require('playwright-core'), iconv = require('iconv-lite');
 const tracking = require('../public/oxygen-tracking');
+const { collectOxyTrackedChanges } = require('../public/oxygen-core');
 
 test('Oxygen tracking persists real code edits and supports review, history and Map scope', async t => {
   const temp = await fs.mkdtemp(path.join(os.tmpdir(), 'dita-oxygen-')), repo = path.join(temp, 'docs'); await fs.mkdir(repo);
@@ -13,6 +14,8 @@ test('Oxygen tracking persists real code edits and supports review, history and 
   const map = '<map><title>功能手册</title><topicref href="a.dita"/><topicref href="b.dita"/></map>';
   await fs.writeFile(path.join(repo, 'a.dita'), iconv.encode(original, 'gbk')); await fs.writeFile(path.join(repo, 'b.dita'), other); await fs.writeFile(path.join(repo, 'main.ditamap'), map);
   await fs.writeFile(path.join(repo, 'typing.dita'), prose);
+  const native = await fs.readFile(path.join(__dirname, 'fixtures/oxygen-webauthor-28.1-native.dita'), 'utf8');
+  await fs.writeFile(path.join(repo, 'native.dita'), native);
   for (const args of [['init'], ['add', '.'], ['-c', 'user.name=Test', '-c', 'user.email=test@example.invalid', 'commit', '-m', 'fixture']]) execFileSync('git', args, { cwd: repo, stdio: 'ignore' });
   const port = await new Promise(resolve => { const socket = net.createServer(); socket.listen(0, '127.0.0.1', () => { const number = socket.address().port; socket.close(() => resolve(number)); }); });
   const server = spawn(process.execPath, ['server.js'], { cwd: path.join(__dirname, '..'), env: { ...process.env, DOCS_ROOT: repo, REPOSITORIES_ROOT: temp, PORT: String(port) }, stdio: ['ignore', 'pipe', 'pipe'] });
@@ -182,6 +185,40 @@ test('Oxygen tracking persists real code edits and supports review, history and 
       assert.deepEqual(await source.evaluate(node => [node.selectionStart, node.selectionEnd]), [start, start + 6]);
       assert.equal(await current('typing.dita'), initial);
     } finally { await cdp.detach(); }
+  });
+  await t.test('real Web Author revisions retain their bytes and author while nearby text is edited, saved and reviewed', async () => {
+    await open('native.dita');
+    await page.click('#visualButton');
+    assert.equal(await page.locator('#trackingButton').getAttribute('aria-pressed'), 'true');
+    const originals = collectOxyTrackedChanges(native).map(change => native.slice(change.index, change.index + change.matchLength));
+    const code = page.locator('#code-main');
+    const retry = (await code.textContent()).indexOf('RETRY=3');
+    await select('#code-main', retry, retry + 'RETRY=3'.length);
+    await page.keyboard.insertText('RETRY=5');
+    const changed = await current('native.dita');
+    assert.ok(tracking.resolve(changed, true).includes('TIMEOUT=90\n    RETRY=5'));
+    assert.deepEqual(collectOxyTrackedChanges(changed).filter(change => change.author === 'Anonymous')
+      .map(change => changed.slice(change.index, change.index + change.matchLength)), originals);
+    assert.ok(collectOxyTrackedChanges(changed).some(change => change.author === '研发 & QA'));
+    await page.keyboard.press('Control+z');
+    assert.equal(await current('native.dita'), native);
+    await page.keyboard.press('Control+y');
+    assert.equal(await current('native.dita'), changed);
+    const timeout = (await code.textContent()).indexOf('90');
+    await select('#code-main', timeout, timeout + 2);
+    await page.keyboard.insertText('60');
+    assert.equal(await current('native.dita'), changed);
+    assert.match(await page.locator('#status').textContent(), /其他作者或外部导入/);
+    await page.click('#saveButton');
+    await page.waitForFunction(() => !window.DitaApp.state.filesMap.get('native.dita').dirty);
+    assert.equal(await fs.readFile(path.join(repo, 'native.dita'), 'utf8'), changed);
+    await page.reload();
+    await page.waitForFunction(() => window.DitaApp?.state.root);
+    await open('native.dita');
+    await page.click('#reviewButton');
+    await page.selectOption('#reviewScope', 'oxygen');
+    assert.equal(await page.locator('#diff .oxy-author').filter({ hasText: /^Anonymous$/ }).count(), 4);
+    assert.equal(await current('native.dita'), changed);
   });
   assert.deepEqual(errors, []);
 });

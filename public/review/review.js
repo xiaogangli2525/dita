@@ -9,7 +9,7 @@
   /** @typedef {import('../data-contracts').DocumentState} DocumentState */
   /** @typedef {import('../data-contracts').ReviewDecision} ReviewDecision */
   /** @typedef {import('./review-contracts').ReviewFrame} ReviewFrame */
-  /** @typedef {import('./review-contracts').OxygenChange} OxygenChange */
+  /** @typedef {import('../data-contracts').OxygenChange} OxygenChange */
   /** @param {unknown} error */
   const errorMessage = error => error instanceof Error ? error.message : String(error);
   /** @param {import('./review-contracts').ReviewControllerPorts} ports */
