@@ -60,6 +60,28 @@ test('HTTP workflow protects edits, Git baselines, repository boundaries and wor
     assert.equal(info.available, true);
     assert.equal(info.content, initial);
   });
+  await t.test('profiling values come from XML elements in Topics and Maps using their declared encodings', async t => {
+    const mapPath = path.join(repo, 'profiles.ditamap');
+    const topicPath = path.join(repo, 'topics', 'profiles.dita');
+    const malformed = path.join(repo, 'topics', 'broken.xml');
+    t.after(() => Promise.all([mapPath, topicPath, malformed].map(file => fs.rm(file, { force: true }))));
+    const map = '\uFEFF<?xml version="1.0" encoding="UTF-16LE"?>\n' +
+      '<map product = \'型号甲\'><title>条件</title><!-- rev="comment" -->' +
+      '<topicref href="topics/a.dita" audience=\'O"Brien\' platform="4&#71;"/></map>';
+    const topic = '<?xml version="1.0" encoding="GBK"?><topic xmlns:custom="urn:custom" custom:product="namespace">' +
+      '<title>属性</title><body><p product="型号甲 型号乙" rev="draft\'s" otherprops="a&apos;b">' +
+      '<![CDATA[ product="cdata" ]]> rev="text"</p><?example product="pi"?></body></topic>';
+    await Promise.all([
+      fs.writeFile(mapPath, Buffer.from(map, 'utf16le')),
+      fs.writeFile(topicPath, require('iconv-lite').encode(topic, 'gbk')),
+      fs.writeFile(malformed, '<topic product="invalid">')
+    ]);
+    const response = await request('/api/attributes');
+    assert.equal(response.status, 200);
+    assert.deepEqual(await response.json(), { attributes: {
+      audience: ['O"Brien'], otherprops: ["a'b"], platform: ['4G'], product: ['型号乙', '型号甲'], rev: ["draft's"]
+    } });
+  });
   await t.test('dirty branch switches are refused even if force is supplied', async () => {
     await fs.writeFile(file, initial.replace('Original', 'Saved edit'));
     const result = await request('/api/branch', 'POST', { branch: 'other', force: true });
