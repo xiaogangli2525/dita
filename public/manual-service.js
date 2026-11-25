@@ -42,6 +42,28 @@
       });
     }
 
+    /** Check what was actually on disk while preserving edits from open buffers.
+     * @param {import('./data-contracts').ManualSnapshot} snapshot @param {AbortSignal} [signal] */
+    async function verifyDeliverySources(snapshot, signal) {
+      /** @type {Map<string, string | null>} */
+      const sources = new Map([[snapshot.path, snapshot.content], ...Array.from(snapshot.files, ([path, file]) => /** @type {[string,string]} */ ([path, file.current]))]);
+      if (snapshot.filter) sources.set(snapshot.filter.path, snapshot.filter.current);
+      for (const path of snapshot.missingSources || []) if (!sources.has(path)) sources.set(path, null);
+      const entries = [...sources];
+      for (let start = 0; start < entries.length; start += 6) {
+        await Promise.all(entries.slice(start, start + 6).map(async ([path, content]) => {
+          const buffer = snapshot.buffers.get(path);
+          const expected = buffer?.disk ?? content;
+          const response = await A.api.request('/api/file?path=' + encodeURIComponent(path), { signal });
+          if (expected === null && response.status === 404) return;
+          if (!response.ok || expected === null || await browserFiles.readXmlResponse(response) !== expected) {
+            throw new Error(path + '：磁盘来源已变化或无法读取。' +
+              (buffer ? '请保留未保存修改，重新打开该文档后再做交付检查。' : '请重新打开交付设置后检查。'));
+          }
+        }));
+      }
+    }
+
     /** @param {string} [path]
      * @param {{resources?:boolean,filterPath?:string,model?:string,deferMissingTopics?:boolean,includeTopic?:(path:string)=>boolean}} [options]
      * @returns {Promise<import('./data-contracts').ManualSnapshot>} */
@@ -74,6 +96,7 @@
         return content;
       }
 
+      const missingSources = new Set();
       /** @param {string} filePath */
       async function readTopic(filePath) {
         try { return await read(filePath); }
@@ -82,6 +105,7 @@
           assertContext();
           // The entry stays in the Map. Preparation will reject it if the
           // selected model or an active reuse reference actually needs it.
+          missingSources.add(filePath);
           return null;
         }
       }
@@ -139,7 +163,7 @@
       const loaded = await resolver.loadDependencies(files, readTopic, profile, { deferInvalidConrefs: deferMissingTopics });
       const noteRules = A.noteRuleStore ? await A.noteRuleStore.read() : null;
       const snapshot = snapshots.createSnapshot({
-        ...context, noteRules, capturedAt: new Date().toISOString(), path, content, map, filter,
+        ...context, noteRules, capturedAt: new Date().toISOString(), path, content, map, filter, missingSources: [...missingSources],
         files: loaded
       });
       if (!current(snapshot)) throw new Error('内容已变化，请重新打开以更新快照');
@@ -154,7 +178,7 @@
     }
 
     return Object.freeze({
-      ...domain, capture, current, contextCurrent, listFilters,
+      ...domain, capture, current, contextCurrent, listFilters, verifyDeliverySources,
       /** @param {import('./data-contracts').ManualSnapshot} snapshot */
       verifyRules: snapshot => A.noteRuleStore?.verify(snapshot.noteRules),
       scopePath() {

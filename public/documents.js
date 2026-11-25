@@ -74,23 +74,29 @@ async function saveAsFile() {
     const result = await response.json();
     if (workspace !== A.api.token || operation !== saveAsOperation) throw new Error('工作区已切换，已忽略旧的另存为结果');
     const savedPath = result.path || target;
+    const store = root.DitaDocumentStore;
     let current = state.filesMap.get(savedPath), preserved = false, changedWorking = false;
     let reviewAgainstPreviousDisk = false;
     if (current) {
       const untouched = current === sentTarget?.file && current.current === sentTarget.current && current.disk === sentTarget.disk;
       const compatibleDisk = current.disk === sentTarget?.disk || current.disk === result.content || typeof expectedContent === 'string' && current.disk === expectedContent;
       if (compatibleDisk) {
-        root.DitaDocumentStore.acknowledgeSave(current, result, false);
+        const previousDisk = current.disk;
+        store.acknowledgeSave(current, result, false);
+        store.rememberReviewBase(state, current, previousDisk);
         if (untouched) changedWorking = A.setFileContent(current, result.content, { render: false });
         A.events.emit('document:changed', current);
       }
       preserved = !untouched;
     } else if (!sentTarget) {
       reviewAgainstPreviousDisk = !result.created && targetGit?.baseline === undefined && typeof expectedContent === 'string';
-      current = root.DitaDocumentStore.createDocument({ path: savedPath, content: result.content,
-        baseline: result.created ? result.content : targetGit?.baseline ?? expectedContent ?? result.content,
-        gitStatus: result.created ? 'untracked' : 'modified' });
+      const untracked = result.created || targetGit?.baseline === undefined && store.isNewGitFile(targetGit?.status);
+      const restored = untracked && typeof expectedContent === 'string' ? store.savedReviewBase(state, savedPath, expectedContent) : undefined;
+      current = store.createDocument({ path: savedPath, content: result.content,
+        baseline: result.created ? result.content : targetGit?.baseline ?? restored ?? expectedContent ?? result.content,
+        gitStatus: untracked ? 'untracked' : 'modified' });
       if (reviewAgainstPreviousDisk) current.reviewAgainstPreviousDisk = true;
+      if (typeof expectedContent === 'string') store.rememberReviewBase(state, current, expectedContent);
       session.registerDocument(current);
     } else preserved = true; // The user closed the target while writing; keep it closed.
     session.ensureFile({ type: 'file', path: savedPath, name: fileNameFromPath(savedPath) });

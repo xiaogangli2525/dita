@@ -27,7 +27,7 @@
 
   // Topic tabs and Map surfaces share one load per document/workspace. A late
   // read may populate an empty cache, but never replace an acknowledged buffer.
-  /** @param {{state: {readonly filesMap: ReadonlyMap<string, DocumentState>},
+  /** @param {{state: Pick<import('../data-contracts').WorkspaceState, 'root' | 'currentBranch' | 'filesMap' | 'capabilities'>,
    * session: {registerDocument(file: DocumentState): DocumentState},
    * api: Pick<WorkspaceApi, 'token' | 'request'> & Partial<Pick<WorkspaceApi, 'error'>>,
    * events: {on(name: 'workspace:willChange', callback: () => void): unknown,
@@ -51,7 +51,13 @@
         const [content, git] = await Promise.all([disk, readGit(api, path)]);
         if (workspace !== api.token || started !== generation || revision !== revisions.get(path)) throw new Error('工作区或文档已关闭，已忽略旧的加载结果');
         const current = state.filesMap.get(path); if (current) return current;
-        const file = store.createDocument({ path, content, baseline: git?.baseline ?? content, gitStatus: git?.status ?? 'unknown' });
+        const restored = git?.baseline === undefined && store.isNewGitFile(git?.status) ? store.savedReviewBase(state, path, content) : undefined;
+        const file = store.createDocument({ path, content, baseline: git?.baseline ?? restored ?? content, gitStatus: git?.status ?? 'unknown' });
+        if (restored !== undefined) file.reviewAgainstPreviousDisk = true;
+        if (state.capabilities.git && git?.baseline === undefined && !store.isNewGitFile(git?.status) && git?.status !== 'no-git') {
+          file.reviewBaselineWarning = '无法读取 Git 基线，审阅以打开时的磁盘版本为起点。';
+        }
+        if (git?.baseline !== undefined) store.forgetReviewBase(state, path);
         return session.registerDocument(file);
       })().finally(() => { if (pending.get(path) === task) pending.delete(path); });
       pending.set(path, task); return task;

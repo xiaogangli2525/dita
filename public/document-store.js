@@ -7,6 +7,52 @@
     if (typeof path !== 'string' || !path || typeof content !== 'string' || typeof baseline !== 'string') throw new TypeError('文档路径和内容须为字符串');
     return { path, current: content, disk: content, baseline, gitStatus, dirty: false };
   }
+  /** @param {string | undefined} status */
+  function isNewGitFile(status) {
+    return status === 'untracked' || status === '??' || status?.startsWith('A') === true;
+  }
+  /** @param {{root:string,currentBranch:string}} scope @param {string} path */
+  function savedReviewKey(scope, path) {
+    return 'dita.review-disk.v1:' + JSON.stringify([scope.root, scope.currentBranch, path]);
+  }
+  /** @param {Storage} storage @param {string} key */
+  function savedReviewRecord(storage, key) {
+    const raw = storage.getItem(key);
+    if (!raw) return null;
+    const value = JSON.parse(raw);
+    return value?.schema === 1 && typeof value.baseline === 'string' && typeof value.disk === 'string' ? value : null;
+  }
+  /** @param {{root:string,currentBranch:string}} scope @param {string} path @param {string} disk @param {Storage} [storage] */
+  function savedReviewBase(scope, path, disk, storage) {
+    if (!scope.root) return;
+    try {
+      const record = savedReviewRecord(storage ?? root.localStorage, savedReviewKey(scope, path));
+      if (record?.disk === disk) return /** @type {string} */ (record.baseline);
+    } catch { /* Opening a file still works with unavailable browser storage. */ }
+  }
+  /** @param {{root:string,currentBranch:string}} scope @param {import('./data-contracts').DocumentState} file
+   * @param {string} previousDisk @param {Storage} [storage] */
+  function rememberReviewBase(scope, file, previousDisk, storage) {
+    if (!scope.root || !isNewGitFile(file.gitStatus) || file.disk === previousDisk) return;
+    try {
+      const backend = storage ?? root.localStorage, key = savedReviewKey(scope, file.path);
+      const previous = savedReviewRecord(backend, key);
+      // An observed earlier save from another window owns this exact disk version.
+      if (previous?.disk === file.disk && previous.baseline !== file.baseline) {
+        file.baseline = previous.baseline;
+      } else if (file.baseline !== file.disk) {
+        backend.setItem(key, JSON.stringify({ schema: 1, baseline: file.baseline, disk: file.disk }));
+      } else if (previous?.disk === previousDisk) backend.removeItem(key);
+      delete file.reviewBaselineWarning;
+    } catch { file.reviewBaselineWarning = '浏览器无法保存此文档的审阅基线，当前页仍可审阅'; }
+    file.reviewAgainstPreviousDisk = file.baseline !== file.disk;
+  }
+  /** @param {{root:string,currentBranch:string}} scope @param {string} path */
+  function forgetReviewBase(scope, path) {
+    if (!scope.root) return;
+    try { root.localStorage?.removeItem(savedReviewKey(scope, path)); }
+    catch { /* A committed Git baseline takes precedence over browser storage. */ }
+  }
   /** @param {import('./data-contracts').DocumentState} file
    * @returns {import('./data-contracts').DocumentSnapshot} */
   function snapshotDocument(file) {
@@ -61,7 +107,8 @@
     if (!result || typeof result.content !== 'string' || result.path !== undefined && result.path !== file.path || result.created !== undefined && typeof result.created !== 'boolean') throw TypeError('保存响应与文档不匹配');
     if (replaceWorking) file.current = result.content;
     file.disk = result.content; file.dirty = file.current !== file.disk;
-    file.gitStatus = result.created ? 'untracked' : 'modified';
+    if (result.created) file.gitStatus = 'untracked';
+    else if (!isNewGitFile(file.gitStatus)) file.gitStatus = 'modified';
   }
   /** @param {import('./data-contracts').DocumentState} file
    * @param {{content:string,status:string}} git */
@@ -71,6 +118,7 @@
     file.baseline = git.content;
     file.gitStatus = git.status;
     delete file.reviewAgainstPreviousDisk;
+    delete file.reviewBaselineWarning;
   }
   // Save acknowledgements advance disk, never a newer working buffer.
   /** @param {(request:import('./data-contracts').SaveRequest)=>Promise<import('./data-contracts').SaveAcknowledgement>} send */
@@ -118,7 +166,8 @@
     commit(file, proposal.after); // Reuses the editor's undo history; never saves.
     return Object.freeze({ ...proposal, status: 'applied' });
   }
-  const api = { createDocument, snapshotDocument, editDocument, travelHistory, historyOf, breakHistoryGroup, createSaveCoordinator, acknowledgeSave, acknowledgeCommit, createProposal, applyProposal };
+  const api = { createDocument, snapshotDocument, editDocument, travelHistory, historyOf, breakHistoryGroup, createSaveCoordinator,
+    acknowledgeSave, acknowledgeCommit, isNewGitFile, savedReviewBase, rememberReviewBase, forgetReviewBase, createProposal, applyProposal };
   if (typeof module !== 'undefined') module.exports = api;
   else root.DitaDocumentStore = api;
 })(typeof window === 'undefined' ? globalThis : window);

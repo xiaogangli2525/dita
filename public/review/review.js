@@ -9,7 +9,7 @@
   /** @typedef {import('../data-contracts').DocumentState} DocumentState */
   /** @typedef {import('../data-contracts').ReviewDecision} ReviewDecision */
   /** @typedef {import('./review-contracts').ReviewFrame} ReviewFrame */
-  /** @typedef {import('./review-contracts').OxygenChange} OxygenChange */
+  /** @typedef {import('../data-contracts').OxygenChange} OxygenChange */
   /** @param {unknown} error */
   const errorMessage = error => error instanceof Error ? error.message : String(error);
   /** @param {import('./review-contracts').ReviewControllerPorts} ports */
@@ -181,6 +181,7 @@
       const combinedSummary = [oxySummary, gitSummary].filter(Boolean).join('；') || '无变更';
       dom.reviewMeta.textContent = combinedSummary;
       if (file.reviewAgainstPreviousDisk) dom.reviewMeta.textContent += ' · ' + diskBaselineNote;
+      if (file.reviewBaselineWarning) dom.reviewMeta.textContent += ' · ' + file.reviewBaselineWarning;
       if (reviewStore.warning) dom.reviewMeta.textContent += ' · ' + reviewStore.warning;
       setStatus(oxygenError || combinedSummary, Boolean(oxygenError));
     }
@@ -239,7 +240,7 @@
         section.className = 'map-review-topic';
         const header = document.createElement('div');
         header.className = 'map-review-topic-header';
-        header.textContent = topic.path + (topic.reviewAgainstPreviousDisk ? ' · ' + diskBaselineNote : '');
+        header.textContent = [topic.path, topic.reviewAgainstPreviousDisk && diskBaselineNote, topic.reviewBaselineWarning].filter(Boolean).join(' · ');
         section.append(header);
         const frame = reviewFrame(topic, true);
         const groups = session.groups(frame, REVIEW_CONTEXT_SIZE);

@@ -5,6 +5,7 @@ export type ReviewKey = number | string;
 export interface DocumentState {
   path: string; current: string; disk: string; baseline: string; gitStatus: string; dirty: boolean;
   reviewAgainstPreviousDisk?: boolean;
+  reviewBaselineWarning?: string;
   history?: DocumentHistory;
 }
 export type DocumentSnapshot = Readonly<Omit<DocumentState, 'history'>>;
@@ -34,6 +35,14 @@ export interface XmlSourceToken extends XmlSourceRange { kind: 'text' | 'comment
 export interface XmlSourceElement extends XmlSourceRange {
   kind: 'element'; name: string; attrs: Record<string, string>; children: (XmlSourceToken | XmlSourceElement)[]; close?: XmlSourceRange;
 }
+interface OxygenChangeRange {
+  index: number; matchLength: number; id?: string; author: string; timestamp: string; content: string;
+}
+export type OxygenChange = OxygenChangeRange & (
+  { type: 'insert' | 'comment'; keepContent: string; context?: string } |
+  { type: 'delete'; deletedContent: string }
+);
+export interface OxygenTrackingAuthor { author: string; timestamp: string; id: string }
 export interface MapEntry { readonly path: string; readonly type?: string; readonly title?: string; readonly name?: string;
   readonly source?: string; readonly sourcePath?: string; readonly href?: string; readonly processingRole?: string; readonly children?: readonly MapEntry[] }
 export interface ProjectConfig { readonly schema: 1; readonly models: readonly string[] }
@@ -48,6 +57,7 @@ export interface ManualSnapshot {
   readonly files: ReadonlyMap<string, FileContent>; readonly buffers: ReadonlyMap<string, DocumentSnapshot>;
   readonly project: ProjectConfig; readonly projectContent: string | null | undefined; readonly projectError?: string;
   readonly noteRules: NoteRulesSnapshot | null; readonly filter: FileContent | null;
+  readonly missingSources?: readonly string[];
 }
 /** Domain fields are getter-only at runtime. UI-only transient state stays controller-owned. */
 export interface WorkspaceState {
@@ -80,7 +90,7 @@ export interface GitCommitPlan {
   readonly files: readonly { readonly path: string; readonly kind: 'added' | 'modified' | 'deleted'; readonly oid?: string; readonly reason?: string }[];
 }
 export interface GitCommitPorts {
-  readonly state: Pick<WorkspaceState, 'capabilities' | 'filesMap'>;
+  readonly state: Pick<WorkspaceState, 'capabilities' | 'filesMap' | 'root' | 'currentBranch'>;
   readonly api: CapturePorts['api'];
   readonly events: { on(name: string, handler: () => void): unknown };
   refreshChrome(): void;

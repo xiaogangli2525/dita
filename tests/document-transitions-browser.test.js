@@ -23,6 +23,10 @@ test('document loading, Save As and Map paths preserve current user intent and w
   for (const { name, encoding, source } of encodedTopics) await fs.writeFile(path.join(repo, name), iconv.encode(source, encoding));
   await fs.writeFile(path.join(repo, 'encoded.ditamap'), '<map><title>编码手册</title><topicref href="utf8.dita"/><topicref href="utf16.dita"/></map>');
   await fs.writeFile(path.join(repo, 'filter.ditaval'), '<val><prop att="product" val="hidden" action="exclude"/></val>');
+  const picture = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="10"><rect width="20" height="10" fill="red"/></svg>';
+  const picturePath = path.join(repo, 'delivery.svg');
+  await fs.writeFile(picturePath, picture);
+  await fs.writeFile(path.join(repo, 'delivery.dita'), docs.a.replace('</body>', '<p><image href="delivery.svg"/></p></body>'));
   for (const args of [['init'], ['add', '.'], ['-c', 'user.name=Test', '-c', 'user.email=test@example.invalid', 'commit', '-m', 'fixture']]) execFileSync('git', args, { cwd: repo, stdio: 'ignore' });
   const port = await new Promise(resolve => { const socket = net.createServer(); socket.listen(0, '127.0.0.1', () => { const value = socket.address().port; socket.close(() => resolve(value)); }); });
   const server = spawn(process.execPath, ['server.js'], { cwd: path.join(__dirname, '..'), env: { ...process.env, DOCS_ROOT: repo, REPOSITORIES_ROOT: temp, PORT: String(port) }, stdio: ['ignore', 'pipe', 'pipe'] });
@@ -43,6 +47,70 @@ test('document loading, Save As and Map paths preserve current user intent and w
   async function edit(page, selector, text) { await page.locator(selector).click(); await page.keyboard.press('End'); await page.keyboard.insertText(text); }
   function answer(page, value) { page.on('dialog', dialog => dialog.type() === 'prompt' ? dialog.accept(value) : dialog.accept()); }
   async function saveAs(page) { await page.click('button[data-menu=file]'); await page.locator('#menuPopup').getByRole('menuitem', { name: '另存为', exact: true }).click(); }
+
+  await t.test('an untracked Topic keeps its saved review delta on reload until Git supplies a baseline', async st => {
+    const { page } = await fresh(st);
+    const name = 'new-review.dita', target = path.join(repo, name);
+    const original = '<topic id="untracked"><title>Untracked</title>\n<body><p id="untracked-text">Before save</p></body></topic>';
+    await fs.writeFile(target, original);
+    await open(page, name);
+    await edit(page, '#untracked-text', ' with edits');
+    await page.click('#saveButton');
+    await page.waitForFunction(name => !window.DitaApp.state.filesMap.get(name)?.dirty, name);
+    async function reopenReview() {
+      await page.reload();
+      await page.waitForFunction(() => window.DitaApp?.state.root);
+      await open(page, name);
+      await page.evaluate(() => window.DitaApp.setMode('review'));
+    }
+    await reopenReview();
+    const block = page.locator('#diff .diff-block').first();
+    await block.waitFor();
+    assert.match(await block.innerText(), /with edits/);
+    assert.match(await page.locator('#reviewMeta').innerText(), /磁盘版本/);
+    await block.getByRole('button', { name: '接受此块' }).click();
+    execFileSync('git', ['add', '--', name], { cwd: repo });
+    await reopenReview();
+    await page.locator('#diff .decision-accept').waitFor();
+    execFileSync('git', ['-c', 'user.name=Test', '-c', 'user.email=test@example.invalid', 'commit', '-qm', 'track new Topic', '--', name], { cwd: repo });
+    await reopenReview();
+    assert.equal(await page.locator('#diff .diff-block').count(), 0);
+    assert.doesNotMatch(await page.locator('#reviewMeta').innerText(), /磁盘版本/);
+  });
+
+  await t.test('delivery rejects a checked artifact after a Topic, image or Git branch changes', async st => {
+    const { page } = await fresh(st);
+    st.after(() => fs.writeFile(picturePath, picture));
+    const openDelivery = async () => {
+      await page.click('#exportMenuButton');
+      await page.locator('#exportModel:not(:disabled)').waitFor();
+      await page.click('#modelExportForm [value=check]');
+      await page.waitForFunction(() => document.querySelector('#deliveryCheckStatus').textContent.includes('通过'));
+    };
+    let downloads = 0;
+    page.on('download', () => { downloads++; });
+    async function rejectDownload(source) {
+      await page.click('#modelExportForm [value=download]');
+      await page.locator('#modelExportError').filter({ hasText: source }).waitFor();
+      assert.equal(downloads, 0);
+      await page.click('#modelExportCancel');
+    }
+    await open(page, 'a.dita');
+    assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.has('b.dita')), false);
+    await openDelivery();
+    await fs.writeFile(path.join(repo, 'b.dita'), docs.b.replace('Content b', 'Changed externally'));
+    await rejectDownload('b.dita');
+    await open(page, 'delivery.dita');
+    await openDelivery();
+    await fs.writeFile(picturePath, picture.replace('red', 'tan'));
+    await rejectDownload('delivery.svg');
+    await fs.writeFile(picturePath, picture);
+    const branch = execFileSync('git', ['branch', '--show-current'], { cwd: repo, encoding: 'utf8' }).trim();
+    await openDelivery();
+    execFileSync('git', ['switch', '-qc', 'other-delivery-branch'], { cwd: repo });
+    try { await rejectDownload('Git 来源已变化'); }
+    finally { execFileSync('git', ['switch', '-q', branch], { cwd: repo }); }
+  });
 
   await t.test('overwriting a closed tracked Topic shows its Git diff immediately and keeps shared review decisions', async st => {
     const { page } = await fresh(st);

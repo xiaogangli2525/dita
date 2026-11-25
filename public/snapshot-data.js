@@ -35,6 +35,7 @@
     if (!input.workspace || !input.path || typeof input.content !== 'string') throw TypeError('手册快照标识无效');
     return Object.freeze({ ...input, map: detached(input.map), project: detached(input.project),
       filter: detached(input.filter), noteRules: detached(input.noteRules),
+      ...(input.missingSources?.length ? { missingSources: Object.freeze([...input.missingSources]) } : {}),
       files: readonlyMap(Array.from(input.files, ([path, file]) => [path, Object.freeze({ path, current: file.current })])),
       buffers: readonlyMap(Array.from(input.buffers, ([path, file]) => [path, store.snapshotDocument(file)])) });
   }

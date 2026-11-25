@@ -16,6 +16,7 @@
  * @typedef {import('./data-contracts').ManualSnapshot} ManualSnapshot
  *
  * @typedef {Object} ManualService
+ * @property {(snapshot:ManualSnapshot,signal?:AbortSignal)=>Promise<void>} verifyDeliverySources
  * Pure prepare/list/discovery/save-selection methods are supplied by manual-domain.
  * Capture/current/listFilters/verifyRules/scopePath own workspace IO and freshness.
  * @property {(path?:string,options?:{resources?:boolean,filterPath?:string})=>Promise<ManualSnapshot>} capture
