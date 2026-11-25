@@ -148,8 +148,16 @@ test('real HTTP manual survives visual editing, review, save and two-model deliv
     await page.selectOption('#exportFilter', ''); await page.locator('#exportModel:not(:disabled)').waitFor();
     assert.match(await page.locator('#modelExportError').innerText(), /r_at_mhttpcontent\.dita.*Oxygen 修订起始标记没有对应终点/);
     assert.equal(await page.locator('[data-delivery-step=export]').isDisabled(), true);
-    const line = original.slice(0, original.indexOf('<?oxy_insert_start')).split(/\r\n?|\n/).length;
-    assert.equal(await page.locator('#deliveryChecks').getByRole('button', { name: '定位原文 · ' + sourcePath + ' · 第 ' + line + ' 行', exact: true }).count(), 1);
+    const marker = original.match(/<\?oxy_insert_start\b[^]*?\?>/)[0];
+    const line = original.slice(0, original.indexOf(marker)).split(/\r\n?|\n/).length;
+    await page.click('[data-delivery-step=check]');
+    await page.locator('#deliveryChecks').getByRole('button', { name: '定位原文 · ' + sourcePath + ' · 第 ' + line + ' 行', exact: true }).click();
+    await page.waitForFunction(marker => {
+      const editor = document.getElementById('editor');
+      return editor === document.activeElement && editor.value.slice(editor.selectionStart, editor.selectionEnd) === marker;
+    }, marker);
+    await open(englishMap);
+    await page.click('#exportMenuButton'); await page.locator('#exportModel:not(:disabled)').waitFor();
     await page.selectOption('#exportFilter', 'filters/filter_tbd.ditaval'); await page.locator('#exportModel:not(:disabled)').waitFor();
     await page.selectOption('#exportModel', ''); await page.selectOption('#exportFormat', 'html');
     await page.click('#modelExportForm [value=check]'); await page.locator('[data-delivery-step=export]:not(:disabled)').waitFor();
