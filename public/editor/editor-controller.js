@@ -92,7 +92,9 @@
     function setFileContent(file, content, { record = true, updateEditor = true, historyMeta, group, render = true, origin = 'edit' } = {}) {
       if (!file) return false;
       if (origin === 'edit') content = A.tracking?.prepare(file, content) ?? content;
+      const previous = file.current;
       if (!documentStore.editDocument(file, content, { record, historyMeta, group })) return false;
+      if (!historyMeta?.reviewSource) rebaseReviewEdit(file, previous);
       if (file.path === state.activePath || (/\.ditamap$/i.test(state.activePath) && state.mapAuthorPaths?.has(file.path))) {
         session.setHistoryTarget(file.path);
       }
@@ -263,7 +265,7 @@
     }
 
 
-    const { resetReviewSnapshot, renderDiff, renderMapReview, reviewAll, restoreDecisions } = review.createReviewController({
+    const { resetReviewSnapshot, renderDiff, renderMapReview, reviewAll, restoreDecisions, rebaseReviewEdit } = review.createReviewController({
       state, dom, ditaCore, setFileContent, updateVisual, renderTabs, updateHistoryButtons, setStatus
     });
 

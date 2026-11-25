@@ -20,6 +20,7 @@ export interface ReviewStorage {
 export interface ReviewProgress {
   restore(scope: ReviewScope, file: Pick<DocumentState, 'path' | 'baseline' | 'current'>): ReviewSnapshot;
   isCurrent(scope: ReviewScope, file: Pick<DocumentState, 'path'>): boolean;
+  rebaseEdit(scope: ReviewScope, file: Pick<DocumentState, 'path' | 'baseline' | 'current'>, previous: string): void;
   save(scope: ReviewScope, file: Pick<DocumentState, 'path'>, baseline: string, current: string, decisions: ReadonlyMap<number, ReviewDecision>): void;
   readonly warning: string;
 }

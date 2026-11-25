@@ -357,7 +357,8 @@
       setStatus(`${scope === 'oxygen' ? 'Oxygen 修订' : 'Git 工作区变更'}：已${accept ? '接受' : '拒绝'}全部；保存后写入磁盘`);
     }
 
-    return { resetReviewSnapshot, renderDiff, renderMapReview, reviewAll, restoreDecisions: session.restoreDecisions };
+    return { resetReviewSnapshot, renderDiff, renderMapReview, reviewAll, restoreDecisions: session.restoreDecisions,
+      rebaseReviewEdit: (/** @type {DocumentState} */ file, /** @type {string} */ previous) => reviewStore.rebaseEdit(state, file, previous) };
   }
   const api = { createReviewController };
   if (typeof module !== 'undefined') module.exports = api;

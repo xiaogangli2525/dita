@@ -101,7 +101,22 @@
         memory.set(name, raw); failed(error);
       }
     }
-    return { restore, save, isCurrent, get warning() { return warning; } };
+    /** @param {ReviewScope} scope @param {Pick<import('../data-contracts').DocumentState, 'path' | 'baseline' | 'current'>} file
+     * @param {string} previous */
+    function rebaseEdit(scope, file, previous) {
+      if (!scope.root || previous === file.current || !isCurrent(scope, file)) return;
+      const name = key(scope, file);
+      if (observed.has(name) && !(memory.has(name) ? memory.get(name) : observed.get(name))) return;
+      const before = restore(scope, { ...file, current: previous });
+      if (!before.decisions.size) return;
+      if (file.current === file.baseline) {
+        save(scope, file, file.baseline, file.current, new Map());
+        return;
+      }
+      const after = restore(scope, file);
+      if (after.decisions.size < before.decisions.size) save(scope, file, after.baseline, after.current, after.decisions);
+    }
+    return { restore, save, isCurrent, rebaseEdit, get warning() { return warning; } };
   }
   const api = { createReviewStore };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaReviewStore = api;

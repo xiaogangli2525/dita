@@ -214,14 +214,14 @@
       }
     }
     async function changeFilter() {
-      if (!get('modelExportDialog').open || configuring || exporting) return;
+      if (!get('modelExportDialog').open || exporting) return;
       const scope = configuringScope, workspace = A.api.token;
       if (workspace !== configuringWorkspace) { configuration = null; get('modelExportError').textContent = '工作区已切换，请重新打开交付设置'; get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = true; }); return; }
       const filterPath = get('exportFilter').value, generation = ++filterGeneration, operationId = ++operation;
       const selectedModel = get('exportModel').value;
       configuration = null; compiled = null; configuring = true; view().invalidate();
       get('exportModel').disabled=true;get('exportPrefixNotes').disabled=true;get('exportReviewRules').disabled=true;
-      get('exportScope').disabled = true; get('exportFilter').disabled = true;
+      get('exportScope').disabled = true;
       get('modelExportSummary').textContent = '正在应用条件过滤…'; get('modelExportError').textContent = ''; showIssues([]);
       get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = true; });
       try {
@@ -235,7 +235,7 @@
       } finally {
         if (generation === filterGeneration && operationId === operation) {
           configuring = false;
-          get('exportScope').disabled = false; get('exportFilter').disabled = false;
+          get('exportScope').disabled = false;
           get('exportModel').disabled=!configuration;get('exportPrefixNotes').disabled=!configuration||!get('exportModel').value;get('exportReviewRules').disabled=!configuration;
           get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = !configuration; });
         }
@@ -285,9 +285,12 @@
       const { snapshot, source } = configuration;
       const selectionMatches = () => legacy || (get('exportScope').value === snapshot.path &&
         get('exportFilter').value === (snapshot.filter?.path || ''));
-      if (!selectionMatches() || !service().current(snapshot)) {
+      const snapshotError = () => !selectionMatches() ? '交付范围已变化，请重新打开交付设置以更新快照' :
+        !service().current(snapshot) ? '内容已变化，请重新打开交付设置以更新快照' : '';
+      const invalid = snapshotError();
+      if (invalid) {
         compiled = null;
-        if (!legacy) { view().failed(); get('modelExportError').textContent = '内容或交付范围已变化，请重新打开交付设置以更新快照'; }
+        if (!legacy) { view().failed(); get('modelExportError').textContent = invalid; }
         return;
       }
       const model = legacy ? '' : get('exportModel').value, format = legacy?.format || get('exportFormat').value, version = legacy ? '' : get('exportVersion').value.trim();
@@ -307,7 +310,8 @@
         const data = compiled?.key === key ? compiled.data : await convert(snapshot, model, format, version,prefixes,publication);
         await service().verifyRules?.(snapshot);
         if (generation !== operation) return;
-        if (!selectionMatches() || !service().current(snapshot)) throw new Error('内容或交付范围已变化，请重新打开交付设置以更新快照');
+        const invalid = snapshotError();
+        if (invalid) throw new Error(invalid);
         compiled = { key, data }; lastExportReport = data.report;
         if (preview === 'check') { view().complete(); get('deliveryCheckStatus').textContent = '发布检查通过，图片和链接已核对。预览与下载将使用这份快照。'; return; }
         const printing = format === 'pdf' && !nativePdf();
