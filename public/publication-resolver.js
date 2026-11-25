@@ -111,7 +111,7 @@
     }
     return scoped;
   }
-  function resolveConrefsDetailed(files, profile) {
+  function resolveConrefsDetailed(files, profile, guardReuse) {
     const documents = new Map(), output = new Map(), origins = new Map(), sites = new Map();
     const issues = new Map(), maxIssues = 100;
     let omittedIssues = false;
@@ -150,7 +150,7 @@
       return source.slice(node.start, node.close?.end ?? node.end);
     }
     let expansions = 0;
-    function render(node, origin, destination, chain = []) {
+    function render(node, origin, destination, chain = [], reuseTargets) {
       const doc = documents.get(origin);
       if (profile && !profile.keep(node)) {
         // Leave excluded source intact until the publication pass removes it.
@@ -178,7 +178,9 @@
         if (targetNode.name !== node.name) return referenceProblem(origin, node, '内容引用的元素类型不匹配（<' + node.name + '> → <' + targetNode.name + '>）：' + key);
         if (++expansions > 1024) throw new Error('内容引用展开超过 1024 次');
         const firstSite = activeSites.length;
-        const resolved = render(targetNode, target.path, destination, [...chain, key]);
+        const targets = guardReuse ? reuseTargets || [] : undefined;
+        targets?.push({ path: target.path, node: targetNode, key });
+        const resolved = render(targetNode, target.path, destination, [...chain, key], targets);
         // Keep the visible source occurrence separate from the reused definition.
         // A block conref has no individually editable child markers in Author.
         for (let i = firstSite; i < activeSites.length; i++) activeSites[i] = { path: origin, start: node.start, name: node.name };
@@ -189,6 +191,13 @@
           if (name !== 'conref' && decode(value) !== '-dita-use-conref-target') attrs[name] = name === 'href' ? escape(rebase(decode(value), origin, destination)) : value;
         }
         delete attrs.conref;
+        if (targets && !reuseTargets) {
+          // Only the outer conref has the final attribute overrides for this chain.
+          for (const target of targets) {
+            const blocked = guardReuse(target.path, target.node, attrs);
+            if (blocked) return referenceProblem(origin, node, blocked + '：' + target.key);
+          }
+        }
         const start = '<' + node.name + Object.entries(attrs).map(([k, v]) => ' ' + k + '="' + escape(decode(v)) + '"').join('') + '>';
         return start + (resolvedNode.close ? resolved.slice(resolvedNode.end, resolvedNode.close.start) : '') + '</' + node.name + '>';
       }

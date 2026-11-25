@@ -29,8 +29,29 @@
     return [...new Set([...discoverModels(snapshot).models, ...configured])].sort();
   }
 
+  function revisionCheck(source, profile, tree) {
+    const excluded = [];
+    if (!source.includes('<?oxy_')) return { source, excluded, pending: false };
+    let ranges;
+    const changes = oxygen.collectOxyTrackedChanges(source, token => {
+      if (!profile) return false;
+      ranges ||= profile.excludedRanges(tree);
+      let low = 0, high = ranges.length;
+      while (low < high) {
+        const mid = Math.floor((low + high) / 2);
+        if (ranges[mid][1] <= token.start) low = mid + 1; else high = mid;
+      }
+      const range = ranges[low];
+      if (!range || token.start < range[0] || token.end > range[1]) return false;
+      excluded.push({ containerStart: range[0], token });
+      return true;
+    });
+    return { source, excluded, pending: changes.some(change => change.type !== 'comment' && change.id?.startsWith('dita-')) };
+  }
+
   function projectIssues(snapshot, files, model, profile) {
     const issues = [];
+    const excludedRevisions = new Map();
     if (snapshot.noteRules?.error) issues.push({ path: '.dita-note-rules.json', message: snapshot.noteRules.error });
     if (snapshot.projectError) issues.push({ path: '.dita-project.json', message: snapshot.projectError });
     if (model && snapshot.project.models.length && !snapshot.project.models.includes(model)) {
@@ -40,29 +61,55 @@
     if (typeof snapshot.content === 'string' && !inputs.has(snapshot.path)) inputs.set(snapshot.path, { current: snapshot.map.source ?? snapshot.content });
     for (const [path, file] of inputs) {
       try {
-        if (oxygen.collectOxyTrackedChanges(file.current).some(change => change.type !== 'comment' && change.id?.startsWith('dita-'))) issues.push({ path, message: '尚有未处理的 Oxygen 修订，请先接受或拒绝后再交付或发布知识库' });
-        resolver.walk(xml.inspectSource(file.current), (node, ancestors) => {
+        const tree = xml.inspectSource(file.current);
+        const revisions = revisionCheck(file.current, profile, tree);
+        if (revisions.excluded.length) excludedRevisions.set(path, revisions);
+        if (revisions.pending) issues.push({ path, message: '尚有未处理的 Oxygen 修订，请先接受或拒绝后再交付或发布知识库' });
+        resolver.walk(tree, (node, ancestors) => {
           if (profile && [...ancestors, node].some(parent => !profile.keep(parent))) return;
           if (model && path === snapshot.path && snapshot.map.source && !domain.matches(domain.conditions(node, ancestors), model, profile)) return;
           const unknown = domain.checkModels(domain.productValues(domain.decode(node.attrs.product)), snapshot.project);
           if (unknown.length) issues.push({ path, message: '未登记型号：' + unknown.join('、') });
         });
-      } catch (error) { issues.push({ path, message: error.message }); }
+      } catch (error) {
+        const projectedMap = path === snapshot.path && snapshot.map.source && snapshot.map.source !== snapshot.content;
+        issues.push({ path, message: error.message, ...(!projectedMap && error.location ? { location: error.location } : {}) });
+      }
     }
-    return issues;
+    return { issues, excludedRevisions };
   }
 
   function prepare(snapshot, model = '', validateProject = true, { useRules = true, prefixes = false } = {}) {
     const profile = profileOf(snapshot);
     const plan = resolver.planMap(snapshot.map, model, profile), files = resolver.scopeFiles(snapshot.files, plan, profile);
+    let excludedRevisions;
     if (validateProject) {
-      const issues = projectIssues(snapshot, files, model, profile);
+      const checked = projectIssues(snapshot, files, model, profile);
+      const { issues } = checked;
       if (issues.length) throw Object.assign(new Error(issues.map(item => item.path + '：' + item.message).join('\n')), { issues });
+      excludedRevisions = checked.excludedRevisions;
     }
-    const publish = (files, projection = {}) => publication.preparePublication({
-      map: snapshot.map, files, model, profile, plan,
-      ruleConfirmed: projection.confirmed, ruleExclusions: projection.excluded
-    });
+    const publish = (files, projection = {}) => {
+      const checked = new Map(excludedRevisions);
+      function guardReuse(path, node, attrs) {
+        let revisions = checked.get(path);
+        if (!revisions || !profile.keep({ attrs })) return;
+        const source = files.get(path).current;
+        if (revisions.source !== source) {
+          revisions = revisionCheck(source, profile, xml.inspectSource(source));
+          checked.set(path, revisions);
+        }
+        // A fragment copied out of an excluded ancestor can surface in retained content.
+        const end = node.close?.end ?? node.end;
+        if (revisions.excluded.some(({ containerStart, token }) => containerStart <= node.start && node.start <= token.start && token.end <= end)) {
+          return '复用目标包含不完整的 Oxygen 修订，请先修复原文';
+        }
+      }
+      return publication.preparePublication({
+        map: snapshot.map, files, model, profile, plan, guardReuse: checked.size ? guardReuse : undefined,
+        ruleConfirmed: projection.confirmed, ruleExclusions: projection.excluded
+      });
+    };
     // Resolve actual uses before deciding which original notes can affect delivery.
     const baseline = useRules && model ? publish(files) : null;
     const activeOrigins = baseline && new Set(baseline.notes.map(note => note.origin.path + '\n' + note.origin.start));
