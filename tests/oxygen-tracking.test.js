@@ -130,8 +130,9 @@ test('publication scopes unpaired Oxygen markers to DITAVAL without relaxing the
   }
   const start = '<?oxy_insert_start?>', end = '<?oxy_comment_end mid="lost"?>';
   const hidden = '<div product="tbd"><p>' + start + 'EXCLUDED' + end + '</p></div>';
-  const data = prepare(hidden, filter);
-  assert.doesNotMatch(data.files.get('a.dita').current, /EXCLUDED|oxy_/);
+  const data = prepare(hidden + '<p><?oxy_insert_start?>Imported<?oxy_insert_end?></p>', filter);
+  assert.doesNotMatch(data.files.get('a.dita').current, /EXCLUDED/);
+  assert.equal(data.oxygenRevisions, 1);
   assert.throws(() => prepare(hidden), /Oxygen 修订结束标记没有对应起点/);
   assert.throws(() => prepare(hidden + '<p>' + start + 'Visible</p>', filter), error => {
     const [{ path, location }] = error.issues;

@@ -11,10 +11,12 @@ test('real HTTP knowledge delivery works across repositories and from a moved of
   const mapPath = 'http_httpsusermanual.ditamap', original = collectDemoFiles(path.join(__dirname, '../examples/http_httpsusermanual'), mapPath);
   for (const [name, bytes] of original) { await fs.mkdir(path.dirname(path.join(http, name)), { recursive: true }); await fs.writeFile(path.join(http, name), bytes); }
   await fs.mkdir(path.join(extra, 'topics'), { recursive: true });
-  const extraPath = 'topics/r_https_example.dita', extraSource = '<topic id="same"><title>独立功能验收</title><body><p>AT+KBTEST_G 582 ONLY_G_BODY<fn product="ML307G">ONLY_G_NOTE</fn><fn product="ML307N">ONLY_N_PRIVATE_NOTE</fn></p><p product="ML307N">ONLY_N_PRIVATE_BODY</p><codeblock>AT+KBTEST_G\nOK</codeblock></body></topic>';
+  const extraPath = 'topics/r_https_example.dita', extraSource = '<topic id="same"><title>独立功能验收</title><body><p>AT+KBTEST_G 582 ONLY_G_BODY<fn product="ML307G">ONLY_G_NOTE</fn><fn product="ML307N">ONLY_N_PRIVATE_NOTE</fn></p><p product="ML307N">ONLY_N_PRIVATE_BODY<ph audience="internal"><?oxy_insert_start?>INTERNAL_UNPAIRED_REVISION</ph></p><codeblock>AT+KBTEST_G\nOK</codeblock></body></topic>';
   await fs.writeFile(path.join(extra, extraPath), extraSource); await fs.writeFile(path.join(extra, 'extra.ditamap'), '<map><title>独立功能验收</title><topicref href="' + extraPath + '"/></map>');
   await fs.writeFile(path.join(extra, '.dita-project.json'), JSON.stringify({ schema: 1, models: ['ML307G', 'ML307N'] }));
-  await fs.writeFile(path.join(extra, 'ml307g.ditaval'), '<val><prop att="product" val="ML307N" action="exclude"/></val>');
+  const excludeInternal = '<prop att="audience" val="internal" action="exclude"/>';
+  await fs.writeFile(path.join(extra, 'exclude-internal.ditaval'), '<val>' + excludeInternal + '</val>');
+  await fs.writeFile(path.join(extra, 'ml307g.ditaval'), '<val>' + excludeInternal + '<prop att="product" val="ML307N" action="exclude"/></val>');
   for (const repo of [http, extra]) for (const args of [['init'], ['add', '.'], ['-c', 'user.name=Acceptance', '-c', 'user.email=acceptance@example.invalid', 'commit', '-qm', 'Acceptance copy']]) execFileSync('git', args, { cwd: repo, stdio: 'ignore' });
   execFileSync('git', ['branch', 'alternate'], { cwd: http });
   const port = await new Promise(resolve => { const server = net.createServer(); server.listen(0, '127.0.0.1', () => { const n = server.address().port; server.close(() => resolve(n)); }); });
@@ -223,6 +225,8 @@ test('real HTTP knowledge delivery works across repositories and from a moved of
     await page.evaluate(() => window.DitaApp.openFile('extra.ditamap')); await page.click('#knowledgeButton');
     await page.locator('#knowledgeSources input[value="extra.ditamap"]').check();
     await page.waitForFunction(() => !document.getElementById('knowledgeAdd').disabled); assert.equal(await page.locator('#knowledgePrefixes').isChecked(), false); assert.equal(await page.locator('#knowledgeFilter').inputValue(), '');
+    await page.click('#knowledgeAdd'); await page.waitForFunction(() => document.getElementById('knowledgeError').textContent.includes('Oxygen 修订起始标记没有对应终点'));
+    await page.selectOption('#knowledgeFilter', 'exclude-internal.ditaval');
     await page.click('#knowledgeAdd'); await page.waitForFunction(() => document.getElementById('knowledgeError').textContent.includes('DITAVAL'));
     assert.equal(await page.locator('.knowledge-part').count(), 1, 'a missing body profile must not silently add another model');
     await page.locator('#knowledgeFilter option[value="ml307g.ditaval"]').waitFor({ state: 'attached' }); await page.selectOption('#knowledgeFilter', 'ml307g.ditaval'); await addCurrent();
@@ -234,7 +238,7 @@ test('real HTTP knowledge delivery works across repositories and from a moved of
     }
     const result = await download(), files = unzipSync(new Uint8Array(result.bytes)), manifest = JSON.parse(strFromU8(files['docs/manifest.json']));
     assert.equal(manifest.manuals.length, 2); assert.equal(new Set(manifest.manuals.map(item => item.id)).size, 2);
-    const content = strFromU8(files['docs/index.html']); assert.doesNotMatch(content, /ONLY_N_PRIVATE_NOTE|ONLY_N_PRIVATE_BODY/); assert.match(content, /ONLY_G_NOTE/);
+    const content = strFromU8(files['docs/index.html']); assert.doesNotMatch(content, /ONLY_N_PRIVATE_NOTE|ONLY_N_PRIVATE_BODY|INTERNAL_UNPAIRED_REVISION/); assert.match(content, /ONLY_G_NOTE/);
     const first = manifest.manuals.find(item => item.source.manualPath === mapPath);
     assert.equal(first.chapters, 24); assert.doesNotMatch(content, /400-110-0866|服务与支持/);
     assert.equal(first.source.documents.find(item => item.path === 'topics/r_https_example.dita').sha256, hash(original.get('topics/r_https_example.dita')));

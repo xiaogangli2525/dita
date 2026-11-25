@@ -31,7 +31,7 @@
 
   function revisionCheck(source, profile, tree) {
     const excluded = [];
-    if (!source.includes('<?oxy_')) return { source, excluded, pending: false };
+    if (!source.includes('<?oxy_')) return { source, excluded, count: 0, pending: false };
     let ranges;
     const changes = oxygen.collectOxyTrackedChanges(source, token => {
       if (!profile) return false;
@@ -46,12 +46,13 @@
       excluded.push({ containerStart: range[0], token });
       return true;
     });
-    return { source, excluded, pending: changes.some(change => change.type !== 'comment' && change.id?.startsWith('dita-')) };
+    return { source, excluded, count: changes.length, pending: changes.some(change => change.type !== 'comment' && change.id?.startsWith('dita-')) };
   }
 
   function projectIssues(snapshot, files, model, profile) {
     const issues = [];
     const excludedRevisions = new Map();
+    let oxygenRevisions = 0;
     if (snapshot.noteRules?.error) issues.push({ path: '.dita-note-rules.json', message: snapshot.noteRules.error });
     if (snapshot.projectError) issues.push({ path: '.dita-project.json', message: snapshot.projectError });
     if (model && snapshot.project.models.length && !snapshot.project.models.includes(model)) {
@@ -64,6 +65,7 @@
         const tree = xml.inspectSource(file.current);
         const revisions = revisionCheck(file.current, profile, tree);
         if (revisions.excluded.length) excludedRevisions.set(path, revisions);
+        if (files.has(path)) oxygenRevisions += revisions.count;
         if (revisions.pending) issues.push({ path, message: '尚有未处理的 Oxygen 修订，请先接受或拒绝后再交付或发布知识库' });
         resolver.walk(tree, (node, ancestors) => {
           if (profile && [...ancestors, node].some(parent => !profile.keep(parent))) return;
@@ -76,18 +78,19 @@
         issues.push({ path, message: error.message, ...(!projectedMap && error.location ? { location: error.location } : {}) });
       }
     }
-    return { issues, excludedRevisions };
+    return { issues, excludedRevisions, oxygenRevisions };
   }
 
   function prepare(snapshot, model = '', validateProject = true, { useRules = true, prefixes = false } = {}) {
     const profile = profileOf(snapshot);
     const plan = resolver.planMap(snapshot.map, model, profile), files = resolver.scopeFiles(snapshot.files, plan, profile);
-    let excludedRevisions;
+    let excludedRevisions, oxygenRevisions;
     if (validateProject) {
       const checked = projectIssues(snapshot, files, model, profile);
       const { issues } = checked;
       if (issues.length) throw Object.assign(new Error(issues.map(item => item.path + '：' + item.message).join('\n')), { issues });
       excludedRevisions = checked.excludedRevisions;
+      oxygenRevisions = checked.oxygenRevisions;
     }
     const publish = (files, projection = {}) => {
       const checked = new Map(excludedRevisions);
@@ -123,6 +126,7 @@
       throw Object.assign(new Error(message), { issues: [...projection.issues, ...projection.noteReview] });
     }
     const result = baseline && !projection.applied && !projection.prefixApplied ? baseline : publish(projection.files, projection);
+    result.oxygenRevisions = oxygenRevisions;
     result.noteReview = projection.noteReview || [];
     Object.assign(result.report, {
       ruleApplied: projection.applied || 0,
