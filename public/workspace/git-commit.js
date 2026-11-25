@@ -67,6 +67,7 @@
         const result = await request('/api/git/commit', { branch: plan.branch, head: plan.head, files, message: message.value });
         if (token !== A.api.token) return;
         const refreshBaselines = files.map(async ({ path, kind }) => {
+          root.DitaDocumentStore.forgetReviewBase(A.state, path);
           const file = A.state.filesMap.get(path);
           if (!file) return;
           if (kind === 'deleted') {

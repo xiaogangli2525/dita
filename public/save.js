@@ -6,6 +6,7 @@
     /** @template {keyof import('./data-contracts').SaveElements} K
      * @param {K} id */
     const get = id => /** @type {import('./data-contracts').SaveElements[K]} */ (document.getElementById(id));
+    const store = root.DitaDocumentStore;
     /** @type {{snapshot:import('./data-contracts').ManualSnapshot,candidates:readonly import('./data-contracts').DocumentSnapshot[]}|null} */
     let configuration = null;
     let preparing = false;
@@ -42,7 +43,10 @@
           for (const { file, request } of submissions) {
             if (workspace !== A.api.token) throw new Error('工作区已切换，请重新保存');
             await persist(file, request); saved++;
-            if (A.state.filesMap.get(file.path) === file) A.events.emit('document:changed', file);
+            if (workspace === A.api.token && A.state.filesMap.get(file.path) === file) {
+              store.rememberReviewBase(A.state, file, request.expectedContent);
+              A.events.emit('document:changed', file);
+            }
           }
         } else {
           for (const { file } of submissions) root.DitaDocumentStore.breakHistoryGroup(file);
@@ -65,7 +69,10 @@
           // The server acknowledges exactly the encoded request. Advance all
           // baselines together and retain edits made while the batch was writing.
           for (const { file, request } of submissions) {
-            if (file.disk === request.expectedContent) root.DitaDocumentStore.acknowledgeSave(file, request, false);
+            if (file.disk === request.expectedContent) {
+              store.acknowledgeSave(file, request, false);
+              if (workspace === A.api.token && A.state.filesMap.get(file.path) === file) store.rememberReviewBase(A.state, file, request.expectedContent);
+            }
           }
           saved = submissions.length;
           for (const { file } of submissions) if (A.state.filesMap.get(file.path) === file) A.events.emit('document:changed', file);

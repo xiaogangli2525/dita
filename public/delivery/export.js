@@ -8,10 +8,20 @@
       previewUrl = '';
     }
     root.addEventListener('beforeunload', releaseExportPreview);
-    async function browserLoadImageBytes(path, signal) {
+    async function readImage(path, signal) {
       const response = await A.api.request('/api/asset?path=' + encodeURIComponent(path), { signal });
       if (!response.ok) throw new Error(`图片加载失败：${path}`);
-      const blob = await response.blob();
+      return response.blob();
+    }
+    async function sameImage(expected, actual) {
+      if (expected.size !== actual.size || expected.type !== actual.type) return false;
+      const [before, after] = await Promise.all([expected.arrayBuffer(), actual.arrayBuffer()]);
+      const bytes = new Uint8Array(after);
+      return new Uint8Array(before).every((byte, index) => byte === bytes[index]);
+    }
+    async function browserLoadImageBytes(path, signal, images) {
+      const blob = await readImage(path, signal);
+      images.set(path, blob);
       const data = await new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => resolve(reader.result);
@@ -144,9 +154,9 @@
         showIssues([...blocking, ...warnings]); get('modelExportError').textContent = '';
       } catch (error) { view().invalidate(); get('modelExportSummary').textContent = ''; get('modelExportError').textContent = error.message; showIssues(issue(error, configuration.snapshot)); }
     }
-    async function provenance() {
+    async function provenance(signal) {
       try {
-        const response = await A.api.request('/api/provenance');
+        const response = await A.api.request('/api/provenance', { signal });
         if (!response.ok) throw new Error('来源服务不可用');
         return await response.json();
       } catch (error) {
@@ -242,6 +252,7 @@
       }
     }
     async function convert(snapshot, model, format, version, prefixes=false, publication = null) {
+      const images = new Map();
       const publicationData = service().prepare(snapshot, model, true, {prefixes});
       if(model&&publicationData.report.prefixCandidates&&!prefixes) {
         const issues = publicationData.noteReview;
@@ -251,7 +262,7 @@
         throw Object.assign(new Error(message), { issues });
       }
       let output = await (format === 'md' ? A.ditaCore.exportMapToMarkdown : A.ditaCore.exportMapToHtml)({ map: snapshot.map, files: snapshot.files, model, version, title: snapshot.map.title, publicationData,
-        loadImageBytes: path => (loadImageBytes || browserLoadImageBytes)(path, abortController?.signal) });
+        loadImageBytes: path => (loadImageBytes || browserLoadImageBytes)(path, abortController?.signal, images) });
       let previewHtml;
       if (format === 'pdf' || format === 'docx') {
         previewHtml = root.DitaOfficeExport.printable(output);
@@ -268,7 +279,7 @@
       }
       const template = publication ? { id: publication.package.id, name: publication.package.name, version: publication.package.version, renderer: publication.package.renderer,
         sha256: await root.DitaBrowserFiles.sha256(JSON.stringify(publication.package)), fields: publication.fields } : null;
-      return { output, previewHtml, report: publicationData.report, template };
+      return { output, previewHtml, report: publicationData.report, template, images };
     }
     function filename(snapshot, model, format, version = '') {
       const safe = value => value.replace(/[^\p{L}\p{N}_-]/gu, '-');
@@ -309,6 +320,20 @@
         const key = JSON.stringify([model, format, version,prefixes,publication]);
         const data = compiled?.key === key ? compiled.data : await convert(snapshot, model, format, version,prefixes,publication);
         await service().verifyRules?.(snapshot);
+        if (generation !== operation) return;
+        const signal = abortController?.signal;
+        await service().verifyDeliverySources?.(snapshot, signal);
+        for (const [path, expected] of data.images) {
+          const blob = await readImage(path, signal);
+          if (!await sameImage(expected, blob)) throw new Error(path + '：磁盘图片已变化，请重新打开交付设置');
+        }
+        if (source.commit) {
+          const latest = await provenance(signal);
+          if (latest.commit !== source.commit || latest.branch !== source.branch ||
+              (source.branch || '(detached)') !== snapshot.branch) {
+            throw new Error('Git 来源已变化或无法核对，请重新打开交付设置后检查');
+          }
+        }
         if (generation !== operation) return;
         const invalid = snapshotError();
         if (invalid) throw new Error(invalid);
@@ -353,6 +378,7 @@
         if (!legacy) get('modelExportDialog').close();
       } catch (error) {
         if (generation !== operation) return;
+        compiled = null;
         if (!legacy) { view().failed(); get('modelExportError').textContent = error.message; showIssues(issue(error, snapshot)); }
         A.setStatus(error.message, true); A.toast?.(error.message, 'error');
       } finally { exporting = false; abortController = null; templates?.lock(false); A.hideLoading?.(); if (!legacy && configuration) { view().settled(); for (const id of ['exportScope', 'exportModel', 'exportPrefixNotes','exportFilter', 'exportFormat', 'exportVersion','exportReviewRules']) get(id).disabled = false; get('exportPrefixNotes').disabled=!get('exportModel').value;get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = false; }); } }

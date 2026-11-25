@@ -8,9 +8,10 @@ const core = require('../public/app-core');
 function harness() {
   buildMockDom();
   const source = '<topic id="a"><title>Working title</title><body><p>Unsaved edit</p><image href="image.png"/></body></topic>';
+  const disk = new Map([['main.ditamap', '<map/>'], ['a.dita', source.replace('Unsaved edit', 'Saved edit')]]);
   const state = { activePath: 'main.ditamap', filesMap: new Map([
-    ['main.ditamap', { path: 'main.ditamap', current: '<map/>' }],
-    ['a.dita', { path: 'a.dita', current: source }]
+    ['main.ditamap', { path: 'main.ditamap', current: '<map/>', disk: disk.get('main.ditamap') }],
+    ['a.dita', { path: 'a.dita', current: source, disk: disk.get('a.dita') }]
   ]) };
   const map = { path: 'main.ditamap', title: 'Guide', children: [{ type: 'file', path: 'a.dita' }] };
   const pane = () => ({ classList: { remove() {}, toggle() {} } });
@@ -18,6 +19,9 @@ function harness() {
   const A = { state, ditaCore: core, dom: { editorPane: pane(), visualPane: pane(), previewPane: pane(), htmlPreviewPane: pane(), mdPreviewPane: pane(), htmlPreviewFrame: {} },
     api: { token: 'workspace', request: async url => {
       if (url === '/api/map/resolve') return { ok: true, json: async () => map };
+      const request = new URL(url, 'http://localhost');
+      const path = request.searchParams.get('path');
+      if (request.pathname === '/api/file' && disk.has(path)) return new Response(disk.get(path));
       throw new Error('Unexpected disk read: ' + url);
     }, error: async () => 'failure' },
     setStatus(message, error) { A.status = message; A.failed = error; },

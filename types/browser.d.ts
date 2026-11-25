@@ -20,6 +20,7 @@ declare global {
   var DitaReviewLocations: typeof import('../public/review/review-locations');
   var DitaOxygenTracking: typeof import('../public/oxygen-tracking');
   var DitaOxygenCore: typeof import('../public/oxygen-core');
+  var DitaTracking: typeof import('../public/editor/tracking');
   var DitaAiEditCore: typeof import('../public/ai/ai-edit-core');
   var DitaAiConversation: typeof import('../public/ai/ai-conversation');
   var DitaAiContext: typeof import('../public/ai/ai-context');
@@ -63,6 +64,7 @@ declare global {
     ditaVisualNode?: Node;
   }
   interface Text { ditaSourceTextPath?: string; }
+  interface ProcessingInstruction { oxyReviewIndex?: number; }
   interface Window {
     DitaInputHistory: typeof import('../public/editor/input-history');
     DitaGitCommit: { createController(ports: import('../public/data-contracts').GitCommitPorts, views: import('../public/data-contracts').GitCommitViews): object };
