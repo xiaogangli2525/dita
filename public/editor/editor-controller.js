@@ -92,7 +92,9 @@
     function setFileContent(file, content, { record = true, updateEditor = true, historyMeta, group, render = true, origin = 'edit' } = {}) {
       if (!file) return false;
       if (origin === 'edit') content = A.tracking?.prepare(file, content) ?? content;
+      const previous = file.current;
       if (!documentStore.editDocument(file, content, { record, historyMeta, group })) return false;
+      if (!historyMeta?.reviewSource) rebaseReviewEdit(file, previous);
       if (file.path === state.activePath || (/\.ditamap$/i.test(state.activePath) && state.mapAuthorPaths?.has(file.path))) {
         session.setHistoryTarget(file.path);
       }
@@ -106,7 +108,7 @@
       if (!file) return;
       const entry = documentStore.travelHistory(file, 'undo');
       if (!entry) return;
-      if (entry.reviewDecisionsBefore) restoreDecisions(entry.reviewDecisionsBefore, file, entry.reviewInManual);
+      if (entry.reviewDecisionsBefore) restoreDecisions(entry.reviewDecisionsBefore, file, entry.reviewInManual, entry.reviewSource);
       refreshHistoryTargetView(file, entry); restoreSelection(file, entry.selectionBefore); events.emit('document:changed', file);
       setStatus('已撤销');
     }
@@ -116,7 +118,7 @@
       if (!file) return;
       const entry = documentStore.travelHistory(file, 'redo');
       if (!entry) return;
-      if (entry.reviewDecisionsAfter) restoreDecisions(entry.reviewDecisionsAfter, file, entry.reviewInManual);
+      if (entry.reviewDecisionsAfter) restoreDecisions(entry.reviewDecisionsAfter, file, entry.reviewInManual, entry.reviewSource);
       refreshHistoryTargetView(file, entry); restoreSelection(file, entry.selectionAfter); events.emit('document:changed', file);
       setStatus('已重做');
     }
@@ -263,7 +265,7 @@
     }
 
 
-    const { resetReviewSnapshot, renderDiff, renderMapReview, reviewAll, restoreDecisions } = review.createReviewController({
+    const { resetReviewSnapshot, renderDiff, renderMapReview, reviewAll, restoreDecisions, rebaseReviewEdit } = review.createReviewController({
       state, dom, ditaCore, setFileContent, updateVisual, renderTabs, updateHistoryButtons, setStatus
     });
 

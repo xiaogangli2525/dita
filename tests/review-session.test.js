@@ -92,7 +92,7 @@ test('a failed candidate in a manual review prevents every decision and content 
 });
 test('manual snapshots are private, refresh changed blocks and preserve decisions for untouched Topics', () => {
   const { a, b, state, session, write } = fixture(true), frame = session.frame(a, true);
-  session.decide(frame, new Map([[0, 'accept']]), write); session.save(frame);
+  session.decide(frame, new Map([[0, 'accept']]), write);
   docs.editDocument(b, 'B changed again'); session.prepareManual([a, b], false);
   assert.equal(session.decisionsFor(session.frame(a, true)).get(0), 'accept');
   assert.equal(session.frame(b, true).current, 'B changed again');

@@ -13,7 +13,7 @@ test('remote routes enforce origin/identity and rotate workspace identity after 
   assert.equal((await request('/api/remotes/clone', { url: 'file:///outside', name: 'blocked' })).status, 400);
   const cloned = await request('/api/remotes/clone', { url, name: 'manual' }); assert.equal(cloned.status, 201); f.select((await cloned.json()).path); await f.advance();
   const checked = await (await request('/api/remote/check', {})).json(); assert.equal(checked.behind, 1); assert.equal(token, 'initial');
-  const updated = await (await request('/api/remote/update', { expectedHead: checked.head, expectedRemoteHead: checked.remoteHead })).json(); assert.equal(updated.workspace.workspaceToken, 'updated');
+  const updated = await (await request('/api/remote/update', checked)).json(); assert.equal(updated.workspace.workspaceToken, 'updated');
   assert.equal((await request('/api/remote/check', {}, { 'x-workspace-token': 'initial' })).status, 409);
-  const latest = await (await request('/api/remote/check', {})).json(); assert.equal((await (await request('/api/remote/update', { expectedHead: latest.head, expectedRemoteHead: latest.remoteHead })).json()).updated, false);
+  const latest = await (await request('/api/remote/check', {})).json(); assert.equal((await (await request('/api/remote/update', latest)).json()).updated, false);
 });

@@ -7,6 +7,21 @@ const row = (text, manualId = 'a') => ({ manualId, manualTitle: 'HTTP', title: '
 const countTokens = text => text.length + 2;
 const vector = column => { const value = Array(512).fill(0); value[column] = 1; return value; };
 
+test('prepared reader search validates and decodes the index once for repeated queries', async t => {
+  const semantic = require('../lib/knowledge-semantic');
+  t.mock.method(semantic.encoder, 'encode', async () => [vector(0)]);
+  const records = [row('使用本机日志定位连接问题。')], chunks = await chunksFor(records, countTokens);
+  const index = createIndex(chunks, chunks.map(() => vector(0)));
+  const encoded = index.vectors;
+  let reads = 0;
+  Object.defineProperty(index, 'vectors', { get() { reads++; return encoded; } });
+  const search = semantic.createSearch(records, index);
+  const first = await search('怎么查日志', []);
+  assert.equal(first[0].position, 0);
+  assert.deepEqual(await search('怎么查日志', []), first);
+  assert.equal(reads, 1);
+});
+
 test('all retrieval modes preserve normalized numeric and error-code constraints without inference', async t => {
   const semantic = require('../lib/knowledge-semantic');
   t.mock.method(semantic.encoder, 'encode', async () => { throw Error('Exact queries must not load the model'); });

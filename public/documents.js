@@ -37,7 +37,7 @@ async function saveAsFile() {
   if (target === file.path) { await saveFile(); return; }
   const snapshot = file.current, workspace = A.api.token, startedNavigation = navigation, operation = ++saveAsOperation;
   const originalTarget = state.filesMap.get(target), originalCurrent = originalTarget?.current, originalDisk = originalTarget?.disk;
-  let expectedContent, sentTarget;
+  let expectedContent, sentTarget, targetGit;
   function guard() {
     if (workspace !== A.api.token || operation !== saveAsOperation) throw new Error('工作区已切换，请重新另存为');
     const current = state.filesMap.get(target);
@@ -58,12 +58,16 @@ async function saveAsFile() {
     let response = await requestSave(false);
     if (response.status === 409) {
       guard();
-      const existing = await fetch('/api/file?path=' + encodeURIComponent(target));
+      const [existing, git] = await Promise.all([
+        fetch('/api/file?path=' + encodeURIComponent(target)),
+        originalTarget ? null : root.DitaDocumentLoader.readGit(A.api, target)
+      ]);
       if (!existing.ok) throw new Error(await responseError(existing));
       expectedContent = await root.DitaBrowserFiles.readXmlResponse(existing);
       guard();
       if (originalTarget && originalDisk !== expectedContent) throw new Error('目标磁盘文件已变化，请重新打开后比较，再执行另存为');
       if (!confirm(`文件已存在，是否覆盖？\n\n${target}`)) return;
+      targetGit = git;
       response = await requestSave(true);
     }
     if (!response.ok) throw new Error(await responseError(response));
@@ -71,6 +75,7 @@ async function saveAsFile() {
     if (workspace !== A.api.token || operation !== saveAsOperation) throw new Error('工作区已切换，已忽略旧的另存为结果');
     const savedPath = result.path || target;
     let current = state.filesMap.get(savedPath), preserved = false, changedWorking = false;
+    let reviewAgainstPreviousDisk = false;
     if (current) {
       const untouched = current === sentTarget?.file && current.current === sentTarget.current && current.disk === sentTarget.disk;
       const compatibleDisk = current.disk === sentTarget?.disk || current.disk === result.content || typeof expectedContent === 'string' && current.disk === expectedContent;
@@ -81,7 +86,11 @@ async function saveAsFile() {
       }
       preserved = !untouched;
     } else if (!sentTarget) {
-      current = root.DitaDocumentStore.createDocument({ path: savedPath, content: result.content, gitStatus: result.created ? 'untracked' : 'modified' });
+      reviewAgainstPreviousDisk = !result.created && targetGit?.baseline === undefined && typeof expectedContent === 'string';
+      current = root.DitaDocumentStore.createDocument({ path: savedPath, content: result.content,
+        baseline: result.created ? result.content : targetGit?.baseline ?? expectedContent ?? result.content,
+        gitStatus: result.created ? 'untracked' : 'modified' });
+      if (reviewAgainstPreviousDisk) current.reviewAgainstPreviousDisk = true;
       session.registerDocument(current);
     } else preserved = true; // The user closed the target while writing; keep it closed.
     session.ensureFile({ type: 'file', path: savedPath, name: fileNameFromPath(savedPath) });
@@ -93,7 +102,8 @@ async function saveAsFile() {
     else if (changedWorking && state.activePath === savedPath) updateActivePanes();
     renderTabs();
     updateTree();
-    setStatus(`已另存为：${savedPath}` + (preserved ? ' · 已保留目标编辑区的后续状态' : ''));
+    setStatus(`已另存为：${savedPath}` + (preserved ? ' · 已保留目标编辑区的后续状态' :
+      reviewAgainstPreviousDisk ? ' · Git 基线不可用，审阅对比覆盖前的磁盘版本' : ''));
     return true;
   } catch (error) {
     if (workspace === A.api.token && operation === saveAsOperation) setStatus(`另存为失败：${error.message}`, true);

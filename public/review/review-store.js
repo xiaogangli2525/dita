@@ -28,8 +28,10 @@
   /** @param {import('./review-contracts').ReviewStorage | null | undefined} storage
    * @returns {import('./review-contracts').ReviewProgress} */
   function createReviewStore(storage) {
-    /** @type {Map<string, string>} */
+    /** @type {Map<string, string | null>} */
     const memory = new Map();
+    /** @type {Map<string, string | null>} */
+    const observed = new Map();
     let warning = storage ? '' : '审阅进度暂时仅保存在本页，浏览器存储不可用。';
     /** @param {ReviewScope} scope @param {{path: string}} file */
     const key = (scope, file) => 'dita.review.v1:' + JSON.stringify([scope.root, scope.currentBranch, file.path]);
@@ -38,15 +40,27 @@
       warning = '审阅进度暂时仅保存在本页，浏览器存储不可用。';
       console.warn('审阅进度存储失败', error);
     }
+    /** @param {ReviewScope} scope @param {{path: string}} file */
+    function isCurrent(scope, file) {
+      const name = key(scope, file);
+      if (!storage || !observed.has(name)) return true;
+      try { return storage.getItem(name) === observed.get(name); }
+      catch (error) { failed(error); return true; }
+    }
     /** @param {ReviewScope} scope @param {Pick<import('../data-contracts').DocumentState, 'path' | 'baseline' | 'current'>} file
      * @returns {import('./review-contracts').ReviewSnapshot} */
     function restore(scope, file) {
       /** @returns {import('./review-contracts').ReviewSnapshot} */
       const empty = () => ({ baseline: file.baseline, current: file.current, decisions: new Map() });
       if (!scope.root) return empty();
+      const name = key(scope, file);
       try {
-        const name = key(scope, file);
-        const raw = memory.get(name) || storage?.getItem(name);
+        const shared = storage?.getItem(name) ?? null;
+        if (observed.has(name) && shared !== observed.get(name)) memory.delete(name);
+        observed.set(name, shared);
+      } catch (error) { failed(error); }
+      try {
+        const raw = memory.has(name) ? memory.get(name) : observed.get(name);
         if (!raw) return empty();
         const saved = /** @type {unknown} */ (JSON.parse(raw));
         if (!validRecord(saved) || saved.baseline !== file.baseline) return empty();
@@ -68,19 +82,41 @@
      * @param {ReadonlyMap<number, ReviewDecision>} decisions */
     function save(scope, file, baseline, current, decisions) {
       if (!scope.root) return;
+      if (!isCurrent(scope, file)) {
+        warning = '另一窗口已更新审阅进度，请重新核对后操作。';
+        return;
+      }
+      const name = key(scope, file);
+      const raw = decisions.size ? JSON.stringify({ schema: 1, baseline, current, decisions: [...decisions] }) : null;
       try {
-        const name = key(scope, file);
-        if (decisions.size) {
-          const raw = JSON.stringify({ schema: 1, baseline, current, decisions: [...decisions] });
-          memory.set(name, raw);
-          storage?.setItem(name, raw);
-        } else {
-          memory.delete(name);
-          storage?.removeItem(name);
+        if (storage) {
+          if (raw !== null) storage.setItem(name, raw); else storage.removeItem(name);
+          observed.set(name, raw); memory.delete(name); warning = '';
+        } else memory.set(name, raw);
+      } catch (error) {
+        if (!observed.has(name)) {
+          try { observed.set(name, storage?.getItem(name) ?? null); }
+          catch { /* The local backup still works when reads fail too. */ }
         }
-      } catch (error) { failed(error); }
+        memory.set(name, raw); failed(error);
+      }
     }
-    return { restore, save, get warning() { return warning; } };
+    /** @param {ReviewScope} scope @param {Pick<import('../data-contracts').DocumentState, 'path' | 'baseline' | 'current'>} file
+     * @param {string} previous */
+    function rebaseEdit(scope, file, previous) {
+      if (!scope.root || previous === file.current || !isCurrent(scope, file)) return;
+      const name = key(scope, file);
+      if (observed.has(name) && !(memory.has(name) ? memory.get(name) : observed.get(name))) return;
+      const before = restore(scope, { ...file, current: previous });
+      if (!before.decisions.size) return;
+      if (file.current === file.baseline) {
+        save(scope, file, file.baseline, file.current, new Map());
+        return;
+      }
+      const after = restore(scope, file);
+      if (after.decisions.size < before.decisions.size) save(scope, file, after.baseline, after.current, after.decisions);
+    }
+    return { restore, save, isCurrent, rebaseEdit, get warning() { return warning; } };
   }
   const api = { createReviewStore };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaReviewStore = api;

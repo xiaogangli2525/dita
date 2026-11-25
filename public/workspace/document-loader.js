@@ -60,6 +60,6 @@
     events.on('file:closed', path => { revisions.set(path, (revisions.get(path) || 0) + 1); pending.delete(path); });
     return { load };
   }
-  const api = { createDocumentLoader };
+  const api = { createDocumentLoader, readGit };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaDocumentLoader = api;
 })(typeof window === 'undefined' ? globalThis : window);

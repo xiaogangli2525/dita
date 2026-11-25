@@ -10,14 +10,14 @@ for (const source of [
   '<topic><!--bad--comment--></topic>', '<topic>&#0;</topic>',
   '<topic>&#xD800;</topic>', '<topic>\u0000</topic>', '<p:x/>',
   '<x xmlns:a="u" xmlns:b="u" a:id="1" b:id="2"/>',
-  '<topic></topic><!DOCTYPE topic>', ' <?xml version="1.0"?><topic/>'
+  '<topic></topic><!DOCTYPE topic>', ' <?xml version="1.0"?><topic/>', '<?xml?><topic/>', '<?XML version="1.0"?><topic/>'
 ]) test('browser/server validation reject: ' + JSON.stringify(source), () => {
   assert.throws(() => validateXml(source));
   assert.throws(() => parseXml(source));
 });
 
 test('formatting preserves code, mixed content, declarations, PIs and comments', () => {
-  const prefix = '<?xml version="1.0" encoding="GBK"?>\r\n<!DOCTYPE topic SYSTEM "a>b.dtd">\r\n<!--before-->\r\n<?custom value?>\r\n';
+  const prefix = '<?xml version="1.0" encoding="GBK"?>\r\n<!DOCTYPE topic SYSTEM "a>b.dtd">\r\n<!--before-->\r\n<?xml-model href="topic.rng"?>\r\n<?xml-stylesheet type="text/css" href="topic.css"?>\r\n<?custom value?>\r\n';
   const code = '<codeblock>if ok:\r\n    if ready:\r\n        run()</codeblock>';
   const mixed = '<p><b>A</b> <i>B</i>  C</p>';
   const suffix = '\r\n<!--after-->';

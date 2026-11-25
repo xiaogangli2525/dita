@@ -177,9 +177,9 @@
       get('exportFilter').replaceChildren(new Option('正在读取…', '')); get('exportFilter').disabled = true;
       get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = true; });
       get('modelExportError').textContent = ''; get('modelExportSummary').textContent = '正在读取手册及依赖…';
-      get('modelExportScope').textContent = ''; showIssues([]); get('modelExportDialog').showModal();
-      const generation = operation;
-      let selectedModel = '';
+      get('modelExportScope').textContent = ''; showIssues([]); if (!get('modelExportDialog').open) get('modelExportDialog').showModal();
+      const generation = ++operation;
+      let selectedModel = '', filtersLoaded = false;
       try {
         scope ||= service().scopePath();
         const paths = [...new Set([scope, A.state.activePath, A.state.selectedMap].filter(Boolean))];
@@ -194,7 +194,7 @@
         filters.files.forEach(path => get('exportFilter').add(new Option((filters.descriptions?.[path]||'条件文件')+' · '+path, path)));
         const selectedFilter = selectedFilters.get(workspace + '\n' + scope) || '';
         get('exportFilter').value = filters.files.includes(selectedFilter) ? selectedFilter : '';
-        get('exportFilter').disabled = false;
+        filtersLoaded = true;
         get('exportFilterHint').textContent = filters.truncated ? '文件列表过长，仅显示部分 DITAVAL。请缩小文档库范围后重试。' : filters.files.length ? '按所选 DITAVAL 过滤正文、图片和注脚；源文档保持不变。' : '文档库中未找到 DITAVAL；当前保留全部正文。';
         const snapshot = await service().capture(scope, { filterPath: get('exportFilter').value, deferMissingTopics: true }), source = await provenance();
         if (generation !== operation || !get('modelExportDialog').open) return;
@@ -204,7 +204,7 @@
         selectedModel = modelChoices.get(choiceKey()) ?? get('footnoteModel')?.value ?? '';
         useSnapshot(snapshot, source, selectedModel);
       } catch (error) { if (generation === operation) { view().invalidate(); get('modelExportSummary').textContent = ''; get('modelExportError').textContent = error.message; showIssues(issue(error)); } }
-      finally { if (generation === operation) { configuring = false; get('exportScope').disabled = false; } }
+      finally { if (generation === operation) { configuring = false; get('exportScope').disabled = false; get('exportFilter').disabled = !filtersLoaded; } }
       if (recheck && configuration && generation === operation && get('modelExportDialog').open) {
         if (get('exportModel').value !== selectedModel) {
           get('modelExportError').textContent = '原选型号已不在当前交付范围，请重新选择型号后检查。';
@@ -221,6 +221,7 @@
       const selectedModel = get('exportModel').value;
       configuration = null; compiled = null; configuring = true; view().invalidate();
       get('exportModel').disabled=true;get('exportPrefixNotes').disabled=true;get('exportReviewRules').disabled=true;
+      get('exportScope').disabled = true;
       get('modelExportSummary').textContent = '正在应用条件过滤…'; get('modelExportError').textContent = ''; showIssues([]);
       get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = true; });
       try {
@@ -234,6 +235,7 @@
       } finally {
         if (generation === filterGeneration && operationId === operation) {
           configuring = false;
+          get('exportScope').disabled = false;
           get('exportModel').disabled=!configuration;get('exportPrefixNotes').disabled=!configuration||!get('exportModel').value;get('exportReviewRules').disabled=!configuration;
           get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = !configuration; });
         }
@@ -279,11 +281,16 @@
       root.DitaReleaseStore.createReleaseStore(root.localStorage).append(snapshot.root, record); lastDeliveryRecord = record;
     }
     async function publish(preview, legacy) {
-      if (exporting || !configuration) return;
+      if (configuring || exporting || !configuration) return;
       const { snapshot, source } = configuration;
-      if (!service().current(snapshot)) {
+      const selectionMatches = () => legacy || (get('exportScope').value === snapshot.path &&
+        get('exportFilter').value === (snapshot.filter?.path || ''));
+      const snapshotError = () => !selectionMatches() ? '交付范围已变化，请重新打开交付设置以更新快照' :
+        !service().current(snapshot) ? '内容已变化，请重新打开交付设置以更新快照' : '';
+      const invalid = snapshotError();
+      if (invalid) {
         compiled = null;
-        if (!legacy) { view().failed(); get('modelExportError').textContent = '内容已变化，请重新打开交付设置以更新快照'; }
+        if (!legacy) { view().failed(); get('modelExportError').textContent = invalid; }
         return;
       }
       const model = legacy ? '' : get('exportModel').value, format = legacy?.format || get('exportFormat').value, version = legacy ? '' : get('exportVersion').value.trim();
@@ -293,7 +300,7 @@
       exporting = true; A.showLoading?.();
       templates?.lock(true);
       if (!legacy) get('modelExportError').textContent = '';
-      if (!legacy) { view().pending(); for (const id of ['exportModel', 'exportPrefixNotes', 'exportFilter', 'exportFormat', 'exportVersion','exportReviewRules']) get(id).disabled = true; get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = true; }); }
+      if (!legacy) { view().pending(); for (const id of ['exportScope', 'exportModel', 'exportPrefixNotes', 'exportFilter', 'exportFormat', 'exportVersion','exportReviewRules']) get(id).disabled = true; get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = true; }); }
       try {
         await service().verifyRules?.(snapshot);
         if (generation !== operation) return;
@@ -303,7 +310,8 @@
         const data = compiled?.key === key ? compiled.data : await convert(snapshot, model, format, version,prefixes,publication);
         await service().verifyRules?.(snapshot);
         if (generation !== operation) return;
-        if (!service().current(snapshot)) throw new Error('内容已变化，请重新打开交付设置以更新快照');
+        const invalid = snapshotError();
+        if (invalid) throw new Error(invalid);
         compiled = { key, data }; lastExportReport = data.report;
         if (preview === 'check') { view().complete(); get('deliveryCheckStatus').textContent = '发布检查通过，图片和链接已核对。预览与下载将使用这份快照。'; return; }
         const printing = format === 'pdf' && !nativePdf();
@@ -347,7 +355,7 @@
         if (generation !== operation) return;
         if (!legacy) { view().failed(); get('modelExportError').textContent = error.message; showIssues(issue(error, snapshot)); }
         A.setStatus(error.message, true); A.toast?.(error.message, 'error');
-      } finally { exporting = false; abortController = null; templates?.lock(false); A.hideLoading?.(); if (!legacy && configuration) { view().settled(); for (const id of ['exportModel', 'exportPrefixNotes','exportFilter', 'exportFormat', 'exportVersion','exportReviewRules']) get(id).disabled = false; get('exportPrefixNotes').disabled=!get('exportModel').value;get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = false; }); } }
+      } finally { exporting = false; abortController = null; templates?.lock(false); A.hideLoading?.(); if (!legacy && configuration) { view().settled(); for (const id of ['exportScope', 'exportModel', 'exportPrefixNotes','exportFilter', 'exportFormat', 'exportVersion','exportReviewRules']) get(id).disabled = false; get('exportPrefixNotes').disabled=!get('exportModel').value;get('modelExportForm').querySelectorAll('button[type=submit]').forEach(button => { button.disabled = false; }); } }
     }
     async function legacyExport(format, preview) {
       if (!/\.ditamap$/i.test(A.state.activePath)) { A.setStatus('请先打开一个 Map 文档，再预览或导出', true); return; }

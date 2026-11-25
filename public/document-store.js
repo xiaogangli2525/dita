@@ -70,6 +70,7 @@
     breakHistoryGroup(file);
     file.baseline = git.content;
     file.gitStatus = git.status;
+    delete file.reviewAgainstPreviousDisk;
   }
   // Save acknowledgements advance disk, never a newer working buffer.
   /** @param {(request:import('./data-contracts').SaveRequest)=>Promise<import('./data-contracts').SaveAcknowledgement>} send */

@@ -28,6 +28,7 @@ declare global {
   var DitaBrowserFiles: typeof import('../public/browser-files');
   var DitaDocumentStore: typeof import('../public/document-store');
   var DitaDocumentLoader: typeof import('../public/workspace/document-loader');
+  var DitaRemoteLibraries: typeof import('../public/workspace/remote-libraries');
   var DitaDocumentNavigation: typeof import('../public/workspace/document-navigation');
   var DitaWorkspaceClient: ReturnType<typeof import('../public/workspace/workspace-client').createWorkspaceClient>;
   var DitaSnapshotData: typeof import('../public/snapshot-data');

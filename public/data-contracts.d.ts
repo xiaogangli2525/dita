@@ -4,6 +4,7 @@ export type ReviewDecision = 'accept' | 'reject';
 export type ReviewKey = number | string;
 export interface DocumentState {
   path: string; current: string; disk: string; baseline: string; gitStatus: string; dirty: boolean;
+  reviewAgainstPreviousDisk?: boolean;
   history?: DocumentHistory;
 }
 export type DocumentSnapshot = Readonly<Omit<DocumentState, 'history'>>;
@@ -12,6 +13,7 @@ export interface HistoryMeta {
   selectionBefore?: unknown; selectionAfter?: unknown; mapTitle?: boolean;
   reviewDecisionsBefore?: ReadonlyMap<ReviewKey, ReviewDecision>; reviewDecisionsAfter?: ReadonlyMap<ReviewKey, ReviewDecision>;
   reviewInManual?: boolean;
+  reviewSource?: { readonly baseline: string; readonly current: string };
 }
 export interface HistoryEntry extends HistoryMeta { before: string; after: string; group?: HistoryGroup }
 export interface DocumentHistory { undo: HistoryEntry[]; redo: HistoryEntry[]; openGroup?: HistoryEntry | null }
@@ -66,6 +68,13 @@ export interface CapturePorts {
   noteRuleStore?: { current(rules: NoteRulesSnapshot | null): boolean; read(): Promise<NoteRulesSnapshot>; verify(rules: NoteRulesSnapshot | null): Promise<void> };
 }
 export type DeliveryFormat = 'html' | 'md' | 'pdf' | 'docx';
+export interface RemoteGitTarget {
+  readonly cwd: string; readonly url: string; readonly branch: string; readonly upstreamBranch: string;
+  readonly head: string; readonly remoteHead: string;
+}
+export type RemoteGitStatus = { available: false; message: string } |
+  (Omit<RemoteGitTarget, 'remoteHead'> & { available: true; dirty: boolean } &
+  ({ remoteHead?: undefined } | { remoteHead: string; ahead: number; behind: number }));
 export interface GitCommitPlan {
   readonly head: string; readonly branch: string;
   readonly files: readonly { readonly path: string; readonly kind: 'added' | 'modified' | 'deleted'; readonly oid?: string; readonly reason?: string }[];

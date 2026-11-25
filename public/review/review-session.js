@@ -48,7 +48,7 @@
     function canReuse(file, inManual) {
       if (!file || (inManual ? manual.get(file)?.scope !== scopeKey() : state.reviewPath !== file.path || topicScope !== scopeKey())) return false;
       const target = frame(file, inManual);
-      return target.baseline === file.baseline && (target.current === file.current ||
+      return progress.isCurrent(state, file) && target.baseline === file.baseline && (target.current === file.current ||
         diff.applyDiffGroups(target.baseline, target.current, decisionsFor(target), 0, 'accept') === file.current);
     }
     /** @param {readonly DocumentState[]} files @param {boolean} force */
@@ -104,8 +104,10 @@
         const previousContent = target.file.current;
         state.reviewDecisions = after;
         try {
-          const historyMeta = { reviewDecisionsBefore: before, reviewDecisionsAfter: new Map(after), reviewInManual: target.inManual };
+          const historyMeta = { reviewDecisionsBefore: before, reviewDecisionsAfter: new Map(after), reviewInManual: target.inManual,
+            reviewSource: { baseline: target.baseline, current: target.current } };
           written = write(target.file, content, { historyMeta }) || written;
+          progress.save(state, target.file, target.baseline, target.current, decisionsFor(target, after));
         } catch (error) {
           if (target.file.current === previousContent) state.reviewDecisions = before;
           throw error;
@@ -119,18 +121,21 @@
       return decideBatch(new Map([[target, updates]]), write, validate);
     }
     /** Restore only this document's decisions; other Topics may have newer history.
-     * @param {ReadonlyMap<ReviewKey, ReviewDecision>} decisions @param {DocumentState} file @param {boolean} [sourceInManual] */
-    function restoreDecisions(decisions, file, sourceInManual) {
+     * @param {ReadonlyMap<ReviewKey, ReviewDecision>} decisions @param {DocumentState} file @param {boolean} [sourceInManual]
+     * @param {import('../data-contracts').HistoryMeta['reviewSource']} [source] */
+    function restoreDecisions(decisions, file, sourceInManual, source) {
       const inManual = /\.ditamap$/i.test(state.activePath), prefix = file.path + '::';
       const selected = decisionsFor({ file, inManual: sourceInManual ?? inManual }, decisions);
+      if (source && source.baseline === file.baseline &&
+          diff.applyDiffGroups(source.baseline, source.current, selected, 0, 'accept') === file.current) {
+        progress.save(state, file, source.baseline, source.current, selected);
+      }
       const next = new Map(state.reviewDecisions);
       for (const key of next.keys()) if (typeof key === 'string' ? key.startsWith(prefix) : state.reviewPath === file.path) next.delete(key);
       for (const [index, decision] of selected) next.set(inManual ? prefix + index : index, decision);
       state.reviewDecisions = next;
     }
-    /** @param {ReviewFrame} target */
-    function save(target) { progress.save(state, target.file, target.baseline, target.current, decisionsFor(target)); }
-    return { resetTopic, frame, decisionsFor, canReuse, prepareManual, groups, registerGroup, isCurrent, decide, decideBatch, restoreDecisions, save,
+    return { resetTopic, frame, decisionsFor, canReuse, prepareManual, groups, registerGroup, isCurrent, decide, decideBatch, restoreDecisions,
       clearGroups: () => { state.reviewGroups = new Map(); },
       /** @param {ReviewKey} key */
       decision: key => state.reviewDecisions.get(key), get groupCount() { return state.reviewGroups.size; } };
