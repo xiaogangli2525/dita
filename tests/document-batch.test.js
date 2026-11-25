@@ -2,6 +2,7 @@
 const test = require('node:test'), assert = require('node:assert/strict');
 const fs = require('node:fs/promises'), os = require('node:os'), path = require('node:path');
 const { spawnSync } = require('node:child_process');
+const { createHash, randomUUID } = require('node:crypto');
 const iconv = require('iconv-lite');
 const { createDocumentBatch } = require('../lib/document-batch');
 
@@ -100,6 +101,32 @@ test('rollback retains the original backup when an outside edit supersedes a rep
   const backup = (await fs.readdir(f.root)).find(file => file.endsWith('.previous'));
   assert.deepEqual(await fs.readFile(path.join(f.root, backup)), f.originals[0]);
   await fs.writeFile(f.map, f.originals[0]);
+  await service.recover(f.root);
+  await f.clean();
+});
+
+test('recovery preserves a pending journal when probing its owner is denied', async t => {
+  const f = await fixture(t);
+  const key = createHash('sha256').update(f.root).digest('hex');
+  const journal = path.join(f.directory, key + '.json');
+  const owner = process.pid + 1;
+  const plan = JSON.stringify({ root: f.root, pid: owner, host: os.hostname(), id: randomUUID(), phase: 'prepared', entries: [] });
+  await fs.mkdir(f.directory);
+  await fs.writeFile(journal, plan);
+  let code = 'EPERM';
+  const kill = process.kill;
+  t.mock.method(process, 'kill', (pid, signal) => {
+    if (pid !== owner || signal !== 0) return kill(pid, signal);
+    throw Object.assign(Error(code), { code });
+  });
+  const service = createDocumentBatch(f);
+  await assert.rejects(service.recover(f.root), { status: 409, message: /另一个工作台操作在保存/ });
+  assert.equal(await fs.readFile(journal, 'utf8'), plan);
+  assert.deepEqual(await f.disk(), f.originals);
+  code = 'EIO';
+  await assert.rejects(service.recover(f.root), { code: 'EIO' });
+  assert.equal(await fs.readFile(journal, 'utf8'), plan);
+  code = 'ESRCH';
   await service.recover(f.root);
   await f.clean();
 });

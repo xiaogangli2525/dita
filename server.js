@@ -15,7 +15,8 @@ let workspaceToken = randomUUID();
 
 const PORT = Number(process.env.PORT || 5050);
 const HOST = process.env.HOST || '127.0.0.1';
-const gitWrites = !process.env.PUBLIC_ORIGIN && process.env.DITA_DEMO_MODE !== '1' && ['127.0.0.1', '::1', 'localhost'].includes(HOST);
+const demoMode = process.env.DITA_DEMO_MODE === '1';
+const gitWrites = !process.env.PUBLIC_ORIGIN && !demoMode && ['127.0.0.1', '::1', 'localhost'].includes(HOST);
 const knowledgeReads = new Set(['/api/knowledge/catalog', '/api/knowledge/capture', '/api/knowledge/verify']);
 let DOCS_ROOT = path.resolve(process.env.DOCS_ROOT || path.join(__dirname, '..', 'repo_ml353a'));
 const DEFAULT_DOCS_ROOT = DOCS_ROOT;
@@ -147,7 +148,7 @@ async function buildWorkspace() {
   const files = exists ? await walkFileTree() : [];
   const maps = await buildMapTrees(files);
   const git = exists ? await listBranches().catch(() => ({ current: '', branches: [] })) : { current: '', branches: [] };
-  return { root: DOCS_ROOT, workspaceToken, capabilities: { persistence: 'filesystem', git: true, pdf: true, remoteGit: true, gitWrites }, files, maps, currentBranch: git.current, branches: git.branches };
+  return { root: DOCS_ROOT, workspaceToken, capabilities: { persistence: 'filesystem', git: true, pdf: true, remoteGit: !demoMode, gitWrites }, files, maps, currentBranch: git.current, branches: git.branches };
 }
 
 async function selectRepository(value) {
@@ -167,7 +168,7 @@ const handleApi = createApiHandler({
   git, remoteRepositories, documentBatch,
   documents: { checkedResolve, walkFileTree, readXmlFile, writeXmlFile, relativePath, isDitaLike },
   maps: { parseXml, childElement, textOf, mapNodeToTree, applyMapOperation },
-  port: PORT, publicOrigin: process.env.PUBLIC_ORIGIN, bindHost: HOST, gitWrites, demoMode: process.env.DITA_DEMO_MODE === '1'
+  port: PORT, publicOrigin: process.env.PUBLIC_ORIGIN, bindHost: HOST, gitWrites, demoMode
 });
 
 async function serveStatic(res, relative) {
@@ -179,15 +180,19 @@ async function serveStatic(res, relative) {
   const file = path.resolve(PUBLIC_ROOT, '.' + relative);
   const rootWithSep = PUBLIC_ROOT.endsWith(path.sep) ? PUBLIC_ROOT : PUBLIC_ROOT + path.sep;
   if (file !== PUBLIC_ROOT && !file.startsWith(rootWithSep)) return false;
+  let bytes;
   try {
     const stat = await fs.stat(file);
     if (!stat.isFile()) return false;
-    const type = file.endsWith('.html') ? 'text/html' : file.endsWith('.js') ? 'text/javascript' : file.endsWith('.css') ? 'text/css' : 'application/octet-stream';
-    sendText(res, 200, await fs.readFile(file, 'utf8'), type);
-    return true;
+    bytes = await fs.readFile(file);
   } catch {
     return false;
   }
+  const type = file.endsWith('.html') ? 'text/html; charset=utf-8' : file.endsWith('.js') ? 'text/javascript; charset=utf-8' :
+    file.endsWith('.css') ? 'text/css; charset=utf-8' : 'application/octet-stream';
+  res.writeHead(200, { 'content-type': type, 'cache-control': 'no-store' });
+  res.end(bytes);
+  return true;
 }
 
 const server = http.createServer(async (req, res) => {
