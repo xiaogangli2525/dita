@@ -2,8 +2,8 @@
 (function (root) {
   const xml = typeof module !== 'undefined' ? require('./xml-source') : root.DitaXmlSource;
   const domain = typeof module !== 'undefined' ? require('./manual-core') : root.DitaManualCore;
-  const { parseConditionGroups } = typeof module !== 'undefined' ? require('./condition-groups') : root.DitaConditionGroups;
-  const attributes = new Set(['audience', 'platform', 'product', 'props', 'otherprops', 'deliveryTarget']);
+  const { parseConditionGroups, profileAttributes } = typeof module !== 'undefined' ? require('./condition-groups') : root.DitaConditionGroups;
+  const attributes = new Set(profileAttributes);
   function compile(source) {
     const tree = xml.inspectSource(source), rules = new Map(), decisions = new WeakMap();
     if (tree.name !== 'val') throw new Error('DITAVAL 根元素须为 val');

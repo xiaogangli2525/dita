@@ -15,6 +15,7 @@
   /** @param {import('./review-contracts').ReviewControllerPorts} ports */
   function createReviewController({ state, dom, ditaCore, setFileContent, updateVisual, renderTabs, updateHistoryButtons, setStatus }) {
     const { inlineDiff } = ditaCore;
+    const diskBaselineNote = 'Git 基线不可用，显示与覆盖前磁盘版本的差异';
     const REVIEW_CONTEXT_SIZE = 3;
     const reviewView = views.createReviewView({ document: dom.visualEditor?.ownerDocument || root.document, inlineDiff });
     let storage;
@@ -32,7 +33,7 @@
       } catch (error) { oxygenError = file.path + '：' + errorMessage(error); return []; }
     }
     const session = sessions.createReviewSession({ state, progress: reviewStore });
-    const resetReviewSnapshot = session.resetTopic, decisionsFor = session.decisionsFor, saveFrame = session.save;
+    const resetReviewSnapshot = session.resetTopic, decisionsFor = session.decisionsFor;
     /** @param {DocumentState} file */
     const reviewFrame = (file, inManual = reviewingMap) => session.frame(file, inManual);
     /** @param {DocumentState} file */
@@ -179,7 +180,7 @@
       const gitSummary = changed ? changed + ' 行变更，' + pending + ' 个待审块' : '';
       const combinedSummary = [oxySummary, gitSummary].filter(Boolean).join('；') || '无变更';
       dom.reviewMeta.textContent = combinedSummary;
-      saveFrame(frame);
+      if (file.reviewAgainstPreviousDisk) dom.reviewMeta.textContent += ' · ' + diskBaselineNote;
       if (reviewStore.warning) dom.reviewMeta.textContent += ' · ' + reviewStore.warning;
       setStatus(oxygenError || combinedSummary, Boolean(oxygenError));
     }
@@ -238,7 +239,7 @@
         section.className = 'map-review-topic';
         const header = document.createElement('div');
         header.className = 'map-review-topic-header';
-        header.textContent = topic.path;
+        header.textContent = topic.path + (topic.reviewAgainstPreviousDisk ? ' · ' + diskBaselineNote : '');
         section.append(header);
         const frame = reviewFrame(topic, true);
         const groups = session.groups(frame, REVIEW_CONTEXT_SIZE);
@@ -254,9 +255,6 @@
       const gitSummary = changedFiles.length ? changedFiles.length + ' 个 topic 有变更' : '';
       const combinedSummary = [oxySummary, gitSummary].filter(Boolean).join('；') || '无变更';
       dom.reviewMeta.textContent = combinedSummary;
-      for (const topic of allFiles) {
-        saveFrame(reviewFrame(topic, true));
-      }
       if (reviewStore.warning) dom.reviewMeta.textContent += ' · ' + reviewStore.warning;
       setStatus(oxygenError || combinedSummary, Boolean(oxygenError));
     }

@@ -36,6 +36,21 @@ test('new edits reopen only changed blocks and do not confuse identical insertio
   assert.equal(store.restore(scope, { ...file, current: current.replace('Added', 'Different') }).decisions.size, 0);
 });
 
+test('a stale review window cannot replace or delete shared decisions after another window writes', () => {
+  const storage = reviewStorage(), scope = { root: '/docs', currentBranch: 'main' };
+  const file = { path: 'a.dita', baseline: 'Before', current: 'After' };
+  const first = createReviewStore(storage), second = createReviewStore(storage);
+  first.restore(scope, file); second.restore(scope, file);
+  first.save(scope, file, file.baseline, file.current, new Map([[0, 'accept']]));
+  assert.equal(second.isCurrent(scope, file), false);
+  second.save(scope, file, file.baseline, file.current, new Map());
+  assert.deepEqual(second.restore(scope, file).decisions, new Map([[0, 'accept']]));
+  assert.equal(second.isCurrent(scope, file), true);
+  second.save(scope, file, file.baseline, file.current, new Map());
+  assert.equal(first.isCurrent(scope, file), false);
+  assert.equal(first.restore(scope, file).decisions.size, 0);
+});
+
 test('review acceptance remains aligned after an unrelated earlier insertion', () => {
   const storage = reviewStorage(), scope = { root: '/docs', currentBranch: 'main' }, store = createReviewStore(storage);
   const baseline = 'First\nKeep\nSecond', current = 'First\nKeep\nSecond changed';

@@ -1,29 +1,54 @@
+// @ts-check
 'use strict';
 (function (root) {
-  function createController(A, { reloadWorkspace, loadRepositories, openManual }) {
-    const get = id => document.getElementById(id);
-    let busy = false, checked = null, importWorkspace = '';
+  /** @typedef {import('../data-contracts').RemoteGitTarget} RemoteGitTarget */
+  /** @typedef {import('../data-contracts').RemoteGitStatus} RemoteGitStatus */
+  /** @typedef {Extract<RemoteGitStatus, {remoteHead: string}>} CheckedRemote */
+  /** @typedef {{maps: readonly import('../data-contracts').MapEntry[], workspaceToken: string}} RemoteWorkspace */
+  /** @typedef {{remoteImportDialog: HTMLDialogElement, remoteUpdateDialog: HTMLDialogElement, remoteManualDialog: HTMLDialogElement,
+   * remoteImportForm: HTMLFormElement, remoteManualForm: HTMLFormElement,
+   * remoteBranch: HTMLSelectElement, remoteManual: HTMLSelectElement, remoteName: HTMLInputElement, remoteUrl: HTMLInputElement,
+   * remoteImportButton: HTMLButtonElement, remoteUpdateButton: HTMLButtonElement, remotePullButton: HTMLButtonElement, remotePushButton: HTMLButtonElement}} RemoteElements */
+  /** @param {Pick<import('../data-contracts').GitCommitPorts, 'state' | 'api' | 'events' | 'setStatus'> & {state: {readonly activePath: string}}} A
+   * @param {{reloadWorkspace(workspace: RemoteWorkspace): Promise<void>, loadRepositories(): Promise<void>, openManual(path: string): Promise<unknown>}} views */
+  function createController(A, views) {
+    const { reloadWorkspace, loadRepositories, openManual } = views;
+    /** @template {string} K @param {K} id */
+    const get = id => /** @type {K extends keyof RemoteElements ? RemoteElements[K] : HTMLElement} */ (document.getElementById(id));
+    let busy = false, importWorkspace = '';
+    /** @type {CheckedRemote | null} */
+    let checked = null;
     const dirty = () => Array.from(A.state.filesMap.values()).some(file => file.dirty);
     const supported = () => A.state.capabilities.remoteGit === true;
+    /** @param {RemoteGitTarget} target @returns {RemoteGitTarget} */
+    const checkedTarget = ({ cwd, url, branch, upstreamBranch, head, remoteHead }) => ({ cwd, url, branch, upstreamBranch, head, remoteHead });
+    /** @param {string} id */
     function message(id, text = '') { get(id).textContent = text; }
     function sync() {
-      for (const id of ['remoteImportButton', 'remoteUpdateButton']) { get(id).disabled = busy || !supported(); get(id).title = supported() ? '' : '远程 Git 需要运行本地服务；在线演示不支持远程仓库'; }
+      for (const id of /** @type {const} */ (['remoteImportButton', 'remoteUpdateButton'])) { get(id).disabled = busy || !supported(); get(id).title = supported() ? '' : '远程 Git 需要运行本地服务；在线演示不支持远程仓库'; }
       get('remotePullButton').disabled = busy || !checked || checked.dirty || dirty() || checked.ahead > 0 || checked.behind < 1;
       get('remotePushButton').disabled = busy || !A.state.capabilities.gitWrites || !checked?.ahead || checked.behind > 0;
     }
+    /** @param {string} url @param {object} [body] */
     async function request(url, body) {
       const response = await A.api.request(url, body === undefined ? {} : { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
       if (!response.ok) throw new Error(await A.api.error(response)); return response.json();
     }
     function protect() { if (dirty()) throw new Error('当前有未保存的编辑内容，请先保存，再加载仓库或拉取更新'); }
+    /** @param {string} errorId @param {() => Promise<void>} action */
     async function run(errorId, action) {
       if (busy) return; busy = true; message(errorId);
-      const controls = () => [...get('remoteImportDialog').querySelectorAll('input,select,button'), ...get('remoteUpdateDialog').querySelectorAll('input,select,button')];
+      const controls = () => [get('remoteImportDialog'), get('remoteUpdateDialog')].flatMap(dialog =>
+        Array.from(dialog.querySelectorAll(/** @type {'input' | 'select' | 'button'} */ ('input,select,button'))));
       controls().forEach(el => { el.disabled = true; }); sync();
       try { await action(); }
-      catch (error) { checked = null; message(errorId, error.message); message(errorId === 'remoteImportError' ? 'remoteImportStatus' : 'remoteUpdateStatus', '操作未完成，可处理错误后重试'); A.setStatus(error.message, true); }
+      catch (error) {
+        const detail = error instanceof Error ? error.message : String(error);
+        checked = null; message(errorId, detail); message(errorId === 'remoteImportError' ? 'remoteImportStatus' : 'remoteUpdateStatus', '操作未完成，可处理错误后重试'); A.setStatus(detail, true);
+      }
       finally { busy = false; controls().forEach(el => { el.disabled = false; }); sync(); }
     }
+    /** @param {RemoteWorkspace} workspace */
     async function choose(workspace, previous = '') {
       if (previous && workspace.maps.some(map => map.path === previous)) { await openManual(previous); return; }
       get('remoteManual').replaceChildren(); for (const map of workspace.maps) get('remoteManual').add(new Option((map.title || map.name) + ' · ' + map.path, map.path));
@@ -50,20 +75,30 @@
         A.setStatus('远程文档库已加载：' + result.name); await choose(workspace);
       });
     });
+    /** @param {RemoteGitStatus} status */
     function draw(status) {
       message('remoteRepositoryInfo', status.available ? status.url + '\n分支：' + status.branch + ' → origin/' + status.upstreamBranch + '\n本地提交：' + status.head.slice(0, 8) : status.message);
       if (!status.available) return;
-      const notes = [status.remoteHead ? '本地领先 ' + status.ahead + ' 个提交，远程领先 ' + status.behind + ' 个提交' : '点击“检查远程更新”读取远程最新版本'];
+      const notes = ['ahead' in status ? '本地领先 ' + status.ahead + ' 个提交，远程领先 ' + status.behind + ' 个提交' : '点击“检查远程更新”读取远程最新版本'];
       if (status.dirty) notes.push('Git 工作区有改动，需先提交或暂存'); if (dirty()) notes.push('编辑区有未保存内容，需先保存');
-      if (status.ahead && status.behind) notes.push('历史已分叉，请在 Git 中处理'); message('remoteUpdateStatus', notes.join('；'));
+      if ('ahead' in status && status.ahead && status.behind) notes.push('历史已分叉，请在 Git 中处理'); message('remoteUpdateStatus', notes.join('；'));
     }
     get('remoteUpdateButton').addEventListener('click', () => {
       if (busy || !supported()) return; checked = null; message('remoteUpdateError'); message('remoteUpdateStatus', '正在读取仓库信息…'); get('remoteUpdateDialog').showModal(); run('remoteUpdateError', async () => draw(await request('/api/remote')));
     });
-    get('remoteCheckButton').addEventListener('click', () => run('remoteUpdateError', async () => { checked = null; message('remoteUpdateStatus', '正在检查远程更新…'); checked = await request('/api/remote/check', {}); draw(checked); }));
+    get('remoteCheckButton').addEventListener('click', () => run('remoteUpdateError', async () => {
+      checked = null; message('remoteUpdateStatus', '正在检查远程更新…');
+      /** @type {CheckedRemote} */
+      const result = await request('/api/remote/check', {});
+      if (result?.available !== true || typeof result.dirty !== 'boolean' ||
+          ![result.cwd, result.url, result.branch, result.upstreamBranch, result.head, result.remoteHead].every(value => typeof value === 'string' && value.length) ||
+          ![result.ahead, result.behind].every(value => Number.isSafeInteger(value) && value >= 0)) throw Error('远程核对结果不完整，请刷新后重试');
+      checked = result;
+      draw(result);
+    }));
     get('remotePullButton').addEventListener('click', () => run('remoteUpdateError', async () => {
       protect(); if (!checked) throw new Error('请先检查远程更新'); const previous = A.state.activePath, expected = checked; checked = null;
-      message('remoteUpdateStatus', '正在重新核对并拉取更新…'); const result = await request('/api/remote/update', { expectedHead: expected.head, expectedRemoteHead: expected.remoteHead });
+      message('remoteUpdateStatus', '正在重新核对并拉取更新…'); const result = await request('/api/remote/update', checkedTarget(expected));
       if (!result.updated) { draw(result.info); return; }
       await reloadWorkspace(result.workspace); get('remoteUpdateDialog').close(); await choose(result.workspace, previous); A.setStatus('已快进更新到远程版本；文档已重新加载');
     }));
@@ -71,16 +106,21 @@
       if (!checked?.ahead || checked.behind || !A.state.capabilities.gitWrites) throw new Error('请先检查推送范围');
       const expected = checked; checked = null;
       message('remoteUpdateStatus', '正在核对并推送已有提交…');
-      const result = await request('/api/remote/push', { expectedHead: expected.head, expectedRemoteHead: expected.remoteHead });
+      const result = await request('/api/remote/push', checkedTarget(expected));
       draw(result.info);
       if (result.pushed) A.setStatus('已推送到 origin/' + result.info.upstreamBranch);
     }));
-    for (const prefix of ['remoteImport', 'remoteUpdate']) { get(prefix + 'Cancel').addEventListener('click', () => { if (!busy) get(prefix + 'Dialog').close(); }); get(prefix + 'Dialog').addEventListener('cancel', event => { if (busy) event.preventDefault(); }); }
+    for (const prefix of /** @type {const} */ (['remoteImport', 'remoteUpdate'])) {
+      const dialog = get(`${prefix}Dialog`);
+      get(`${prefix}Cancel`).addEventListener('click', () => { if (!busy) dialog.close(); });
+      dialog.addEventListener('cancel', event => { if (busy) event.preventDefault(); });
+    }
     get('remoteManualCancel').addEventListener('click', () => get('remoteManualDialog').close());
-    get('remoteManualForm').addEventListener('submit', async event => { event.preventDefault(); get('remoteManualDialog').close(); try { await openManual(get('remoteManual').value); } catch (error) { A.setStatus(error.message, true); } });
+    get('remoteManualForm').addEventListener('submit', async event => { event.preventDefault(); get('remoteManualDialog').close(); try { await openManual(get('remoteManual').value); } catch (error) { A.setStatus(error instanceof Error ? error.message : String(error), true); } });
     A.events.on('document:changed', () => { if (checked) draw(checked); sync(); });
-    A.events.on('workspace:willChange', () => { checked = null; for (const id of ['remoteUpdateDialog', 'remoteImportDialog', 'remoteManualDialog']) get(id).close(); });
+    A.events.on('workspace:willChange', () => { checked = null; for (const id of /** @type {const} */ (['remoteUpdateDialog', 'remoteImportDialog', 'remoteManualDialog'])) get(id).close(); });
     A.events.on('workspace:changed', sync); sync(); return {};
   }
-  root.DitaRemoteLibraries = { createController };
-})(window);
+  const api = { createController };
+  if (typeof module !== 'undefined') module.exports = api; else root.DitaRemoteLibraries = api;
+})(typeof window === 'undefined' ? globalThis : window);

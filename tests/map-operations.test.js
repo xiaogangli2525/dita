@@ -131,6 +131,16 @@ test('structural moves cannot cross local descendants flattened out of a hidden 
   assert.deepEqual(createMapReader().describe(parseXml(reordered.content).root, 'main.ditamap').children.map(node => node.path), ['a.dita', 'd.dita', 'b.dita', 'c.dita']);
 });
 
+test('promote and demote protect inherited model and DITAVAL conditions', async () => {
+  const source = '<map><topichead product="series(ML307B ML307N)" platform="linux"><topicref href="a.dita"/></topichead><topicref href="b.dita"/></map>';
+  await assert.rejects(editMap(source, { operation: 'promote', sourcePath: '0.0' }), { status: 409, message: /交付条件/ });
+  await assert.rejects(editMap(source, { operation: 'demote', sourcePath: '1' }), { status: 409, message: /交付条件/ });
+  const platformOnly = source.replace(' product="series(ML307B ML307N)"', '');
+  await assert.rejects(editMap(platformOnly, { operation: 'promote', sourcePath: '0.0' }), { status: 409, message: /platform/ });
+  const explicit = source.replace('href="a.dita"', 'href="a.dita" platform="linux" product="series(ML307N ML307B)"');
+  assert.equal((await editMap(explicit, { operation: 'promote', sourcePath: '0.0' })).selectedSourcePath, '1');
+});
+
 test('unsupported Map bases are rejected before resolving or editing references', async () => {
   for (const source of [
     '<map xml:base="topics/"><topicref href="a.dita"/></map>',

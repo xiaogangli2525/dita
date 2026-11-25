@@ -106,7 +106,7 @@
       if (!file) return;
       const entry = documentStore.travelHistory(file, 'undo');
       if (!entry) return;
-      if (entry.reviewDecisionsBefore) restoreDecisions(entry.reviewDecisionsBefore, file, entry.reviewInManual);
+      if (entry.reviewDecisionsBefore) restoreDecisions(entry.reviewDecisionsBefore, file, entry.reviewInManual, entry.reviewSource);
       refreshHistoryTargetView(file, entry); restoreSelection(file, entry.selectionBefore); events.emit('document:changed', file);
       setStatus('已撤销');
     }
@@ -116,7 +116,7 @@
       if (!file) return;
       const entry = documentStore.travelHistory(file, 'redo');
       if (!entry) return;
-      if (entry.reviewDecisionsAfter) restoreDecisions(entry.reviewDecisionsAfter, file, entry.reviewInManual);
+      if (entry.reviewDecisionsAfter) restoreDecisions(entry.reviewDecisionsAfter, file, entry.reviewInManual, entry.reviewSource);
       refreshHistoryTargetView(file, entry); restoreSelection(file, entry.selectionAfter); events.emit('document:changed', file);
       setStatus('已重做');
     }

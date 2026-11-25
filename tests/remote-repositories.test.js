@@ -19,28 +19,28 @@ test('real branch discovery, selected-branch clone, collision refusal and failed
 test('checks do not modify documents and updates fast-forward exactly the checked commit', async t => {
   const f = await fixture(t); await f.clone(); const before = await fs.readFile(path.join(f.root, 'a.dita'), 'utf8'), remoteHead = await f.advance(), checked = await f.remote.check();
   assert.equal(checked.behind, 1); assert.equal(checked.ahead, 0); assert.equal(await fs.readFile(path.join(f.root, 'a.dita'), 'utf8'), before);
-  const result = await f.remote.update({ expectedHead: checked.head, expectedRemoteHead: checked.remoteHead }); assert.equal(result.updated, true); assert.equal(result.info.head, remoteHead); assert.match(await fs.readFile(path.join(f.root, 'a.dita'), 'utf8'), /远程更新/);
-  const current = await f.remote.check(); assert.equal((await f.remote.update({ expectedHead: current.head, expectedRemoteHead: current.remoteHead })).updated, false);
+  const result = await f.remote.update(checked); assert.equal(result.updated, true); assert.equal(result.info.head, remoteHead); assert.match(await fs.readFile(path.join(f.root, 'a.dita'), 'utf8'), /远程更新/);
+  const current = await f.remote.check(); assert.equal((await f.remote.update(current)).updated, false);
 });
 test('tracked and untracked changes block updates and preserve exact bytes', async t => {
-  const f = await fixture(t); await f.clone(); await f.advance(); const checked = await f.remote.check(), expected = { expectedHead: checked.head, expectedRemoteHead: checked.remoteHead };
+  const f = await fixture(t); await f.clone(); await f.advance(); const expected = await f.remote.check();
   await fs.writeFile(path.join(f.root, 'draft.dita'), '<topic>untracked</topic>'); await assert.rejects(f.remote.update(expected), error => error.status === 409);
   assert.equal(await fs.readFile(path.join(f.root, 'draft.dita'), 'utf8'), '<topic>untracked</topic>'); await fs.rm(path.join(f.root, 'draft.dita'));
   await fs.writeFile(path.join(f.root, 'a.dita'), '<topic>local edit</topic>'); await assert.rejects(f.remote.update(expected), /未提交/);
-  assert.equal(await fs.readFile(path.join(f.root, 'a.dita'), 'utf8'), '<topic>local edit</topic>'); assert.equal(git(f.root, 'rev-parse', 'HEAD'), checked.head);
+  assert.equal(await fs.readFile(path.join(f.root, 'a.dita'), 'utf8'), '<topic>local edit</topic>'); assert.equal(git(f.root, 'rev-parse', 'HEAD'), expected.head);
 });
 test('stale remote versions, local-ahead commits and divergence never reset or merge local history', async t => {
   const f = await fixture(t); await f.clone(); await f.advance('first'); const checked = await f.remote.check(); await f.advance('second');
-  await assert.rejects(f.remote.update({ expectedHead: checked.head, expectedRemoteHead: checked.remoteHead }), /远程版本已变化/); assert.equal(git(f.root, 'rev-parse', 'HEAD'), checked.head);
-  const latest = await f.remote.check(); await f.remote.update({ expectedHead: latest.head, expectedRemoteHead: latest.remoteHead });
+  await assert.rejects(f.remote.update(checked), /远程版本已变化/); assert.equal(git(f.root, 'rev-parse', 'HEAD'), checked.head);
+  const latest = await f.remote.check(); await f.remote.update(latest);
   await fs.writeFile(path.join(f.root, 'local.dita'), '<topic>local commit</topic>'); git(f.root, 'add', '.'); git(f.root, '-c', 'user.name=Test', '-c', 'user.email=test@example.invalid', 'commit', '-m', 'local');
-  const ahead = await f.remote.check(); assert.equal(ahead.ahead, 1); assert.equal(ahead.behind, 0); await assert.rejects(f.remote.update({ expectedHead: ahead.head, expectedRemoteHead: ahead.remoteHead }), /尚未推送/);
-  await f.advance('third'); const divergent = await f.remote.check(); assert.equal(divergent.ahead, 1); assert.equal(divergent.behind, 1); await assert.rejects(f.remote.update({ expectedHead: divergent.head, expectedRemoteHead: divergent.remoteHead }), /分叉/); assert.equal(git(f.root, 'rev-parse', 'HEAD'), ahead.head);
+  const ahead = await f.remote.check(); assert.equal(ahead.ahead, 1); assert.equal(ahead.behind, 0); await assert.rejects(f.remote.update(ahead), /尚未推送/);
+  await f.advance('third'); const divergent = await f.remote.check(); assert.equal(divergent.ahead, 1); assert.equal(divergent.behind, 1); await assert.rejects(f.remote.update(divergent), /分叉/); assert.equal(git(f.root, 'rev-parse', 'HEAD'), ahead.head);
 });
 test('fast-forward also protects ignored local files newly tracked by the remote', async t => {
   const f = await fixture(t); await fs.writeFile(path.join(f.source, '.gitignore'), 'private.txt\n'); git(f.source, 'add', '.'); git(f.source, 'commit', '-m', 'ignore'); git(f.source, 'push', 'origin', 'main'); await f.clone();
   await fs.writeFile(path.join(f.root, 'private.txt'), 'local private notes'); await fs.writeFile(path.join(f.source, 'private.txt'), 'remote file'); git(f.source, 'add', '-f', 'private.txt'); git(f.source, 'commit', '-m', 'remote file'); git(f.source, 'push', 'origin', 'main');
-  const checked = await f.remote.check(); assert.equal(checked.dirty, false); await assert.rejects(f.remote.update({ expectedHead: checked.head, expectedRemoteHead: checked.remoteHead }));
+  const checked = await f.remote.check(); assert.equal(checked.dirty, false); await assert.rejects(f.remote.update(checked));
   assert.equal(await fs.readFile(path.join(f.root, 'private.txt'), 'utf8'), 'local private notes'); assert.equal(git(f.root, 'rev-parse', 'HEAD'), checked.head);
 });
 test('push sends only the checked branch commit and preserves saved working edits', async t => {
@@ -49,9 +49,29 @@ test('push sends only the checked branch commit and preserves saved working edit
   await fs.writeFile(file, '<topic>提交版本</topic>'); git(f.root, 'add', 'a.dita');
   git(f.root, '-c', 'user.name=Test', '-c', 'user.email=test@example.invalid', 'commit', '-m', 'local');
   await fs.writeFile(file, '<topic>工作区版本</topic>');
-  const checked = await f.remote.check(), expected = { expectedHead: checked.head, expectedRemoteHead: checked.remoteHead };
+  const expected = await f.remote.check();
   assert.equal((await f.remote.push(expected)).pushed, true);
   assert.equal(await fs.readFile(file, 'utf8'), '<topic>工作区版本</topic>');
-  assert.equal((await f.remote.check()).remoteHead, checked.head);
+  assert.equal((await f.remote.check()).remoteHead, expected.head);
   await assert.rejects(f.remote.push(expected), /已变化/);
+});
+test('a remote check cannot be reused on another branch with the same local and upstream commits', async t => {
+  const f = await fixture(t);
+  await f.clone();
+  const remoteHead = await f.advance();
+  git(f.source, 'push', 'origin', 'main:release');
+  const checked = await f.remote.check();
+  git(f.root, 'switch', '-c', 'release-work');
+  git(f.root, 'config', 'branch.release-work.remote', 'origin');
+  git(f.root, 'config', 'branch.release-work.merge', 'refs/heads/release');
+  const release = await f.remote.check();
+  assert.equal(release.head, checked.head);
+  assert.equal(release.remoteHead, checked.remoteHead);
+  for (const operation of ['update', 'push']) {
+    await assert.rejects(f.remote[operation](checked), error => error.status === 409 && /远程目标已变化/.test(error.message));
+    await assert.rejects(f.remote[operation]({ head: checked.head, remoteHead: checked.remoteHead }), { status: 400 });
+  }
+  assert.equal(git(f.root, 'rev-parse', 'HEAD'), checked.head);
+  assert.equal(git(f.bare, 'rev-parse', 'refs/heads/release'), remoteHead);
+  assert.equal((await f.remote.update(release)).updated, true);
 });

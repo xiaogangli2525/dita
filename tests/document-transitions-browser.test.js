@@ -18,10 +18,11 @@ test('document loading, Save As and Map paths preserve current user intent and w
   await fs.writeFile(path.join(repo, 'manuals/diagram.svg'), '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="10"><rect width="20" height="10"/></svg>');
   const encodedTopics = [['utf8', 'UTF-8'], ['utf16', 'UTF-16LE']].map(([id, encoding]) => ({
     id, encoding, name: id + '.dita',
-    source: `\uFEFF<?xml version="1.0" encoding="${encoding}"?>\n<topic id="${id}"><title>中文</title><body><p id="${id}-text">原文</p></body></topic>`
+    source: `\uFEFF<?xml version="1.0" encoding="${encoding}"?>\n<?xml-model href="topic.rng"?>\n<?xml-stylesheet type="text/css" href="topic.css"?>\n<topic id="${id}"><title>中文</title><body><p id="${id}-text">原文</p></body></topic>`
   }));
   for (const { name, encoding, source } of encodedTopics) await fs.writeFile(path.join(repo, name), iconv.encode(source, encoding));
   await fs.writeFile(path.join(repo, 'encoded.ditamap'), '<map><title>编码手册</title><topicref href="utf8.dita"/><topicref href="utf16.dita"/></map>');
+  await fs.writeFile(path.join(repo, 'filter.ditaval'), '<val><prop att="product" val="hidden" action="exclude"/></val>');
   for (const args of [['init'], ['add', '.'], ['-c', 'user.name=Test', '-c', 'user.email=test@example.invalid', 'commit', '-m', 'fixture']]) execFileSync('git', args, { cwd: repo, stdio: 'ignore' });
   const port = await new Promise(resolve => { const socket = net.createServer(); socket.listen(0, '127.0.0.1', () => { const value = socket.address().port; socket.close(() => resolve(value)); }); });
   const server = spawn(process.execPath, ['server.js'], { cwd: path.join(__dirname, '..'), env: { ...process.env, DOCS_ROOT: repo, REPOSITORIES_ROOT: temp, PORT: String(port) }, stdio: ['ignore', 'pipe', 'pipe'] });
@@ -31,8 +32,9 @@ test('document loading, Save As and Map paths preserve current user intent and w
   const errors = [];
   async function fresh(subtest) {
     await fs.writeFile(path.join(repo, 'b.dita'), docs.b); await fs.writeFile(path.join(repo, 'main.ditamap'), main); await fs.writeFile(path.join(repo, 'manuals/nested.ditamap'), nested);
-    const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } }), releases = []; page.setDefaultTimeout(10000); page.on('pageerror', error => errors.push(error.message));
-    subtest.after(async () => { releases.forEach(release => release()); await page.close(); });
+    const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+    const page = await context.newPage(), releases = []; page.setDefaultTimeout(10000); page.on('pageerror', error => errors.push(error.message));
+    subtest.after(async () => { releases.forEach(release => release()); await context.close(); });
     await page.goto('http://127.0.0.1:' + port); await page.waitForFunction(() => window.DitaApp?.state.root); await page.selectOption('#mapSelect', 'main.ditamap');
     return { page, gate() { const gate = deferred(); releases.push(gate.resolve); return gate; } };
   }
@@ -41,6 +43,57 @@ test('document loading, Save As and Map paths preserve current user intent and w
   async function edit(page, selector, text) { await page.locator(selector).click(); await page.keyboard.press('End'); await page.keyboard.insertText(text); }
   function answer(page, value) { page.on('dialog', dialog => dialog.type() === 'prompt' ? dialog.accept(value) : dialog.accept()); }
   async function saveAs(page) { await page.click('button[data-menu=file]'); await page.locator('#menuPopup').getByRole('menuitem', { name: '另存为', exact: true }).click(); }
+
+  await t.test('overwriting a closed tracked Topic shows its Git diff immediately and keeps shared review decisions', async st => {
+    const { page } = await fresh(st);
+    await fs.writeFile(path.join(repo, 'b.dita'), docs.b.replace('Document b', 'A later disk version'));
+    await open(page, 'a.dita'); answer(page, 'b.dita'); await saveAs(page);
+    await page.waitForFunction(() => window.DitaApp.state.activePath === 'b.dita');
+    await page.evaluate(() => window.DitaApp.setMode('review'));
+    const change = page.locator('#diff .diff-block').first();
+    await change.waitFor();
+    assert.match(await change.innerText(), /Document b/);
+    assert.doesNotMatch(await change.innerText(), /A later disk version/);
+
+    const second = await page.context().newPage();
+    second.setDefaultTimeout(10000);
+    await second.goto(page.url());
+    await second.waitForFunction(() => window.DitaApp?.state.root);
+    await open(second, 'b.dita');
+    await second.evaluate(() => window.DitaApp.setMode('review'));
+    await change.getByRole('button', { name: '接受此块' }).click();
+    await second.selectOption('#reviewScope', 'oxygen');
+    await second.locator('#diff .decision-accept').first().waitFor();
+    await page.reload();
+    await page.waitForFunction(() => window.DitaApp?.state.root);
+    await open(page, 'b.dita');
+    await page.evaluate(() => window.DitaApp.setMode('review'));
+    await page.locator('#diff .decision-accept').first().waitFor();
+  });
+
+  await t.test('delivery scope stays pinned during filter loading and the chosen Topic alone is downloaded', async st => {
+    const { page, gate } = await fresh(st);
+    await open(page, 'a.dita');
+    await page.click('#exportMenuButton');
+    await page.locator('#exportModel:not(:disabled)').waitFor();
+    const scope = page.locator('#exportScope');
+    assert.equal(await scope.inputValue(), 'main.ditamap');
+    const held = deferred(), release = gate();
+    await page.route('**/api/map/resolve', async route => {
+      held.resolve(); await release.promise; await route.continue();
+    }, { times: 1 });
+    await page.selectOption('#exportFilter', 'filter.ditaval');
+    await held.promise;
+    assert.equal(await scope.isDisabled(), true);
+    release.resolve();
+    await scope.selectOption('a.dita');
+    await page.locator('#modelExportScope').filter({ hasText: 'a.dita' }).waitFor();
+    const downloading = page.waitForEvent('download');
+    await page.click('#modelExportForm [value=download]');
+    const download = await downloading;
+    assert.equal(download.suggestedFilename(), 'a.html');
+    assert.doesNotMatch(await fs.readFile(await download.path(), 'utf8'), /Content b|Content c/);
+  });
 
   await t.test('BOM-prefixed files retain encoding in Topic and Map saves and still detect outside changes', async st => {
     const { page } = await fresh(st);

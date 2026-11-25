@@ -1,6 +1,7 @@
 // @ts-check
 'use strict';
 (function (root) {
+  const profileAttributes = Object.freeze(['audience', 'platform', 'product', 'props', 'otherprops', 'deliveryTarget']);
   /** Parse a decoded DITA condition attribute into groups of distinct values.
    * @param {string} attribute
    * @param {string} value
@@ -22,6 +23,6 @@
     return groups;
   }
 
-  const api = { parseConditionGroups };
+  const api = { parseConditionGroups, profileAttributes };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaConditionGroups = api;
 })(typeof window === 'undefined' ? globalThis : window);

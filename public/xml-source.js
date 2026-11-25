@@ -69,7 +69,7 @@
         if (doctype || roots.length || stack.length) fail('DOCTYPE must precede the root element');
         doctype = true;
       }
-      if (token.kind === 'pi' && /^<\?xml\b/i.test(text)) {
+      if (token.kind === 'pi' && /^<\?xml(?=[\t\n\r ]|\?>)/i.test(text)) {
         if (token.start !== (source.charCodeAt(0) === 0xfeff ? 1 : 0) || !/^<\?xml\s+version\s*=\s*(['"])1\.0\1(?:\s+encoding\s*=\s*(['"])[A-Za-z][\w.-]*\2)?(?:\s+standalone\s*=\s*(['"])(?:yes|no)\3)?\s*\?>$/.test(text)) fail('Invalid XML declaration');
       }
       if (token.kind === 'text') {
