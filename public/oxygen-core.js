@@ -120,12 +120,18 @@
     if (doc.documentElement) walk(doc.documentElement);
   }
 
-  /** @param {string} text */
-  function collectOxyTrackedChanges(text) {
+  /** @param {string} text @param {(token: import('./data-contracts').XmlSourceToken) => boolean} [ignoreUnpaired] */
+  function collectOxyTrackedChanges(text, ignoreUnpaired) {
     /** @type {import('./data-contracts').OxygenChange[]} */
     const changes = [];
     /** @type {{name: string, attrs: ReturnType<typeof parseOxyPIAttrs>, token: import('./data-contracts').XmlSourceToken}[]} */
     const open = [];
+    /** @param {import('./data-contracts').XmlSourceToken} token @param {string} message */
+    function unpaired(token, message) {
+      if (!ignoreUnpaired?.(token)) {
+        throw Object.assign(new Error(message), { location: { source: text, start: token.start, end: token.end } });
+      }
+    }
     for (const token of xml.scan(text)) {
       if (token.kind !== 'pi') continue;
       const raw = text.slice(token.start, token.end), match = /^<\?(oxy_[\w]+)\b([^]*?)\?>$/.exec(raw);
@@ -137,7 +143,10 @@
       if (['oxy_insert_end', 'oxy_comment_end'].includes(name)) {
         const startName = name.replace('_end', '_start');
         const at = open.findLastIndex(item => item.name === startName && (!attrs.mid || item.attrs.mid === attrs.mid));
-        if (at < 0) throw new Error('Oxygen 修订结束标记没有对应起点');
+        if (at < 0) {
+          unpaired(token, 'Oxygen 修订结束标记没有对应起点');
+          continue;
+        }
         const start = open.splice(at, 1)[0], keepContent = text.slice(start.token.end, token.start), info = start.attrs;
         changes.push({ type: name === 'oxy_insert_end' ? 'insert' : 'comment', id: info.id,
           author: info.author || '', timestamp: info.timestamp || '', content: name === 'oxy_insert_end' ? readable(keepContent) : info.comment || '',
@@ -148,7 +157,7 @@
           content: readable(attrs.content || ''), index: token.start, matchLength: token.end - token.start });
       }
     }
-    if (open.length) throw new Error('Oxygen 修订起始标记没有对应终点');
+    for (const { token } of open) unpaired(token, 'Oxygen 修订起始标记没有对应终点');
     return changes.sort((a, b) => a.index - b.index);
   }
   /** @param {string} text */

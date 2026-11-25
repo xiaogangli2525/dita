@@ -121,6 +121,55 @@ test('delivery blocks new pending records while note numbering and legacy import
   const legacy = revision.replace(/ id="dita-[^"]*"/g, '');
   assert.doesNotThrow(() => domain.prepare({ ...snapshot, content: legacy, files: new Map([['a.dita', { current: legacy }]]) }));
 });
+test('publication scopes unpaired Oxygen markers to DITAVAL without relaxing the review of paired records', () => {
+  const domain = require('../public/manual-domain');
+  const filter = { current: '<val><prop att="product" val="tbd" action="exclude"/></val>' };
+  function prepare(body, activeFilter) {
+    const source = topic('').replace('</body>', body + '</body>');
+    return domain.prepare({ path: 'a.dita', map: { children: [{ type: 'file', path: 'a.dita' }] }, files: new Map([['a.dita', { current: source }]]), project: { models: [] }, filter: activeFilter });
+  }
+  const start = '<?oxy_insert_start?>', end = '<?oxy_comment_end mid="lost"?>';
+  const hidden = '<div product="tbd"><p>' + start + 'EXCLUDED' + end + '</p></div>';
+  const data = prepare(hidden + '<p><?oxy_insert_start?>Imported<?oxy_insert_end?></p>', filter);
+  assert.doesNotMatch(data.files.get('a.dita').current, /EXCLUDED/);
+  assert.equal(data.oxygenRevisions, 1);
+  assert.throws(() => prepare(hidden), /Oxygen 修订结束标记没有对应起点/);
+  assert.throws(() => prepare(hidden + '<p>' + start + 'Visible</p>', filter), error => {
+    const [{ path, location }] = error.issues;
+    assert.equal(path, 'a.dita');
+    assert.equal(location.start, location.source.lastIndexOf(start));
+    assert.equal(location.source.slice(location.start, location.end), start);
+    return true;
+  });
+  for (const body of [
+    '<p product="tbd"><?oxy_insert_start id="dita-cross"?>hidden</p><p>visible<?oxy_insert_end?></p>',
+    '<p product="tbd"><?oxy_insert_start id="dita-pending"?>hidden<?oxy_insert_end?></p>'
+  ]) assert.throws(() => prepare(body, filter), /尚有未处理的 Oxygen 修订/);
+});
+
+test('conref cannot reintroduce a malformed revision excluded at its source', () => {
+  const domain = require('../public/manual-domain');
+  const filter = { current: '<val><prop att="product" val="tbd" action="exclude"/></val>' };
+  const shared = '<topic id="s"><body><div id="safe"><p id="hidden" product="tbd"><?oxy_insert_start?>PRIVATE</p></div><p id="alias" conref="#s/hidden"/></body></topic>';
+  function prepare(ref, other = shared) {
+    const current = '<topic id="a"><body><p>Visible</p>' + ref + '</body></topic>';
+    const files = new Map([['a.dita', { current }], ['shared.dita', { current: other }]]);
+    return domain.prepare({ path: 'a.dita', map: { children: [{ type: 'file', path: 'a.dita' }] }, files, project: { models: [] }, filter });
+  }
+  for (const ref of ['<div conref="shared.dita#s/safe"/>', '<p conref="shared.dita#s/hidden"/>']) {
+    assert.doesNotMatch(prepare(ref).files.get('a.dita').current, /PRIVATE|oxy_/);
+  }
+  const revived = '<p conref="shared.dita#s/hidden" product="public"/>';
+  assert.throws(() => prepare(revived), error => {
+    assert.match(error.message, /复用目标包含不完整的 Oxygen 修订.*shared\.dita#s\/hidden/);
+    const [{ path, location }] = error.issues;
+    assert.equal(path, 'a.dita');
+    assert.equal(location.source.slice(location.start, location.end), revived);
+    return true;
+  });
+  assert.throws(() => prepare(revived.replace('#s/hidden', '#s/alias')), /复用目标包含不完整的 Oxygen 修订.*shared\.dita#s\/hidden/);
+  assert.throws(() => prepare('<p conref="shared.dita#s/hidden"/>', shared.replace('<div id="safe">', '<div id="safe" product="tbd">').replace('id="hidden" product="tbd"', 'id="hidden"')), /复用目标包含不完整的 Oxygen 修订/);
+});
 test('empty self-closing code blocks allow first text entry without losing identifiers or attributes', () => {
   const before = '<topic><title>T</title><body><codeblock id="code" xml:space="preserve"/></body></topic>';
   const after = before.replace('preserve"/>', 'preserve">AT+OPEN\n    AT+SEND</codeblock>');

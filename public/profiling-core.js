@@ -38,19 +38,23 @@
       });
       decisions.set(node, included); return included;
     }
-    // Maps can be filtered before resolving paths. Topic filtering is applied
-    // by publication-core after expansion, keeping original note provenance.
-    function filterSource(source, subtree) {
-      const tree = subtree || xml.inspectSource(source), ranges = [];
-      if (!keep(tree)) return null;
+    function excludedRanges(tree) {
+      const ranges = [];
       function visit(node) {
         if (!keep(node)) { ranges.push([node.start, node.close?.end ?? node.end]); return; }
         node.children.filter(n => n.kind === 'element').forEach(visit);
       }
       visit(tree);
+      return ranges;
+    }
+    // Maps can be filtered before resolving paths. Topic filtering is applied
+    // by publication-core after expansion, keeping original note provenance.
+    function filterSource(source, subtree) {
+      const tree = subtree || xml.inspectSource(source);
+      if (!keep(tree)) return null;
       const kept = [];
       let cursor = subtree ? tree.start : 0;
-      for (const [start, end] of ranges) { kept.push(source.slice(cursor, start)); cursor = end; }
+      for (const [start, end] of excludedRanges(tree)) { kept.push(source.slice(cursor, start)); cursor = end; }
       kept.push(source.slice(cursor, subtree ? tree.close?.end ?? tree.end : source.length));
       return kept.join('');
     }
@@ -60,7 +64,7 @@
       const [att,value] = key.split('\n');
       return actions[action] + (att ? names[att] : '所有条件') + (value ? value==='tbd'?'为“待定（tbd）”的内容':'为“'+value+'”的内容' : '的默认内容');
     }).join('；') || '保留全部标记内容';
-    return { keep, filterSource, matchesProduct, summary };
+    return { keep, excludedRanges, filterSource, matchesProduct, summary };
   }
   const api = { compile };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaProfiling = api;

@@ -11,12 +11,12 @@
     if (!/^[^/]+\/[^/]+$/.test(target.fragment)) throw new Error('注脚引用须使用 #TopicID/注脚ID：' + href);
     return target.path + '#' + target.fragment;
   }
-  function preparePublication({ map, files, model = '', profile, ruleConfirmed, ruleExclusions, plan }, collectPaths = manual.collectPreviewPaths) {
+  function preparePublication({ map, files, model = '', profile, ruleConfirmed, ruleExclusions, plan, guardReuse }, collectPaths = manual.collectPreviewPaths) {
     if (!plan) {
       plan = resolver.planMap(map, model, profile);
       files = resolver.scopeFiles(files, plan, profile);
     }
-    const resolved = resolver.resolveConrefsDetailed(files, profile), expanded = resolved.files;
+    const resolved = resolver.resolveConrefsDetailed(files, profile, guardReuse), expanded = resolved.files;
     const entries = collectPaths(plan.children).filter(entry => !profile || !expanded.has(entry.path) || profile.keep(xml.inspectSource(expanded.get(entry.path).current)));
     const published = new Set(entries.map(entry => entry.path));
     if (plan.filteredBranches && !published.size) throw new Error('所选型号没有可交付的章节：' + model);

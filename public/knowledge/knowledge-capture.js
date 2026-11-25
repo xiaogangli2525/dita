@@ -73,8 +73,7 @@
         projectSha256: snapshot.projectContent ? await hash(snapshot.projectContent) : null,
         noteRulesSha256: snapshot.noteRules?.expectedContent ? await hash(snapshot.noteRules.expectedContent) : null,
         modelNotePolicy: prefixes ? 'explicit-prefix-v1' : 'sidecar-only' };
-      const oxygenRevisions = [...snapshot.files.values()].reduce((count, file) => count + (A.ditaCore.collectOxyTrackedChanges?.(file.current).length || 0), 0);
-      const part = { id, model, version, title, html, ...extracted, source, report: { ...prepared.report, oxygenRevisions },
+      const part = { id, model, version, title, html, ...extracted, source, report: { ...prepared.report, oxygenRevisions: prepared.oxygenRevisions },
         htmlSha256: await hash(html), capturedAt: new Date().toISOString() };
       check();
       return { part, current: () => workspace === A.api.token && A.manual.current(snapshot) };

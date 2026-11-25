@@ -10,7 +10,10 @@ const compact = text => text.replace(/\s+/g, '');
 
 test('real HTTP manual survives visual editing, review, save and two-model delivery with explicit format limits', async t => {
   const sourceRoot = path.join(__dirname, '../examples/http_httpsusermanual'), mapPath = 'http_httpsusermanual.ditamap';
-  const originals = collectDemoFiles(sourceRoot, mapPath), temp = await fs.mkdtemp(path.join(os.tmpdir(), 'dita-real-manual-')), repo = path.join(temp, 'docs');
+  const englishMap = 'http_httpsusermanual_en.ditamap';
+  const chineseOriginals = collectDemoFiles(sourceRoot, mapPath);
+  const originals = new Map([...chineseOriginals, ...collectDemoFiles(sourceRoot, englishMap)]);
+  const temp = await fs.mkdtemp(path.join(os.tmpdir(), 'dita-real-manual-')), repo = path.join(temp, 'docs');
   const output = process.env.DITA_MANUAL_QA_DIR;
   if (output) await fs.mkdir(output, { recursive: true });
   for (const [name, bytes] of originals) { await fs.mkdir(path.dirname(path.join(repo, name)), { recursive: true }); await fs.writeFile(path.join(repo, name), bytes); }
@@ -135,10 +138,43 @@ test('real HTTP manual survives visual editing, review, save and two-model deliv
       deliveries.push({ model, format, filename, bytes: bytes.length, sha256: record.outputSha256, notes: expectedNotes.length, commands: expectedCommands.length, templateSha256: record.template?.sha256 || null });
     });
   }
+  await stage('the real English Map exports with DITAVAL and locates the unpaired Oxygen marker without it', async () => {
+    const sourcePath = 'localization/1-projects/http_httpsusermanual_en/target/topics/r_at_mhttpcontent.dita';
+    const original = originals.get(sourcePath).toString('utf8');
+    assert.match(original, /<\?oxy_insert_start\b/);
+    assert.doesNotMatch(original, /<\?oxy_insert_end\b/);
+    await open(englishMap);
+    await page.click('#exportMenuButton'); await page.locator('#exportModel:not(:disabled)').waitFor();
+    await page.selectOption('#exportFilter', ''); await page.locator('#exportModel:not(:disabled)').waitFor();
+    assert.match(await page.locator('#modelExportError').innerText(), /r_at_mhttpcontent\.dita.*Oxygen 修订起始标记没有对应终点/);
+    assert.equal(await page.locator('[data-delivery-step=export]').isDisabled(), true);
+    const marker = original.match(/<\?oxy_insert_start\b[^]*?\?>/)[0];
+    const line = original.slice(0, original.indexOf(marker)).split(/\r\n?|\n/).length;
+    await page.click('[data-delivery-step=check]');
+    await page.locator('#deliveryChecks').getByRole('button', { name: '定位原文 · ' + sourcePath + ' · 第 ' + line + ' 行', exact: true }).click();
+    await page.waitForFunction(marker => {
+      const editor = document.getElementById('editor');
+      return editor === document.activeElement && editor.value.slice(editor.selectionStart, editor.selectionEnd) === marker;
+    }, marker);
+    await open(englishMap);
+    await page.click('#exportMenuButton'); await page.locator('#exportModel:not(:disabled)').waitFor();
+    await page.selectOption('#exportFilter', 'filters/filter_tbd.ditaval'); await page.locator('#exportModel:not(:disabled)').waitFor();
+    await page.selectOption('#exportModel', ''); await page.selectOption('#exportFormat', 'html');
+    await page.click('#modelExportForm [value=check]'); await page.locator('[data-delivery-step=export]:not(:disabled)').waitFor();
+    const pending = page.waitForEvent('download'); await page.click('#modelExportForm [value=download]');
+    const artifact = await pending, bytes = await fs.readFile(await artifact.path());
+    const html = bytes.toString('utf8');
+    assert.match(html, /AT\+MHTTPCONTENT/);
+    assert.doesNotMatch(html, /consecutive double quotation marks or commas in input|<\?oxy_insert_start/);
+    await page.waitForFunction(filename => window.DitaApp.lastDeliveryRecord?.filename === filename, artifact.suggestedFilename());
+    const record = await page.evaluate(() => window.DitaApp.lastDeliveryRecord);
+    assert.equal(record.filterPath, 'filters/filter_tbd.ditaval');
+    assert.equal(record.outputSha256, hash(bytes));
+  });
   for (const [name, bytes] of originals) {
     assert.deepEqual(await fs.readFile(path.join(sourceRoot, name)), bytes, 'supplied manual remains unchanged: ' + name);
     assert.deepEqual(await fs.readFile(path.join(repo, name)), name === editedPath ? Buffer.from(expected) : bytes, 'only the accepted source edit is saved: ' + name);
   }
   assert.deepEqual(errors, []);
-  if (output) await fs.writeFile(path.join(output, 'acceptance.json'), JSON.stringify({ sourceMap: mapPath, sourceFiles: originals.size, topics: [...originals.keys()].filter(name => name.endsWith('.dita')).length, edit: { path: editedPath, before: 'SSL相应参数设置', after: 'SSL相关参数设置', diskBefore: hash(original), diskAfter: hash(expected) }, deliveries, realModelExecuted: false, wordWpsExecuted: false }, null, 2) + '\n');
+  if (output) await fs.writeFile(path.join(output, 'acceptance.json'), JSON.stringify({ sourceMap: mapPath, sourceFiles: chineseOriginals.size, topics: [...chineseOriginals.keys()].filter(name => name.endsWith('.dita')).length, edit: { path: editedPath, before: 'SSL相应参数设置', after: 'SSL相关参数设置', diskBefore: hash(original), diskAfter: hash(expected) }, deliveries, realModelExecuted: false, wordWpsExecuted: false }, null, 2) + '\n');
 });
