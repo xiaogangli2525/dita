@@ -144,10 +144,15 @@ test('a source below 40 MiB cannot publish a vector archive above the CLI input 
 
 test('offline runtime embeds the same domain profile and query constraints as Node', () => {
   const runtime = require('node:vm').runInNewContext(require('../public/knowledge/knowledge-search').runtimeSource());
-  const records = [{ manualId: 'http', title: 'AT+MHTTPDEL 删除HTTP实例', text: '删除实例。HTTP error code -17。' }];
+  const records = [{ manualId: 'http', title: 'AT+MHTTPDEL 删除HTTP实例', text: '删除实例。HTTP error code -17。' },
+    { manualId: 'oc', title: '外设资源', text: 'UART 最大组数：4。' }];
   const browserIndex = runtime.build(records), engine = createSearchEngine(), index = engine.build(records);
   for (const query of ['释放HTTP实例', 'HTTP error code 99999', '-17', '０ｘＦＦＦＦ']) {
     assert.equal(JSON.stringify(runtime.search(records, browserIndex, query)), JSON.stringify(engine.search(records, index, query)));
+  }
+  for (const query of ['UART', '串口', '串行口']) {
+    assert.equal(runtime.search(records, browserIndex, query)[0]?.position, 1, query);
+    assert.equal(engine.search(records, index, query)[0]?.position, 1, query);
   }
 });
 

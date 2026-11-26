@@ -9,11 +9,15 @@
     for (let i = 0; i < text.length; i++) { a = Math.imul(a ^ text.charCodeAt(i), 16777619); b = Math.imul(b ^ text.charCodeAt(i), 2246822519); }
     return text.length + '-' + (a >>> 0).toString(16) + '-' + (b >>> 0).toString(16);
   }
-  function tree(node) {
+  function tree(node, { omitDeleted = false } = {}) {
     if (node.nodeType === 3 || node.nodeName === '#text') return { name: '#text', value: node.nodeValue ?? node.value };
-    return { name: node.localName || node.tagName || '#root', attrs: Object.fromEntries(Array.from(node.attributes || node.attrs || [], attr => [attr.name, attr.value])),
-      children: Array.from(node.childNodes || [], tree), origin: node };
+    const result = { name: node.localName || node.tagName || '#root',
+      attrs: Object.fromEntries(Array.from(node.attributes || node.attrs || [], attr => [attr.name, attr.value])), children: [], origin: node };
+    if (omitDeleted && result.name === 'del' && hasClass(result, 'oxy-delete')) return result;
+    result.children = Array.from(node.childNodes || [], child => tree(child, { omitDeleted }));
+    return result;
   }
+  const rawText = node => node.name === '#text' ? node.value || '' : (node.children || []).map(rawText).join('');
   const hasClass = (node, name) => (node.attrs?.class || '').split(/\s+/).includes(name);
   function descendants(node, predicate, stop = () => false) {
     const result = [];
@@ -168,6 +172,6 @@
     }
     return value;
   }
-  const api = { SCHEMA, prose, fingerprint, tree, definitions, extract, seal, validate };
+  const api = { SCHEMA, prose, fingerprint, tree, rawText, definitions, extract, seal, validate };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaKnowledgeStructure = api;
 })(typeof window === 'undefined' ? globalThis : window);

@@ -213,6 +213,22 @@ test('local embedding runtime generates usable vectors while all HTTP access is 
 });
 
 
+test('UART aliases use the same vector query without rebuilding the index', async () => {
+  const semantic = require('../lib/knowledge-semantic'), original = semantic.encoder.encode;
+  const queries = [];
+  semantic.encoder.encode = async inputs => { queries.push(...inputs); return [vector(0)]; };
+  try {
+    const records = [row('类型：UART，最大组数：4。')], chunks = await chunksFor(records, countTokens);
+    const search = semantic.createSearch(records, createIndex(chunks, chunks.map(() => vector(0))));
+    for (const query of ['支持多少串口', '支持多少串行口', '支持多少 UART']) {
+      const [hit] = await search(query, [], { semanticOnly: true });
+      assert.equal(hit?.position, 0);
+      assert.equal(hit?.semanticScore, 1);
+    }
+    assert.deepEqual(queries, Array(3).fill('支持多少 uart'));
+  } finally { semantic.encoder.encode = original; }
+});
+
 test('clear multi-term lexical evidence keeps priority over a merely similar chapter', async () => {
   const semantic = require('../lib/knowledge-semantic'), original = semantic.encoder.encode;
   semantic.encoder.encode = async () => [vector(0)];

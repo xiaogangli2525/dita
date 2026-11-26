@@ -36,6 +36,13 @@
     function technicalTokens(value) {
       return normalize(value).match(/(?:at\+)?[a-z_][a-z0-9_]*(?:\.[a-z][a-z0-9_]*)*|-?(?:0x[0-9a-f]+|\d+(?:\.\d+)*)/g) || [];
     }
+    function normalizeTechnicalTerms(value, aliases) {
+      var text = normalize(value);
+      Object.keys(aliases || {}).forEach(function (alias) {
+        text = text.split(alias).join(" " + aliases[alias] + " ");
+      });
+      return text.trim();
+    }
     // Query routing and candidate generation must use exactly the same rules.
     function queryConstraints(query) {
       var raw = normalize(query), numericPattern = /^-?(?:0x[0-9a-f]+|\d+(?:\.\d+)*)$/;
@@ -58,7 +65,7 @@
       var replacements = Object.assign({ "新建": "创建", "文件夹": "目录" }, options.synonyms || {});
       var replaceKeys = Object.keys(replacements).sort(function (a, b) { return b.length - a.length; });
       function canonical(value) {
-        var result = normalize(value);
+        var result = normalizeTechnicalTerms(value, options.technicalAliases);
         replaceKeys.forEach(function (key) {
           result = result.split(normalize(key)).join(normalize(replacements[key]));
         });
@@ -162,7 +169,8 @@
     }
   
     function indexingOptions(options) {
-      return { dictionary: array(options.dictionary), stopWords: array(options.stopWords), synonyms: options.synonyms || {} };
+      return { dictionary: array(options.dictionary), stopWords: array(options.stopWords), synonyms: options.synonyms || {},
+        technicalAliases: options.technicalAliases || {} };
     }
     function fingerprint(records, options) {
       // A cache-invalidation fingerprint, not a security or authenticity signature.
@@ -444,7 +452,8 @@
   
       return { search: search, suggest: suggest, count: entries.length, indexStatus: restored ? "restored" : "built" };
     }
-    return { create: create, compile: compile, normalize: normalize, queryConstraints: queryConstraints, version: "1.2.2" };
+    return { create: create, compile: compile, normalize: normalize, normalizeTechnicalTerms: normalizeTechnicalTerms,
+      queryConstraints: queryConstraints, version: "1.2.2" };
   }
   const api = { createSdkSearch };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaKnowledgeRetrieval = api;
