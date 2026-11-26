@@ -134,7 +134,7 @@
     }
     for (const token of xml.scan(text)) {
       if (token.kind !== 'pi') continue;
-      const raw = text.slice(token.start, token.end), match = /^<\?(oxy_[\w]+)\b([^]*?)\?>$/.exec(raw);
+      const raw = text.slice(token.start, token.end), match = /^<\?(oxy_[\w]+)(?=\s|\?>)([^]*?)\?>$/.exec(raw);
       if (!match) continue;
       const name = match[1], attrs = parseOxyPIAttrs(match[2]);
       if (['oxy_insert_start', 'oxy_comment_start'].includes(name)) {
@@ -165,9 +165,9 @@
     return xml.scan(text).some(token => {
       if (token.kind !== 'pi') return false;
       const raw = text.slice(token.start, token.end);
-      return /^<\?oxy_(?:attributes|insert_marker|delete_marker)\b/.test(raw) ||
-        /^<\?oxy_insert_start\b/.test(raw) && Boolean(parseOxyPIAttrs(raw).type) ||
-        /^<\?oxy_comment_start\b/.test(raw) && Boolean(parseOxyPIAttrs(raw).parentID);
+      return /^<\?oxy_(?:attributes|insert_marker|delete_marker)(?=\s|\?>)/.test(raw) ||
+        /^<\?oxy_insert_start(?=\s|\?>)/.test(raw) && Boolean(parseOxyPIAttrs(raw).type) ||
+        /^<\?oxy_comment_start(?=\s|\?>)/.test(raw) && Boolean(parseOxyPIAttrs(raw).parentID);
     });
   }
 

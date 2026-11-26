@@ -70,20 +70,11 @@
       return dom.reviewScope?.value === 'oxygen' && (count > 0 || nativeTracking.enabled(file.current) || Boolean(active && nativeTracking.enabled(active.current)));
     }
 
-    /** @param {OxygenChange} change @param {boolean} accept */
-    function getOxyReplacement(change, accept) {
-      if (change.type === 'insert') return accept ? (change.keepContent || '') : '';
-      if (change.type === 'delete') return accept ? '' : (change.deletedContent ?? change.content ?? '');
-      return change.keepContent || '';
-    }
-
     /** @param {DocumentState} file @param {OxygenChange} change @param {boolean} accept */
     function applyOxyChange(file, change, accept) {
       if (!file || typeof change.index !== 'number') return;
-      const source = file.current;
-      const replacement = getOxyReplacement(change, accept);
-      const next = source.slice(0, change.index) + replacement + source.slice(change.index + change.matchLength);
-      try { ditaCore.parseXml(next); }
+      let next;
+      try { next = nativeTracking.resolveChangeForReview(file.current, change, accept); }
       catch (error) { setStatus('无法应用该修订：' + errorMessage(error), true); return; }
       setFileContent(file, next, { origin: 'review' });
       setStatus(accept ? '已接受修订' : '已拒绝修订');

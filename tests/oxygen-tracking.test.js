@@ -209,4 +209,32 @@ test('one multi-block edit generates distinct native revision IDs across titles,
 test('restoring deleted content cannot silently leave unsupported native attribute records behind', () => {
   const before = '<topic><title>T</title><body><?oxy_delete content="&lt;p&gt;&lt;?oxy_attributes a=&quot;x&quot;?&gt;text&lt;/p&gt;"?></body></topic>';
   assert.throws(() => tracking.resolveForReview(before, false), /尚不支持/);
+  const [deletion] = oxygen.collectOxyTrackedChanges(before);
+  assert.throws(() => tracking.resolveChangeForReview(before, deletion, false), /尚不支持/);
+  const reply = before.replace('oxy_attributes a=&quot;x&quot;?&gt;text', 'oxy_comment_start parentID=&quot;qa&quot;?&gt;text&lt;?oxy_comment_end?&gt;');
+  assert.throws(() => tracking.resolveForReview(reply, false), /尚不支持/);
+});
+
+test('review keeps both boundaries of overlapping Oxygen changes intact', () => {
+  const insert = '<?oxy_insert_start author="Writer"?>', insertEnd = '<?oxy_insert_end?>';
+  const comment = '<?oxy_comment_start mid="qa" comment="Check"?>', commentEnd = '<?oxy_comment_end mid="qa"?>';
+  for (const [inside, restored] of [
+    [insert + 'new ' + comment + 'words' + insertEnd + ' unchanged' + commentEnd, ' unchanged'],
+    [comment + 'original ' + insert + 'new' + commentEnd + ' words' + insertEnd, 'original ']
+  ]) {
+    const before = topic(inside);
+    const records = oxygen.collectOxyTrackedChanges(before);
+    const insertion = records.find(change => change.type === 'insert');
+    assert.throws(() => tracking.resolveChangeForReview(before, insertion, false), /破坏其他修订或批注/);
+    const accepted = tracking.resolveChangeForReview(before, insertion, true);
+    assert.deepEqual(oxygen.collectOxyTrackedChanges(accepted).map(change => change.type), ['comment']);
+    assert.equal(tracking.resolveForReview(before, false), topic(restored));
+  }
+});
+
+test('bulk review removes exact Oxygen comment instructions and preserves similarly named instructions and literals', () => {
+  const literal = '<![CDATA[<?oxy_comment_end?>]]><?oxy_comment_start-extra keep?><?oxy_comment_end-extra keep?>';
+  const before = topic(literal + '<?oxy_comment_start?>retain<?oxy_comment_end?>');
+  assert.equal(oxygen.collectOxyTrackedChanges(before).length, 1);
+  assert.equal(tracking.resolveForReview(before, true), topic(literal + 'retain'));
 });
