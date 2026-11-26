@@ -192,6 +192,13 @@ test('real HTTP knowledge delivery works across repositories and from a moved of
       assert.match(await first.innerText(), /AT\+MHTTPCFG/);
       await first.click(); await localPage.locator('#kbBack').click();
       assert.match(await localPage.locator('#kbSearchMeta').innerText(), /本机混合搜索/);
+      await localPage.fill('#kbSearch', 'AT+MHTTPCFG');
+      await localPage.press('#kbSearch', 'Enter');
+      await localPage.waitForFunction(() => document.getElementById('kbSearchMeta').textContent.includes('关键词精确检索'));
+      await first.click(); await localPage.locator('#kbBack').click();
+      assert.match(await localPage.locator('#kbSearchMeta').innerText(), /关键词精确检索/);
+      const exact = execFileSync(process.execPath, ['bin/blink-cli.js', '--kb', compactPath, '--search', 'semantic', 'AT+MHTTPCFG', '--json'], { encoding: 'utf8' });
+      assert.equal(JSON.parse(exact).searchMode, 'lexical');
     } finally {
       await localPage.close();
       await new Promise(resolve => reader.server.close(resolve));

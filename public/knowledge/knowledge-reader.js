@@ -127,7 +127,7 @@
       render(matches, semantic?.checked && useSemantic !== true ? '关键词 · 回车执行语义检索' : '关键词');
       if (useSemantic !== true || !semantic?.checked) return;
       const criteria = JSON.stringify({ query, manualId, ...scope });
-      if (lastSearch?.criteria === criteria) { render(lastSearch.hits, '本机混合搜索'); return; }
+      if (lastSearch?.criteria === criteria) { render(lastSearch.hits, lastSearch.label); return; }
       const job = new AbortController(); searchJob = job;
       get('kbSearchMeta').append(' · 正在本机检索…');
       fetch('/search', { method: 'POST', headers: { 'content-type': 'application/json' }, body: criteria, signal: job.signal })
@@ -135,8 +135,9 @@
           const value = await response.json();
           if (!response.ok || !Array.isArray(value.hits) || value.hits.some(hit => !records[hit?.position])) throw Error(value.error || '搜索响应异常');
           if (searchJob === job) {
-            lastSearch = { criteria, hits: value.hits };
-            render(value.hits, '本机混合搜索');
+            const label = value.searchMode === 'lexical' ? '关键词精确检索' : '本机混合搜索';
+            lastSearch = { criteria, hits: value.hits, label };
+            render(value.hits, label);
           }
         }).catch(error => {
           if (searchJob === job) get('kbSearchMeta').append(' · 已显示关键词结果。' + error.message);
