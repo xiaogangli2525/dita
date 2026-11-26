@@ -79,3 +79,24 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Portable manual cache reuse failed' }
           $cached = $json | ConvertFrom-Json
           if ($cached.reusedManuals -ne 1 -or $cached.rebuiltManuals -ne 0) { throw 'Portable cache statistics are incorrect' }
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify the Python portable KB without Node
+        shell: pwsh
+        run: |
+          python python/build_kb_bundle.py dist/unpacked/blink-cli/docs models dist/blink-kb-python.zip
+          if ($LASTEXITCODE -ne 0) { throw 'Python KB bundle build failed' }
+          Expand-Archive dist/blink-kb-python.zip -DestinationPath 'dist/Python offline KB'
+          $env:BLINK_PYTHON = (Get-Command python).Source
+          $env:BLINK_KB = (Resolve-Path 'dist/Python offline KB/blink-kb/docs').Path
+          $env:BLINK_MODELS = (Resolve-Path 'dist/Python offline KB/blink-kb/models').Path
+          $env:BLINK_TEST_KB = $env:BLINK_KB
+          $env:PYTHONPATH = (Resolve-Path 'dist/Python offline KB/blink-kb/_vendor').Path
+          $env:PYTHONUTF8 = '1'
+          $json = & 'dist/Python offline KB/blink-kb/blink-kb.cmd' '日志抓取方法' --search semantic --json
+          if ($LASTEXITCODE -ne 0) { throw 'Python portable search failed' }
+          $result = $json | ConvertFrom-Json
+          if ($result.results[0].title -ne '日志抓取方法') { throw 'Python portable search returned an unexpected chapter' }
+          python -m unittest discover -s python -p test_blink_kb.py
+          if ($LASTEXITCODE -ne 0) { throw 'Python KB regression failed' }

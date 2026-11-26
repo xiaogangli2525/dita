@@ -32,7 +32,9 @@ async function main() {
     await fs.mkdir(app, { recursive: true });
     const files = ['bin/blink-cli.js', 'lib/knowledge-book.js', 'lib/abort.js', 'lib/knowledge-semantic.js', 'lib/knowledge-index.js', 'lib/knowledge-vector-cache.js', 'lib/semantic-encoder.js', 'lib/knowledge-structure.js',
       'lib/http-utils.js', 'lib/knowledge-reader-server.js', 'public/knowledge/knowledge-reader.js',
-      'public/knowledge/knowledge-search.js', 'public/knowledge/knowledge-search-profile.js', 'public/knowledge/knowledge-retrieval.js', 'public/knowledge/knowledge-semantic.js', 'public/knowledge/knowledge-structure.js', 'public/knowledge/knowledge-limits.js'];
+      'public/knowledge/knowledge-search.js', 'public/knowledge/knowledge-search-profile.js', 'public/knowledge/knowledge-retrieval.js',
+      'public/knowledge/knowledge-ranking.js', 'public/knowledge/knowledge-semantic.js', 'public/knowledge/semantic-model-assets.json',
+      'public/knowledge/knowledge-structure.js', 'public/knowledge/knowledge-limits.js'];
     for (const name of files) { await fs.mkdir(path.dirname(path.join(app, name)), { recursive: true }); await fs.copyFile(path.join(root, name), path.join(app, name)); }
     await fs.cp(path.join(modelRoot, PROFILE.model), path.join(bundle, 'runtime', 'models', PROFILE.model), { recursive: true });
     const onnxVersion = '1.21.0';
