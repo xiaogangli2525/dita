@@ -229,9 +229,9 @@ async function main() {
     if (searchMode !== 'lexical' && outdated) throw Error('语义索引编码配置已更新，请使用 --build-index 重新生成');
     const lexical = engine.search(records, ensureSearchIndex(), query, manual?.id || '', 50, filters);
     // Exact command names and error codes retain their existing hard constraints.
-    const exactLookup = semantic.requiresLexical(query);
+    if (semantic.requiresLexical(query)) searchMode = 'lexical';
     let hits = lexical.slice(0, options.limit);
-    if (searchMode !== 'lexical' && !exactLookup) {
+    if (searchMode !== 'lexical') {
       if (!book.semantic) throw Error('此知识库尚无语义索引，请在工作台勾选离线语义索引后重新发布，或由发布人员使用 --build-index 生成');
       hits = await semantic.search(records, book.semantic, query, lexical, { ...filters, manualId: manual?.id || '', limit: options.limit, semanticOnly: searchMode === 'semantic' });
     }
@@ -254,7 +254,8 @@ async function main() {
       process.stdout.write('没有找到相关内容：' + query + '\n');
     } else {
       warnings.forEach(message => process.stderr.write(message + '\n'));
-      process.stdout.write('知识库：' + book.title + '\n搜索：' + query + '\n找到 ' + results.length + ' 条相关内容' + (searchMode === 'lexical' ? '' : ' · 离线混合检索，请结合原文核对') + '\n\n');
+      const modeLabel = { lexical: '关键词检索', semantic: '离线语义检索', hybrid: '离线混合检索' }[searchMode];
+      process.stdout.write('知识库：' + book.title + '\n搜索：' + query + '\n找到 ' + results.length + ' 条相关内容 · ' + modeLabel + '\n\n');
       if (results.every(result => result.evidence === 'body-mention')) process.stdout.write('当前命中来自正文提及，请读取原文核对是否包含完整使用步骤。\n\n');
       results.forEach((result, index) => {
         process.stdout.write('[' + (index + 1) + '] ' + result.title + '\n');

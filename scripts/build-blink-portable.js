@@ -60,8 +60,13 @@ async function main() {
       'https://nodejs.org/dist/v22.23.5/node-v22.23.5-win-x64.zip', '--output', nodeZip], { stdio: 'inherit' });
     const bytes = await fs.readFile(nodeZip);
     if (createHash('sha256').update(bytes).digest('hex') !== '4a191082e9706866830379d577d2cc8a50c776fcd9436a8d061b063ed0d9a0e3') throw Error('Windows Node 运行时校验失败');
-    const nodeFiles = unzipSync(bytes, { filter: item => /\/(node.exe|LICENSE)$/.test(item.name) });
-    for (const [name, data] of Object.entries(nodeFiles)) await fs.writeFile(path.join(bundle, 'runtime', path.basename(name)), data);
+    const nodeRoot = 'node-v22.23.5-win-x64/';
+    const nodeFiles = unzipSync(bytes, { filter: item => item.name === nodeRoot + 'node.exe' || item.name === nodeRoot + 'LICENSE' });
+    for (const name of ['node.exe', 'LICENSE']) {
+      const data = nodeFiles[nodeRoot + name];
+      if (!data?.length) throw Error('Windows Node 压缩包缺少文件：' + name);
+      await fs.writeFile(path.join(bundle, 'runtime', name), data);
+    }
     await fs.mkdir(path.join(bundle, 'docs'));
     for (const [name, data] of Object.entries(htmlFiles)) {
       const target = path.join(bundle, name); await fs.mkdir(path.dirname(target), { recursive: true }); await fs.writeFile(target, data);
@@ -75,7 +80,7 @@ async function main() {
     await fs.writeFile(path.join(bundle, 'docs', 'knowledge.json'), JSON.stringify(book));
     await fs.writeFile(path.join(bundle, 'blink-cli.cmd'), '@echo off\r\nsetlocal\r\nif not defined BLINK_KB set "BLINK_KB=%~dp0docs\\knowledge.json"\r\nif not defined BLINK_MODELS set "BLINK_MODELS=%~dp0runtime\\models"\r\n"%~dp0runtime\\node.exe" "%~dp0runtime\\app\\bin\\blink-cli.js" %*\r\n');
     if (htmlFiles['docs/index.html']) await fs.writeFile(path.join(bundle, 'blink-reader.cmd'), '@echo off\r\ncall "%~dp0blink-cli.cmd" --serve\r\n');
-    const htmlHelp = htmlFiles['docs/index.html'] ? '双击 docs/index.html 可阅读并按关键词检索。双击 blink-reader.cmd 并打开窗口中显示的本机地址，可在浏览器用语义检索。' : '本包提供 CLI 检索。构建时可指定原知识库 ZIP，一并保留 HTML。';
+    const htmlHelp = htmlFiles['docs/index.html'] ? '请先完整解压 ZIP。双击 blink-reader.cmd，把窗口显示的本机地址复制到浏览器。保持窗口开启，勾选“本机语义检索”，输入问题后按回车。结果上方显示“本机混合搜索”时，查询已完成。\n只需阅读和关键词检索时，可直接打开 docs/index.html。\n' : '本包提供 CLI 检索。构建时可指定原知识库 ZIP，一并保留 HTML。';
     await fs.writeFile(path.join(bundle, 'README.txt'), '离线知识库检索验证版\n\n' + htmlHelp + '向量数据位于 docs/knowledge.json 的 semantic 字段。\n\n在解压目录打开 PowerShell，执行\n.\\blink-cli.cmd --info\n.\\blink-cli.cmd KB "怎么把日志取出来"\n.\\blink-cli.cmd KB "看一下还有多少内存可用" --json\n.\\blink-cli.cmd KB "webui二次认证"\n\n随包提供 Windows x64 Node、CPU 推理运行库、分词器、量化模型和知识库。运行时从本地加载全部资源。搜索结果是原文线索，请结合章节核对。\n模型来源 https://huggingface.co/Xenova/bge-small-zh-v1.5\n基础模型 https://huggingface.co/BAAI/bge-small-zh-v1.5\n运行依赖位于 runtime/app/node_modules；模型位于 runtime/models；许可说明位于 runtime/licenses 和 runtime/LICENSE。\n');
     const archive = {};
     async function collect(dir, prefix) {

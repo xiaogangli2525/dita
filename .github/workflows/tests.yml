@@ -62,6 +62,7 @@ jobs:
           if (!(Test-Path docs/index.html)) { throw 'HTML reader missing from the portable package' }
           if (!(Test-Path blink-reader.cmd)) { throw 'Local reader launcher missing from the portable package' }
           if (!(Test-Path runtime/app/node_modules)) { throw 'Bundled runtime dependencies missing' }
+          if ((Get-FileHash -Algorithm SHA256 runtime/LICENSE).Hash -ne '8cc9bb466b19fc7e7cc99d03e9df1132021fda8b01eea2624c58bb372dbef576') { throw 'Bundled Node.js license differs from the official Windows archive' }
           if ((Get-FileHash -Algorithm SHA256 (Join-Path 'runtime/licenses' $noticePath)).Hash -ne $noticeHash) { throw 'Bundled ONNX Runtime third-party notices differ from source' }
           $json = & .\blink-cli.cmd '日志抓取方法' --search semantic --json
           if ($LASTEXITCODE -ne 0) { throw 'Portable CLI failed' }
