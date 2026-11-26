@@ -13,6 +13,7 @@
         'HTTP实例', 'HTTP命令', 'HTTP/HTTPS协议', 'AT命令', 'AT指令', 'GET', 'POST', 'PUT',
         'content', 'header', '下载', '大数据', '配置参数', '写入'
       ],
+      technicalAliases: { '串行口': 'uart', '串口': 'uart' },
       stopWords: ['我要', '我想', '帮我', '请帮我'],
       synonyms: {
         '模块上不了网': '数据拨号', '为什么不能上网': '数据拨号', '无法上网': '数据拨号', 'PDP数据连接': 'PDP上下文',

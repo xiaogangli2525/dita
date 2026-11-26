@@ -155,6 +155,22 @@
       "expected": "前端定制开发"
     },
     {
+      "query": "支持多少串口",
+      "expected": "外设资源"
+    },
+    {
+      "query": "支持多少 UART",
+      "expected": "外设资源"
+    },
+    {
+      "query": "有几个串口",
+      "expected": "外设资源"
+    },
+    {
+      "query": "串口数量",
+      "expected": "外设资源"
+    },
+    {
       "query": "webui二次认证",
       "expected": null
     },

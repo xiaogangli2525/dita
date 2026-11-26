@@ -30,6 +30,14 @@ test('real HTTP knowledge delivery works across repositories and from a moved of
   page.setDefaultTimeout(15000); page.on('pageerror', error => errors.push(error.message));
   await page.goto('http://127.0.0.1:' + port); await page.waitForFunction(() => window.DitaApp?.state.root);
   await page.evaluate(mapPath => window.DitaApp.openFile(mapPath), mapPath);
+  await t.test('indexed chapter text and blocks omit deleted revision values while the reader keeps the marks', async () => {
+    const manual = await page.evaluate(() => window.DitaKnowledgeDocument.extractManual(
+      '<h2 id="sec-1">外设资源</h2>\n<p>UART*<del class="oxy-delete">2</del><ins class="oxy-insert">4</ins></p>',
+      'm-0123456789abcdef'));
+    assert.equal(manual.entries[0].text, '外设资源 UART*4');
+    assert.ok(manual.entries[0].structure.units.some(unit => unit.text === 'UART*4'));
+    assert.match(manual.body, /<del class="oxy-delete">2<\/del><ins class="oxy-insert">4<\/ins>/);
+  });
   async function addCurrent() {
     await page.click('#knowledgeAdd'); await page.waitForFunction(() => !document.getElementById('knowledgeAdd').disabled && (document.getElementById('knowledgeStatus').textContent.includes('已加入') || document.getElementById('knowledgeError').textContent), null, { timeout: 60000 });
     assert.equal(await page.locator('#knowledgeError').innerText(), '');

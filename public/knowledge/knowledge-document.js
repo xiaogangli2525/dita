@@ -3,7 +3,8 @@
 (function (root) {
   const structure = typeof module !== 'undefined' ? require('./knowledge-structure') : root.DitaKnowledgeStructure;
   /** @param {ParentNode} content */
-  const linkedNotes = content => [...new Set([...content.querySelectorAll('sup.fn-ref a[href]')]
+  const linkedNotes = (content, omitDeleted = false) => [...new Set([...content.querySelectorAll('sup.fn-ref a[href]')]
+    .filter(link => !omitDeleted || !link.closest('del.oxy-delete'))
     .map(link => link.getAttribute('href')?.slice(1) ?? ''))];
   // Only published HTML reaches this adapter; it never parses unfiltered DITA.
   /** @param {string} html @param {string} id */
@@ -25,20 +26,26 @@
     const headings = [...doc.body.querySelectorAll('h2[id]')].filter(node => node.id.startsWith(id + '--sec-'));
     if (!headings.length) throw new Error('手册没有可发布的章节');
     const footnotes = doc.body.querySelector('.export-footnotes');
-    const noteMap = structure.definitions(structure.tree(doc.body));
+    // Keep revision markup in the reader. Index the text with deletions omitted.
+    const indexTree = (/** @type {Node} */ node) => structure.tree(node, { omitDeleted: true });
+    const noteMap = structure.definitions(indexTree(doc.body));
     const entries = headings.map((heading, index) => {
       const range = doc.createRange(); range.setStartBefore(heading);
       if (headings[index + 1]) range.setEndBefore(headings[index + 1]);
       else if (footnotes) range.setEndBefore(footnotes);
       else range.setEnd(doc.body, doc.body.childNodes.length);
       const content = range.cloneContents();
-      const notes = linkedNotes(content);
-      const text = [content.textContent, ...notes.map(key => doc.getElementById(key)?.querySelector('.footnote-content')?.textContent || '')].join(' ').replace(/\s+/g, ' ').trim();
-      const title = (heading.textContent || '').trim(), blocks = structure.extract(structure.tree(content), noteMap, heading.id);
+      const indexed = indexTree(content);
+      const notes = linkedNotes(content, true).map(key => {
+        const node = doc.getElementById(key)?.querySelector('.footnote-content');
+        return node ? structure.rawText(indexTree(node)) : '';
+      });
+      const text = structure.prose([structure.rawText(indexed), ...notes].join(' '));
+      const title = structure.rawText(indexTree(heading)).trim(), blocks = structure.extract(indexed, noteMap, heading.id);
       range.deleteContents(); range.insertNode(content);
       return { anchor: heading.id, title, text, structure: structure.seal(title, text, blocks.units, blocks.warnings) };
     });
-    const toc = headings.map(heading => ({ anchor: heading.id, title: (heading.textContent || '').trim() }));
+    const toc = entries.map(({ anchor, title }) => ({ anchor, title }));
     return { body: doc.body.innerHTML, toc, entries };
   }
   /** @param {string} body @param {string} anchor */

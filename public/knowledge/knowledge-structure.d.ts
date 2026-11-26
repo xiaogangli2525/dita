@@ -10,7 +10,8 @@ export interface StructureTree {
 export const SCHEMA:1;
 export function prose(value:unknown):string;
 export function fingerprint(value:unknown):string;
-export function tree(node:Node):StructureTree;
+export function tree(node:Node, options?:{omitDeleted?:boolean}):StructureTree;
+export function rawText(node:StructureTree):string;
 export function definitions(node:StructureTree):Map<string,string>;
 export function extract(fragment:StructureTree, noteMap?:ReadonlyMap<string,string>, chapterAnchor?:string):{units:StructureUnit[];warnings:string[]};
 export function seal(title:string, value:string, units:readonly StructureUnit[], warnings?:readonly string[]):KnowledgeStructure;
