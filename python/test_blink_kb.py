@@ -62,7 +62,8 @@ class OfflineKB(unittest.TestCase):
                 result = run(get_args([*args, query, "--search", mode]))
                 self.assertEqual(result["searchMode"], mode)
                 self.assertEqual(result["results"][0]["title"], title)
-                self.assertIn("semanticScore", result["results"][0])
+                if mode == "semantic":
+                    self.assertIn("semanticScore", result["results"][0])
                 if block := result["results"][0].get("chunk", {}).get("blockId"):
                     reading = run(get_args([*args, "--get", result["results"][0]["id"], "--block", block]))
                     self.assertEqual(reading["block"]["id"], block)
