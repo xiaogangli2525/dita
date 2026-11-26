@@ -12,3 +12,6 @@ dist/
 
 # Unpacked CLI delivery previews in the repository root.
 /blink-cli-*/
+
+# Python bytecode
+__pycache__/

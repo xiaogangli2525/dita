@@ -180,9 +180,13 @@
     return btoa(binary);
   }
 
-  function validate(records, index) {
+  function validateChunks(records, index) {
     if (!compatible(index)) throw Error('语义索引模型或编码配置不兼容，请使用 --build-index 重新生成');
     if (index.profile.id === LEGACY_PROFILE.id) validateLegacyChunks(records, index.chunks); else validateStructuredChunks(records, index.chunks);
+  }
+
+  function validate(records, index) {
+    validateChunks(records, index);
     const binary = atob(index.vectors || '');
     if (binary.length !== index.chunks.length * PROFILE.dimensions * bytesPerValue(index.schema)) throw Error('语义向量数据长度无效');
     if (index.schema === COMPACT_SCHEMA) return decodeCompact(binary);
@@ -260,6 +264,6 @@
   }
 
   const api = { PROFILE, LEGACY_PROFILE, COMPACT_SCHEMA, sourceText, normalizeInput, compatible, chunksFor, legacyChunksFor, unitsFor,
-    createIndex, validate, compactIndex, encodedVectorLength, vectorEncoding, combineIndexes };
+    createIndex, validateChunks, validate, compactIndex, encodedVectorLength, vectorEncoding, combineIndexes };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaKnowledgeSemantic = api;
 })(typeof window === 'undefined' ? globalThis : window);

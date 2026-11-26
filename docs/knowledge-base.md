@@ -210,3 +210,23 @@ blink-cli --kb ./knowledge.zip --json -- -17
 分块正文、标题前缀和重叠区间按完整 Unicode 字符截断，避免把 emoji 或扩展汉字拆成两个代理码元。旧索引仍可读取；更新后的本机缓存规则为 `manual-index-v2`，第一次生成会重建旧缓存，随后继续按单册内容跨 SDK 版本复用。
 
 后台 Worker 使用 DEFLATE 或 STORE 逐文件打包为 Blob，源快照上限是 40 MiB，ZIP 安全读取上限是 64 MiB，解压数据上限是 128 MiB。解压会恢复封装时的 HTML、清单、图片和所选向量格式的字节。数字与错误码保留精确证据约束，AT/API 查询还支持前缀与拼写纠错。
+
+## 接入 Python blink-cli
+
+Python 版读取既有发布内容。关键词和混合排序沿用工作台的检索规则，纯向量查询由 Python ONNX Runtime 执行。本地规则使用随包提供的 QuickJS 执行，运行机器无需 Node.js。索引生成仍可通过工作台或 Node 版发布命令完成。
+
+在 DITA 根目录以 Python 3.12 运行 `python -m pip install -r python/requirements-kb.txt`，将 `python/` 加入 Python 的模块搜索路径。测试现有发布包时，令 `BLINK_MODELS` 指向包含 `Xenova` 子目录的模型目录。
+
+```powershell
+$env:PYTHONPATH = (Resolve-Path .\python).Path
+$env:BLINK_MODELS = (Resolve-Path .\models).Path
+python -m blink_kb --kb .\release\docs "支持多少串口" --json
+```
+
+接到团队的 CLI 时，将发行包内的 `blink_kb` 模块（含 `_rules` 数据目录）和依赖随工具打包，在 `kb` 分发函数里调用 `from blink_kb.__main__ import main` 和 `return main(kb_args)`，传入 `kb` 之后的原始参数。模块返回进程退出码。可用环境变量 `BLINK_KB` / `BLINK_MODELS` 指定默认文档与模型。封装为 EXE 时需把规则目录和依赖的原生库作为随包资源收集。
+
+构建可转发离线包时，使用包含 `knowledge.json` 的发布目录。可同时放入同一份发布的 HTML 阅读页和手册。构建机下载 Windows x64 的 Python 3.12 依赖，接收方复用已有的 Python 3.12 解释器。
+
+```powershell
+python python/build_kb_bundle.py .\release\docs .\models .\dist\blink-kb-windows-x64.zip
+```
