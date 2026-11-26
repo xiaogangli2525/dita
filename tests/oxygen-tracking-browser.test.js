@@ -16,6 +16,10 @@ test('Oxygen tracking persists real code edits and supports review, history and 
   await fs.writeFile(path.join(repo, 'typing.dita'), prose);
   const native = await fs.readFile(path.join(__dirname, 'fixtures/oxygen-webauthor-28.1-native.dita'), 'utf8');
   await fs.writeFile(path.join(repo, 'native.dita'), native);
+  const insert = '<?oxy_insert_start author="Writer"?>', insertEnd = '<?oxy_insert_end?>';
+  const comment = '<?oxy_comment_start author="QA" mid="qa" comment="Check"?>', commentEnd = '<?oxy_comment_end mid="qa"?>';
+  const overlapping = '<topic id="overlap"><title>HTTP</title><body><p>Keep ' + insert + 'inserted ' + comment + 'annotated' + insertEnd + ' end' + commentEnd + '.</p><p>' + comment + 'Original ' + insert + 'inserted' + commentEnd + ' text' + insertEnd + '.</p></body></topic>';
+  await fs.writeFile(path.join(repo, 'overlap.dita'), overlapping);
   for (const args of [['init'], ['add', '.'], ['-c', 'user.name=Test', '-c', 'user.email=test@example.invalid', 'commit', '-m', 'fixture']]) execFileSync('git', args, { cwd: repo, stdio: 'ignore' });
   const port = await new Promise(resolve => { const socket = net.createServer(); socket.listen(0, '127.0.0.1', () => { const number = socket.address().port; socket.close(() => resolve(number)); }); });
   const server = spawn(process.execPath, ['server.js'], { cwd: path.join(__dirname, '..'), env: { ...process.env, DOCS_ROOT: repo, REPOSITORIES_ROOT: temp, PORT: String(port) }, stdio: ['ignore', 'pipe', 'pipe'] });
@@ -219,6 +223,31 @@ test('Oxygen tracking persists real code edits and supports review, history and 
     await page.selectOption('#reviewScope', 'oxygen');
     assert.equal(await page.locator('#diff .oxy-author').filter({ hasText: /^Anonymous$/ }).count(), 4);
     assert.equal(await current('native.dita'), changed);
+  });
+  await t.test('single rejection preserves overlapping revisions and bulk rejection saves a valid document', async () => {
+    await page.click('#closeReviewButton'); await open('overlap.dita');
+    await page.click('#reviewButton'); await page.selectOption('#reviewScope', 'oxygen');
+    assert.equal(await page.locator('#diff .oxy-change').count(), 4);
+    const reject = page.locator('#diff .oxy-insert-type').first().getByRole('button', { name: '拒绝', exact: true });
+    await reject.click();
+    assert.match(await page.locator('#status').textContent(), /请先处理交叠的修订或批注/);
+    assert.equal(await current('overlap.dita'), overlapping);
+    assert.equal(await page.evaluate(() => window.DitaApp.state.filesMap.get('overlap.dita').dirty), false);
+    assert.equal(await page.locator('#diff .oxy-change').count(), 4);
+
+    await page.locator('#diff .oxy-comment-type').first().getByRole('button', { name: '接受', exact: true }).click();
+    await reject.click();
+    const reviewed = overlapping.replace(insert + 'inserted ' + comment + 'annotated' + insertEnd + ' end' + commentEnd, ' end');
+    assert.equal(await current('overlap.dita'), reviewed);
+    assert.equal(await fs.readFile(path.join(repo, 'overlap.dita'), 'utf8'), overlapping);
+    await page.click('#rejectAllButton');
+    const expected = reviewed.replace(comment + 'Original ' + insert + 'inserted' + commentEnd + ' text' + insertEnd, 'Original ');
+    assert.equal(await current('overlap.dita'), expected);
+    await page.click('#saveButton'); await page.waitForFunction(() => !window.DitaApp.state.filesMap.get('overlap.dita').dirty);
+    assert.equal(await fs.readFile(path.join(repo, 'overlap.dita'), 'utf8'), expected);
+    await page.reload(); await page.waitForFunction(() => window.DitaApp?.state.root); await open('overlap.dita');
+    assert.equal(await current('overlap.dita'), expected);
+    assert.deepEqual(collectOxyTrackedChanges(expected), []);
   });
   assert.deepEqual(errors, []);
 });

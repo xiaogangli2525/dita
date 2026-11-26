@@ -12,6 +12,42 @@
   function unsupported() {
     throw new Error('跟踪修订第一版支持文字增删替换；结构、属性或跨修订边界的操作请先处理已有修订，或关闭跟踪后修改');
   }
+  /** @param {OxygenChange} change @param {boolean} accept */
+  function reviewReplacement(change, accept, validateRestoration = false) {
+    if (change.type === 'delete') {
+      if (accept) return '';
+      if (validateRestoration && oxygen.hasUnsupportedChanges(change.deletedContent)) {
+        throw new Error('恢复内容包含尚不支持的 Oxygen 修订，请在 Oxygen 中处理');
+      }
+      return change.deletedContent;
+    }
+    return change.type === 'comment' || accept ? change.keepContent : '';
+  }
+  /** @param {string} source @param {OxygenChange} change @param {boolean} accept */
+  function resolveChangeForReview(source, change, accept) {
+    const value = reviewReplacement(change, accept, true);
+    const next = source.slice(0, change.index) + value + source.slice(change.index + change.matchLength);
+    xml.validateXml(next);
+    try { oxygen.collectOxyTrackedChanges(next); }
+    catch (error) {
+      const reason = error instanceof Error ? error.message : String(error);
+      throw new Error('该操作会破坏其他修订或批注的标记，请先处理交叠的修订或批注。' + reason, { cause: error });
+    }
+    return next;
+  }
+
+  /** @param {string} source */
+  function removeCommentMarkers(source) {
+    const pieces = [];
+    let cursor = 0;
+    for (const { kind, start, end } of xml.scan(source)) {
+      if (kind !== 'pi' || !/^<\?oxy_comment_(?:start|end)(?=\s|\?>)/.test(source.slice(start, end))) continue;
+      pieces.push(source.slice(cursor, start));
+      cursor = end;
+    }
+    pieces.push(source.slice(cursor));
+    return pieces.join('');
+  }
   /** @param {string} value */
   const escape = value => value.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\r/g, '&#13;').replace(/\n/g, '&#10;').replace(/\t/g, '&#9;');
   /** @param {string} source */
@@ -41,12 +77,19 @@
   /** @param {string} source @param {boolean} accept */
   function resolve(source, accept, includeComments = false) {
     for (let pass = 0; pass < 100; pass++) {
-      const changes = oxygen.collectOxyTrackedChanges(source).filter(c => includeComments || c.type !== 'comment');
+      const records = oxygen.collectOxyTrackedChanges(source);
+      // Bulk review removes complete comment markers before rejecting inserted
+      // text, since an insertion can contain just one side of a comment.
+      if (includeComments && records.some(change => change.type === 'comment')) {
+        source = removeCommentMarkers(source);
+        continue;
+      }
+      const changes = records.filter(change => change.type !== 'comment');
       if (!changes.length) return source;
       let right = source.length, changed = false;
       for (const c of changes.reverse()) {
         if (c.index + c.matchLength > right) continue;
-        const value = c.type === 'delete' ? accept ? '' : c.deletedContent : c.type === 'comment' || accept ? c.keepContent : '';
+        const value = reviewReplacement(c, accept, includeComments);
         source = source.slice(0, c.index) + value + source.slice(c.index + c.matchLength);
         right = c.index; changed = true;
       }
@@ -225,6 +268,6 @@
     xml.validateXml(output);
     return output;
   }
-  const api = { enabled, setting, setEnabled, trackEdit, resolve, resolveForReview };
+  const api = { enabled, setting, setEnabled, trackEdit, resolve, resolveForReview, resolveChangeForReview };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaOxygenTracking = api;
 })(typeof window === 'undefined' ? globalThis : window);
