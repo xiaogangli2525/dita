@@ -100,3 +100,13 @@ jobs:
           if ($result.results[0].title -ne '日志抓取方法') { throw 'Python portable search returned an unexpected chapter' }
           python -m unittest discover -s python -p test_blink_kb.py
           if ($LASTEXITCODE -ne 0) { throw 'Python KB regression failed' }
+      - name: Build reusable Windows setup kit
+        run: python python/build_windows_runtime.py models dist/reader-setup
+      - name: Test first install, repeated setup and repair through the shipped launchers
+        run: python python/check_windows_setup.py dist/reader-setup dist/unpacked/blink-cli/docs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Blink-KB-Windows-x64-Setup
+          path: dist/reader-setup/
+          if-no-files-found: error
+          retention-days: 90

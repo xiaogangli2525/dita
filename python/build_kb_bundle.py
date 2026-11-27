@@ -1,7 +1,5 @@
 """Build a Windows x64, Python 3.12 offline KB bundle from an existing publication."""
 import argparse
-import hashlib
-import json
 from pathlib import Path
 import shutil
 import subprocess
@@ -11,6 +9,7 @@ from zipfile import ZIP_DEFLATED, ZipFile
 
 from blink_kb.book import read_book
 from blink_kb.search import MODULES
+from blink_kb.model_files import MODEL, manifest, matches
 
 HERE = Path(__file__).resolve().parent
 PROJECT = HERE.parent
@@ -20,7 +19,51 @@ def write_command(path, text):
     path.write_bytes((text.strip().replace("\n", "\r\n") + "\r\n").encode("ascii"))
 
 
-def build(source, models, output):
+def copy_client(root):
+    assets_file = PROJECT / "public/knowledge/semantic-model-assets.json"
+    package = root / "blink_kb"
+    rules = package / "_rules"
+    rules.mkdir(parents=True)
+    for name in (*MODULES, assets_file.name):
+        shutil.copy2(assets_file.parent / name, rules)
+    for file in (HERE / "blink_kb").iterdir():
+        if file.suffix in (".py", ".js"):
+            shutil.copy2(file, package)
+    for name in ("launch-kb.py", "kb_setup.py", "requirements-kb-win.lock"):
+        shutil.copy2(HERE / name, root)
+    shutil.copy2(HERE / "README-windows.txt", root / "README.txt")
+    shutil.copytree(PROJECT / "docs/licenses", root / "licenses")
+    write_command(root / "blink-kb.cmd", (HERE / "blink-kb.cmd").read_text(encoding="ascii"))
+    for name, option in (("blink-reader", "--serve"), ("install-deps", "--setup")):
+        write_command(root / (name + ".cmd"), '@echo off\n"%~dp0blink-kb.cmd" ' + option)
+    write_command(root / "setup-reader.cmd", '@echo off\ncall "%~dp0install-deps.cmd"\n'
+                  'set "result=%errorlevel%"\npause\nexit /b %result%')
+
+
+def copy_model(models, destination):
+    for name, digest in manifest(PROJECT / "public/knowledge/semantic-model-assets.json").items():
+        source = models / MODEL / name
+        if not matches(source, digest):
+            raise ValueError(f"模型文件校验失败：{source}")
+        target = destination / MODEL / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, target)
+
+
+def install_wheels(dependencies, wheelhouse):
+    platform = ["--only-binary=:all:", "--platform", "win_amd64", "--python-version", "3.12",
+                "--implementation", "cp", "--abi", "cp312"]
+    # The lock contains the complete target-platform closure, including Windows-only wheels.
+    locked = ["--no-deps", "--require-hashes", "-r", str(HERE / "requirements-kb-win.lock")]
+    subprocess.run([sys.executable, "-m", "pip", "download", *platform, *locked, "--dest", str(wheelhouse)],
+                   check=True)
+    subprocess.run([sys.executable, "-m", "pip", "install", "--no-index", "--no-compile", *platform, *locked,
+                    "--find-links", str(wheelhouse), "--target", str(dependencies)], check=True)
+    shutil.rmtree(dependencies / "bin", ignore_errors=True)
+    shutil.rmtree(dependencies / "Scripts", ignore_errors=True)
+
+
+def build(source, models, output, lite=False):
     docs = source / "docs" if (source / "docs/knowledge.json").is_file() else source
     book = read_book(docs / "knowledge.json")
     if not book.get("semantic"):
@@ -31,71 +74,15 @@ def build(source, models, output):
                               for m in b["manuals"]]
         if identify(html) != identify(book) or (html["model"], html["sdkVersion"]) != (book["model"], book["sdkVersion"]):
             raise ValueError("阅读页与知识库正文版本不一致")
-    assets_file = PROJECT / "public/knowledge/semantic-model-assets.json"
-    model = models / "Xenova/bge-small-zh-v1.5"
-    assets = json.loads(assets_file.read_text(encoding="utf-8"))
     with TemporaryDirectory(prefix="blink-kb-") as temp:
         root = Path(temp) / "blink-kb"
-        dependencies = root / "_vendor"
-        wheelhouse = Path(temp) / "wheels"
-        platform = ["--only-binary=:all:", "--platform", "win_amd64", "--python-version", "3.12",
-                    "--implementation", "cp", "--abi", "cp312"]
-        subprocess.run([sys.executable, "-m", "pip", "download", *platform, "--dest", str(wheelhouse),
-                        "-r", str(HERE / "requirements-kb.txt")], check=True)
-        from lock_windows_wheels import wheel_lock
-        print("WINDOWS_WHEEL_LOCK_BEGIN" + chr(10) + wheel_lock(wheelhouse) + "WINDOWS_WHEEL_LOCK_END", flush=True)
-        subprocess.run([sys.executable, "-m", "pip", "install", "--no-index", "--no-deps", "--no-compile", *platform,
-                        "--target", str(dependencies), *map(str, sorted(wheelhouse.glob("*.whl")))], check=True)
-        shutil.rmtree(dependencies / "bin", ignore_errors=True)
-        shutil.rmtree(dependencies / "Scripts", ignore_errors=True)
-        package = root / "blink_kb"
-        rules = package / "_rules"
-        rules.mkdir(parents=True)
-        for filename in (*MODULES, assets_file.name):
-            shutil.copy2(assets_file.parent / filename, rules)
-        for source_file in (HERE / "blink_kb").iterdir():
-            if source_file.suffix in (".py", ".js"):
-                shutil.copy2(source_file, package)
-        for name, expected in assets.items():
-            target = root / "models/Xenova/bge-small-zh-v1.5" / name
-            target.parent.mkdir(parents=True, exist_ok=True)
-            with (model / name).open("rb") as stream:
-                if hashlib.file_digest(stream, "sha256").hexdigest() != expected:
-                    raise ValueError(f"模型文件校验失败：{name}")
-            shutil.copy2(model / name, target)
-        shutil.copytree(PROJECT / "docs/licenses", root / "licenses")
+        copy_client(root)
+        if not lite:
+            install_wheels(root / "_vendor", Path(temp) / "wheels")
+            copy_model(models, root / "models")
         shutil.copytree(docs, root / "docs")
-        shutil.copy2(HERE / "README-windows.txt", root / "README.txt")
-        (root / "launch-kb.py").write_text("""import os
-from pathlib import Path
-import sys
-
-if sys.version_info[:2] != (3, 12) or sys.platform != "win32" or sys.maxsize <= 2**32:
-    sys.exit("This bundle requires Windows x64 Python 3.12.")
-root = Path(__file__).resolve().parent
-sys.path.insert(1, str(root / "_vendor"))
-os.environ.setdefault("BLINK_KB", str(root / "docs"))
-os.environ.setdefault("BLINK_MODELS", str(root / "models"))
-
-from blink_kb.__main__ import main
-
-raise SystemExit(main(command=r".\\blink-kb.cmd"))
-""", encoding="utf-8")
-        write_command(root / "blink-kb.cmd", r'''
-@echo off
-setlocal
-if defined BLINK_PYTHON (
-  "%BLINK_PYTHON%" -X utf8 "%~dp0launch-kb.py" %*
-) else (
-  py -3.12 -X utf8 "%~dp0launch-kb.py" %*
-)
-exit /b %ERRORLEVEL%
-''')
-        if (docs / "index.html").is_file():
-            write_command(root / "blink-reader.cmd", r'''
-@echo off
-call "%~dp0blink-kb.cmd" --serve
-''')
+        if not (docs / "index.html").is_file():
+            (root / "blink-reader.cmd").unlink()
         output.parent.mkdir(parents=True, exist_ok=True)
         with ZipFile(output, "x", compression=ZIP_DEFLATED, compresslevel=6) as archive:
             for path in sorted(root.rglob("*")):
@@ -109,8 +96,9 @@ def main():
     parser.add_argument("source", type=Path, help="包含 knowledge.json 的 docs 目录，或其父目录")
     parser.add_argument("models", type=Path, help="包含 Xenova 模型目录的路径")
     parser.add_argument("output", type=Path, help="新建目标 ZIP 文件")
+    parser.add_argument("--lite", action="store_true", help="只打包文档和启动器，复用单独的运行环境")
     args = parser.parse_args()
-    build(args.source, args.models, args.output)
+    build(args.source, args.models, args.output, args.lite)
 
 
 if __name__ == "__main__":
