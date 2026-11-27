@@ -34,7 +34,8 @@ def copy_client(root):
     shutil.copy2(HERE / "README-windows.txt", root / "README.txt")
     shutil.copytree(PROJECT / "docs/licenses", root / "licenses")
     write_command(root / "blink-kb.cmd", (HERE / "blink-kb.cmd").read_text(encoding="ascii"))
-    for name, option in (("blink-reader", "--serve"), ("install-deps", "--setup")):
+    for name, option in (("blink-reader", "--serve"), ("install-deps", "--setup"),
+                         ("install-model", "--install-model")):
         write_command(root / (name + ".cmd"), '@echo off\n"%~dp0blink-kb.cmd" ' + option)
     write_command(root / "setup-reader.cmd", '@echo off\ncall "%~dp0install-deps.cmd"\n'
                   'set "result=%errorlevel%"\npause\nexit /b %result%')

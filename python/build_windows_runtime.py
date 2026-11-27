@@ -37,7 +37,7 @@ def build(models, output):
         # Upgrade the previous standalone model install shortcut when it is extracted alongside the docs.
         legacy = staging / "blink-kb-model"
         legacy.mkdir()
-        write_command(legacy / "install-model.cmd", '@echo off\n"%~dp0..\\blink-kb\\setup-reader.cmd"')
+        write_command(legacy / "install-model.cmd", '@echo off\n"%~dp0..\\blink-kb\\install-model.cmd"')
         output.mkdir(parents=True)
         for item in ("blink-kb", "blink-kb-runtime", "blink-kb-model"):
             shutil.move(staging / item, output / item)

@@ -16,7 +16,7 @@ Blink 离线知识库 · Windows x64
 可以使用轻量文档包，在 blink-kb 同级放原始 Blink-KB-Models-bge-small-zh-v1.5.zip，运行 install-deps.cmd。首次安装在 blink-kb\.venv 内按哈希安装依赖，请把文档解压到可写目录。自备离线 wheels 可全部放在 blink-kb\wheelhouse，此时安装只用本地文件。BLINK_PYTHON 可指定基础解释器的完整路径。加载顺序为配套运行包、专用 .venv、BLINK_PYTHON、py -3.12、python。附带 _vendor 和模型的旧全量版也支持直接使用同架构 CPython 3.12。
 
 模型与故障处理
-BLINK_MODELS 可指定绝对路径，应指向包含 Xenova 目录的父目录。安装与检索使用同一位置；默认优先使用文档包自带的模型，其次使用 %LOCALAPPDATA%\Blink\models。BLINK_MODEL_PACKAGE 可指定单独的模型 ZIP 或含 models\Xenova 的解压目录。首次安装会校验 5 个模型文件并修复损坏的副本，重复安装复用通过校验的文件。
+BLINK_MODELS 可指定绝对路径，应指向包含 Xenova 目录的父目录。安装与检索使用同一位置；默认优先使用文档包自带的模型，其次使用 %LOCALAPPDATA%\Blink\models。BLINK_MODEL_PACKAGE 可指定单独的模型 ZIP 或含 models\Xenova 的解压目录。仅预装模型时可运行 install-model.cmd，之后再用 setup-reader.cmd 验证实际检索。首次安装会校验 5 个模型文件并修复损坏的副本，重复安装复用通过校验的文件。
 如窗口提示 BLINK_KB 指向另一份手册，请临时清除这个变量后再验证随包文档。在 PowerShell 中可执行 Remove-Item Env:BLINK_KB，然后重新运行安装。模型路径不可写时可把 BLINK_MODELS 设到用户可写的绝对路径。
 
 在 blink-kb 目录打开 PowerShell：

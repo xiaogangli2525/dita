@@ -25,9 +25,14 @@ def main():
     os.environ["BLINK_MODELS"] = str(dest)
     if not os.environ.get("BLINK_KB"):
         os.environ["BLINK_KB"] = str(root / "docs")
-    if sys.argv[1:] in (["--setup"], ["--verify-install"]):
+    if sys.argv[1:] in (["--setup"], ["--verify-install"], ["--install-model"]):
         import kb_setup
 
+        if sys.argv[1] == "--install-model":
+            print(f"本次使用的模型目录：{dest}", flush=True)
+            kb_setup.install_model(root, dest)
+            print("模型文件已就绪。解压手册后运行 setup-reader.cmd 验证检索。")
+            return 0
         if sys.argv[1] == "--setup":
             return kb_setup.setup(root, dest)
         kb_setup.verify(root, dest)

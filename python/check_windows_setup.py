@@ -27,12 +27,16 @@ def test(kit, docs, uart_docs):
         shutil.copytree(kit / root.name, root)
         # Keep vendor files and bytecode created during the test out of the published artifact.
         shutil.copytree(kit / "blink-kb-runtime", parent / "blink-kb-runtime")
-        shutil.copytree(docs, root / "docs")
         env = {k: v for k, v in os.environ.items() if not k.startswith(("BLINK_", "PYTHON", "PIP_"))}
         env.update(LOCALAPPDATA=str(parent / "profile"), PIP_NO_INDEX="1", HF_HUB_OFFLINE="1",
                    BLINK_PYTHON=str(parent / "no-system-python.exe"))
         setup, cli = root / "install-deps.cmd", root / "blink-kb.cmd"
         selected = Path(env["LOCALAPPDATA"]) / "Blink/models"
+        model_env = dict(env, BLINK_MODELS=str(parent / "只装模型"))
+        report = run(root / "install-model.cmd", [], model_env)
+        assert "模型文件已就绪" in report and "安装验证完成" not in report
+        assert (Path(model_env["BLINK_MODELS"]) / MODEL / "tokenizer.json").is_file()
+        shutil.copytree(docs, root / "docs")
         assert "安装验证完成" in run(setup, [], env)
         asset = selected / MODEL / "tokenizer.json"
         touched = asset.stat().st_mtime_ns
