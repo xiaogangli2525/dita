@@ -334,7 +334,7 @@ test('real HTTP knowledge delivery works across repositories and from a moved of
     await offline.context().setOffline(true); await offline.goto(pathToFileURL(path.join(moved, 'docs/index.html')).href);
     await offline.locator('#kbSearch').fill('AT+KBTEST_'); await offline.locator('#kbSuggestions button').first().waitFor(); await offline.locator('#kbSearch').press('ArrowDown'); await offline.locator('#kbSearch').press('Enter');
     await offline.locator('#kbMode').selectOption('AT'); assert.equal(await offline.locator('#kbResultList .search-result').count(), 0); await offline.locator('#kbMode').selectOption('');
-    await offline.locator('#kbCatalogToggle').click(); await offline.locator('#kbSymbolQuery').fill('AT+KBTEST_'); assert.equal(await offline.locator('#kbSymbolList .symbol-item').count(), 1); await offline.locator('#kbCatalogToggle').click();
+    await offline.locator('#kbCatalogToggle').click(); await offline.locator('#kbSymbolQuery').fill('AT+KBTEST_'); await offline.waitForFunction(() => document.querySelectorAll('#kbSymbolList .symbol-item').length === 1); assert.equal(await offline.locator('#kbSymbolList .symbol-item').count(), 1); await offline.locator('#kbCatalogToggle').click();
     await offline.locator('#kbSearch').fill('AT+KBTEST_G'); await offline.locator('#kbSearch').press('Enter');
     assert.equal(await offline.locator('#kbResultList .search-result').count(), 1); await offline.locator('#kbResultList .search-result').click();
     await offline.locator('#kbReading:not([hidden])').waitFor();
