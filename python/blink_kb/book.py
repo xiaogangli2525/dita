@@ -17,6 +17,9 @@ def limited_read(stream, limit):
 
 
 def parse_html(data):
+    marker = '<script type="application/json" id="kbData">'
+    if marker in data:
+        return json.JSONDecoder().raw_decode(data.split(marker, 1)[1])[0]
     marker = data.find("})({", max(0, data.find("<script>")))
     if marker < 0:
         raise ValueError("找不到知识库 HTML 中的结构化数据")
