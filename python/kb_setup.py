@@ -15,7 +15,7 @@ from zipfile import ZipFile
 from blink_kb.model_files import FILES, MODEL, manifest, matches
 
 DLL_HELP = ("请确认使用 Windows x64 运行包；如提示 DLL 加载失败，请由 IT 安装或修复 "
-            "Microsoft Visual C++ 2015–2022 或更新的 x64 运行库，然后重试。")
+            "Microsoft Visual C++ v14 x64 运行库，然后重试。官方下载：https://aka.ms/vc14/vc_redist.x64.exe")
 
 
 def install_dependencies(root):
@@ -40,16 +40,18 @@ def portable_python(root):
     return root.parent / "blink-kb-runtime/python/python.exe"
 
 
-def model_source(root):
+def model_source(root, destination):
     setting = os.environ.get("BLINK_MODEL_PACKAGE")
     if setting:
         return Path(setting).expanduser().resolve()
-    for folder in (root.parent / "blink-kb-runtime", root.parent / "blink-kb-model", root):
+    for folder in (root.parent / "blink-kb-runtime", root.parent / "blink-kb-model"):
         if (folder / "models" / MODEL).is_dir():
             return folder
     default_zip = root.parent / "Blink-KB-Models-bge-small-zh-v1.5.zip"
     if default_zip.is_file():
         return default_zip
+    if (root / "models").resolve() != destination and (root / "models" / MODEL).is_dir():
+        return root
     raise ValueError("找不到模型来源。请在 blink-kb 同级解压完整运行包，或将 BLINK_MODEL_PACKAGE "
                      "指向原始模型 ZIP，再运行 install-deps.cmd。")
 
@@ -68,7 +70,7 @@ def install_model(root, destination):
     if not missing:
         print("模型文件校验通过。")
         return
-    source = model_source(root)
+    source = model_source(root, base)
     print(f"正在从 {source} 修复 {len(missing)} 个模型文件。", flush=True)
     with ExitStack() as stack:
         if source.is_file():
@@ -150,12 +152,17 @@ def check(root, dest):
     # The UART acceptance query applies only to an edition that actually publishes that resource table.
     expected = next((i for i, row in enumerate(rows) if "MR380R" in book["model"].upper()
                      and row["title"].strip() == "外设资源" and "UART" in row["text"].upper()), None)
-    query = "支持多少串口" if expected is not None else "使用说明"
+    if expected is not None:
+        query = "支持多少串口"
+    else:
+        query = next((row["title"].strip() for row in rows if 2 <= len(row["title"].strip()) <= 60
+                      and not search.rules.call("constraints", row["title"])["requiresLexical"]), "使用说明")
     mode, hits = search.search(query, "semantic", dict(manualId="", module="", mode="", limit=3))
     if mode != "semantic":
         raise ValueError("验证查询未执行向量推理")
-    if expected is not None and not any(hit["position"] == expected for hit in hits):
-        raise ValueError(f"向量检索未命中预期的《外设资源》。查询：{query}")
+    if expected is not None and not any(hit["position"] == expected and "UART" in hit["excerpt"].upper()
+                                        for hit in hits):
+        raise ValueError(f"向量检索未命中《外设资源》的 UART 片段。查询：{query}")
     print(f"向量推理通过。查询「{query}」" + ("命中《外设资源》。" if expected is not None else "。"), flush=True)
     if (docs / "index.html").is_file():
         probe_reader(root, docs, query, expected)

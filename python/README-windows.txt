@@ -8,7 +8,7 @@ Blink 离线知识库 · Windows x64
    blink-kb\docs\knowledge.json
    blink-kb\setup-reader.cmd
    blink-kb-runtime\python\python.exe
-2. 双击 blink-kb\setup-reader.cmd。运行包已带专用 Python、全部检索依赖和模型，可以直接断网验证。公司电脑如果报本机 DLL 加载错误，请让 IT 核对 Microsoft Visual C++ x64 运行库。
+2. 双击 blink-kb\setup-reader.cmd。运行包已带专用 Python、全部检索依赖和模型，可以直接断网验证。公司电脑如果报本机 DLL 加载错误，请让 IT 核对 Microsoft Visual C++ v14 x64 运行库。可提前从 https://aka.ms/vc14/vc_redist.x64.exe 下载官方安装程序，带入内网。
 3. 更新手册时只替换整份 blink-kb\docs，保留启动脚本和 blink-kb-runtime。再次运行 setup-reader.cmd 即可验证新手册。
 
 已有 Windows x64 CPython 3.12 的联网电脑

@@ -6,6 +6,7 @@ import shutil
 import subprocess
 import sys
 from tempfile import TemporaryDirectory
+from zipfile import ZipFile
 
 from blink_kb.model_files import MODEL, manifest
 
@@ -15,10 +16,10 @@ def run(program, args, env, success=True):
                             text=True, encoding="utf-8", errors="replace", timeout=240)
     if (result.returncode == 0) != success:
         raise AssertionError(f"{program.name} {args} ({result.returncode})\n{result.stdout}\n{result.stderr}")
-    return result.stdout + result.stderr
+    return result.stdout if success else result.stdout + result.stderr
 
 
-def test(kit, docs):
+def test(kit, docs, uart_docs):
     with TemporaryDirectory(prefix="Blink 安装 ") as temp:
         parent = Path(temp)
         root = parent / "blink-kb"
@@ -51,12 +52,33 @@ def test(kit, docs):
         env["BLINK_MODELS"] = str(custom)
         env["BLINK_KB"] = str(parent / "unrelated")
         assert "BLINK_KB" in run(setup, [], env, success=False)
+        env.pop("BLINK_KB")
+        shutil.rmtree(root / "docs")
+        shutil.copytree(uart_docs, root / "docs")
+        assert "命中《外设资源》" in run(setup, [], env)
+        result = json.loads(run(cli, ["支持多少串口", "--search", "semantic", "--json"], env))
+        assert "4" in result["results"][0]["excerpt"] and result["results"][0]["title"] == "外设资源"
+
+        # Exercise the lightweight setup with a stock interpreter, local wheels and the separate model ZIP.
+        shutil.rmtree(parent / "blink-kb-runtime")
+        env.pop("BLINK_MODELS")
+        env["BLINK_PYTHON"] = sys.executable
+        shutil.rmtree(selected)
+        with ZipFile(parent / "Blink-KB-Models-bge-small-zh-v1.5.zip", "w") as zipfile:
+            for path in (kit / "blink-kb-runtime/models").rglob("*"):
+                if path.is_file():
+                    zipfile.write(path, "blink-kb-model/" + path.relative_to(kit / "blink-kb-runtime").as_posix())
+        subprocess.run([sys.executable, "-m", "pip", "download", "--require-hashes", "--only-binary=:all:",
+                        "-r", str(root / "requirements-kb-win.lock"), "-d", str(root / "wheelhouse")], check=True)
+        assert "命中《外设资源》" in run(setup, [], env)
+        assert (root / ".venv/Scripts/python.exe").is_file() and (selected / MODEL / "config.json").is_file()
+        result = json.loads(run(cli, ["支持多少串口", "--search", "semantic", "--json"], env))
+        assert result["results"][0]["title"] == "外设资源"
         # The manifest must declare exactly the supported model files.
         path = root / "blink_kb/_rules/semantic-model-assets.json"
         bad = manifest(path)
         bad["unrelated.txt"] = "0" * 64
         path.write_text(json.dumps(bad))
-        env.pop("BLINK_KB")
         assert "清单无效" in run(setup, [], env, success=False)
     print("Windows first install, normal CLI/HTTP inference, overrides, repeat setup and repair passed.")
 

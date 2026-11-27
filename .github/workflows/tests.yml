@@ -102,11 +102,13 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Python KB regression failed' }
       - name: Build reusable Windows setup kit
         run: python python/build_windows_runtime.py models dist/reader-setup
+      - run: node scripts/check-semantic.js dist/uart.json --uart
       - name: Test first install, repeated setup and repair through the shipped launchers
-        run: python python/check_windows_setup.py dist/reader-setup dist/unpacked/blink-cli/docs
+        run: python python/check_windows_setup.py dist/reader-setup dist/unpacked/blink-cli/docs dist/uart-docs
       - uses: actions/upload-artifact@v4
         with:
           name: Blink-KB-Windows-x64-Setup
           path: dist/reader-setup/
           if-no-files-found: error
+          include-hidden-files: true
           retention-days: 90
