@@ -1,6 +1,7 @@
 """Exercise the distributed Windows setup using a fresh profile and no working network index."""
 import json
 import os
+import re
 from pathlib import Path
 import shutil
 import subprocess
@@ -42,7 +43,9 @@ def test(kit, docs, uart_docs):
         # A pre-existing override must work from initial install through reader startup.
         custom = parent / "custom 模型"
         env["BLINK_MODELS"] = str(custom)
-        assert str(custom) in run(setup, [], env)
+        report = run(setup, [], env)
+        printed = re.search(r"本次使用的模型目录：(.+)", report)
+        assert printed and Path(printed[1].strip()).samefile(custom), report
         file = custom / MODEL / "tokenizer.json"
         file.write_bytes(b"incomplete")
         assert "安装验证完成" in run(setup, [], env)
