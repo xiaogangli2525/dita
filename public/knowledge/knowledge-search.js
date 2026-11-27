@@ -63,7 +63,9 @@
       const start = Math.max(0, (positions.length ? Math.min(...positions) : 0) - 45);
       return (start ? '…' : '') + value.slice(start, start + length) + (value.length > start + length ? '…' : '');
     }
-    return { tokens, metadata, aliasesFor, build, search, suggest, excerpt };
+    /** @param {readonly import('./knowledge-contracts').SearchRecord[]} records @param {import('./knowledge-contracts').SearchIndex} index */
+    function prepare(records, index) { engine(records, index); }
+    return { tokens, metadata, aliasesFor, build, search, suggest, excerpt, prepare };
   }
   function runtimeSource() { return '(' + createSearchEngine.toString() + ')((' + retrieval.createSdkSearch.toString() + ')(),' + JSON.stringify(defaultProfile) + ')'; }
   const api = { createSearchEngine, runtimeSource };

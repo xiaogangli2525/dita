@@ -8,26 +8,29 @@
     };
     const manuals = new Map(book.manuals.map(manual => [manual.id, manual]));
     const records = book.manuals.flatMap(manual => manual.entries.map(entry => ({ ...entry, manualId: manual.id, manualTitle: manual.title, mode: manual.mode, module: manual.module })));
-    let current = '', timer, activeSuggestion = -1, searchJob, lastSearch;
+    let current = '', timer, suggestionTimer, catalogTimer, activeSuggestion = -1, searchJob, lastSearch;
+    let composing = false, renderedManual = '', renderedQuery = '', viewVersion = 0;
+    const bodies = new Map(), metadata = new Map();
     const semantic = get('kbLocalSemantic');
     function cancelSearch() { searchJob?.abort(); searchJob = undefined; }
     const filters = () => ({ mode: get('kbMode').value, module: get('kbModule').value });
     function inScope(record) { return (!get('kbScope').value || record.manualId === get('kbScope').value) && (!get('kbMode').value || record.mode === get('kbMode').value) && (!get('kbModule').value || record.module === get('kbModule').value); }
-    function hideSuggestions() { get('kbSuggestions').hidden = true; activeSuggestion = -1; get('kbSearch').setAttribute('aria-expanded', 'false'); get('kbSearch').removeAttribute('aria-activedescendant'); }
+    function hideSuggestions() { clearTimeout(suggestionTimer); get('kbSuggestions').hidden = true; activeSuggestion = -1; get('kbSearch').setAttribute('aria-expanded', 'false'); get('kbSearch').removeAttribute('aria-activedescendant'); }
     function suggestions() {
-      const list = get('kbSuggestions'); list.replaceChildren(); activeSuggestion = -1;
+      const list = get('kbSuggestions'), fragment = document.createDocumentFragment(); activeSuggestion = -1;
       const values = engine.suggest(records, book.index, get('kbSearch').value, { ...filters(), manualId: get('kbScope').value });
       for (const [index, value] of values.entries()) {
         const button = make('button', value); button.type = 'button'; button.id = 'kbSuggestion-' + index; button.setAttribute('role', 'option'); button.setAttribute('aria-selected', 'false'); button.tabIndex = -1;
-        button.addEventListener('click', () => { get('kbSearch').value = value; hideSuggestions(); results(true); get('kbSearch').focus(); }); list.append(button);
+        button.addEventListener('click', () => { get('kbSearch').value = value; hideSuggestions(); results(true); get('kbSearch').focus(); }); fragment.append(button);
       }
-      list.hidden = !values.length; get('kbSearch').setAttribute('aria-expanded', String(!!values.length));
+      list.replaceChildren(fragment); list.hidden = !values.length; get('kbSearch').setAttribute('aria-expanded', String(!!values.length));
     }
     function catalog() {
-      const list = get('kbSymbolList'), symbolMap = new Map(); list.replaceChildren();
+      const list = get('kbSymbolList'), symbolMap = new Map(), fragment = document.createDocumentFragment();
       const needle = get('kbSymbolQuery').value.trim().toLowerCase();
       for (const record of records.filter(inScope)) {
-        const info = engine.metadata(record);
+        if (!metadata.has(record)) metadata.set(record, engine.metadata(record));
+        const info = metadata.get(record);
         for (const symbol of info.symbols) {
           if (needle && !symbol.toLowerCase().includes(needle)) continue;
           const defined = info.definedSymbols.includes(symbol), key = symbol.toLowerCase();
@@ -38,9 +41,10 @@
       get('kbSymbolCount').textContent = values.length + ' 个符号' + (values.length > 150 ? ' · 仅显示前 150 个，请输入前缀缩小范围' : '');
       for (const item of values.slice(0, 150)) {
         const button = make('button', undefined, 'symbol-item'); button.type = 'button'; button.append(make('code', item.symbol), make('small', item.record.manualTitle + ' · ' + (item.defined ? '定义' : '出现位置')));
-        button.addEventListener('click', () => { get('kbSymbols').hidden = true; get('kbCatalogToggle').setAttribute('aria-expanded', 'false'); route(item.record.manualId, item.record.anchor); }); list.append(button);
+        button.addEventListener('click', () => { get('kbSymbols').hidden = true; get('kbCatalogToggle').setAttribute('aria-expanded', 'false'); route(item.record.manualId, item.record.anchor); }); fragment.append(button);
       }
-      if (!values.length) list.append(make('p', '当前范围没有匹配符号。', 'empty'));
+      if (!values.length) fragment.append(make('p', '当前范围没有匹配符号。', 'empty'));
+      list.replaceChildren(fragment);
     }
     function route(id = '', anchor = '') {
       const params = new URLSearchParams(); if (id) params.set('manual', id); if (anchor) params.set('anchor', anchor);
@@ -59,7 +63,7 @@
     }
     function home() {
       current = ''; get('kbReading').hidden = true; get('kbResults').hidden = true; get('kbHome').hidden = false;
-      get('kbBreadcrumb').textContent = '文档中心'; get('kbBack').hidden = true; get('kbArticleToc').replaceChildren();
+      get('kbBreadcrumb').textContent = '文档中心'; get('kbBack').hidden = true;
       document.querySelectorAll('[aria-current]').forEach(node => node.removeAttribute('aria-current'));
     }
     async function copy(text, button) {
@@ -74,38 +78,70 @@
       } finally { clearTimeout(timer); }
       button.textContent = '已复制'; setTimeout(() => { button.textContent = '复制代码'; }, 1600);
     }
-    function read(manual, anchor) {
-      current = manual.id; get('kbHome').hidden = true; get('kbResults').hidden = true; get('kbReading').hidden = false;
-      get('kbBack').hidden = !get('kbSearch').value.trim(); get('kbBreadcrumb').textContent = '文档中心 / ' + manual.title;
-      get('kbManualTitle').textContent = manual.title;
-      get('kbManualMeta').textContent = [book.model, manual.version ? '文档 ' + manual.version : '', manual.source.repository, manual.source.commit ? 'Git ' + manual.source.commit.slice(0, 8) + (manual.source.dirty ? ' · 含未提交内容' : '') : '未取得 Git 提交'].filter(Boolean).join('  ·  ');
-      const article = get('kbArticle'); article.innerHTML = manual.body;
-      const query = get('kbSearch').value.trim(), words = engine.tokens(query, true), nodes = [];
-      if (words.length) {
-        const walker = document.createTreeWalker(article, NodeFilter.SHOW_TEXT); let node;
-        while ((node = walker.nextNode()) && nodes.length < 300) if (words.some(word => node.data.toLowerCase().includes(word))) nodes.push(node);
-        for (const text of nodes) { const fragment = document.createDocumentFragment(); highlight(fragment, text.data, query); text.replaceWith(fragment); }
-      }
-      for (const link of article.querySelectorAll('a[href]')) if (!link.getAttribute('href').startsWith('#')) { link.target = '_blank'; link.rel = 'noopener noreferrer'; }
-      for (const pre of article.querySelectorAll('pre')) {
-        const wrapper = make('div', undefined, 'code-frame'), button = make('button', '复制代码', 'code-copy'); button.type = 'button';
-        const text = pre.textContent; button.addEventListener('click', () => { void copy(text, button); }); pre.before(wrapper); wrapper.append(button, pre);
-      }
-      for (const table of [...article.querySelectorAll('table')]) { const wrapper = make('div', undefined, 'table-scroll'); table.before(wrapper); wrapper.append(table); }
-      get('kbArticleToc').replaceChildren(make('span', '本手册', 'eyebrow'));
-      for (const entry of manual.toc) { const button = make('button', entry.title); button.type = 'button'; button.addEventListener('click', () => route(manual.id, entry.anchor)); get('kbArticleToc').append(button); }
-      for (const button of document.querySelectorAll('[data-kb-manual]')) { if (button.dataset.kbManual === manual.id) button.setAttribute('aria-current', 'page'); else button.removeAttribute('aria-current'); }
+    function focusAnchor(article, anchor) {
+      article.querySelectorAll('.anchor-focus').forEach(node => node.classList.remove('anchor-focus'));
       const target = anchor && document.getElementById(anchor);
       if (target && article.contains(target)) { target.scrollIntoView({ block: 'start' }); target.classList.add('anchor-focus'); }
       else window.scrollTo(0, 0);
     }
+    async function read(manual, anchor, version) {
+      current = manual.id; get('kbHome').hidden = true; get('kbResults').hidden = true; get('kbReading').hidden = false;
+      get('kbBack').hidden = !get('kbSearch').value.trim(); get('kbBreadcrumb').textContent = '文档中心 / ' + manual.title;
+      get('kbManualTitle').textContent = manual.title;
+      get('kbManualMeta').textContent = [book.model, manual.version ? '文档 ' + manual.version : '', manual.source.repository, manual.source.commit ? 'Git ' + manual.source.commit.slice(0, 8) + (manual.source.dirty ? ' · 含未提交内容' : '') : '未取得 Git 提交'].filter(Boolean).join('  ·  ');
+      const article = get('kbArticle'), query = get('kbSearch').value.trim();
+      for (const button of document.querySelectorAll('[data-kb-manual]')) { if (button.dataset.kbManual === manual.id) button.setAttribute('aria-current', 'page'); else button.removeAttribute('aria-current'); }
+      if (renderedManual === manual.id && renderedQuery === query) { focusAnchor(article, anchor); return; }
+      let body = manual.body;
+      if (body === undefined) {
+        article.replaceChildren(make('p', '正在加载手册…')); get('kbArticleToc').replaceChildren(); renderedManual = '';
+        try {
+          if (!bodies.has(manual.id)) bodies.set(manual.id, fetch('/content/' + encodeURIComponent(manual.id) + '.html').then(response => {
+            if (!response.ok) throw Error('手册加载失败，请重试');
+            return response.text();
+          }).catch(error => { bodies.delete(manual.id); throw error; }));
+          body = await bodies.get(manual.id);
+        } catch (error) {
+          if (version === viewVersion) { const retry = make('button', '重新加载'); retry.type = 'button'; retry.addEventListener('click', renderRoute); article.replaceChildren(make('p', error.message), retry); }
+          return;
+        }
+        if (version !== viewVersion) return;
+      }
+      const template = document.createElement('template'); template.innerHTML = body;
+      const content = template.content, words = engine.tokens(query, true), nodes = [];
+      if (words.length) {
+        const walker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT); let node;
+        while ((node = walker.nextNode()) && nodes.length < 300) if (words.some(word => node.data.toLowerCase().includes(word))) nodes.push(node);
+        for (const text of nodes) { const fragment = document.createDocumentFragment(); highlight(fragment, text.data, query); text.replaceWith(fragment); }
+      }
+      for (const img of content.querySelectorAll('img')) {
+        img.loading = 'lazy'; img.decoding = 'async';
+        const png = /^data:image\/png;base64,([a-z0-9+/]{32})/i.exec(img.getAttribute('src') || '');
+        if (png && !img.hasAttribute('width') && !img.hasAttribute('height')) {
+          const header = Uint8Array.from(atob(png[1]), char => char.charCodeAt(0)), view = new DataView(header.buffer);
+          const width = view.getUint32(16), height = view.getUint32(20);
+          if (width > 0 && height > 0 && width < 100000 && height < 100000) { img.width = width; img.height = height; }
+        }
+      }
+      for (const link of content.querySelectorAll('a[href]')) if (!link.getAttribute('href').startsWith('#')) { link.target = '_blank'; link.rel = 'noopener noreferrer'; }
+      for (const pre of content.querySelectorAll('pre')) {
+        const wrapper = make('div', undefined, 'code-frame'), button = make('button', '复制代码', 'code-copy'); button.type = 'button';
+        const text = pre.textContent; button.addEventListener('click', () => { void copy(text, button); }); pre.before(wrapper); wrapper.append(button, pre);
+      }
+      for (const table of [...content.querySelectorAll('table')]) { const wrapper = make('div', undefined, 'table-scroll'); table.before(wrapper); wrapper.append(table); }
+      article.replaceChildren(content);
+      const toc = document.createDocumentFragment(); toc.append(make('span', '本手册', 'eyebrow'));
+      for (const entry of manual.toc) { const button = make('button', entry.title); button.type = 'button'; button.addEventListener('click', () => route(manual.id, entry.anchor)); toc.append(button); }
+      get('kbArticleToc').replaceChildren(toc); renderedManual = manual.id; renderedQuery = query;
+      focusAnchor(article, anchor);
+    }
     function renderRoute() {
-      cancelSearch();
+      cancelSearch(); clearTimeout(timer); hideSuggestions(); viewVersion++;
       const params = new URLSearchParams(location.hash.slice(1)), manual = manuals.get(params.get('manual'));
-      if (manual) read(manual, params.get('anchor')); else home();
+      if (manual) void read(manual, params.get('anchor'), viewVersion); else home();
     }
     function results(useSemantic = false) {
-      cancelSearch(); clearTimeout(timer); const query = get('kbSearch').value.trim().slice(0, 200);
+      cancelSearch(); clearTimeout(timer); viewVersion++; const query = get('kbSearch').value.trim().slice(0, 200);
       if (!query) { renderRoute(); return; }
       const start = performance.now(), manualId = get('kbScope').value, scope = filters();
       const matches = engine.search(records, book.index, query, manualId, 40, scope);
@@ -115,14 +151,15 @@
       function render(hits, mode) {
         get('kbSearchMeta').textContent = (hits.length === 40 ? '前 40 个结果' : hits.length + ' 个结果') + ' · ' + book.model +
           ' · ' + mode + ' · ' + Math.round(performance.now() - start) + ' ms';
-        const list = get('kbResultList'); list.replaceChildren();
+        const list = get('kbResultList'), fragment = document.createDocumentFragment(); list.replaceChildren();
         if (!hits.length) { list.append(make('p', '没有找到匹配内容。可尝试完整 AT 命令、参数名，或更短的关键词。', 'empty')); return; }
         for (const match of hits) {
           const record = records[match.position], button = make('button', undefined, 'search-result'); button.type = 'button';
           const heading = make('strong'), excerpt = make('p'); highlight(heading, record.title, query); highlight(excerpt, match.excerpt || engine.excerpt(record.text, query), query);
           button.append(make('small', record.manualTitle + '  /  ' + match.reason), heading, excerpt, make('span', '查看原文 →', 'result-link'));
-          button.addEventListener('click', () => route(record.manualId, record.anchor)); list.append(button);
+          button.addEventListener('click', () => route(record.manualId, match.chunk?.sourceAnchor || record.anchor)); fragment.append(button);
         }
+        list.replaceChildren(fragment);
       }
       render(matches, semantic?.checked && useSemantic !== true ? '关键词 · 回车执行语义检索' : '关键词');
       if (useSemantic !== true || !semantic?.checked) return;
@@ -133,6 +170,7 @@
       fetch('/search', { method: 'POST', headers: { 'content-type': 'application/json' }, body: criteria, signal: job.signal })
         .then(async response => {
           const value = await response.json();
+          if (value.superseded) { if (searchJob === job) get('kbSearchMeta').append(' · 已由更新的查询替代'); return; }
           if (!response.ok || !Array.isArray(value.hits) || value.hits.some(hit => !records[hit?.position])) throw Error(value.error || '搜索响应异常');
           if (searchJob === job) {
             const label = value.searchMode === 'lexical' ? '关键词精确检索' : '本机混合搜索';
@@ -154,8 +192,12 @@
       card.append(make('span', '功能手册', 'eyebrow'), make('strong', manual.title), make('p', manual.entries.length + ' 个章节 · ' + (manual.version || '随 SDK 发布')), make('span', '开始阅读 ↗', 'card-link'));
       card.addEventListener('click', () => route(manual.id)); get('kbManualCards').append(card);
     }
-    get('kbSearch').addEventListener('input', () => { cancelSearch(); clearTimeout(timer); suggestions(); timer = setTimeout(results, 100); });
+    function scheduleSearch() { cancelSearch(); clearTimeout(timer); clearTimeout(suggestionTimer); suggestionTimer = setTimeout(suggestions, 100); timer = setTimeout(results, 180); }
+    get('kbSearch').addEventListener('compositionstart', () => { composing = true; cancelSearch(); clearTimeout(timer); hideSuggestions(); });
+    get('kbSearch').addEventListener('compositionend', () => { composing = false; scheduleSearch(); });
+    get('kbSearch').addEventListener('input', event => { if (!composing && !event.isComposing) scheduleSearch(); });
     get('kbSearch').addEventListener('keydown', event => {
+      if (composing || event.isComposing || event.keyCode === 229) return;
       const choices = [...get('kbSuggestions').children];
       if ((event.key === 'ArrowDown' || event.key === 'ArrowUp') && choices.length && !get('kbSuggestions').hidden) {
         event.preventDefault(); activeSuggestion = activeSuggestion < 0 ? (event.key === 'ArrowDown' ? 0 : choices.length - 1) : (activeSuggestion + (event.key === 'ArrowDown' ? 1 : -1) + choices.length) % choices.length;
@@ -165,18 +207,23 @@
       if (event.key === 'Enter' && !event.isComposing) { event.preventDefault(); if (activeSuggestion >= 0) get('kbSearch').value = choices[activeSuggestion].textContent; hideSuggestions(); results(true); }
       if (event.key === 'Escape') { if (!get('kbSuggestions').hidden) hideSuggestions(); else { get('kbSearch').value = ''; renderRoute(); } }
     });
-    get('kbSearch').addEventListener('focus', suggestions);
+    get('kbSearch').addEventListener('focus', () => { if (!composing) { clearTimeout(suggestionTimer); suggestionTimer = setTimeout(suggestions, 100); } });
     document.addEventListener('click', event => { if (!event.target.closest('.search-area')) hideSuggestions(); });
     for (const id of ['kbScope', 'kbMode', 'kbModule']) get(id).addEventListener('change', () => { hideSuggestions(); results(); if (!get('kbSymbols').hidden) catalog(); });
     semantic?.addEventListener('change', () => results(semantic.checked));
     for (const value of [...new Set(records.map(record => record.module).filter(Boolean))].sort()) { const option = make('option', value); option.value = value; get('kbModule').append(option); }
     get('kbCatalogToggle').addEventListener('click', () => { get('kbSymbols').hidden = !get('kbSymbols').hidden; get('kbCatalogToggle').setAttribute('aria-expanded', String(!get('kbSymbols').hidden)); if (!get('kbSymbols').hidden) { catalog(); get('kbSymbolQuery').focus(); } });
-    get('kbSymbolQuery').addEventListener('input', catalog); get('kbBack').addEventListener('click', () => results(!!lastSearch));
+    const scheduleCatalog = () => { clearTimeout(catalogTimer); catalogTimer = setTimeout(catalog, 100); };
+    get('kbSymbolQuery').addEventListener('compositionstart', () => clearTimeout(catalogTimer));
+    get('kbSymbolQuery').addEventListener('compositionend', scheduleCatalog);
+    get('kbSymbolQuery').addEventListener('input', event => { if (!event.isComposing) scheduleCatalog(); }); get('kbBack').addEventListener('click', () => results(!!lastSearch));
     get('kbHomeButton').addEventListener('click', () => { get('kbSearch').value = ''; hideSuggestions(); route(); });
     get('kbMenu').addEventListener('click', () => document.body.classList.toggle('nav-open'));
     document.addEventListener('keydown', event => { if (event.key === 'Escape') document.body.classList.remove('nav-open'); if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); get('kbSearch').focus(); } });
     get('kbArticle').addEventListener('click', event => { const link = event.target.closest('a[href^="#"]'); if (link && current) { event.preventDefault(); route(current, link.getAttribute('href').slice(1)); } });
     window.addEventListener('hashchange', renderRoute); renderRoute();
+    const warm = () => engine.prepare(records, book.index);
+    if (window.requestIdleCallback) window.requestIdleCallback(warm); else setTimeout(warm, 200);
   }
   function renderPage(book, { localSemantic = false } = {}) {
     const semanticOption = localSemantic ? '<label><input id="kbLocalSemantic" type="checkbox" checked> 本机语义检索</label>' : '';
@@ -191,7 +238,7 @@
 <div class="shell"><header class="topbar"><button id="kbMenu" class="menu-button" type="button" aria-label="打开或关闭文档目录">☰</button><div class="search-area"><label class="searchbox"><svg width="17" height="17" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.5"/><path d="m12 12 5 5" stroke="currentColor" stroke-width="1.5"/></svg><input id="kbSearch" type="search" maxlength="200" aria-label="搜索知识库" placeholder="搜索命令、参数或使用方法…" autocomplete="off" role="combobox" aria-autocomplete="list" aria-controls="kbSuggestions" aria-expanded="false"><kbd>Ctrl K</kbd></label><div id="kbSuggestions" class="suggestions" role="listbox" aria-label="搜索建议" hidden></div></div><select id="kbScope" class="scope" aria-label="搜索范围"><option value="">全部手册</option></select><span class="model-pill">${escape(book.model)}</span></header>
 <main class="main"><div id="kbBreadcrumb" class="breadcrumb">文档中心</div><div class="filterbar">${semanticOption}<label>开发方式<select id="kbMode" class="scope"><option value="">全部方式</option><option value="AT">AT 命令</option><option value="OC">OpenCPU</option><option value="other">通用</option></select></label><label>功能模块<select id="kbModule" class="scope"><option value="">全部模块</option></select></label><button id="kbCatalogToggle" class="catalog-toggle" type="button" aria-expanded="false" aria-controls="kbSymbols">命令 / API 索引</button></div><section id="kbSymbols" class="symbol-panel" hidden><h2>命令与接口索引</h2><p>正式定义优先定位；未确认定义的符号显示原文出现位置。</p><input id="kbSymbolQuery" type="search" aria-label="筛选接口或命令" placeholder="输入前缀，如 AT+MHTTP、cm_fs_" maxlength="200"><p id="kbSymbolCount" role="status"></p><div id="kbSymbolList" class="symbol-list"></div></section><section id="kbHome"><div class="hero"><span class="eyebrow">DEVELOPER KNOWLEDGE BASE</span><h1>${escape(book.title)}</h1><p>从接口说明到使用示例，快速找到开发所需的内容。手册按本次发布配置筛选，搜索与阅读使用同一份发布内容。</p><div class="version-row"><span>SDK ${escape(book.sdkVersion)}</span><span>${book.manuals.length} 份功能手册</span><span>${count} 个可检索章节</span></div></div><div class="section-heading"><h2>浏览功能手册</h2><span>按功能组织，随版本交付</span></div><div id="kbManualCards" class="manual-grid"></div><div class="release-note"><strong>关于此版本</strong>内容固定于本次发布快照。可搜索完整 AT 命令、参数名和中文关键词，结果可直接定位原文。</div></section>
 <section id="kbResults" hidden><h1 id="kbSearchTitle" class="search-title"></h1><p id="kbSearchMeta" class="search-meta" role="status"></p><div id="kbResultList"></div></section><section id="kbReading" hidden><button id="kbBack" class="back-button" type="button" hidden>← 返回搜索结果</button><div class="reading-header"><span class="eyebrow">FUNCTION MANUAL</span><h1 id="kbManualTitle"></h1><p id="kbManualMeta"></p></div><div class="reading-grid"><article id="kbArticle" class="article"></article><aside id="kbArticleToc" class="article-toc" aria-label="本手册章节"></aside></div></section><footer class="page-footer"><span>${escape(book.model)} · SDK ${escape(book.sdkVersion)}</span><span>由 DITA 文档工作台生成 · ${escape(book.generatedAt.slice(0, 10))}</span></footer></main></div>
-<script>(${mount.toString()})(${json},${search.runtimeSource()});</script></body></html>`;
+<script type="application/json" id="kbData">${json}</script><script>(${mount.toString()})(JSON.parse(document.getElementById('kbData').textContent),${search.runtimeSource()});</script></body></html>`;
   }
   const api = { renderPage };
   if (typeof module !== 'undefined') module.exports = api; else root.DitaKnowledgeReader = api;

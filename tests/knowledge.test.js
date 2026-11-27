@@ -89,7 +89,9 @@ test('package boundaries reject mismatched models, duplicate manual identities, 
 test('embedded titles and contents cannot break out of the offline data script', () => {
   const result = buildPackage({ title: '</script><script>alert(1)</script>', model: 'ML307G', sdkVersion: '<img src=x>', manuals: [{ ...manual(), title: '</script><script>alert(2)</script>' }] });
   assert.equal((result.html.match(/<script>/g) || []).length, 1);
-  assert.equal((result.html.match(/<\/script>/g) || []).length, 1);
+  assert.equal((result.html.match(/<\/script>/g) || []).length, 2);
+  const embedded = result.html.match(/<script type="application\/json" id="kbData">([\s\S]*?)<\/script>/)[1];
+  assert.equal(JSON.parse(embedded).title, '</script><script>alert(1)</script>');
   assert.doesNotMatch(result.html, /<script>alert|<img src=x>/);
 });
 test('compiled reader and provenance are detached and frozen independently of caller edits', () => {

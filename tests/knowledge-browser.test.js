@@ -5,6 +5,75 @@ const { spawn, execFileSync } = require('node:child_process'), { pathToFileURL }
 const { createHash } = require('node:crypto'), { chromium } = require('playwright-core'), { unzipSync, strFromU8 } = require('fflate');
 const { collectDemoFiles } = require('../scripts/demo-workspace');
 const { measureFiles } = require('../public/knowledge/knowledge-zip');
+const { renderPage } = require('../public/knowledge/knowledge-reader');
+const { createSearchEngine } = require('../public/knowledge/knowledge-search');
+test('reader retains anchor DOM, defers IME searches and ignores stale lazy manual loads', async t => {
+  const manuals = ['111111111111', '222222222222'].map((id, i) => ({
+    id: 'm-' + id, title: '手册' + i, source: {}, toc: [{ anchor: 'a' + i, title: 'UART' }, { anchor: 'b' + i, title: '结束' }],
+    entries: [{ anchor: 'a' + i, title: 'UART', text: 'UART 串口说明' }],
+    body: `<h2 id="a${i}">UART</h2><p><a href="#b${i}">跳转</a></p><pre>UART example</pre><table><tr><td>4</td></tr></table><h2 id="b${i}">结束</h2>`
+  }));
+  const book = { schema: 1, title: 'KB', model: 'M', sdkVersion: 'v1', generatedAt: '2026-01-01', manuals };
+  book.index = createSearchEngine().build(manuals.flatMap(m => m.entries.map(e => ({ ...e, manualId: m.id, manualTitle: m.title }))));
+  const browser = await chromium.launch({ headless: true, ...(process.env.DITA_CHROMIUM_EXECUTABLE ? { executablePath: process.env.DITA_CHROMIUM_EXECUTABLE } : {}), args: ['--no-sandbox', '--disable-dev-shm-usage'] });
+  t.after(() => browser.close());
+  const page = await browser.newPage(), errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  const temporary = await fs.mkdtemp(path.join(os.tmpdir(), 'reader-performance-'));
+  t.after(() => fs.rm(temporary, { recursive: true, force: true }));
+  const file = path.join(temporary, 'index.html'); await fs.writeFile(file, renderPage(book));
+  await page.goto(pathToFileURL(file).href);
+  await page.locator('.manual-card').first().click(); await page.locator('#kbArticle pre').waitFor();
+  await page.evaluate(() => { window.savedPre = document.querySelector('#kbArticle pre'); });
+  await page.locator('#kbArticle a').click();
+  await page.waitForFunction(() => location.hash.includes('b0'));
+  assert.equal(await page.evaluate(() => window.savedPre === document.querySelector('#kbArticle pre')), true);
+  assert.equal(await page.locator('#kbArticle .code-frame').count(), 1);
+  assert.equal(await page.locator('#kbArticle .table-scroll').count(), 1);
+  await page.locator('#kbHomeButton').click(); await page.locator('.manual-card').first().click();
+  assert.equal(await page.evaluate(() => window.savedPre === document.querySelector('#kbArticle pre')), true);
+  assert.equal(await page.locator('#kbArticleToc button').count(), 2);
+  await page.locator('#kbSearch').focus();
+  await page.evaluate(() => {
+    const field = document.getElementById('kbSearch');
+    field.dispatchEvent(new CompositionEvent('compositionstart', { bubbles: true })); field.value = 'chuan';
+    field.dispatchEvent(new InputEvent('input', { bubbles: true, isComposing: true }));
+    field.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'Enter', isComposing: true }));
+  });
+  await page.waitForTimeout(250);
+  assert.equal(await page.locator('#kbResults').isHidden(), true);
+  assert.equal(await page.locator('#kbSuggestions').isHidden(), true);
+  await page.evaluate(() => {
+    const field = document.getElementById('kbSearch'); field.value = 'UART';
+    field.dispatchEvent(new CompositionEvent('compositionend', { bubbles: true }));
+  });
+  await page.locator('#kbResultList .search-result').first().waitFor();
+  await page.locator('#kbResultList .search-result').first().click();
+  await page.locator('#kbArticle mark').first().waitFor();
+  assert.equal(await page.evaluate(() => window.savedPre === document.querySelector('#kbArticle pre')), false);
+  const lazy = structuredClone(book); lazy.manuals.forEach(manual => delete manual.body);
+  const requests = [], waiting = [];
+  await page.route('http://reader.test/**', async route => {
+    const request = route.request().url();
+    if (request.endsWith('/')) { await route.fulfill({ contentType: 'text/html', body: renderPage(lazy, { localSemantic: true }) }); return; }
+    requests.push(request);
+    const manual = manuals.find(m => request.endsWith(m.id + '.html'));
+    if (manual.id === manuals[0].id) await new Promise(resolve => waiting.push(resolve));
+    await route.fulfill({ contentType: 'text/html', body: manual.body });
+  });
+  await page.goto('http://reader.test/');
+  await page.locator('.manual-card').first().click();
+  await page.waitForFunction(() => document.getElementById('kbArticle').textContent.includes('正在加载'));
+  await page.locator('[data-kb-manual="' + manuals[1].id + '"]').evaluate(button => button.click());
+  await page.locator('#a1').waitFor();
+  for (const resolve of waiting) resolve();
+  await page.waitForTimeout(100);
+  assert.equal(await page.locator('#a0').count(), 0);
+  await page.locator('[data-kb-manual="' + manuals[0].id + '"]').evaluate(button => button.click());
+  await page.locator('#a0').waitFor();
+  assert.equal(requests.length, 2);
+  assert.deepEqual(errors, []);
+});
 const hash = value => createHash('sha256').update(value).digest('hex');
 test('real HTTP knowledge delivery works across repositories and from a moved offline folder', async t => {
   const temporary = await fs.mkdtemp(path.join(os.tmpdir(), 'dita-knowledge-')), http = path.join(temporary, 'HTTP真实文档库'), extra = path.join(temporary, '独立测试库');

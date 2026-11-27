@@ -75,7 +75,7 @@ class VectorSearch:
         inputs = {field.name: np.array([inputs[field.name]], dtype=np.int64) for field in self.session.get_inputs()}
         vector = self.session.run(["last_hidden_state"], inputs)[0][0, 0].astype(np.float64)
         vector /= np.linalg.norm(vector)
-        return (values @ vector).tolist()
+        return (values @ vector.astype(np.float32)).tolist()
 
     def read_vectors(self, indexes):
         np = self.np
@@ -93,10 +93,9 @@ class VectorSearch:
                 if not (np.max(np.abs(values), axis=1) == 127).all():
                     raise ValueError("Int8 向量未按约定编码，请重新生成")
                 values /= np.linalg.norm(values, axis=1)[:, None]
-                values = values.astype(np.float32).astype(np.float64)
             elif not (np.abs(np.sum(values ** 2, axis=1) - 1) <= 0.01).all():
                 raise ValueError("语义向量未按约定归一化，请重新生成")
-            matrices.append(values)
+            matrices.append(values.astype(np.float32))
         return matrices[0] if len(matrices) == 1 else np.concatenate(matrices)
 
 
@@ -123,6 +122,17 @@ class Search:
         lexical = self.rules.call("lexical", query, options)
         if mode == "lexical":
             return mode, lexical[:limit]
+        self.prepare_vectors()
+        scores = self.vector.scores(self.values, self.rules.call("normalizeQuery", query))
+        return mode, self.rules.call("rank", self.chunks, scores, query, lexical,
+                                     dict(options, semanticOnly=mode == "semantic"))
+
+    def warm(self):
+        self.rules.call("lexical", "", dict(limit=1))
+        self.prepare_vectors()
+        self.vector.scores(self.values, self.rules.call("normalizeQuery", "初始化"))
+
+    def prepare_vectors(self):
         if not all(self.compatible):
             raise ValueError("需要附有兼容语义索引的知识库，请重新导出或在工作台生成索引")
         profile = self.indexes[0]["profile"]
@@ -144,6 +154,3 @@ class Search:
             vector = VectorSearch(profile, self.rules.directory / "semantic-model-assets.json", self.model_root)
             self.values = vector.read_vectors(self.indexes)
             self.vector = vector
-        scores = self.vector.scores(self.values, self.rules.call("normalizeQuery", query))
-        return mode, self.rules.call("rank", self.chunks, scores, query, lexical,
-                                     dict(options, semanticOnly=mode == "semantic"))
