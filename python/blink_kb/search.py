@@ -1,13 +1,12 @@
 """Python inference with the same retrieval rules used by the editor and Node CLI."""
 import base64
-import hashlib
 import json
-import os
 from pathlib import Path
 import re
 import unicodedata
 
 from .book import flatten
+from .model_files import manifest, matches, model_root as default_model_root
 
 MODULES = ("knowledge-search-profile.js", "knowledge-retrieval.js", "knowledge-search.js",
            "knowledge-structure.js", "knowledge-semantic.js", "knowledge-ranking.js", "knowledge-reader.js")
@@ -48,14 +47,10 @@ class VectorSearch:
         self.np = numpy
         self.profile = profile
         directory = model_root / profile["model"]
-        assets = json.loads(assets_file.read_text(encoding="utf-8"))
-        for name, expected in assets.items():
+        for name, expected in manifest(assets_file).items():
             asset = directory / name
-            if not asset.is_file():
-                raise ValueError(f"本地向量模型文件缺失：{asset}，请检查 BLINK_MODELS")
-            with asset.open("rb") as stream:
-                if hashlib.file_digest(stream, "sha256").hexdigest() != expected:
-                    raise ValueError(f"本地向量模型校验失败：{name}")
+            if not matches(asset, expected):
+                raise ValueError(f"向量模型缺失或校验失败：{asset}。请运行 install-deps.cmd 检查或修复。")
         self.tokenizer = Tokenizer.from_file(str(directory / "tokenizer.json"))
         self.tokenizer.no_padding()
         self.tokenizer.no_truncation()
@@ -110,8 +105,7 @@ class Search:
         self.compatible = [bool(index and self.rules.call("compatible", {"profile": index["profile"],
                                                                         "schema": index["schema"]}))
                            for index in self.indexes]
-        root = model_root or os.environ.get("BLINK_MODELS")
-        self.model_root = Path(root) if root else Path(__file__).resolve().parents[2] / "models"
+        self.model_root = Path(model_root) if model_root else default_model_root()
 
     def search(self, query, mode, options):
         limit = options["limit"]
