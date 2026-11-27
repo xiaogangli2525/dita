@@ -26,6 +26,10 @@ def install_dependencies(root):
     python = env / "Scripts/python.exe"
     if not python.is_file():
         subprocess.run([sys.executable, "-I", "-m", "venv", str(env)], check=True)
+    # A cancelled venv creation can leave python.exe in place before pip was bootstrapped.
+    pip = subprocess.run([str(python), "-I", "-m", "pip", "--version"], capture_output=True)
+    if pip.returncode:
+        subprocess.run([str(python), "-I", "-m", "ensurepip", "--upgrade"], check=True)
     command = [str(python), "-I", "-m", "pip", "--disable-pip-version-check", "install",
                "--only-binary=:all:", "--require-hashes", "-r", str(root / "requirements-kb-win.lock")]
     wheels = root / "wheelhouse"
@@ -127,7 +131,7 @@ def probe_reader(root, docs, query, expected):
             with http.open(req, timeout=90) as response:
                 answer = json.load(response)
             hits = answer.get("hits")
-            if answer.get("searchMode") != "hybrid" or not isinstance(hits, list):
+            if answer.get("searchMode") != "hybrid" or not isinstance(hits, list) or not hits:
                 raise ValueError("本机阅读页没有返回混合检索结果")
             if expected is not None and not any(hit["position"] == expected for hit in hits[:3]):
                 raise ValueError(f"本机阅读页未命中预期章节。查询：{query}")
@@ -160,6 +164,8 @@ def check(root, dest):
     mode, hits = search.search(query, "semantic", dict(manualId="", module="", mode="", limit=3))
     if mode != "semantic":
         raise ValueError("验证查询未执行向量推理")
+    if not hits:
+        raise ValueError(f"向量推理已运行，但验证查询「{query}」未命中，请检查随包索引与手册版本。")
     if expected is not None and not any(hit["position"] == expected and "UART" in hit["excerpt"].upper()
                                         for hit in hits):
         raise ValueError(f"向量检索未命中《外设资源》的 UART 片段。查询：{query}")

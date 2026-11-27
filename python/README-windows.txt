@@ -12,6 +12,7 @@ Blink 离线知识库 · Windows x64
 3. 更新手册时只替换整份 blink-kb\docs，保留启动脚本和 blink-kb-runtime。再次运行 setup-reader.cmd 即可验证新手册。
 
 已有 Windows x64 CPython 3.12 的联网电脑
+旧版文档可先将 Blink-KB-Windows-x64-Client-Update 解压到 blink-kb 内，覆盖同名启动文件。
 可以使用轻量文档包，在 blink-kb 同级放原始 Blink-KB-Models-bge-small-zh-v1.5.zip，运行 install-deps.cmd。首次安装在 blink-kb\.venv 内按哈希安装依赖，请把文档解压到可写目录。自备离线 wheels 可全部放在 blink-kb\wheelhouse，此时安装只用本地文件。BLINK_PYTHON 可指定基础解释器的完整路径。加载顺序为配套运行包、专用 .venv、BLINK_PYTHON、py -3.12、python。附带 _vendor 和模型的旧全量版也支持直接使用同架构 CPython 3.12。
 
 模型与故障处理
