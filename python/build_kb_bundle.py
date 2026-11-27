@@ -42,6 +42,8 @@ def build(source, models, output):
                     "--implementation", "cp", "--abi", "cp312"]
         subprocess.run([sys.executable, "-m", "pip", "download", *platform, "--dest", str(wheelhouse),
                         "-r", str(HERE / "requirements-kb.txt")], check=True)
+        from lock_windows_wheels import wheel_lock
+        print("WINDOWS_WHEEL_LOCK_BEGIN" + chr(10) + wheel_lock(wheelhouse) + "WINDOWS_WHEEL_LOCK_END", flush=True)
         subprocess.run([sys.executable, "-m", "pip", "install", "--no-index", "--no-deps", "--no-compile", *platform,
                         "--target", str(dependencies), *map(str, sorted(wheelhouse.glob("*.whl")))], check=True)
         shutil.rmtree(dependencies / "bin", ignore_errors=True)
