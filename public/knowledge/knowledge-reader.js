@@ -116,12 +116,27 @@
       }
       for (const img of content.querySelectorAll('img')) {
         img.loading = 'lazy'; img.decoding = 'async';
-        const png = /^data:image\/png;base64,([a-z0-9+/]{32})/i.exec(img.getAttribute('src') || '');
-        if (png && !img.hasAttribute('width') && !img.hasAttribute('height')) {
+        if (img.hasAttribute('width') || img.hasAttribute('height')) continue;
+        const src = img.getAttribute('src') || '', png = /^data:image\/png;base64,([a-z0-9+/]{32})/i.exec(src);
+        const svg = /^data:image\/svg\+xml;base64,([a-z0-9+/=]+)/i.exec(src);
+        let width, height;
+        if (png) {
           const header = Uint8Array.from(atob(png[1]), char => char.charCodeAt(0)), view = new DataView(header.buffer);
-          const width = view.getUint32(16), height = view.getUint32(20);
-          if (width > 0 && height > 0 && width < 100000 && height < 100000) { img.width = width; img.height = height; }
+          width = view.getUint32(16); height = view.getUint32(20);
+        } else if (svg && svg[1].length % 4 === 0) {
+          // Read only the SVG root attributes, without parsing its DTD or drawing.
+          let header;
+          try { header = atob(svg[1].slice(0, 4096)); } catch { continue; }
+          const opening = header.match(/<svg\b[^>]*>/i)?.[0];
+          if (opening) {
+            const root = new DOMParser().parseFromString(opening + '</svg>', 'image/svg+xml').documentElement;
+            const absoluteLength = /^\d+(?:\.\d+)?(?:px|pt|pc|in|cm|mm)?$/i;
+            if (absoluteLength.test(root.getAttribute('width') || '') && absoluteLength.test(root.getAttribute('height') || '')) {
+              width = root.width?.baseVal.value; height = root.height?.baseVal.value;
+            }
+          }
         }
+        if (width > 0 && height > 0 && width < 100000 && height < 100000) { img.width = Math.round(width); img.height = Math.round(height); }
       }
       for (const link of content.querySelectorAll('a[href]')) if (!link.getAttribute('href').startsWith('#')) { link.target = '_blank'; link.rel = 'noopener noreferrer'; }
       for (const pre of content.querySelectorAll('pre')) {

@@ -14,6 +14,8 @@ test('reader retains anchor DOM, defers IME searches and ignores stale lazy manu
     body: `<h2 id="a${i}">UART</h2><p><a href="#b${i}">跳转</a></p><pre>UART example</pre><table><tr><td>4</td></tr></table><h2 id="b${i}">结束</h2>`
   }));
   const book = { schema: 1, title: 'KB', model: 'M', sdkVersion: 'v1', generatedAt: '2026-01-01', manuals };
+  const drawing = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="2in" height="1in" viewBox="0 0 144 72"><path d="M0 0L144 72"/></svg>').toString('base64');
+  manuals[0].body += '<img alt="SVG dimensions" src="data:image/svg+xml;base64,' + drawing + '">';
   book.index = createSearchEngine().build(manuals.flatMap(m => m.entries.map(e => ({ ...e, manualId: m.id, manualTitle: m.title }))));
   const browser = await chromium.launch({ headless: true, ...(process.env.DITA_CHROMIUM_EXECUTABLE ? { executablePath: process.env.DITA_CHROMIUM_EXECUTABLE } : {}), args: ['--no-sandbox', '--disable-dev-shm-usage'] });
   t.after(() => browser.close());
@@ -24,6 +26,8 @@ test('reader retains anchor DOM, defers IME searches and ignores stale lazy manu
   const file = path.join(temporary, 'index.html'); await fs.writeFile(file, renderPage(book));
   await page.goto(pathToFileURL(file).href);
   await page.locator('.manual-card').first().click(); await page.locator('#kbArticle pre').waitFor();
+  assert.equal(await page.locator('#kbArticle img').getAttribute('width'), '192');
+  assert.equal(await page.locator('#kbArticle img').getAttribute('height'), '96');
   await page.evaluate(() => { window.savedPre = document.querySelector('#kbArticle pre'); });
   await page.locator('#kbArticle a').click();
   await page.waitForFunction(() => location.hash.includes('b0'));
